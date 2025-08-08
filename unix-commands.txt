@@ -10,4 +10,4 @@ journalctl -u ssh | grep "session opened" -B 1
 # compare large json files
 cat new.json | jq 'sort_by(.Buchungsnummer)' | jq --sort-keys  >> new-sorted.json
 cat old.json | jq 'sort_by(.Buchungsnummer)' | jq --sort-keys  >> old-sorted.json
-diff --side-by-side --suppress-common-lines --color=always old-sorted.json new-sorted.json | less -R
+diff --side-by-side --suppress-common-lines --color=always old-sorted.json new-sorted.json | more
