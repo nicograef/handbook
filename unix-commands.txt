@@ -2,7 +2,7 @@
 grep -rnwl 'StructuralFormat' . --include=\*.ts --exclude=\*.{d,test}.ts --exclude-dir={node_modules,dist}
 
 # show all open ports (sudo necessary to see all PIDs and names)
-sudp netstat -tulpn | grep LISTEN
+sudo netstat -tulpn | grep LISTEN
 
 # list successful ssh logins
 journalctl -u ssh | grep "session opened" -B 1
