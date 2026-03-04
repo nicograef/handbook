@@ -1,0 +1,29 @@
+# docker-compose.yml template
+# Usage: copy to project root and adapt services
+
+services:
+  app:
+    image: node:22-slim
+    # build: .
+    ports:
+      - "3000:3000"
+    volumes:
+      - .:/app
+    working_dir: /app
+    # environment:
+    #   - NODE_ENV=production
+    # depends_on:
+    #   - db
+
+  # db:
+  #   image: postgres:17
+  #   environment:
+  #     POSTGRES_PASSWORD: changeme
+  #     POSTGRES_DB: app
+  #   volumes:
+  #     - pgdata:/var/lib/postgresql/data
+  #   ports:
+  #     - "5432:5432"
+
+# volumes:
+#   pgdata:

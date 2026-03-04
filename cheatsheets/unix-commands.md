@@ -1,3 +1,6 @@
+# Unix / Shell Commands
+
+```bash
 # search for 'StructuralFormat' recursive, only in .ts files and only print filenames (-l)
 grep -rnwl 'StructuralFormat' . --include=\*.ts --exclude=\*.{d,test}.ts --exclude-dir={node_modules,dist}
 
