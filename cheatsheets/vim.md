@@ -12,5 +12,5 @@
 | vim -O file1.ts file2.md | open two files in split screen (vertically) |
 | :e _path/to/file_ | open file from within vim |
 | :vsplit | split screen vertically |
-| ctl+w arrow-key | switch between split view fiels |
+| Ctrl+w arrow-key | switch between split view files |
 

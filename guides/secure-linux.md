@@ -1,4 +1,8 @@
+# Secure a Linux Server
+
 Based on this guide: [First steps to secure your Linux server](https://github.com/netcup-community/community-tutorials/blob/main/community-tutorials/first-steps-to-protect-your-linux-server-against-common-attacks/01-en.md)
+
+> For automated provisioning see [provision-server.md](provision-server.md) and [`scripts/setup-server.sh`](../scripts/setup-server.sh).
 
 Assuming a new linux machine where logged in via `ssh root@host`
 
@@ -17,7 +21,7 @@ adduser nico # create new user
 usermod -aG sudo nico # add user to sudo group
 
 su - nico # switch to new user
-sudo ls -la /root # check if user has sudo priviledges
+sudo ls -la /root # check if user has sudo privileges
 ```
 
 ## Switch from Password to Public Key Authentication and disallow root login
@@ -72,7 +76,7 @@ sudo systemctl status fail2ban
 
 if fail2ban errors, add `backend = systemd` to `/etc/fail2ban/jail.d/defaults-debian.conf` or create a new file `/etc/fail2ban/jail.local` with contents:
 
-```config
+```ini
 [sshd]
 backend=systemd
 enabled = true

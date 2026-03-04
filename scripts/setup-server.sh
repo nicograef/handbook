@@ -123,7 +123,7 @@ log "Installing Docker"
 install -m 0755 -d /etc/apt/keyrings
 
 if [[ ! -f /etc/apt/keyrings/docker.gpg ]]; then
-  curl -fsSL https://download.docker.com/linux/debian/gpg \
+  curl -fsSL "https://download.docker.com/linux/${ID}/gpg" \
     | gpg --dearmor -o /etc/apt/keyrings/docker.gpg
   chmod a+r /etc/apt/keyrings/docker.gpg
 fi

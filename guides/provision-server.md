@@ -53,7 +53,7 @@ Edit the variables at the top of `setup-server.sh`:
 | -------- | ------- | ----------- |
 | `USERNAME` | `nico` | Non-root user to create |
 | `SSH_PUBLIC_KEY` | *(required)* | Your public SSH key |
-| `EXTRA_UFW_PORTS` | *(empty)* | Additional ports to open, e.g. `80/tcp 443/tcp` |
+| `EXTRA_UFW_PORTS` | `80/tcp 443/tcp` | Additional ports to open (space-separated) |
 
 ## After provisioning
 
