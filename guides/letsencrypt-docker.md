@@ -97,19 +97,7 @@ See [templates/nginx-tls.conf](../templates/nginx-tls.conf) for the nginx TLS co
 
 ## Auto-Renewal
 
-The `certbot` service in `docker-compose.prod.yml` runs a renewal loop:
-
-```yaml
-certbot:
-  image: certbot/certbot:v2.11.0
-  volumes:
-    - certbot-challenges:/var/www/certbot
-    - letsencrypt:/etc/letsencrypt
-  entrypoint: /bin/sh
-  command: -c "while true; do certbot renew --webroot -w /var/www/certbot --quiet; sleep 24h; done"
-```
-
-Certbot only renews when certs are within 30 days of expiry. Nginx picks up new certs on reload or container restart.
+The `certbot` service in [`docker-compose.prod.yml`](../templates/docker-compose.prod.yml) runs `certbot renew` in a loop (every 24 h). Certbot only renews when certs are within 30 days of expiry. Nginx picks up new certs on reload or container restart.
 
 ## Automation
 

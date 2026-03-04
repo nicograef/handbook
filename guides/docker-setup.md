@@ -37,14 +37,4 @@ docker compose version
 docker run hello-world
 ```
 
-## Useful Commands
-
-```bash
-docker ps                          # running containers
-docker ps -a                       # all containers
-docker images                      # local images
-docker system prune -af            # clean up everything
-docker compose up -d               # start services detached
-docker compose down                # stop services
-docker compose logs -f             # follow logs
-```
+For common Docker Compose commands see [cheatsheets/docker-compose.md](../cheatsheets/docker-compose.md).

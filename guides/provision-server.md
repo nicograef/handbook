@@ -55,8 +55,58 @@ Edit the variables at the top of `setup-server.sh`:
 | `SSH_PUBLIC_KEY` | *(required)* | Your public SSH key |
 | `EXTRA_UFW_PORTS` | `80/tcp 443/tcp` | Additional ports to open (space-separated) |
 
+## Manual Reference
+
+The script automates everything below. Use these commands when debugging or
+tightening an existing server by hand.
+
+### SSH hardening (sshd_config)
+
+```diff
+- #PubkeyAuthentication yes
++ PubkeyAuthentication yes
+
+- PasswordAuthentication yes
++ PasswordAuthentication no
+
+- PermitRootLogin yes
++ PermitRootLogin no
+```
+
+```bash
+sudo systemctl restart sshd
+```
+
+### UFW firewall
+
+```bash
+sudo ufw default deny incoming
+sudo ufw default allow outgoing
+sudo ufw allow ssh
+sudo ufw limit ssh          # rate-limit: 6 attempts / 30 s
+sudo ufw allow 80/tcp
+sudo ufw allow 443/tcp
+sudo ufw --force enable
+```
+
+### fail2ban
+
+If fail2ban errors on systemd-based distros, create `/etc/fail2ban/jail.local`:
+
+```ini
+[sshd]
+backend  = systemd
+enabled  = true
+maxretry = 5
+bantime  = 3600
+```
+
+```bash
+sudo systemctl enable fail2ban
+sudo systemctl restart fail2ban
+```
+
 ## After provisioning
 
 - Open extra firewall ports as needed: `sudo ufw allow 443/tcp`
 - Deploy apps via Docker Compose – see [docker-setup.md](docker-setup.md)
-- Review hardening steps in detail – see [secure-linux.md](secure-linux.md)

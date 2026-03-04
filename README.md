@@ -11,8 +11,7 @@ Step-by-step instructions (runbook-style).
 
 | Topic | File |
 | ----- | ---- |
-| Provision a new VPS | [guides/provision-server.md](guides/provision-server.md) |
-| Harden a new Linux server | [guides/secure-linux.md](guides/secure-linux.md) |
+| Provision & harden a new VPS | [guides/provision-server.md](guides/provision-server.md) |
 | Docker installation & Compose | [guides/docker-setup.md](guides/docker-setup.md) |
 | Docker multi-stage builds | [guides/docker-multi-stage-builds.md](guides/docker-multi-stage-builds.md) |
 | Let's Encrypt with Docker Compose | [guides/letsencrypt-docker.md](guides/letsencrypt-docker.md) |

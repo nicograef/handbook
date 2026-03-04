@@ -11,8 +11,8 @@ sudo netstat -tulpn | grep LISTEN
 journalctl -u ssh | grep "session opened" -B 1
 
 # compare large json files
-jq 'sort_by(.Buchungsnummer) | sort_keys' new.json > new-sorted.json
-jq 'sort_by(.Buchungsnummer) | sort_keys' old.json > old-sorted.json
+jq 'sort_by(.id) | sort_keys' new.json > new-sorted.json
+jq 'sort_by(.id) | sort_keys' old.json > old-sorted.json
 diff --side-by-side --suppress-common-lines --color=always old-sorted.json new-sorted.json | more
 
 # chunk a file (e.g. into multiples of 500 lines)

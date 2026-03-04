@@ -3,7 +3,7 @@
 
 services:
   app:
-    image: node:22-slim
+    image: node:24-slim
     # build: .
     ports:
       - "3000:3000"
