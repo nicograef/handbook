@@ -11,6 +11,7 @@ Step-by-step instructions (runbook-style).
 
 | Topic | File |
 | ----- | ---- |
+| Provision a new VPS | [guides/provision-server.md](guides/provision-server.md) |
 | Harden a new Linux server | [guides/secure-linux.md](guides/secure-linux.md) |
 | Docker installation & Compose | [guides/docker-setup.md](guides/docker-setup.md) |
 
@@ -35,4 +36,8 @@ Copy-paste-ready config files for new projects.
 
 ## Scripts
 
-Reusable bash scripts – see [scripts/](scripts/).
+Reusable bash scripts.
+
+| Script | Description |
+| ------ | ----------- |
+| [scripts/setup-server.sh](scripts/setup-server.sh) | Provision a fresh Debian/Ubuntu VPS (user, SSH, UFW, fail2ban, Docker) |
