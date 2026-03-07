@@ -2,6 +2,45 @@
 
 Reusable workflow patterns for full-stack projects.
 
+## Go CI
+
+```yaml
+backend-ci:
+  runs-on: ubuntu-latest
+  defaults:
+    run:
+      working-directory: ./backend
+  steps:
+    - uses: actions/checkout@v5
+    - uses: actions/setup-go@v6
+      with:
+        go-version: 1.24.0
+
+    - run: go mod download
+    - run: go mod verify
+
+    - name: Check format
+      run: |
+        go install golang.org/x/tools/cmd/goimports@latest
+        if [ "$(goimports -l . | wc -l)" -gt 0 ]; then
+          goimports -l .
+          exit 1
+        fi
+
+    - run: go vet ./...
+    - run: go build -v ./...
+    - run: go test -tags=unit -v -race -coverprofile=coverage.out ./...
+
+    - name: golangci-lint
+      uses: golangci/golangci-lint-action@v8
+      with:
+        version: latest
+        working-directory: ./backend
+```
+
+`goimports` covers both `gofmt` formatting and import grouping.
+See [guides/go-testing.md](go-testing.md) for build-tag separation and integration test setup.
+
 ## Java + Maven CI
 
 ```yaml
@@ -132,6 +171,42 @@ jobs:
   deploy:
     needs: [backend-ci, frontend-ci]
 ```
+
+## Path Filtering
+
+Skip jobs when unrelated files change. Use `dorny/paths-filter` to detect which
+subdirectories were touched, then gate each job on the result:
+
+```yaml
+jobs:
+  changes:
+    runs-on: ubuntu-latest
+    outputs:
+      backend: ${{ steps.changes.outputs.backend }}
+      frontend: ${{ steps.changes.outputs.frontend }}
+    steps:
+      - uses: actions/checkout@v5
+      - uses: dorny/paths-filter@v3
+        id: changes
+        with:
+          filters: |
+            backend:
+              - 'backend/**'
+            frontend:
+              - 'frontend/**'
+
+  backend-ci:
+    needs: changes
+    if: ${{ needs.changes.outputs.backend == 'true' }}
+    # ...
+
+  frontend-ci:
+    needs: changes
+    if: ${{ needs.changes.outputs.frontend == 'true' }}
+    # ...
+```
+
+A frontend-only commit no longer triggers backend tests, keeping CI fast.
 
 ## Caching
 
