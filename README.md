@@ -17,8 +17,9 @@ Step-by-step instructions (runbook-style).
 | Let's Encrypt with Docker Compose | [guides/letsencrypt-docker.md](guides/letsencrypt-docker.md) |
 | Nginx reverse proxy (HTTPS + SPA) | [guides/nginx-reverse-proxy.md](guides/nginx-reverse-proxy.md) |
 | GitHub Actions CI/CD | [guides/github-actions-cicd.md](guides/github-actions-cicd.md) |
-| Java / Spring Boot Backend | [guides/java-spring-boot.md](guides/java-spring-boot.md) |
-| React Frontend | [guides/react-frontend.md](guides/react-frontend.md) |
+| Go backend development | [guides/go.md](guides/go.md) |
+| Java / Spring Boot backend | [guides/java-spring-boot.md](guides/java-spring-boot.md) |
+| React frontend development | [guides/react.md](guides/react.md) |
 
 ## Cheatsheets
 
