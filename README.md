@@ -17,7 +17,8 @@ Step-by-step instructions (runbook-style).
 | Let's Encrypt with Docker Compose | [guides/letsencrypt-docker.md](guides/letsencrypt-docker.md) |
 | Nginx reverse proxy (HTTPS + SPA) | [guides/nginx-reverse-proxy.md](guides/nginx-reverse-proxy.md) |
 | GitHub Actions CI/CD | [guides/github-actions-cicd.md](guides/github-actions-cicd.md) |
-| Go testing (unit, integration, build tags) | [guides/go-testing.md](guides/go-testing.md) |
+| Go backend development | [guides/go.md](guides/go.md) |
+| React frontend development | [guides/react.md](guides/react.md) |
 
 ## Cheatsheets
 
