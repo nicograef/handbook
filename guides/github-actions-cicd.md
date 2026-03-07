@@ -39,7 +39,7 @@ backend-ci:
 ```
 
 `goimports` covers both `gofmt` formatting and import grouping.
-See [guides/go-testing.md](go-testing.md) for build-tag separation and integration test setup.
+See [guides/go.md](go.md) for build-tag separation and integration test setup.
 
 ## Java + Maven CI
 
