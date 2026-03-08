@@ -18,6 +18,7 @@ Step-by-step instructions (runbook-style).
 | Nginx reverse proxy (HTTPS + SPA) | [guides/nginx-reverse-proxy.md](guides/nginx-reverse-proxy.md) |
 | GitHub Actions CI/CD | [guides/github-actions-cicd.md](guides/github-actions-cicd.md) |
 | Go backend development | [guides/go.md](guides/go.md) |
+| Java / Spring Boot backend | [guides/java-spring-boot.md](guides/java-spring-boot.md) |
 | React frontend development | [guides/react.md](guides/react.md) |
 
 ## Cheatsheets
