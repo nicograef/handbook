@@ -20,6 +20,7 @@ Step-by-step instructions (runbook-style).
 | Go backend development | [guides/go.md](guides/go.md) |
 | Java / Spring Boot backend | [guides/java-spring-boot.md](guides/java-spring-boot.md) |
 | React frontend development | [guides/react.md](guides/react.md) |
+| Dotfiles for GitHub Codespaces | [guides/dotfiles-codespaces.md](guides/dotfiles-codespaces.md) |
 
 ## Cheatsheets
 
@@ -51,3 +52,4 @@ Reusable bash scripts.
 | ------ | ----------- |
 | [scripts/setup-server.sh](scripts/setup-server.sh) | Provision a fresh Debian/Ubuntu VPS (user, SSH, UFW, fail2ban, Docker) |
 | [scripts/prod-init.sh](scripts/prod-init.sh) | First-time production deploy (cert request + stack start) |
+| [scripts/install-dotfiles.sh](scripts/install-dotfiles.sh) | Bootstrap shell config in a new Codespace or VM |
