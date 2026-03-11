@@ -143,3 +143,7 @@ See [guides/github-actions-cicd.md](github-actions-cicd.md) for the full CI setu
 - **Interfaces at the consumer** — define interfaces where they are used, not where they are implemented. Keep them small (1–3 methods).
 - **Errors are values** — handle every error at the point it occurs; don't ignore with `_`.
 - **Avoid premature abstraction** — start concrete, extract interfaces when you need to swap implementations or test.
+
+---
+
+See also: [theory/go-backend.md](../theory/go-backend.md) for Go backend architecture concepts (German).

@@ -1,4 +1,5 @@
 alias ll='ls -la'
+alias la='ls -A'
 alias sss='eval `ssh-agent` && ssh-add'
 alias gfp='git fetch --prune && git pull'
 alias gct='git checkout test'

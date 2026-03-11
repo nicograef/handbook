@@ -9,10 +9,13 @@ Target system: Debian / Ubuntu.
 - `cheatsheets/` – quick-reference commands
 - `templates/` – copy-paste-ready config files (.bashrc, Makefile, docker-compose.yml, nginx.conf)
 - `scripts/` – reusable bash scripts
+- `theory/` – conceptual reference material (German, imported from another project)
 
 ## Language
 
 All documentation is written in English. Keep it that way.
+
+**Exception:** Files in `theory/` are written in German. These were imported from another project and will stay in German. Do not translate them.
 
 ## Commands
 

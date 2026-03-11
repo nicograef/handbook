@@ -9,13 +9,13 @@ to symlink config files into `$HOME`.
 | Source in this repo | Symlinked to | Content |
 | ------------------- | ------------ | ------- |
 | `templates/.bashrc` | `~/.bashrc` | Custom prompt (git branch) + base aliases |
-| `.bash_aliases` | `~/.bash_aliases` | Personal aliases (`gfp`, `gcm`, `p`, …) |
+| `templates/.bash_aliases` | `~/.bash_aliases` | Personal aliases (`gfp`, `gcm`, `p`, …) |
 
 ## Setup (one-time)
 
 1. Go to **github.com → Settings → Codespaces**.
 2. Under **Dotfiles**, check *"Automatically install dotfiles"*.
-3. Select this repository (`nicograef/admin`).
+3. Select this repository (`nicograef/handbook`).
 
 Every new Codespace will now clone this repo and run `scripts/install-dotfiles.sh`.
 

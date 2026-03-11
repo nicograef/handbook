@@ -18,7 +18,7 @@ log() { printf '\033[1;34m▸ %s\033[0m\n' "$1"; }
 # ── Symlink dotfiles ────────────────────────────────────────────────────────
 declare -A FILES=(
   ["templates/.bashrc"]=".bashrc"
-  [".bash_aliases"]=".bash_aliases"
+  ["templates/.bash_aliases"]=".bash_aliases"
 )
 
 for src in "${!FILES[@]}"; do

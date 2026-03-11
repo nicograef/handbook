@@ -1,7 +1,10 @@
-# admin
+# handbook
 
-Personal knowledge base for infrastructure, server setup and daily CLI work.  
-Focused on **Debian / Ubuntu**. Used for private projects and occasionally at work.
+Personal knowledge base by **Nico** — senior software engineer from Freiburg, Germany.
+10+ years of experience across freelance web development, fullstack engineering, and startup team leadership.
+Current stack: **Go**, **React**, **TypeScript**, **PostgreSQL**, **Docker**.
+
+Focused on **Debian / Ubuntu**. Covers infrastructure, backend, frontend, and DevOps workflows.
 
 ---
 
@@ -33,6 +36,22 @@ Quick-reference commands (no context needed).
 | Docker Compose | [cheatsheets/docker-compose.md](cheatsheets/docker-compose.md) |
 | Vim | [cheatsheets/vim.md](cheatsheets/vim.md) |
 
+## Theory
+
+Conceptual reference material (German). Imported from a separate project — covers architecture patterns, domain knowledge, and technology deep-dives.
+
+| Topic | File |
+| ----- | ---- |
+| CQRS | [theory/cqrs.md](theory/cqrs.md) |
+| Domain-Driven Design | [theory/ddd.md](theory/ddd.md) |
+| DevOps & Infrastructure | [theory/devops.md](theory/devops.md) |
+| Event Sourcing | [theory/event-sourcing.md](theory/event-sourcing.md) |
+| Go Backend Architecture | [theory/go-backend.md](theory/go-backend.md) |
+| POS Systems & Gastronomy | [theory/pos.md](theory/pos.md) |
+| PostgreSQL | [theory/postgresql.md](theory/postgresql.md) |
+| React Frontend Architecture | [theory/react-frontend.md](theory/react-frontend.md) |
+| Security & Authentication | [theory/security.md](theory/security.md) |
+
 ## Templates
 
 Copy-paste-ready config files for new projects.
@@ -40,6 +59,7 @@ Copy-paste-ready config files for new projects.
 | File | Description |
 | ---- | ----------- |
 | [templates/.bashrc](templates/.bashrc) | Custom prompt with git branch |
+| [templates/.bash_aliases](templates/.bash_aliases) | Personal shell aliases (git, pnpm, navigation) |
 | [templates/Makefile](templates/Makefile) | Full-stack Makefile (dev, prod, checks, release) |
 | [templates/docker-compose.yml](templates/docker-compose.yml) | Compose starter (local dev, no TLS) |
 | [templates/docker-compose.prod.yml](templates/docker-compose.prod.yml) | Production Compose (reverse proxy + Let's Encrypt) |

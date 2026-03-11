@@ -1,4 +1,4 @@
-# admin — Copilot Instructions
+# handbook — Copilot Instructions
 
 Personal knowledge base for infrastructure, server setup and CLI workflows.
 Full agent instructions: see `AGENTS.md` in the project root.
