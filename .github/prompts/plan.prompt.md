@@ -19,6 +19,7 @@ You are in the **planning phase**. Your job is to analyse the task, research the
 
 - **No content changes.** Only create/write `plan.md`.
 - **Reference concrete files** so a follow-up session can start immediately.
+- **No pure context-loading steps.** Every step must produce output (create/modify/delete a file, update an index). Context loading belongs in the instructions below the plan, not in a checklist step.
 - **Keep it concise** — this is a knowledge base, not a code project. No boilerplate.
 
 ## Structure of plan.md
@@ -33,6 +34,11 @@ You are in the **planning phase**. Your job is to analyse the task, research the
 ## Affected files
 
 <List of files that will be created, modified, or deleted — with brief reason for each>
+
+## Context (reload every session)
+
+Before starting work, read this plan and all files listed under "Affected files".
+Context does not persist between sessions — always reload.
 
 ## Steps
 

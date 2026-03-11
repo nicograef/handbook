@@ -182,9 +182,11 @@ A three-phase workflow for complex features, designed for iterative agent execut
 **Phase 2 — `/progress`**: Agent converts plan into `progress.md` with checkbox tasks.
 - Groups tasks into sections with dependency analysis.
 - Includes parallelisation hints (which sections can run concurrently).
-- Embeds agent instructions directly in the file.
+- Embeds agent instructions directly in the file (including a mandatory context-loading block).
+- **No pure context-loading sections** — every section must produce real output (create/modify files, write code or docs). Context loading belongs in the agent instructions, not in a separate section.
 
 **Phase 3 — `/implement`**: Agent claims and works through one section.
+- **Loads context first** — reads `plan.md` and relevant reference files at the start of every session (context does not persist between sessions).
 - Claims section with 🔒 marker, marks ✅ when done.
 - Multiple agents can work in parallel on independent sections.
 - Each agent runs build/lint/tests after completing a section.
@@ -202,6 +204,8 @@ Co-ordination happens through file markers:
 | (none) | Available |
 | 🔒     | Claimed — agent working on it |
 | ✅     | Done — all tasks checked off |
+
+**Context per session:** Each `/implement` session loads its own context (`plan.md` + reference files) as a mandatory first step. There are no separate "context-loading sections" — every section must produce real output.
 
 This workflow is most valuable for **code projects with multi-step features**. For documentation-only projects, a lightweight variant works better.
 
