@@ -17,6 +17,7 @@ Step-by-step instructions (runbook-style).
 | Let's Encrypt with Docker Compose | [guides/letsencrypt-docker.md](guides/letsencrypt-docker.md) |
 | Nginx reverse proxy (HTTPS + SPA) | [guides/nginx-reverse-proxy.md](guides/nginx-reverse-proxy.md) |
 | GitHub Actions CI/CD | [guides/github-actions-cicd.md](guides/github-actions-cicd.md) |
+| GitHub Copilot Agent Mode setup | [guides/copilot-agent-setup.md](guides/copilot-agent-setup.md) |
 | Go backend development | [guides/go.md](guides/go.md) |
 | Java / Spring Boot backend | [guides/java-spring-boot.md](guides/java-spring-boot.md) |
 | React frontend development | [guides/react.md](guides/react.md) |
@@ -43,6 +44,8 @@ Copy-paste-ready config files for new projects.
 | [templates/docker-compose.yml](templates/docker-compose.yml) | Compose starter (local dev, no TLS) |
 | [templates/docker-compose.prod.yml](templates/docker-compose.prod.yml) | Production Compose (reverse proxy + Let's Encrypt) |
 | [templates/nginx-tls.conf](templates/nginx-tls.conf) | Nginx TLS reverse proxy config |
+| [templates/AGENTS.md](templates/AGENTS.md) | Agent instructions template for Copilot Agent Mode |
+| [templates/copilot-instructions.md](templates/copilot-instructions.md) | Copilot instructions template (`.github/copilot-instructions.md`) |
 
 ## Scripts
 
