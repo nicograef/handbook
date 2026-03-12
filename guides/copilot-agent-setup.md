@@ -171,30 +171,34 @@ description: "Creates a new API endpoint with all layers."
 7. Unit test
 ```
 
-### Plan → Progress → Implement workflow
+### Analyze → Plan → Implement workflow
 
 A three-phase workflow for complex features, designed for iterative agent execution:
 
-**Phase 1 — `/plan`**: Agent researches codebase, writes `docs/agents/<slug>/plan.md`.
-- Only research + plan, no code changes.
-- References concrete files and code locations.
+**Phase 1 — `/analyze`**: Agent researches codebase, writes `docs/agents/<slug>/analyze.md`.
+- Pure analysis — no code changes, no implementation planning.
+- Documents existing patterns, dependencies, and relevant code locations with precise `file:line` references.
+- An agent in a new session must be able to find every referenced location without further research.
 
-**Phase 2 — `/progress`**: Agent converts plan into `progress.md` with checkbox tasks.
-- Groups tasks into sections with dependency analysis.
+**Phase 2 — `/plan`**: Agent converts analysis into `plan.md` with implementation details and checkbox tasks.
+- Derives concrete implementation steps (the _what_ and _how_) from the analysis.
+- Groups tasks into sections (e.g. by layer: Domain, Repository, Handler, Frontend).
+- Each section has a `Kontext:` block listing exactly which files and line ranges the agent must read before starting that section.
 - Includes parallelisation hints (which sections can run concurrently).
-- Embeds agent instructions directly in the file (including a mandatory context-loading block).
-- **No pure context-loading sections** — every section must produce real output (create/modify files, write code or docs). Context loading belongs in the agent instructions, not in a separate section.
+- Embeds agent instructions directly in the file (context loading, section claiming, task workflow, commit message).
+- **No pure context-loading sections** — every section must produce real output. Context loading belongs in the per-section `Kontext:` block, not in a separate section.
 
 **Phase 3 — `/implement`**: Agent claims and works through one section.
-- **Loads context first** — reads `plan.md` and relevant reference files at the start of every session (context does not persist between sessions).
-- Claims section with 🔒 marker, marks ✅ when done.
+- Selects the next available section, claims it with 🔒.
+- **Loads context from the section's `Kontext:` block** — reads exactly those files, not more.
+- Follows the agent instructions embedded in `plan.md` for task workflow and completion.
 - Multiple agents can work in parallel on independent sections.
 - Each agent runs build/lint/tests after completing a section.
 
 ```
 docs/agents/<slug>/
-  plan.md        # What to do and why
-  progress.md    # Atomic task list with checkboxes
+  analyze.md     # Analysis — what exists, patterns, dependencies
+  plan.md        # Atomic task list with per-section context
 ```
 
 Co-ordination happens through file markers:
@@ -205,7 +209,7 @@ Co-ordination happens through file markers:
 | 🔒     | Claimed — agent working on it |
 | ✅     | Done — all tasks checked off |
 
-**Context per session:** Each `/implement` session loads its own context (`plan.md` + reference files) as a mandatory first step. There are no separate "context-loading sections" — every section must produce real output.
+**Context per section:** Each section in `plan.md` has a `Kontext:` block that lists the exact files and line ranges needed. The agent reads only those — no blanket "load everything" step. There are no separate "context-loading sections" — every section must produce real output.
 
 This workflow is most valuable for **code projects with multi-step features**. For documentation-only projects, a lightweight variant works better.
 
@@ -213,12 +217,12 @@ This workflow is most valuable for **code projects with multi-step features**. F
 
 For smaller projects or documentation repos, collapse the three phases into one:
 
-1. A single `/plan` prompt creates `plan.md` in the project root with goal, affected files, and a **checkbox task list** (plan + progress combined).
+1. A single `/plan` prompt creates `plan.md` in the project root with goal, affected files, and a **checkbox task list** (analysis + task breakdown combined).
 2. The agent (or user) works through the checklist step by step, ticking off each item.
 3. After all steps: verify links, confirm index files are up to date.
 4. Delete `plan.md` when done.
 
-No separate `/progress` or `/implement`, no `docs/agents/` directory, no parallelisation markers. The discipline of **research → plan → execute → verify → clean up** is preserved, with minimal overhead.
+No `/analyze` + `/plan` + `/implement` split, no `docs/agents/` directory, no parallelisation markers. The discipline of **research → plan → execute → verify → clean up** is preserved, with minimal overhead.
 
 ## Best Practices Summary
 

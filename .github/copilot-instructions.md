@@ -13,3 +13,4 @@ Full agent instructions: see `AGENTS.md` in the project root.
 6. Templates must be functional as-is, with commented-out optional sections.
 7. Update `README.md` when adding, removing or renaming files.
 8. After renaming or deleting a file, grep for all references and update them.
+9. For multi-file changes, use `/plan` first — research, plan, then execute. No ad-hoc edits across files.
