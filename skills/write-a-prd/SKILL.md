@@ -1,41 +1,70 @@
 ---
 name: write-a-prd
 description: >-
-  Create a PRD through user interview, codebase exploration, and module design,
-  then save as a local Markdown file. Use when user wants to write a PRD, create
-  a product requirements document, or plan a new feature.
+  Create a PRD through structured clarification, codebase exploration, and
+  module design, then save as a local Markdown file. Use when user wants to
+  write a PRD, create a product requirements document, or plan a new feature.
 ---
 
 # Write a PRD
 
 You may skip steps if you don't consider them necessary.
 
-1. Ask the user for a long, detailed description of the problem they want to
-   solve and any potential ideas for solutions.
+## Workflow
 
-2. Explore the repo to verify their assertions and understand the current state
-   of the codebase.
+### 1. Gather the problem description
 
-3. Interview the user relentlessly about every aspect of this plan until you
-   reach a shared understanding. Walk down each branch of the design tree,
-   resolving dependencies between decisions one-by-one.
+Ask the user for a long, detailed description of the problem they want to
+solve and any potential ideas for solutions.
 
-4. Sketch out the major modules you will need to build or modify to complete
-   the implementation. Actively look for opportunities to extract deep modules
-   that can be tested in isolation.
+### 2. Explore the codebase
 
-   A deep module (as opposed to a shallow module) is one which encapsulates a
-   lot of functionality in a simple, testable interface which rarely changes.
+Explore the repo to verify their assertions and understand the current state
+of the codebase.
 
-   Check with the user that these modules match their expectations. Check with
-   the user which modules they want tests written for.
+### 3. Clarify ambiguities
 
-5. Once you have a complete understanding of the problem and solution, use the
-   template below to write the PRD. Save it to `docs/prds/prd-<name>.md`
-   (create the directory if it doesn't exist). Use a short kebab-case name
-   derived from the feature (e.g. `prd-user-onboarding.md`).
+Resolve unknowns through **1–3 rounds** of structured questions.
 
-<prd-template>
+**Rules:**
+
+- **Explore before asking.** If a question can be answered by reading the
+  codebase, read the codebase instead of asking the user.
+- **Always recommend.** Every question must include a recommended answer with
+  brief reasoning.
+- **Structured over free-text.** Use concrete options. Convert open-ended
+  questions to multiple-choice with an "Other (specify)" escape hatch.
+- **Max 5 questions per round.** Prioritise the most impactful unknowns.
+- **Stop when resolved.** If all ambiguities are clear after 1 round, stop.
+  Continue only if unresolved branches remain.
+
+If the user declines to answer: proceed with recommended defaults and document
+each assumption in the PRD as a clearly marked callout (e.g. blockquote
+prefixed with **Assumption:**).
+
+### 4. Design modules
+
+Sketch out the major modules you will need to build or modify to complete
+the implementation. Actively look for opportunities to extract deep modules
+that can be tested in isolation.
+
+A deep module (as opposed to a shallow module) is one which encapsulates a
+lot of functionality in a simple, testable interface which rarely changes.
+
+Check with the user that these modules match their expectations. Check with
+the user which modules they want tests written for.
+
+### 5. Write the PRD
+
+Once you have a complete understanding of the problem and solution, use the
+template below to write the PRD. Save it to `docs/prds/prd-<name>.md`
+(create the directory if it doesn't exist). Use a short kebab-case name
+derived from the feature (e.g. `prd-user-onboarding.md`).
+
+## PRD Template
+
+```markdown
+# PRD: <Feature Name>
 
 ## Problem Statement
 
@@ -47,7 +76,8 @@ The solution to the problem, from the user's perspective.
 
 ## User Stories
 
-A LONG, numbered list of user stories. Each user story should be in the format of:
+A LONG, numbered list of user stories. Each user story should be in the format
+of:
 
 1. As an <actor>, I want a <feature>, so that <benefit>
 
@@ -85,5 +115,4 @@ A description of the things that are out of scope for this PRD.
 ## Further Notes
 
 Any further notes about the feature.
-
-</prd-template>
+```

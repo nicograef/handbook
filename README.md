@@ -89,9 +89,8 @@ Reusable agent skills — copy individual skill directories into project repos a
 | ------------------------ | ------------------------------------------------------------------------------ | ----------------------------------------------------------------------- |
 | Clarify                  | [skills/clarify/](skills/clarify/)                                             | Structured clarifying questions before acting — never assume             |
 | Code Audit               | [skills/code-audit/](skills/code-audit/)                                       | Cross-layer consistency, simplification, and repo verification audit    |
-| Create Plan              | [skills/create-plan/](skills/create-plan/)                                     | Research context, clarify unknowns, create structured plan with tasks   |
-| Write a PRD              | [skills/write-a-prd/](skills/write-a-prd/)                                     | Interactive PRD creation → local `docs/prds/` file                      |
-| PRD to Plan              | [skills/prd-to-plan/](skills/prd-to-plan/)                                     | Turn a PRD into phased implementation plan (tracer bullets)             |
+| Create Plan              | [skills/create-plan/](skills/create-plan/)                                     | Plan from PRD or task description — vertical slices + acceptance criteria |
+| Write a PRD              | [skills/write-a-prd/](skills/write-a-prd/)                                     | Structured PRD creation → local `docs/prds/` file                       |
 | Implement Plan           | [skills/implement-plan/](skills/implement-plan/)                               | Execute a plan.md one section at a time — sequential task completion    |
 | TDD                      | [skills/tdd/](skills/tdd/)                                                     | Red-green-refactor with vertical slices + reference files               |
 | UX Review                | [skills/ux-review/](skills/ux-review/)                                         | Mobile UX, UI consistency, workflow friction, and terminology review    |
