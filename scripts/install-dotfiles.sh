@@ -51,8 +51,8 @@ git config --global rerere.enabled true
 if command -v gh >/dev/null 2>&1; then
   log "gh already installed: $(gh --version | head -1)"
 else
-  GH_VERSION="$(curl -fsSL https://api.github.com/repos/cli/cli/releases/latest | grep '"tag_name"' | sed 's/.*"v\(.*\)".*/\1/')"
-  if [[ -n "$GH_VERSION" ]]; then
+  GH_VERSION="$(curl -fsSL https://api.github.com/repos/cli/cli/releases/latest | grep '"tag_name"' | sed 's/.*"v\(.*\)".*/\1/')" || true
+  if [[ -n "${GH_VERSION:-}" ]]; then
     log "Installing gh ${GH_VERSION} to ~/.local/bin…"
     mkdir -p "$HOME/.local/bin"
     TMP="$(mktemp -d)"
