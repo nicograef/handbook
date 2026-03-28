@@ -80,3 +80,20 @@ Reusable bash scripts.
 | [scripts/setup-server.sh](scripts/setup-server.sh)         | Provision a fresh Debian/Ubuntu VPS (user, SSH, UFW, fail2ban, Docker) |
 | [scripts/prod-init.sh](scripts/prod-init.sh)               | First-time production deploy (cert request + stack start)              |
 | [scripts/install-dotfiles.sh](scripts/install-dotfiles.sh) | Bootstrap shell config in a new Codespace or VM                        |
+
+## Skills
+
+Reusable agent skills — copy individual skill directories into project repos as needed.
+
+| Skill                    | Directory                                                                      | Description                                                             |
+| ------------------------ | ------------------------------------------------------------------------------ | ----------------------------------------------------------------------- |
+| Grill for Specs          | [skills/grill-for-specs/](skills/grill-for-specs/)                             | Structured clarifying questions before acting — never assume             |
+| Write a PRD              | [skills/write-a-prd/](skills/write-a-prd/)                                     | Interactive PRD creation → local `docs/prds/` file                      |
+| PRD to Plan              | [skills/prd-to-plan/](skills/prd-to-plan/)                                     | Turn a PRD into phased implementation plan (tracer bullets)             |
+| TDD                      | [skills/tdd/](skills/tdd/)                                                     | Red-green-refactor with vertical slices + reference files               |
+| Ubiquitous Language      | [skills/ubiquitous-language/](skills/ubiquitous-language/)                      | Extract DDD glossary → `UBIQUITOUS_LANGUAGE.md`                         |
+| Design Interface         | [skills/design-interface/](skills/design-interface/)                            | "Design It Twice" — parallel sub-agents generate radically different APIs |
+| Improve Architecture     | [skills/improve-architecture/](skills/improve-architecture/)                   | Find deepening opportunities → local `docs/rfcs/` RFC                   |
+| PDF Extract              | [skills/pdf-extract/](skills/pdf-extract/)                                     | Extract text, tables, metadata from PDFs (with OCR fallback)            |
+| Word Extract             | [skills/docx-extract/](skills/docx-extract/)                                   | Extract text, tables, images, metadata from .docx files                 |
+| Excel Extract            | [skills/xlsx-extract/](skills/xlsx-extract/)                                   | Extract data, formulas, metadata from .xlsx workbooks                   |
