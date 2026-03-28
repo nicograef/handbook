@@ -50,6 +50,5 @@
 
 ## Git Workflow
 
-- **Commit messages:** Conventional Commits in English (`feat:`, `fix:`, `refactor:`, `docs:`, `test:`)
-- **No auto-commit.** Agent proposes commit message, user commits.
+- **Commit messages:** After completing a task, always propose a conventional commit message (`feat:`, `fix:`, `refactor:`, `docs:`, `test:`, `chore:`) with a concise subject line and bullet-point body for multi-file changes. Do not commit — only output the message.
 - **No `--force` push or `--no-verify`.**
