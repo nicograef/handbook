@@ -7,8 +7,12 @@
 #   curl -sL <raw-url> | bash
 #
 # What it does:
-#   1. Symlinks .bashrc and .bash_aliases into $HOME
+#   1. Symlinks .bash_aliases into $HOME
 #   2. Sources the new config in the current shell
+#
+# Note: We intentionally do NOT replace .bashrc. The Codespaces default
+# already includes a git-branch prompt, color support, and sources
+# ~/.bash_aliases automatically. Overwriting it would lose those features.
 set -euo pipefail
 
 DOTFILES_DIR="$(cd "$(dirname "$0")/.." && pwd)"
@@ -17,7 +21,6 @@ log() { printf '\033[1;34m▸ %s\033[0m\n' "$1"; }
 
 # ── Symlink dotfiles ────────────────────────────────────────────────────────
 declare -A FILES=(
-  ["templates/.bashrc"]=".bashrc"
   ["templates/.bash_aliases"]=".bash_aliases"
 )
 

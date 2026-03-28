@@ -6,15 +6,18 @@ to symlink config files into `$HOME`.
 
 ## Files used
 
-| Source in this repo | Symlinked to | Content |
-| ------------------- | ------------ | ------- |
-| `templates/.bashrc` | `~/.bashrc` | Custom prompt (git branch) + base aliases |
-| `templates/.bash_aliases` | `~/.bash_aliases` | Personal aliases (`gfp`, `gcm`, `p`, …) |
+| Source in this repo       | Symlinked to      | Content                                      |
+| ------------------------- | ----------------- | -------------------------------------------- |
+| `templates/.bash_aliases` | `~/.bash_aliases` | Personal aliases (`gfp`, `gcm`, `m`, `p`, …) |
+
+> **Why no `.bashrc`?** The Codespaces default already includes a git-branch
+> prompt, color support, and `source ~/.bash_aliases`. Replacing it would lose
+> those features.
 
 ## Setup (one-time)
 
 1. Go to **github.com → Settings → Codespaces**.
-2. Under **Dotfiles**, check *"Automatically install dotfiles"*.
+2. Under **Dotfiles**, check _"Automatically install dotfiles"_.
 3. Select this repository (`nicograef/handbook`).
 
 Every new Codespace will now clone this repo and run `scripts/install-dotfiles.sh`.
@@ -55,7 +58,7 @@ source ~/.bashrc
 
 - **Git config** – uncomment the `git config` lines in `install-dotfiles.sh`
   or add a `.gitconfig` to `templates/` and extend the `FILES` map.
-- **VS Code settings** – use *Settings Sync* (syncs extensions, keybindings,
+- **VS Code settings** – use _Settings Sync_ (syncs extensions, keybindings,
   editor settings via your GitHub account). This is complementary to dotfiles.
 - **Extra tools per project** – add Dev Container Features in
   `.devcontainer/devcontainer.json` (e.g. Node, Go, Docker-in-Docker). These
