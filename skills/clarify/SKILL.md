@@ -1,5 +1,5 @@
 ---
-name: grill-for-specs
+name: clarify
 description: >-
   Prevents the agent from making assumptions by forcing structured clarifying
   questions before acting. Use when the user wants thorough spec-gathering,
@@ -7,7 +7,7 @@ description: >-
   task type.
 ---
 
-# Grill for Specs
+# Clarify
 
 Never assume — always ask. Before acting on any task, identify ambiguities and
 unknowns, then resolve them through structured questions with the AskQuestion

@@ -87,7 +87,7 @@ Reusable agent skills — copy individual skill directories into project repos a
 
 | Skill                    | Directory                                                                      | Description                                                             |
 | ------------------------ | ------------------------------------------------------------------------------ | ----------------------------------------------------------------------- |
-| Grill for Specs          | [skills/grill-for-specs/](skills/grill-for-specs/)                             | Structured clarifying questions before acting — never assume             |
+| Clarify                  | [skills/clarify/](skills/clarify/)                                             | Structured clarifying questions before acting — never assume             |
 | Write a PRD              | [skills/write-a-prd/](skills/write-a-prd/)                                     | Interactive PRD creation → local `docs/prds/` file                      |
 | PRD to Plan              | [skills/prd-to-plan/](skills/prd-to-plan/)                                     | Turn a PRD into phased implementation plan (tracer bullets)             |
 | TDD                      | [skills/tdd/](skills/tdd/)                                                     | Red-green-refactor with vertical slices + reference files               |
