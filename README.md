@@ -59,10 +59,15 @@ Copy-paste-ready config files for new projects.
 | File                                                                   | Description                                                       |
 | ---------------------------------------------------------------------- | ----------------------------------------------------------------- |
 | [templates/.bash_aliases](templates/.bash_aliases)                     | Personal shell aliases (git, make, pnpm, navigation)              |
+| [templates/.editorconfig](templates/.editorconfig)                     | EditorConfig for consistent formatting (Go tabs, JS/TS 2-space)   |
+| [templates/.gitignore](templates/.gitignore)                           | Universal .gitignore (OS, IDE, env, build artifacts, logs)        |
+| [templates/devcontainer.json](templates/devcontainer.json)             | Dev Container config with commented feature blocks per stack      |
 | [templates/Makefile](templates/Makefile)                               | Full-stack Makefile (dev, prod, checks, release)                  |
 | [templates/docker-compose.yml](templates/docker-compose.yml)           | Compose starter (local dev, no TLS)                               |
 | [templates/docker-compose.prod.yml](templates/docker-compose.prod.yml) | Production Compose (reverse proxy + Let's Encrypt)                |
 | [templates/nginx-tls.conf](templates/nginx-tls.conf)                   | Nginx TLS reverse proxy config                                    |
+| [templates/setup-dev-tools.sh](templates/setup-dev-tools.sh)           | Dev tool setup script skeleton (Go, Node/pnpm blocks)             |
+| [templates/ci.yml](templates/ci.yml)                                   | GitHub Actions CI workflow (Go, Node, integration tests)          |
 | [templates/AGENTS.md](templates/AGENTS.md)                             | Agent instructions template for Copilot Agent Mode                |
 | [templates/copilot-instructions.md](templates/copilot-instructions.md) | Copilot instructions template (`.github/copilot-instructions.md`) |
 

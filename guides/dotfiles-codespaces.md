@@ -10,6 +10,13 @@ to symlink config files into `$HOME`.
 | ------------------------- | ----------------- | -------------------------------------------- |
 | `templates/.bash_aliases` | `~/.bash_aliases` | Personal aliases (`gfp`, `gcm`, `m`, `p`, …) |
 
+The script also:
+
+- Sets **git config** defaults (`pull.rebase`, `push.autoSetupRemote`,
+  `rerere.enabled`, `init.defaultBranch`)
+- Installs **gh CLI** if missing (binary to `~/.local/bin`, no sudo needed;
+  already pre-installed in Codespaces)
+
 > **Why no `.bashrc`?** The Codespaces default already includes a git-branch
 > prompt, color support, and `source ~/.bash_aliases`. Replacing it would lose
 > those features.
@@ -56,10 +63,15 @@ source ~/.bashrc
 
 ## Extending
 
-- **Git config** – uncomment the `git config` lines in `install-dotfiles.sh`
-  or add a `.gitconfig` to `templates/` and extend the `FILES` map.
+- **Git config** – `install-dotfiles.sh` already sets global defaults
+  (`pull.rebase`, `push.autoSetupRemote`, `rerere.enabled`,
+  `init.defaultBranch`). To add more, append `git config --global` lines to the
+  script.
+- **gh CLI** – automatically installed by `install-dotfiles.sh` if missing
+  (binary to `~/.local/bin`). Pre-installed in Codespaces.
 - **VS Code settings** – use _Settings Sync_ (syncs extensions, keybindings,
   editor settings via your GitHub account). This is complementary to dotfiles.
-- **Extra tools per project** – add Dev Container Features in
-  `.devcontainer/devcontainer.json` (e.g. Node, Go, Docker-in-Docker). These
-  are project-scoped, not global.
+- **Extra tools per project** – use
+  [`templates/devcontainer.json`](../templates/devcontainer.json) as a starting
+  point for `.devcontainer/devcontainer.json`. Uncomment the Dev Container
+  Features your project needs (Go, Node, Docker-in-Docker).

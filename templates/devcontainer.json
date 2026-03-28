@@ -1,0 +1,57 @@
+// Dev Container configuration – copy to .devcontainer/devcontainer.json
+// Docs: https://containers.dev/implementors/json_reference/
+{
+  "name": "my-project-dev", // TODO: rename to your project
+
+  "image": "mcr.microsoft.com/devcontainers/base:ubuntu-24.04",
+
+  // ── Dev Container Features ────────────────────────────────────────────────
+  // Uncomment the stacks you need. Full list: https://containers.dev/features
+  "features": {
+    // -- Go --
+    // "ghcr.io/devcontainers/features/go:1": {
+    //   "version": "1.26"  // TODO: set your Go version
+    // },
+    // -- Node --
+    // "ghcr.io/devcontainers/features/node:1": {
+    //   "version": "24"  // TODO: set your Node version
+    // },
+    // -- Docker-in-Docker (for docker compose in dev) --
+    // "ghcr.io/devcontainers/features/docker-in-docker:2": {}
+  },
+
+  // ── Post-create setup ─────────────────────────────────────────────────────
+  // Runs once after the container is created. Install project-specific tools.
+  "postCreateCommand": "bash scripts/setup-dev-tools.sh",
+
+  "customizations": {
+    // ── Multi-repo access (Codespaces only) ─────────────────────────────────
+    // Grant access to additional repos inside Codespaces.
+    // "codespaces": {
+    //   "repositories": {
+    //     "your-org/other-repo": {
+    //       "permissions": {
+    //         "contents": "write"
+    //       }
+    //     }
+    //   }
+    // },
+
+    "vscode": {
+      "settings": {
+        "terminal.integrated.defaultProfile.linux": "bash"
+      },
+      "extensions": [
+        // -- Go --
+        // "golang.Go",
+
+        // -- Node / TypeScript / React --
+        // "dbaeumer.vscode-eslint",
+        // "esbenp.prettier-vscode",
+
+        // -- General --
+        "editorconfig.editorconfig"
+      ]
+    }
+  }
+}

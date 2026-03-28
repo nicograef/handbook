@@ -1,0 +1,188 @@
+# CI workflow template – copy to .github/workflows/ci.yml
+# All jobs are active. Delete the ones you don't need.
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  # ── Change Detection ───────────────────────────────────────────────────────
+  # Only run jobs whose files actually changed.
+  changes:
+    runs-on: ubuntu-latest
+    outputs:
+      backend: ${{ steps.changes.outputs.backend }}
+      frontend: ${{ steps.changes.outputs.frontend }}
+      database: ${{ steps.changes.outputs.database }}
+    steps:
+      - uses: actions/checkout@v5
+      - name: Check for changes
+        uses: dorny/paths-filter@v3
+        id: changes
+        with:
+          filters: |
+            backend:
+              - 'backend/**'
+            frontend:
+              - 'frontend/**'
+            database:
+              - 'database/**'
+
+  # ── Go Backend ─────────────────────────────────────────────────────────────
+  backend-ci:
+    needs: changes
+    if: ${{ needs.changes.outputs.backend == 'true' }}
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./backend # TODO: adjust working directory
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-go@v6
+        with:
+          go-version: 1.26.0 # TODO: set your Go version
+
+      - name: Download dependencies
+        run: go mod download
+
+      - name: Verify dependencies
+        run: go mod verify
+
+      - name: Check format
+        run: |
+          go install golang.org/x/tools/cmd/goimports@latest
+          if [ "$(goimports -l . | wc -l)" -gt 0 ]; then
+            echo "Code is not properly formatted:"
+            goimports -l .
+            exit 1
+          fi
+
+      - name: Vet
+        run: go vet ./...
+
+      - name: Build
+        run: go build -v ./...
+
+      - name: Test
+        run: go test -tags=unit -v -race -coverprofile=coverage.out ./...
+
+      - name: Check test coverage
+        run: |
+          go tool cover -func=coverage.out
+          COVERAGE=$(go tool cover -func=coverage.out | grep total | awk '{print $3}' | sed 's/%//')
+          echo "Total coverage: ${COVERAGE}%"
+
+  # ── golangci-lint (separate job for caching) ───────────────────────────────
+  backend-golangci:
+    needs: changes
+    if: ${{ needs.changes.outputs.backend == 'true' }}
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./backend # TODO: adjust working directory
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-go@v6
+        with:
+          go-version: 1.26.0 # TODO: set your Go version
+
+      - name: golangci-lint
+        uses: golangci/golangci-lint-action@v8
+        with:
+          version: latest
+          working-directory: ./backend # TODO: adjust working directory
+
+  # ── Node / pnpm Frontend ──────────────────────────────────────────────────
+  frontend-ci:
+    needs: changes
+    if: ${{ needs.changes.outputs.frontend == 'true' }}
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./frontend # TODO: adjust working directory
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10 # TODO: set your pnpm version
+          run_install: false
+
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 24 # TODO: set your Node version
+          cache: "pnpm"
+          cache-dependency-path: frontend/pnpm-lock.yaml # TODO: adjust path
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Check formatting
+        run: pnpm run format:check
+
+      - name: Run lint
+        run: pnpm run lint
+
+      - name: Run tests
+        run: pnpm run test
+
+      - name: Build
+        run: pnpm run build
+
+  # ── Integration Tests (Go + PostgreSQL) ────────────────────────────────────
+  backend-integration-tests:
+    needs: changes
+    if: ${{ (needs.changes.outputs.backend == 'true') || (needs.changes.outputs.database == 'true') }}
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_USER: admin
+          POSTGRES_PASSWORD: admin
+          POSTGRES_DB: mydb # TODO: set your database name
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    defaults:
+      run:
+        working-directory: ./backend # TODO: adjust working directory
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-go@v6
+        with:
+          go-version: 1.26.0 # TODO: set your Go version
+
+      - name: Download dependencies
+        run: go mod download
+
+      - name: Install golang-migrate
+        run: |
+          curl -fsSL "https://github.com/golang-migrate/migrate/releases/download/v4.19.1/migrate.linux-amd64.tar.gz" \
+            | tar -xz -C /usr/local/bin
+
+      - name: Run database migrations up
+        working-directory: ./database # TODO: adjust path to migrations
+        run: migrate -path ./migrations -database "postgres://admin:admin@localhost:5432/mydb?sslmode=disable" up
+
+      - name: Run integration tests
+        env:
+          POSTGRES_HOST: localhost
+          POSTGRES_PORT: "5432"
+          POSTGRES_USER: admin
+          POSTGRES_PASSWORD: admin
+          POSTGRES_DBNAME: mydb # TODO: set your database name
+          JWT_SECRET: test-secret # TODO: set test secrets your app needs
+        run: go test -tags=integration -v -race ./...
+
+      - name: Run database migrations down
+        if: always()
+        working-directory: ./database # TODO: adjust path to migrations
+        run: migrate -path ./migrations -database "postgres://admin:admin@localhost:5432/mydb?sslmode=disable" down -all
