@@ -123,3 +123,10 @@ docker run --rm -v myapp_letsencrypt:/etc/letsencrypt alpine \
 # common failure: DNS not pointing to this server
 curl -4 http://example.com/.well-known/acme-challenge/test
 ```
+
+---
+
+See also:
+- [guides/nginx-reverse-proxy.md](nginx-reverse-proxy.md) — nginx TLS config patterns
+- [templates/docker-compose.prod.yml](../templates/docker-compose.prod.yml) — production Compose template
+- [scripts/prod-init.sh](../scripts/prod-init.sh) — first-time deploy script

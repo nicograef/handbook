@@ -432,3 +432,9 @@ For smaller projects or documentation repos, collapse the three phases into one:
 10. **Don't over-layer** — add contextual instructions, agents, and prompts only when they solve a real pain point. A single good `AGENTS.md` beats four mediocre files.
 11. **Keep cross-references alive** — if `AGENTS.md` links to a file, that file must exist. Broken references erode agent trust in the instructions.
 12. **Test the setup** — ask the agent to explain the project rules back to you. If it gets something wrong, the instructions need clarification.
+
+---
+
+See also:
+- [templates/AGENTS.md](../templates/AGENTS.md) — agent instructions template
+- [templates/copilot-instructions.md](../templates/copilot-instructions.md) — copilot instructions template

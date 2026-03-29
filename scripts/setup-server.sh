@@ -3,6 +3,7 @@
 #
 # Usage (run as root on the new server):
 #   ssh root@host 'bash -s' < setup-server.sh
+#   ssh root@host 'bash -s -- --dry-run' < setup-server.sh   # preview only
 #
 # What it does:
 #   1. System update & base packages
@@ -22,9 +23,30 @@ set -euo pipefail
 USERNAME="${USERNAME:-nico}"
 SSH_PUBLIC_KEY="${SSH_PUBLIC_KEY:-}"              # paste your pubkey here or export before running
 EXTRA_UFW_PORTS="${EXTRA_UFW_PORTS:-80/tcp 443/tcp}"  # space-separated
+DRY_RUN="${DRY_RUN:-false}"                      # set to "true" or pass --dry-run
 # ─────────────────────────────────────────────────────────────────────────────
 
 log() { printf '\n\033[1;34m▸ %s\033[0m\n' "$1"; }
+
+run() {
+  if [[ "$DRY_RUN" == "true" ]]; then
+    printf '  \033[0;33m[DRY-RUN]\033[0m %s\n' "$*"
+  else
+    "$@"
+  fi
+}
+
+# ── Parse flags ──────────────────────────────────────────────────────────────
+for arg in "$@"; do
+  case "$arg" in
+    --dry-run) DRY_RUN="true" ;;
+    *) echo "Unknown flag: $arg" >&2; exit 1 ;;
+  esac
+done
+
+if [[ "$DRY_RUN" == "true" ]]; then
+  printf '\n\033[1;33m⚠ DRY-RUN MODE — no changes will be made\033[0m\n'
+fi
 
 # ── Pre-flight checks ───────────────────────────────────────────────────────
 if [[ $EUID -ne 0 ]]; then
@@ -39,10 +61,10 @@ fi
 
 # ── 1. System update & base packages ────────────────────────────────────────
 log "Updating system"
-apt update -y
-apt upgrade -y
-apt dist-upgrade -y
-apt install -y \
+run apt update -y
+run apt upgrade -y
+run apt dist-upgrade -y
+run apt install -y \
   curl wget git make vim unzip \
   ca-certificates gnupg \
   ufw fail2ban
@@ -52,9 +74,9 @@ log "Creating user '$USERNAME'"
 if id "$USERNAME" &>/dev/null; then
   echo "User '$USERNAME' already exists – skipping."
 else
-  adduser --disabled-password --gecos "" "$USERNAME"
+  run adduser --disabled-password --gecos "" "$USERNAME"
 fi
-usermod -aG sudo "$USERNAME"
+run usermod -aG sudo "$USERNAME"
 
 # allow sudo without password (optional – remove if you prefer password prompt)
 echo "$USERNAME ALL=(ALL) NOPASSWD:ALL" > "/etc/sudoers.d/$USERNAME"
@@ -93,17 +115,17 @@ systemctl restart sshd
 
 # ── 4. UFW firewall ─────────────────────────────────────────────────────────
 log "Configuring UFW"
-ufw default deny incoming
-ufw default allow outgoing
-ufw allow ssh
-ufw limit ssh
+run ufw default deny incoming
+run ufw default allow outgoing
+run ufw allow ssh
+run ufw limit ssh
 
 for port in $EXTRA_UFW_PORTS; do
-  ufw allow "$port"
+  run ufw allow "$port"
 done
 
-ufw --force enable
-systemctl enable ufw
+run ufw --force enable
+run systemctl enable ufw
 
 # ── 5. fail2ban ─────────────────────────────────────────────────────────────
 log "Configuring fail2ban"
@@ -115,8 +137,8 @@ maxretry = 5
 bantime  = 3600
 EOF
 
-systemctl enable fail2ban
-systemctl restart fail2ban
+run systemctl enable fail2ban
+run systemctl restart fail2ban
 
 # ── 6. Docker ───────────────────────────────────────────────────────────────
 log "Installing Docker"
@@ -134,10 +156,10 @@ REPO_URL="https://download.docker.com/linux/${ID}"
 echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] ${REPO_URL} ${VERSION_CODENAME} stable" \
   | tee /etc/apt/sources.list.d/docker.list > /dev/null
 
-apt update -y
-apt install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
+run apt update -y
+run apt install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
 
-usermod -aG docker "$USERNAME"
+run usermod -aG docker "$USERNAME"
 
 # ── Done ─────────────────────────────────────────────────────────────────────
 log "Setup complete"

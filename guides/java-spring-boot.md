@@ -182,3 +182,9 @@ Key rules:
 - **`@MockitoBean`** in `@WebMvcTest`; **`@Mock` + manual constructor** in plain unit tests
 - **Constructor injection** is what makes unit tests work without Spring
 - One test class per production class, same package structure in `src/test`
+
+---
+
+See also:
+- [guides/docker-multi-stage-builds.md](docker-multi-stage-builds.md) — multi-stage builds for Java
+- [guides/github-actions-cicd.md](github-actions-cicd.md) — Java + Maven CI job

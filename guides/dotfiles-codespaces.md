@@ -75,3 +75,10 @@ source ~/.bashrc
   [`templates/devcontainer.json`](../templates/devcontainer.json) as a starting
   point for `.devcontainer/devcontainer.json`. Uncomment the Dev Container
   Features your project needs (Go, Node, Docker-in-Docker).
+
+---
+
+See also:
+- [templates/.bash_aliases](../templates/.bash_aliases) — shell aliases template
+- [templates/devcontainer.json](../templates/devcontainer.json) — Dev Container template
+- [scripts/install-dotfiles.sh](../scripts/install-dotfiles.sh) — dotfile bootstrap script

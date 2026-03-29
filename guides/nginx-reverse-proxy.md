@@ -113,3 +113,31 @@ docker exec <nginx-container> nginx -t
 # verify headers
 curl -I https://example.com
 ```
+
+## Troubleshooting
+
+```bash
+# 502 Bad Gateway — backend not reachable
+# → Check if the backend container is running: docker compose ps
+# → Verify the proxy_pass hostname matches the Compose service name
+# → Ensure both containers share the same Docker network
+
+# SSL certificate not found / nginx won't start
+# → Check cert paths: ls /etc/letsencrypt/live/<domain>/
+# → First-time setup? Run cert request first (see letsencrypt-docker.md)
+
+# Mixed content warnings (HTTPS page loads HTTP resources)
+# → Ensure proxy_set_header X-Forwarded-Proto $scheme; is set
+# → Check app is reading the X-Forwarded-Proto header
+
+# "too many redirects"
+# → HTTP→HTTPS redirect loop. Check that the backend isn't also redirecting.
+# → Verify listen 80 block only handles ACME + redirect, nothing else.
+```
+
+---
+
+See also:
+- [templates/nginx-tls.conf](../templates/nginx-tls.conf) — full nginx TLS config template
+- [guides/letsencrypt-docker.md](letsencrypt-docker.md) — TLS certificate setup
+- [templates/docker-compose.prod.yml](../templates/docker-compose.prod.yml) — production Compose with nginx

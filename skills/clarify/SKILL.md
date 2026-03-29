@@ -10,10 +10,13 @@ description: >-
 # Clarify
 
 Never assume — always ask. Before acting on any task, identify ambiguities and
-unknowns, then resolve them through structured questions with the
-vscode_askQuestions tool. Walk down each branch of the decision tree, resolving
-dependencies
-between decisions one-by-one.
+unknowns, then resolve them through structured questions. Walk down each
+branch of the decision tree, resolving dependencies between decisions
+one-by-one.
+
+When a structured question tool is available (e.g. a tool that presents
+multiple-choice options to the user), prefer it over plain-text questions.
+Fall back to conversational questions only if no such tool exists.
 
 ## Workflow
 
@@ -51,9 +54,9 @@ Then proceed with the task.
 2. **Explore before asking.** If a question can be answered by exploring the
    codebase, explore the codebase instead of asking the user. Only ask when
    the answer requires a human judgment call.
-3. **Structured over free-text.** Use the vscode_askQuestions tool with concrete
-   options. If a question seems open-ended, convert it to multiple-choice with
-   an "Other (specify)" escape hatch.
+3. **Structured over free-text.** Present concrete options (multiple-choice
+   with an "Other (specify)" escape hatch). Use a structured question tool
+   if available; otherwise format options clearly in the conversation.
 4. **Context before question.** The prompt should explain *why* the question
    matters so the user can make an informed choice.
 5. **Group related choices.** Use `allow_multiple: true` when the user may
@@ -73,8 +76,8 @@ If the user declines to answer or says "just do it":
 ## Constraints
 
 - Max **5 questions** per round.
-- Always use the **vscode_askQuestions tool** when available; fall back to
-  conversational questions only if the tool is unavailable.
+- Always prefer a **structured question tool** when available; fall back to
+  conversational questions only if no such tool exists.
 - Do not repeat questions the user has already answered.
 
 ## Quality

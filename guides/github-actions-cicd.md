@@ -215,3 +215,28 @@ A frontend-only commit no longer triggers backend tests, keeping CI fast.
 | Maven | `cache: maven` in `actions/setup-java` |
 | pnpm | `cache: pnpm` + `cache-dependency-path` in `actions/setup-node` |
 | npm | `cache: npm` in `actions/setup-node` |
+
+## Troubleshooting
+
+```bash
+# "Resource not accessible by integration" on OIDC deploy
+# → Check permissions: block in the workflow (id-token: write, contents: read)
+
+# Cache not restoring
+# → Verify cache-dependency-path matches your lockfile location
+# → Check actions/setup-node or actions/setup-go version (cache support varies)
+
+# Tests pass locally but fail in CI
+# → Check Go version mismatch: `go version` locally vs `go-version:` in workflow
+# → Check for hardcoded paths or env vars that differ in CI
+
+# Path filter not working (all jobs run on every push)
+# → Ensure dorny/paths-filter step has `id: changes` and outputs are referenced correctly
+```
+
+---
+
+See also:
+- [templates/ci.yml](../templates/ci.yml) — full CI workflow template
+- [guides/docker-multi-stage-builds.md](docker-multi-stage-builds.md) — production Docker images
+- [templates/Makefile](../templates/Makefile) — Makefile with release targets

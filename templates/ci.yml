@@ -1,5 +1,6 @@
 # CI workflow template – copy to .github/workflows/ci.yml
 # All jobs are active. Delete the ones you don't need.
+# Search for <angle-bracket> placeholders and adapt to your project.
 name: CI
 
 on:
@@ -38,12 +39,12 @@ jobs:
     runs-on: ubuntu-latest
     defaults:
       run:
-        working-directory: ./backend # TODO: adjust working directory
+        working-directory: ./<backend-dir>  # e.g. ./backend
     steps:
       - uses: actions/checkout@v5
       - uses: actions/setup-go@v6
         with:
-          go-version: 1.26.0 # TODO: set your Go version
+          go-version: "1.24"  # match your go.mod version
 
       - name: Download dependencies
         run: go mod download
@@ -82,18 +83,18 @@ jobs:
     runs-on: ubuntu-latest
     defaults:
       run:
-        working-directory: ./backend # TODO: adjust working directory
+        working-directory: ./<backend-dir>  # e.g. ./backend
     steps:
       - uses: actions/checkout@v5
       - uses: actions/setup-go@v6
         with:
-          go-version: 1.26.0 # TODO: set your Go version
+          go-version: "1.24"  # match your go.mod version
 
       - name: golangci-lint
         uses: golangci/golangci-lint-action@v8
         with:
           version: latest
-          working-directory: ./backend # TODO: adjust working directory
+          working-directory: ./<backend-dir>  # e.g. ./backend
 
   # ── Node / pnpm Frontend ──────────────────────────────────────────────────
   frontend-ci:
@@ -102,20 +103,20 @@ jobs:
     runs-on: ubuntu-latest
     defaults:
       run:
-        working-directory: ./frontend # TODO: adjust working directory
+        working-directory: ./<frontend-dir>  # e.g. ./frontend
     steps:
       - uses: actions/checkout@v5
 
       - uses: pnpm/action-setup@v4
         with:
-          version: 10 # TODO: set your pnpm version
+          version: 10  # match your packageManager field in package.json
           run_install: false
 
       - uses: actions/setup-node@v6
         with:
-          node-version: 24 # TODO: set your Node version
+          node-version: 24  # match your .node-version or package.json engines
           cache: "pnpm"
-          cache-dependency-path: frontend/pnpm-lock.yaml # TODO: adjust path
+          cache-dependency-path: <frontend-dir>/pnpm-lock.yaml  # e.g. frontend/pnpm-lock.yaml
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
@@ -143,7 +144,7 @@ jobs:
         env:
           POSTGRES_USER: admin
           POSTGRES_PASSWORD: admin
-          POSTGRES_DB: mydb # TODO: set your database name
+          POSTGRES_DB: <database-name>  # e.g. myapp
         ports:
           - 5432:5432
         options: >-
@@ -153,12 +154,12 @@ jobs:
           --health-retries 5
     defaults:
       run:
-        working-directory: ./backend # TODO: adjust working directory
+        working-directory: ./<backend-dir>  # e.g. ./backend
     steps:
       - uses: actions/checkout@v5
       - uses: actions/setup-go@v6
         with:
-          go-version: 1.26.0 # TODO: set your Go version
+          go-version: "1.24"  # match your go.mod version
 
       - name: Download dependencies
         run: go mod download
@@ -169,8 +170,8 @@ jobs:
             | tar -xz -C /usr/local/bin
 
       - name: Run database migrations up
-        working-directory: ./database # TODO: adjust path to migrations
-        run: migrate -path ./migrations -database "postgres://admin:admin@localhost:5432/mydb?sslmode=disable" up
+        working-directory: ./<database-dir>  # e.g. ./database
+        run: migrate -path ./migrations -database "postgres://admin:admin@localhost:5432/<database-name>?sslmode=disable" up
 
       - name: Run integration tests
         env:
@@ -178,11 +179,11 @@ jobs:
           POSTGRES_PORT: "5432"
           POSTGRES_USER: admin
           POSTGRES_PASSWORD: admin
-          POSTGRES_DBNAME: mydb # TODO: set your database name
-          JWT_SECRET: test-secret # TODO: set test secrets your app needs
+          POSTGRES_DBNAME: <database-name>  # match POSTGRES_DB above
+          # JWT_SECRET: test-secret  # uncomment and add secrets your app needs
         run: go test -tags=integration -v -race ./...
 
       - name: Run database migrations down
         if: always()
-        working-directory: ./database # TODO: adjust path to migrations
-        run: migrate -path ./migrations -database "postgres://admin:admin@localhost:5432/mydb?sslmode=disable" down -all
+        working-directory: ./<database-dir>  # e.g. ./database
+        run: migrate -path ./migrations -database "postgres://admin:admin@localhost:5432/<database-name>?sslmode=disable" down -all

@@ -110,3 +110,10 @@ sudo systemctl restart fail2ban
 
 - Open extra firewall ports as needed: `sudo ufw allow 443/tcp`
 - Deploy apps via Docker Compose – see [docker-setup.md](docker-setup.md)
+
+---
+
+See also:
+- [scripts/setup-server.sh](../scripts/setup-server.sh) — automated server provisioning script
+- [guides/docker-setup.md](docker-setup.md) — Docker installation
+- [guides/letsencrypt-docker.md](letsencrypt-docker.md) — TLS certificates

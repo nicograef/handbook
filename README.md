@@ -25,6 +25,7 @@ Step-by-step instructions (runbook-style).
 | Java / Spring Boot backend        | [guides/java-spring-boot.md](guides/java-spring-boot.md)                   |
 | React frontend development        | [guides/react.md](guides/react.md)                                         |
 | Dotfiles for GitHub Codespaces    | [guides/dotfiles-codespaces.md](guides/dotfiles-codespaces.md)             |
+| PostgreSQL operations             | [guides/postgresql-operations.md](guides/postgresql-operations.md)         |
 
 ## Cheatsheets
 
@@ -35,6 +36,9 @@ Quick-reference commands (no context needed).
 | Unix / shell commands | [cheatsheets/unix-commands.md](cheatsheets/unix-commands.md)   |
 | Docker Compose        | [cheatsheets/docker-compose.md](cheatsheets/docker-compose.md) |
 | Vim                   | [cheatsheets/vim.md](cheatsheets/vim.md)                       |
+| Git                   | [cheatsheets/git.md](cheatsheets/git.md)                       |
+| PostgreSQL            | [cheatsheets/postgresql.md](cheatsheets/postgresql.md)         |
+| Makefile              | [cheatsheets/makefile.md](cheatsheets/makefile.md)             |
 
 ## Theory
 
@@ -67,8 +71,7 @@ Copy-paste-ready config files for new projects.
 | [templates/docker-compose.prod.yml](templates/docker-compose.prod.yml) | Production Compose (reverse proxy + Let's Encrypt)                |
 | [templates/nginx-tls.conf](templates/nginx-tls.conf)                   | Nginx TLS reverse proxy config                                    |
 | [templates/setup-dev-tools.sh](templates/setup-dev-tools.sh)           | Dev tool setup script skeleton (Go, Node/pnpm blocks)             |
-| [templates/ci.yml](templates/ci.yml)                                   | GitHub Actions CI workflow (Go, Node, integration tests)          |
-| [templates/AGENTS.md](templates/AGENTS.md)                             | Agent instructions template for Copilot Agent Mode                |
+| [templates/ci.yml](templates/ci.yml)                                   | GitHub Actions CI workflow (Go, Node, integration tests)          || [templates/.env.example](templates/.env.example)                           | Standard env vars for Docker Compose templates                    || [templates/AGENTS.md](templates/AGENTS.md)                             | Agent instructions template for Copilot Agent Mode                |
 | [templates/copilot-instructions.md](templates/copilot-instructions.md) | Copilot instructions template (`.github/copilot-instructions.md`) |
 
 ## Scripts

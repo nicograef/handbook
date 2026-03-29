@@ -94,3 +94,29 @@ RUN pnpm install
 | `node:24-alpine` build + `nginx:alpine` runtime | ~50 MB |
 | `temurin:21-jdk-alpine` (full) | ~350 MB |
 | `temurin:21-jre-alpine` (runtime only) | ~180 MB |
+
+## Troubleshooting
+
+```bash
+# "exec format error" when running image on different architecture
+# → Build with --platform: docker build --platform linux/amd64 .
+
+# "COPY --from=builder" fails: file not found
+# → Check the build stage output path matches the COPY source
+# → Verify the build command runs (check for skipped steps)
+
+# Image still large after multi-stage
+# → Check docker image ls — ensure you’re running the final stage, not the builder
+# → Avoid copying unnecessary files: use .dockerignore
+
+# Alpine: "not found" when running binary
+# → Binary may be dynamically linked against glibc. Use CGO_ENABLED=0 for Go,
+#   or switch to a glibc-based image (e.g. debian-slim)
+```
+
+---
+
+See also:
+- [guides/docker-setup.md](docker-setup.md) — Docker installation
+- [cheatsheets/docker-compose.md](../cheatsheets/docker-compose.md) — Compose commands
+- [templates/docker-compose.prod.yml](../templates/docker-compose.prod.yml) — production Compose template
