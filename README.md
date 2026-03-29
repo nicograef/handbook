@@ -104,3 +104,4 @@ Reusable agent skills — copy individual skill directories into project repos a
 | PDF Extract              | [skills/pdf-extract/](skills/pdf-extract/)                                     | Extract text, tables, metadata from PDFs (with OCR fallback)            |
 | Word Extract             | [skills/docx-extract/](skills/docx-extract/)                                   | Extract text, tables, images, metadata from .docx files                 |
 | Excel Extract            | [skills/xlsx-extract/](skills/xlsx-extract/)                                   | Extract data, formulas, metadata from .xlsx workbooks                   |
+| Understand               | [skills/understand/](skills/understand/)                                       | Deep codebase exploration to build a human's mental model               |

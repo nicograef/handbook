@@ -20,6 +20,7 @@ Agent skills for GitHub Copilot — copy individual skill directories into proje
 | Extracting text/tables from PDF files | **PDF Extract** | [pdf-extract/](pdf-extract/) |
 | Extracting text/tables from Word (.docx) files | **Word Extract** | [docx-extract/](docx-extract/) |
 | Extracting data from Excel (.xlsx) workbooks | **Excel Extract** | [xlsx-extract/](xlsx-extract/) |
+| Understanding a part of the codebase holistically | **Understand** | [understand/](understand/) |
 
 ## Typical Workflow
 
