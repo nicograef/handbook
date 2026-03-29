@@ -28,12 +28,16 @@
 ## Rules
 
 # Numbered, hard rules the agent must always follow.
+# Add project-specific rules here.
 
 1. <First rule.>
 2. <Second rule.>
 
 ## Boundaries
 
+- ✅ **Always:** Verify before claiming — search the codebase before making assertions about existing code, structure, or behaviour. Never guess what a file contains or how something works — read the actual source.
+- ✅ **Always:** Ask instead of assuming — when uncertain about requirements, design intent, or user expectations, ask structured questions to clarify. Only proceed with documented assumptions if the user explicitly declines to answer.
+- ✅ **Always:** Web search for external knowledge — when working with external tools, libraries, or specs, consult authoritative sources (official docs, RFCs) instead of relying on training data.
 - ✅ **Always:** <things the agent must do on every change>
 - ✅ **Always:** <second always-rule>
 - ⚠️ **Ask first:** <actions that need user confirmation>

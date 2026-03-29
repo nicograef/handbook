@@ -29,6 +29,9 @@ All documentation is written in English. Keep it that way.
 - ✅ **Always:** Update `README.md` when adding, removing or renaming files
 - ✅ **Always:** Cross-reference instead of duplicating content
 - ✅ **Always:** Verify links after renaming or deleting a file
+- ✅ **Always:** Verify before claiming — search the codebase before making assertions about existing code, structure, or behaviour. Never guess what a file contains or how something works — read the actual source.
+- ✅ **Always:** Ask instead of assuming — when uncertain about requirements, design intent, or user expectations, ask structured questions to clarify. Only proceed with documented assumptions if the user explicitly declines to answer.
+- ✅ **Always:** Web search for external knowledge — when working with external tools, libraries, or specs, consult authoritative sources (official docs, RFCs) instead of relying on training data.
 - ⚠️ **Ask first:** Deleting a file (check for references first)
 - ⚠️ **Ask first:** Renaming a file (update all references)
 - 🚫 **Never:** Duplicate content across files
@@ -68,3 +71,8 @@ Every change must leave the knowledge base consistent. Follow these rules:
 - **README is the index** – it must always reflect the exact files on disk. After any file add/remove/rename, verify the table entries match.
 - **No dead links** – after renaming or deleting a file, search for all references (`grep -r '<filename>'`) and update or remove them.
 - **English only** – all content, examples and placeholder data must be in English.
+
+## Git Workflow
+
+- **Commit messages:** After completing a task, always propose a conventional commit message (`docs:`, `chore:`, `fix:`) with a concise subject line and bullet-point body for multi-file changes. Do not commit — only output the message.
+- **No `--force` push or `--no-verify`.**
