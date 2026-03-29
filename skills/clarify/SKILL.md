@@ -10,8 +10,9 @@ description: >-
 # Clarify
 
 Never assume — always ask. Before acting on any task, identify ambiguities and
-unknowns, then resolve them through structured questions with the AskQuestion
-tool. Walk down each branch of the decision tree, resolving dependencies
+unknowns, then resolve them through structured questions with the
+vscode_askQuestions tool. Walk down each branch of the decision tree, resolving
+dependencies
 between decisions one-by-one.
 
 ## Workflow
@@ -50,7 +51,7 @@ Then proceed with the task.
 2. **Explore before asking.** If a question can be answered by exploring the
    codebase, explore the codebase instead of asking the user. Only ask when
    the answer requires a human judgment call.
-3. **Structured over free-text.** Use the AskQuestion tool with concrete
+3. **Structured over free-text.** Use the vscode_askQuestions tool with concrete
    options. If a question seems open-ended, convert it to multiple-choice with
    an "Other (specify)" escape hatch.
 4. **Context before question.** The prompt should explain *why* the question
@@ -72,6 +73,11 @@ If the user declines to answer or says "just do it":
 ## Constraints
 
 - Max **5 questions** per round.
-- Always use the **AskQuestion tool** when available; fall back to
+- Always use the **vscode_askQuestions tool** when available; fall back to
   conversational questions only if the tool is unavailable.
 - Do not repeat questions the user has already answered.
+
+## Quality
+
+- Before presenting results, run the self-review checklist from AGENTS.md (Quality Principles) — applied to the quality of the clarification artifact. Surface issues in the chat only if found.
+- After task completion, include a human-readable summary paragraph alongside the commit message (see AGENTS.md, Git Workflow).

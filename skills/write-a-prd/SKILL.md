@@ -116,3 +116,8 @@ A description of the things that are out of scope for this PRD.
 
 Any further notes about the feature.
 ```
+
+## Quality
+
+- Before presenting results, run the self-review checklist from AGENTS.md (Quality Principles) — applied to the quality of the PRD artifact. Surface issues in the chat only if found.
+- After task completion, include a human-readable summary paragraph alongside the commit message (see AGENTS.md, Git Workflow).

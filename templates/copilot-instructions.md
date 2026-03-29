@@ -13,6 +13,12 @@
 3. <Third rule — e.g. "Never edit generated code in `gen/`.">
 4. <Fourth rule — e.g. "No secrets or passwords in code.">
 
+## Quality Principles
+
+- Quality over quantity, correctness over speed.
+- Self-review before presenting: correct, clean, readable, maintainable, in scope.
+- After every task, include a narrative summary paragraph for the reviewer.
+
 ## Commands
 
 # All commands via **Makefile** in the project root: `make test`, `make lint`, `make build`, `make dev`.
