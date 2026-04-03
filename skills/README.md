@@ -11,6 +11,7 @@ Agent skills for GitHub Copilot — copy individual skill directories into proje
 | Writing a product requirements document | **Write a PRD** | [write-a-prd/](write-a-prd/) |
 | Executing an existing plan step by step | **Implement Plan** | [implement-plan/](implement-plan/) |
 | Building features test-first (red-green-refactor) | **TDD** | [tdd/](tdd/) |
+| Reviewing, reducing and refactoring an existing test suite | **Test Quality** | [test-quality/](test-quality/) |
 | Code review, cross-layer consistency audit | **Code Audit** | [code-audit/](code-audit/) |
 | Mobile UX, UI consistency, workflow friction | **UX Review** | [ux-review/](ux-review/) |
 | Exploring multiple API / interface designs | **Design Interface** | [design-interface/](design-interface/) |

@@ -96,6 +96,7 @@ Reusable agent skills — copy individual skill directories into project repos a
 | Write a PRD              | [skills/write-a-prd/](skills/write-a-prd/)                                     | Structured PRD creation → local `docs/prds/` file                       |
 | Implement Plan           | [skills/implement-plan/](skills/implement-plan/)                               | Execute a plan.md one section at a time — sequential task completion    |
 | TDD                      | [skills/tdd/](skills/tdd/)                                                     | Red-green-refactor with vertical slices + reference files               |
+| Test Quality             | [skills/test-quality/](skills/test-quality/)                                   | Review and refactor existing tests — remove brittle, implementation-detail tests |
 | UX Review                | [skills/ux-review/](skills/ux-review/)                                         | Mobile UX, UI consistency, workflow friction, and terminology review    |
 | Ubiquitous Language      | [skills/ubiquitous-language/](skills/ubiquitous-language/)                      | Extract DDD glossary → `UBIQUITOUS_LANGUAGE.md`                         |
 | Design Interface         | [skills/design-interface/](skills/design-interface/)                            | "Design It Twice" — parallel sub-agents generate radically different APIs |
