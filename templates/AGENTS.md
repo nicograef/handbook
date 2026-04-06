@@ -1,7 +1,7 @@
 # Agent Instructions — <project-name>
 
-# <One-paragraph project description.>
-# <Include what the project IS and what it explicitly is NOT.>
+<!-- One-paragraph project description.
+     Include what the project IS and what it explicitly is NOT. -->
 
 ## Tech Stack
 
@@ -14,7 +14,7 @@
 
 ## Commands
 
-# All commands via Makefile in the project root.
+<!-- All commands via Makefile in the project root. -->
 
 | Command | Description |
 |---------|------------|
@@ -23,12 +23,47 @@
 | `make lint` | Lint all code |
 | `make build` | Build all artifacts |
 
-# Run `make help` for the full list.
+<!-- Run `make help` for the full list. -->
+
+## Structure
+
+<!-- Describe each top-level directory. Helps the agent navigate the codebase. -->
+
+| Directory | Purpose |
+|-----------|--------|
+| `src/`    | <application source code> |
+| `tests/`  | <test suites> |
+| `docs/`   | <documentation> |
+
+## Testing
+
+<!-- Framework, conventions, and expectations. -->
+
+| Aspect    | Detail |
+|-----------|--------|
+| Framework | <e.g. Jest, pytest, go test> |
+| Run       | `make test` |
+| Coverage  | <minimum %, or "no hard target"> |
+
+<!-- Add project-specific testing rules:
+- Where test files live (co-located vs. `tests/` directory)
+- Naming pattern (`*_test.go`, `*.spec.ts`)
+- What must be tested (business logic, API contracts, etc.)
+-->
+
+## Code Style
+
+<!-- One canonical example per language/area. Agents follow examples
+     more reliably than written rules. -->
+
+```<language>
+// <Paste one real, idiomatic example from the project here.>
+```
 
 ## Rules
 
-# Numbered, hard rules the agent must always follow.
-# Add project-specific rules here.
+<!-- Numbered, hard rules the agent must always follow.
+     Add project-specific rules here. -->
 
 1. <First rule.>
 2. <Second rule.>
@@ -49,6 +84,7 @@
 
 - **Quality over quantity, correctness over speed.** Fewer, correct changes beat many fast changes.
 - **Human-reviewable changes.** Every change must be clean, readable, and maintainable enough for a senior developer to review, understand, and maintain long-term. No clever code, no unnecessary abstractions, no changes that require deep context to understand.
+- **Small, explainable changes.** Each change should be small enough that the developer can explain every line in a review. One logical concept per step — one method, one migration, one component refactoring. Mechanical bulk changes (renames, dependency updates) are exempt.
 - **Self-review checklist** (run silently before presenting changes — only report issues found in the chat):
   1. Are the changes **correct** — do they actually solve the stated problem?
   2. Are the changes **clean** — no dead code, no debug artifacts, consistent style?
@@ -57,13 +93,34 @@
   5. Are the changes **in scope** — nothing beyond what was requested or clearly necessary?
   6. Are the changes **complete** — tests, validation, both sides updated where needed?
 - **Scope guard.** If the agent notices it is making or about to make changes outside the task scope, it must stop, name the out-of-scope changes, and ask the user before proceeding.
+- **Change presentation.** After each change, explain in the chat:
+  1. **What** — which file(s) changed and how (concrete diff overview).
+  2. **Why** — what problem does this solve? What design decision is behind it?
+  3. **How** — how does the changed code work? What happens at runtime?
 
 ## Areas
 
-# Optional — describe the main areas/modules of the project.
+<!-- Optional — describe the main areas/modules of the project.
 
-# - **Admin**: routes `/admin/*`, directory `src/admin/`
-# - **API**: routes `/api/*`, directory `src/api/`
+- **Admin**: routes `/admin/*`, directory `src/admin/`
+- **API**: routes `/api/*`, directory `src/api/`
+-->
+
+<!-- ── Learning Mode (optional) ──
+Uncomment this section for onboarding or when learning a new codebase.
+It enforces stricter granularity and requires explicit confirmation between steps.
+
+## Learning Mode
+
+- **One concept at a time.** Strictly one logical change per step — no grouping
+  of related files unless they form an inseparable unit (e.g. interface + implementation).
+- **Explicit confirmation.** The agent waits for an explicit go-ahead from the developer
+  before proceeding to the next change. Trivial follow-ups (e.g. adding an import after
+  a method change) may be grouped with the preceding step.
+- **Explain like a reviewer.** The What/Why/How explanation (see Quality Principles)
+  must be detailed enough that the developer could reproduce the change from the
+  explanation alone, without looking at the diff.
+-->
 
 ## Git Workflow
 

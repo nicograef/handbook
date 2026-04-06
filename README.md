@@ -94,6 +94,7 @@ Reusable agent skills — copy individual skill directories into project repos a
 | Code Audit               | [skills/code-audit/](skills/code-audit/)                                       | Cross-layer consistency, simplification, and repo verification audit    |
 | Create Plan              | [skills/create-plan/](skills/create-plan/)                                     | Plan from PRD or task description — vertical slices + acceptance criteria |
 | Write a PRD              | [skills/write-prd/](skills/write-prd/)                                     | Structured PRD creation → local `docs/prds/` file                       |
+| Guided Implementation    | [skills/guided-implementation/](skills/guided-implementation/)                 | Step-by-step coaching through a user story or plan phase — developer writes all code |
 | Implement Plan           | [skills/implement-plan/](skills/implement-plan/)                               | Execute a plan.md one section at a time — sequential task completion    |
 | TDD                      | [skills/tdd/](skills/tdd/)                                                     | Red-green-refactor with vertical slices + reference files               |
 | Test Quality             | [skills/test-quality/](skills/test-quality/)                                   | Review and refactor existing tests — remove brittle, implementation-detail tests |

@@ -9,6 +9,7 @@ Agent skills for GitHub Copilot — copy individual skill directories into proje
 | Unclear requirements, need to ask questions | **Clarify** | [clarify/](clarify/) |
 | Planning a feature from PRD or task description | **Create Plan** | [create-plan/](create-plan/) |
 | Writing a product requirements document | **Write a PRD** | [write-prd/](write-prd/) |
+| Developer-driven implementation with coaching | **Guided Implementation** | [guided-implementation/](guided-implementation/) |
 | Executing an existing plan step by step | **Implement Plan** | [implement-plan/](implement-plan/) |
 | Building features test-first (red-green-refactor) | **TDD** | [tdd/](tdd/) |
 | Reviewing, reducing and refactoring an existing test suite | **Test Quality** | [test-quality/](test-quality/) |
@@ -28,7 +29,8 @@ Agent skills for GitHub Copilot — copy individual skill directories into proje
 1. **Clarify** → gather requirements
 2. **Write a PRD** → formalise into a document
 3. **Create Plan** → break PRD into vertical slices
-4. **Implement Plan** → execute slices with **TDD**
+4. **Implement Plan** → agent executes slices (with **TDD**)
+   — OR **Guided Implementation** → developer writes all code, agent coaches
 5. **Code Audit** → review the result
 6. **Improve Architecture** → identify deepening opportunities
 
