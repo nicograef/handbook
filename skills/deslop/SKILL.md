@@ -19,6 +19,10 @@ This skill has separate reference files for different content types:
 - [text.md](text.md) — prose and documentation slop patterns
 - [config.md](config.md) — config files, YAML, CI pipelines, IaC
 
+Language-specific supplements (optional — use when the content language matches):
+
+- [text-de.md](text-de.md) — German prose and documentation slop patterns
+
 ## Workflow
 
 ### 1. Determine scope
@@ -27,7 +31,7 @@ This skill has separate reference files for different content types:
 - If not specified, check staged changes (`git diff --cached`).
 - Fall back to recently modified files if nothing is staged.
 
-### 2. Identify content type
+### 2. Identify content type and language
 
 For each file, determine which reference to apply:
 
@@ -39,6 +43,12 @@ For each file, determine which reference to apply:
 
 If a file contains mixed content (e.g. inline docs in code), apply both
 code and text rules to the relevant sections.
+
+**Language detection:** If the prose is in German, apply
+[text-de.md](text-de.md) instead of (or in addition to) [text.md](text.md).
+Some patterns overlap; German-specific patterns take priority when they
+conflict. For German comments embedded in code or config files, also apply the
+German text patterns to those sections.
 
 ### 3. Read the file's voice
 
