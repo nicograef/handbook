@@ -107,3 +107,4 @@ Reusable agent skills — copy individual skill directories into project repos a
 | Word Extract             | [skills/docx-extract/](skills/docx-extract/)                                   | Extract text, tables, images, metadata from .docx files                 |
 | Excel Extract            | [skills/xlsx-extract/](skills/xlsx-extract/)                                   | Extract data, formulas, metadata from .xlsx workbooks                   |
 | Understand               | [skills/understand/](skills/understand/)                                       | Deep codebase exploration to build a human's mental model               |
+| Deslop                   | [skills/deslop/](skills/deslop/)                                               | Remove AI-generated slop from code, docs, and config files              |
