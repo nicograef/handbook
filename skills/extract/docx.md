@@ -1,8 +1,3 @@
----
-name: docx-extract
-description: Extract text, tables, images, comments, and metadata from Microsoft Word .docx (Office Open XML) files. Use when the user mentions Word, .docx, docx extraction, Office documents, or parsing Word files.
----
-
 # Word (.docx) Extraction
 
 `.docx` is a ZIP of XML parts and assets. Prefer **`python-docx`** for body text, tables, sections, and core properties; use **`zipfile`** + **`xml.etree.ElementTree`** for embedded media, app/custom properties, and comments.
@@ -20,7 +15,7 @@ pip install python-docx
 - **`.doc` (legacy binary)** is not OOXML. Convert with LibreOffice (`soffice --headless --convert-to docx`) or another tool before using this workflow.
 - **Tracked changes, complex fields, OLE embeds** may not round-trip through high-level APIs; inspect raw XML under `word/` for full fidelity (best effort).
 
-**“Domain” context**: map to document properties (Subject, Keywords, Category, custom properties)—not automatic semantic classification unless you add NLP separately.
+**"Domain" context**: map to document properties (Subject, Keywords, Category, custom properties)—not automatic semantic classification unless you add NLP separately.
 
 ## Text Extraction
 
@@ -198,35 +193,3 @@ def extract_comments(path: str) -> list[dict]:
 | App stats / template hints | `docProps/app.xml` via ZIP |
 | Custom / domain fields | `docProps/custom.xml` via ZIP |
 | All embedded images | Enumerate `word/media/*` in ZIP |
-| Headers / footers | `doc.sections` → `header` / `footer` |
-| Comments | `word/comments.xml` in ZIP |
-| Legacy `.doc` | Convert to `.docx` first |
-| Tracked changes / fields / OLE | Raw OOXML under `word/` (manual or specialized libs) |
-
-## End-to-end Skeleton
-
-```python
-from docx import Document
-import zipfile
-
-def extract_docx_knowledge(path: str) -> dict:
-    doc = Document(path)
-    body = "\n".join(p.text for p in doc.paragraphs)
-    tables = [[[cell.text for cell in row.cells] for row in t.rows] for t in doc.tables]
-    cp = doc.core_properties
-    core = {
-        "title": cp.title, "subject": cp.subject, "keywords": cp.keywords,
-        "category": cp.category, "author": cp.author,
-        "created": cp.created, "modified": cp.modified,
-    }
-    with zipfile.ZipFile(path) as z:
-        media = [n for n in z.namelist() if n.startswith("word/media/") and not n.endswith("/")]
-    return {"body_text": body, "tables": tables, "core_properties": core, "media_files": media}
-```
-
-Extend with `extra_properties()`, `extract_comments()`, and saving `word/media/*` bytes as needed.
-
-## Quality
-
-- Before presenting results, run the self-review checklist from AGENTS.md (Quality Principles) — applied to the quality of the extraction artifact. Surface issues in the chat only if found.
-- After task completion, include a human-readable summary paragraph alongside the commit message (see AGENTS.md, Git Workflow).

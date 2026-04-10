@@ -1,8 +1,3 @@
----
-name: xlsx-extract
-description: Extract data, formulas, metadata, and assets from Excel .xlsx workbooks, including all worksheets. Use when the user mentions Excel, .xlsx, spreadsheets, workbooks, multiple sheets, or tabular data in Office files.
----
-
 # Excel (.xlsx) Extraction
 
 `.xlsx` is Office Open XML (ZIP + XML). Use **pandas** to load many worksheets at once; use **openpyxl** for per-sheet control, formulas, merged cells, defined names, workbook properties, and large-file streaming.
@@ -24,7 +19,7 @@ For legacy **`.xls`**, use `pip install xlrd` (1.2.x for .xls) or convert to `.x
 
 ## All Worksheets with pandas
 
-Default path when the goal is “everything tabular” across **multiple worksheets**:
+Default path when the goal is "everything tabular" across **multiple worksheets**:
 
 ```python
 import pandas as pd
@@ -125,7 +120,7 @@ for dn in wb.defined_names.values():
     names.append({"name": dn.name, "refers_to": dn.attr_text})
 ```
 
-Resolve a name to a worksheet range when needed via openpyxl’s utilities or by parsing `attr_text` (workbook- vs sheet-scoped names differ).
+Resolve a name to a worksheet range when needed via openpyxl's utilities or by parsing `attr_text` (workbook- vs sheet-scoped names differ).
 
 ## Sheet Visibility
 
@@ -136,7 +131,7 @@ for name in wb.sheetnames:
     hidden = ws.sheet_state  # 'visible', 'hidden', or 'veryHidden'
 ```
 
-Prefer skipping `hidden` / `veryHidden` sheets for “user-facing” extracts unless the task says otherwise.
+Prefer skipping `hidden` / `veryHidden` sheets for "user-facing" extracts unless the task says otherwise.
 
 ## Embedded Images (ZIP)
 
@@ -210,8 +205,3 @@ def extract_xlsx_knowledge(path: str) -> dict:
 ```
 
 Adjust serialization (`to_dict`, CSV, Parquet) to the task; keep DataFrames in memory if downstream code needs them.
-
-## Quality
-
-- Before presenting results, run the self-review checklist from AGENTS.md (Quality Principles) — applied to the quality of the extraction artifact. Surface issues in the chat only if found.
-- After task completion, include a human-readable summary paragraph alongside the commit message (see AGENTS.md, Git Workflow).

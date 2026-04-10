@@ -103,8 +103,6 @@ Reusable agent skills — copy individual skill directories into project repos a
 | Design Interface         | [skills/design-interface/](skills/design-interface/)                            | "Design It Twice" — parallel sub-agents generate radically different APIs |
 | Improve Architecture     | [skills/improve-architecture/](skills/improve-architecture/)                   | Find deepening opportunities → local `docs/rfcs/` RFC                   |
 | Handbook Sync            | [skills/handbook-sync/](skills/handbook-sync/)                                 | Audit a project against handbook best practices and apply improvements   |
-| PDF Extract              | [skills/pdf-extract/](skills/pdf-extract/)                                     | Extract text, tables, metadata from PDFs (with OCR fallback)            |
-| Word Extract             | [skills/docx-extract/](skills/docx-extract/)                                   | Extract text, tables, images, metadata from .docx files                 |
-| Excel Extract            | [skills/xlsx-extract/](skills/xlsx-extract/)                                   | Extract data, formulas, metadata from .xlsx workbooks                   |
+| Extract                  | [skills/extract/](skills/extract/)                                             | Extract text, tables, metadata from PDF, Word (.docx), and Excel (.xlsx) files |
 | Understand               | [skills/understand/](skills/understand/)                                       | Deep codebase exploration to build a human's mental model               |
 | Deslop                   | [skills/deslop/](skills/deslop/)                                               | Remove AI-generated slop from code, docs, and config files              |

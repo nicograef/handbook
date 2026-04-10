@@ -20,9 +20,7 @@ Agent skills for GitHub Copilot — copy individual skill directories into proje
 | Syncing a project with handbook best practices | **Handbook Sync** | [handbook-sync/](handbook-sync/) |
 | Extracting DDD glossary terms | **Ubiquitous Language** | [ubiquitous-language/](ubiquitous-language/) |
 | Cleaning up AI-generated code, docs, config | **Deslop** | [deslop/](deslop/) |
-| Extracting text/tables from PDF files | **PDF Extract** | [pdf-extract/](pdf-extract/) |
-| Extracting text/tables from Word (.docx) files | **Word Extract** | [docx-extract/](docx-extract/) |
-| Extracting data from Excel (.xlsx) workbooks | **Excel Extract** | [xlsx-extract/](xlsx-extract/) |
+| Extracting content from PDF, Word, or Excel files | **Extract** | [extract/](extract/) |
 | Understanding a part of the codebase holistically | **Understand** | [understand/](understand/) |
 
 ## Typical Workflow
