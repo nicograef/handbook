@@ -19,6 +19,7 @@ Agent skills for GitHub Copilot — copy individual skill directories into proje
 | Finding refactoring / deepening opportunities | **Improve Architecture** | [improve-architecture/](improve-architecture/) |
 | Syncing a project with handbook best practices | **Handbook Sync** | [handbook-sync/](handbook-sync/) |
 | Extracting DDD glossary terms | **Ubiquitous Language** | [ubiquitous-language/](ubiquitous-language/) |
+| Incremental code quality review (principles, smells, readability) | **Cleanup** | [cleanup/](cleanup/) |
 | Cleaning up AI-generated code, docs, config | **Deslop** | [deslop/](deslop/) |
 | Extracting content from PDF, Word, or Excel files | **Extract** | [extract/](extract/) |
 | Understanding a part of the codebase holistically | **Understand** | [understand/](understand/) |

@@ -106,3 +106,4 @@ Reusable agent skills — copy individual skill directories into project repos a
 | Extract                  | [skills/extract/](skills/extract/)                                             | Extract text, tables, metadata from PDF, Word (.docx), and Excel (.xlsx) files |
 | Understand               | [skills/understand/](skills/understand/)                                       | Deep codebase exploration to build a human's mental model               |
 | Deslop                   | [skills/deslop/](skills/deslop/)                                               | Remove AI-generated slop from code, docs, and config files              |
+| Cleanup                  | [skills/cleanup/](skills/cleanup/)                                             | Incremental code quality review — principles, smells, architecture, readability |
