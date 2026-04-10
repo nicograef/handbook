@@ -30,6 +30,8 @@ Reference files for each review pass:
   domain model, repository pattern, boundaries
 - [readability.md](readability.md) — naming, clarity, clever code, nesting,
   prose/doc slop
+- [readability-de.md](readability-de.md) — German prose/doc slop patterns
+  (use instead of the prose section in readability.md when text is German)
 
 ## Workflow
 
@@ -73,6 +75,7 @@ skip passes that are irrelevant.
 | Pass | Reference | Applies to |
 |---|---|---|
 | Readability & clarity | [readability.md](readability.md) | All files (code, docs, configs) |
+| Readability — German prose | [readability-de.md](readability-de.md) | German-language docs, comments, READMEs |
 | Principles | [principles.md](principles.md) | Code files |
 | Code smells | [code-smells.md](code-smells.md) | Code files + config files |
 | Architecture & boundaries | [architecture.md](architecture.md) | Service, domain, handler, repository layers |
