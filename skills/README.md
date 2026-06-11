@@ -1,6 +1,6 @@
 # Skills
 
-Agent skills for GitHub Copilot and Claude Code — available via the `~/.claude/skills` symlink.
+Agent skills for Claude Code and GitHub Copilot. They live in this handbook repo and both agents consume them from the `~/.claude/skills` symlink — they are not copied into project repos.
 
 ## When to Use Which Skill
 
