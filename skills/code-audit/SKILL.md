@@ -1,9 +1,10 @@
 ---
 name: code-audit
 description: >-
-  Audit a codebase for cross-layer consistency, simplification opportunities,
-  and repo verification. Use when the user wants a quality audit, consistency
-  check, or readability review across a full-stack project.
+  Audit a codebase for cross-layer consistency and simplification opportunities.
+  Use when the user wants a repo-wide quality audit or consistency check across
+  all layers of a full-stack project. Not for incremental code review or
+  readability passes — use the cleanup skill for those.
 ---
 
 # Code Quality Audit

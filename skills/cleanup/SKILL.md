@@ -7,7 +7,8 @@ description: >-
   concrete suggestions, applies fixes after confirmation. Integrates AI slop
   detection, architecture boundary checks, and readability review.
   Triggers: "cleanup", "clean up", "review code quality", "check principles",
-  "readability review", "code cleanup".
+  "readability review", "code cleanup", "deslop", "remove slop",
+  "clean up AI code", "review for slop", "remove AI writing".
 ---
 
 # Cleanup
@@ -32,6 +33,15 @@ Reference files for each review pass:
   prose/doc slop
 - [readability-de.md](readability-de.md) — German prose/doc slop patterns
   (use instead of the prose section in readability.md when text is German)
+
+Supplementary reference files for slop-focused passes:
+
+- [code.md](code.md) — code slop patterns (focused checklist for AI-generated
+  code; use alongside code-smells.md when the trigger is slop removal)
+- [text.md](text.md) — English prose slop patterns (use alongside readability.md
+  when the trigger is slop removal)
+- [config.md](config.md) — config/infra slop patterns (use alongside
+  code-smells.md when the trigger is slop removal)
 
 ## Workflow
 
@@ -78,6 +88,9 @@ skip passes that are irrelevant.
 | Readability — German prose | [readability-de.md](readability-de.md) | German-language docs, comments, READMEs |
 | Principles | [principles.md](principles.md) | Code files |
 | Code smells | [code-smells.md](code-smells.md) | Code files + config files |
+| Slop removal — code | [code.md](code.md) | Code files (slop-focused trigger) |
+| Slop removal — prose | [text.md](text.md) | Docs, READMEs, comments (slop-focused trigger) |
+| Slop removal — config | [config.md](config.md) | Config, CI, Dockerfiles (slop-focused trigger) |
 | Architecture & boundaries | [architecture.md](architecture.md) | Service, domain, handler, repository layers |
 | Test readability | [principles.md](principles.md) + [code-smells.md](code-smells.md) | Test files only |
 

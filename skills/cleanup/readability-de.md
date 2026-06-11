@@ -21,26 +21,28 @@ content, apply both to the respective sections.
 Certain words are statistically overrepresented in German LLM output. One in
 isolation may be coincidental; clusters are a signal.
 
-| Remove or replace | Typically means |
-|---|---|
-| `grundlegend` / `grundsätzlich` | "wichtig" or often nothing |
-| `maßgeblich` | "wichtig", "wesentlich", or remove |
-| `gewährleisten` / `sicherstellen` | "sorgen für" or simplify the sentence |
-| `umfassend` | "vollständig" or often nothing |
-| `ganzheitlich` | remove — almost always filler |
-| `nahtlos` | remove — calque of "seamless" |
-| `vielfältig` | remove or use a concrete term |
-| `wegweisend` / `bahnbrechend` | "neu" or remove |
-| `innovativ` | remove or be specific about what is new |
-| `optimieren` | "verbessern" or be specific |
-| `essenziell` | "wichtig" or "nötig" |
-| `bemerkenswert` | remove — usually introduces filler |
-| `bedeutsam` | "wichtig" or remove |
-| `nachhaltig` (outside ecology) | remove or use the actual meaning |
-| `aufweisen` | "haben" or "zeigen" |
-| `hinsichtlich` | "bei", "für", or restructure |
-| `diesbezüglich` | remove or restructure |
-| `im Rahmen von` | "bei", "in", or remove |
+| Remove or replace                 | Typically means                         |
+| --------------------------------- | --------------------------------------- |
+| `grundlegend` / `grundsätzlich`   | "wichtig" or often nothing              |
+| `maßgeblich`                      | "wichtig", "wesentlich", or remove      |
+| `gewährleisten` / `sicherstellen` | "sorgen für" or simplify the sentence   |
+| `umfassend`                       | "vollständig" or often nothing          |
+| `ganzheitlich`                    | remove — almost always filler           |
+| `nahtlos`                         | remove — calque of "seamless"           |
+| `vielfältig`                      | remove or use a concrete term           |
+| `wegweisend` / `bahnbrechend`     | "neu" or remove                         |
+| `innovativ`                       | remove or be specific about what is new |
+| `optimieren`                      | "verbessern" or be specific             |
+| `essenziell`                      | "wichtig" or "nötig"                    |
+| `bemerkenswert`                   | remove — usually introduces filler      |
+| `bedeutsam`                       | "wichtig" or remove                     |
+| `nachhaltig` (outside ecology)    | remove or use the actual meaning        |
+| `ermöglichen` (overused)          | "erlauben", "lassen", or restructure    |
+| `aufweisen`                       | "haben" or "zeigen"                     |
+| `bewerkstelligen`                 | "schaffen", "machen"                    |
+| `hinsichtlich`                    | "bei", "für", or restructure            |
+| `diesbezüglich`                   | remove or restructure                   |
+| `im Rahmen von`                   | "bei", "in", or remove                  |
 
 Not every occurrence is slop. "Grundlegend" in a sentence about foundations is
 literal. "Grundlegend" in "spielt eine grundlegende Rolle" is slop.
@@ -76,8 +78,10 @@ Sentences that assert importance without evidence.
 - "hinterlässt (einen) bleibenden Eindruck"
 - "Wendepunkt" / "Schlüsselmoment" (without evidence)
 - "tief verwurzelt"
+- "tiefes Erbe"
 - "unerschütterliche Hingabe"
 - "festigt seinen/ihren Platz"
+- "symbolisiert" (without concrete referent)
 - "prägt die [Landschaft/Zukunft/Entwicklung]"
 
 **Suggest:** Delete the sentence. If the fact it asserts is important, state it
@@ -115,6 +119,8 @@ Marketing language in technical documentation.
 - "eingebettet in" / "im Herzen von"
 - "lebendige [Szene/Kultur/Gemeinschaft]"
 - "Engagement für Exzellenz"
+- "unbedingt besuchen" / "unbedingt sehen"
+- "reicher kultureller Teppich"
 - "renommiert"
 - "kuratiert"
 
@@ -124,16 +130,16 @@ Marketing language in technical documentation.
 
 Inflated alternatives to "ist/sind" or "hat/haben."
 
-| AI version | Human version |
-|---|---|
-| "dient als" | "ist" |
-| "steht als" | "ist" |
-| "stellt ... dar" | "ist" |
-| "fungiert als" | "ist" |
-| "bietet" (meaning "hat") | "hat" |
-| "verfügt über" (meaning "hat") | "hat" |
-| "zeichnet sich aus durch" | "hat" / "ist" |
-| "weist ... auf" | "hat" / "zeigt" |
+| AI version                     | Human version   |
+| ------------------------------ | --------------- |
+| "dient als"                    | "ist"           |
+| "steht als"                    | "ist"           |
+| "stellt ... dar"               | "ist"           |
+| "fungiert als"                 | "ist"           |
+| "bietet" (meaning "hat")       | "hat"           |
+| "verfügt über" (meaning "hat") | "hat"           |
+| "zeichnet sich aus durch"      | "hat" / "ist"   |
+| "weist ... auf"                | "hat" / "zeigt" |
 
 ### Collaborative Residue
 
@@ -204,6 +210,22 @@ same thing.
 
 **Suggest:** Pick one term and use it consistently.
 
+### Knowledge Cutoff Hints
+
+Spuren der Trainingsdaten-Grenzen des Modells, die im Output sichtbar bleiben.
+
+**Flag:**
+
+- "Stand [Datum]"
+- "Bis zu meinem letzten Update..."
+- "Stand meines letzten Wissensupdates..."
+- "Obwohl spezifische Details begrenzt/rar sind..."
+- "nicht allgemein verfügbar/dokumentiert/offengelegt"
+- "in den bereitgestellten/verfügbaren Quellen..."
+- "basierend auf verfügbaren Informationen..."
+
+**Suggest:** Delete the sentence. These are definitive proof of unedited LLM output.
+
 ### Compulsive Triples
 
 German LLMs group items in threes, often using "sowohl... als auch... und" or
@@ -215,6 +237,17 @@ three coordinated adjectives.
 
 **Suggest:** Keep only terms that carry distinct meaning. Often one or two
 suffice.
+
+### False Extension
+
+"Von... bis"-Konstruktionen, die Beispiele aufzählen, ohne Information zu liefern.
+
+**Flag:**
+
+- "von traditioneller Volksmusik bis hin zu moderner Gegenwartskunst"
+- "von klassischen Methoden bis hin zu innovativen Ansätzen"
+
+**Suggest:** List the specific examples or remove the enumeration if it adds no information.
 
 ### Vague Attributions
 
