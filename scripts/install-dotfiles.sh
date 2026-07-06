@@ -37,6 +37,30 @@ for src in "${!FILES[@]}"; do
   fi
 done
 
+# ── Claude Code config ──────────────────────────────────────────────────────
+# Shared global instructions, permissions, plugins, status line and the
+# agents/commands/skills directories – one source of truth for every machine.
+# settings.local.json stays machine-local and is intentionally NOT linked.
+mkdir -p "$HOME/.claude"
+declare -A CLAUDE_LINKS=(
+  ["claude/CLAUDE.md"]=".claude/CLAUDE.md"
+  ["claude/settings.json"]=".claude/settings.json"
+  ["claude/statusline.sh"]=".claude/statusline.sh"
+  ["agents"]=".claude/agents"
+  ["commands"]=".claude/commands"
+  ["skills"]=".claude/skills"
+)
+for src in "${!CLAUDE_LINKS[@]}"; do
+  origin="$DOTFILES_DIR/$src"
+  dest="$HOME/${CLAUDE_LINKS[$src]}"
+  if [[ -e "$origin" ]]; then
+    ln -sfn "$origin" "$dest"
+    log "Linked $dest → $origin"
+  else
+    echo "SKIP: $origin not found"
+  fi
+done
+
 # ── Git config defaults ─────────────────────────────────────────────────────
 # Idempotent – safe to run on every Codespace create.
 # user.name / user.email are set automatically by Codespaces.
@@ -45,6 +69,7 @@ git config --global init.defaultBranch main
 git config --global pull.rebase true
 git config --global push.autoSetupRemote true
 git config --global rerere.enabled true
+git config --global core.editor nano
 git config --global merge.conflictStyle zdiff3
 # delta as pager if installed, else fall back (safe on machines without delta)
 git config --global core.pager 'delta || less'
