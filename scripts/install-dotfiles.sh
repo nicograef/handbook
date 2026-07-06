@@ -45,6 +45,12 @@ git config --global init.defaultBranch main
 git config --global pull.rebase true
 git config --global push.autoSetupRemote true
 git config --global rerere.enabled true
+git config --global merge.conflictStyle zdiff3
+# delta as pager if installed, else fall back (safe on machines without delta)
+git config --global core.pager 'delta || less'
+git config --global interactive.diffFilter 'delta --color-only || cat'
+git config --global delta.navigate true
+git config --global delta.line-numbers true
 
 # ── GitHub CLI ──────────────────────────────────────────────────────────────
 # Pre-installed in Codespaces; install on local machines if missing.
