@@ -23,6 +23,7 @@ Every `SKILL.md` must include:
 1. **YAML frontmatter** with `name`, `description`, and `tools` (if applicable).
 2. **Workflow section** — numbered steps the agent follows.
 3. **Constraints section** — guardrails, anti-patterns, or things to avoid.
+4. **Quality section** (for skills that present results) — links to the shared self-review checklist at `skills/quality.md` via a `../quality.md` relative link.
 
 ```yaml
 ---

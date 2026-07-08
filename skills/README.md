@@ -31,3 +31,5 @@ Agent skills for Claude Code and GitHub Copilot. They live in this handbook repo
 ## Adding a New Skill
 
 See [.github/instructions/skills.instructions.md](../.github/instructions/skills.instructions.md) for format requirements.
+
+- Every skill's Quality section links to the shared [quality.md](quality.md) self-review checklist rather than restating it.

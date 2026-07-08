@@ -168,3 +168,8 @@ After all confirmed changes are applied:
   test-quality skill's job.
 - **Scope discipline.** Only touch files in the determined scope. Do not
   expand to "while we're here" changes in unrelated files.
+
+## Quality
+
+- Before presenting results, run the shared [self-review checklist](../quality.md). Surface issues in the chat only if found.
+- After task completion, propose a conventional commit message plus a short human-readable summary of what changed, why, and what the reviewer should focus on.

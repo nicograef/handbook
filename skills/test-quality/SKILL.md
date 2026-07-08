@@ -126,3 +126,8 @@ Rules during refactoring:
 - **Preserve integration-style tests** even if they are "slow" — they are the
   most valuable tests in the suite
 - **Do not refactor implementation code** during this skill — test code only
+
+## Quality
+
+- Before presenting results, run the shared [self-review checklist](../quality.md). Surface issues in the chat only if found.
+- After task completion, propose a conventional commit message plus a short human-readable summary of what changed, why, and what the reviewer should focus on.

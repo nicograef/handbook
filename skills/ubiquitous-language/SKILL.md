@@ -99,5 +99,5 @@ When invoked again in the same conversation:
 
 ## Quality
 
-- Before presenting results, run the self-review checklist from AGENTS.md (Quality Principles) — applied to the quality of the glossary artifact. Surface issues in the chat only if found.
-- After task completion, include a human-readable summary paragraph alongside the commit message (see AGENTS.md, Git Workflow).
+- Before presenting results, run the shared [self-review checklist](../quality.md) — applied to the quality of the glossary artifact. Surface issues in the chat only if found.
+- After task completion, propose a conventional commit message plus a short human-readable summary of what changed, why, and what the reviewer should focus on.

@@ -194,8 +194,9 @@ Once the last step is confirmed:
 
 ## Quality
 
-- Before each step briefing, silently run the self-review checklist from
-  AGENTS.md (Quality Principles) on your guidance. Surface issues only if
-  found.
-- After all steps, include a human-readable summary paragraph alongside the
-  commit message (see AGENTS.md, Git Workflow).
+- Before each step briefing, silently run the shared
+  [self-review checklist](../quality.md) on your guidance. Surface issues only
+  if found.
+- After task completion, propose a conventional commit message plus a short
+  human-readable summary of what changed, why, and what the reviewer should
+  focus on.
