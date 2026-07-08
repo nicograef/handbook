@@ -191,6 +191,7 @@ Workarounds that bypass the type system instead of fixing the underlying issue.
 - `# type: ignore` in Python without a specific error code
 - `@SuppressWarnings` in Java without justification
 - Force unwraps or `!` assertions that bypass null safety
+- Generic `Object` types where a specific type is available
 
 **Suggest:** Fix the underlying type issue. Use the correct type or a proper
 type assertion with a documented reason.
@@ -248,6 +249,19 @@ Names longer than the scope warrants.
 
 **Keep** descriptive names in wide scopes where clarity genuinely matters.
 
+### Unnecessary Complexity
+
+Over-engineered control flow where a simpler form reads better. Overlaps with
+Deep Nesting and Premature Abstraction above — the distinct tells:
+
+**Flag when:**
+
+- Boolean logic uses double negation or unnecessary ternaries (`x ? true : false`)
+- Promise chains are used where `async`/`await` would read more clearly
+- A `map`/`filter`/`reduce` chain is harder to follow than a simple loop
+
+**Suggest:** Rewrite in the simplest form that expresses the intent.
+
 ---
 
 ## AI Slop — Config and Infrastructure
@@ -270,6 +284,7 @@ Comments that restate the key name or explain well-known directives.
 - The comment explains *why* a non-obvious value was chosen
 - The comment warns about a gotcha or ordering dependency
 - The comment documents a workaround for a known issue
+- The comment notes an environment-specific override
 
 ### Defensive Defaults
 
@@ -292,6 +307,7 @@ Deeply nested hierarchies where a flat structure is idiomatic.
 - A single value is wrapped in multiple layers of nesting
 - Arrays of one item are used where a scalar works
 - Anchors and aliases refer to blocks that appear only once
+- Separate files hold configs that belong together
 
 ### Template Pollution
 
@@ -304,6 +320,9 @@ Boilerplate from templates that does not apply to the project.
 - Commented-out blocks for "optional" features have no explanation of when
   they would be enabled
 - Security scanning steps reference tools that are not installed
+
+**Keep** commented-out sections that follow the project's template conventions
+(this handbook's templates use commented-out optional sections by design).
 
 ### Redundant Explicit Defaults
 
@@ -320,3 +339,18 @@ information.
 
 - The default is surprising or has changed between versions
 - The project intentionally documents all settings for auditability
+
+### Promotional Comments in Configs
+
+Marketing-style comments in configuration files.
+
+**Flag:**
+
+- "This robust configuration ensures..."
+- "Optimized for production workloads"
+- "Enterprise-grade security settings"
+- "Best-practice configuration for..."
+- Any adjective-heavy comment that conveys no technical information
+
+**Suggest:** Delete the comment. Config comments should explain non-obvious
+choices, not sell the configuration.

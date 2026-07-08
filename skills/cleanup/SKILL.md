@@ -34,15 +34,6 @@ Reference files for each review pass:
 - [readability-de.md](readability-de.md) — German prose/doc slop patterns
   (use instead of the prose section in readability.md when text is German)
 
-Supplementary reference files for slop-focused passes:
-
-- [code.md](code.md) — code slop patterns (focused checklist for AI-generated
-  code; use alongside code-smells.md when the trigger is slop removal)
-- [text.md](text.md) — English prose slop patterns (use alongside readability.md
-  when the trigger is slop removal)
-- [config.md](config.md) — config/infra slop patterns (use alongside
-  code-smells.md when the trigger is slop removal)
-
 ## Workflow
 
 ### 1. Determine scope
@@ -88,11 +79,12 @@ skip passes that are irrelevant.
 | Readability — German prose | [readability-de.md](readability-de.md) | German-language docs, comments, READMEs |
 | Principles | [principles.md](principles.md) | Code files |
 | Code smells | [code-smells.md](code-smells.md) | Code files + config files |
-| Slop removal — code | [code.md](code.md) | Code files (slop-focused trigger) |
-| Slop removal — prose | [text.md](text.md) | Docs, READMEs, comments (slop-focused trigger) |
-| Slop removal — config | [config.md](config.md) | Config, CI, Dockerfiles (slop-focused trigger) |
 | Architecture & boundaries | [architecture.md](architecture.md) | Service, domain, handler, repository layers |
-| Test readability | [principles.md](principles.md) + [code-smells.md](code-smells.md) | Test files only |
+| Test readability | [readability.md](readability.md) + [code-smells.md](code-smells.md) | Test files only |
+
+Slop detection is folded into the Readability and Code smells passes — there
+is no separate slop pass. For a slop-focused trigger ("deslop", "remove
+slop"), run those two passes with extra attention to their AI-slop sections.
 
 For each issue found, record:
 

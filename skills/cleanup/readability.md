@@ -112,11 +112,12 @@ may be coincidental; clusters are a signal.
 | Remove or replace | Typically means |
 |---|---|
 | `additionally` (sentence-initial) | "also", or just start the sentence |
-| `crucial` / `vital` / `pivotal` | "important", or often nothing |
+| `crucial` / `vital` / `pivotal` / `key` (adj.) | "important", or often nothing |
 | `delve` / `delve into` | "explore", "examine", or nothing |
 | `enhance` / `enhancing` | "improve", or rewrite without it |
 | `foster` / `fostering` | "encourage", "support", or nothing |
 | `garner` | "get", "receive" |
+| `highlight` / `underscore` (as verb) | "show", or remove the sentence |
 | `intricate` / `intricacies` | "complex", or often nothing |
 | `landscape` (abstract) | remove or use a concrete term |
 | `leverage` (verb) | "use" |
@@ -148,6 +149,14 @@ Sentences that assert importance without evidence.
 - "setting the stage for"
 - "marking/shaping the"
 - "evolving landscape"
+- "symbolizing its ongoing/enduring/lasting"
+- "represents/marks a shift"
+- "key turning point"
+- "indelible mark"
+- "deeply rooted"
+
+**Also watch for** hedging that precedes puffery — "While relatively unknown,
+[subject] plays a crucial role..." — the hedge does not excuse it.
 
 **Suggest:** Delete the sentence. If the fact it asserts is important, state it
 concretely with evidence.
@@ -163,6 +172,8 @@ Trailing participial phrases tacked onto sentence ends that add no information.
 - "...reflecting a commitment to Y"
 - "...ensuring that Z"
 - "...contributing to the overall success of"
+- "...fostering a sense of community"
+- "...emphasizing the need for"
 
 **Suggest:** Delete the trailing phrase. The sentence before it usually stands
 on its own.
@@ -181,6 +192,10 @@ Marketing language in technical documentation.
 - "renowned"
 - "elevate" (not literal)
 - "curated"
+- "diverse array"
+- "nestled in" / "in the heart of"
+- "featuring" (as a generic introduction)
+- "natural beauty"
 
 **Suggest:** Replace with neutral, specific language.
 
@@ -224,6 +239,7 @@ meaning is unchanged, it was filler.
 - "It is worth noting that..."
 - "It is important to mention that..."
 - Sentences that only introduce what the next sentence already says
+- Sentences that restate the heading in prose form
 
 ### Elegant Variation
 
@@ -236,7 +252,45 @@ confusing synonym chains are not.
 ### Compulsive Triples
 
 LLMs group things in threes: "professionals, experts, and stakeholders" /
-"innovative, sustainable, and scalable."
+"innovative, sustainable, and scalable" / "keynote sessions, panel
+discussions, and networking opportunities."
 
 **Suggest:** Keep only the terms that carry distinct meaning. Often one or two
 suffice.
+
+### Negative Parallelisms
+
+Explanations framed as if correcting a misconception nobody holds.
+
+**Flag:**
+
+- "Not just X, but also Y" — often Y is obvious
+- "It's not about X — it's about Y" — rhetorical without substance
+- "No X, no Y, just Z" — false drama
+
+**Suggest:** State Y directly without the setup. Keep a simpler version only if
+the contrast is genuinely informative.
+
+### Outline-Like Conclusions
+
+Sections that end with a formulaic "Challenges and Future Prospects": "Despite
+its [positive], [subject] faces challenges..." followed by vague optimism.
+
+**Suggest:** Remove entirely if the challenges are generic or the prospects
+speculative. Replace with specific, sourced information if available.
+
+### Vague Attributions
+
+Claims attributed to unnamed authorities.
+
+**Flag:**
+
+- "experts argue"
+- "industry reports suggest"
+- "observers have noted"
+- "researchers have found" (without citing any)
+- "according to several sources"
+- "some critics argue"
+
+**Suggest:** Cite a specific source or remove the attribution. If you cannot
+name the authority, the claim probably does not belong.
