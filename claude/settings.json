@@ -88,7 +88,7 @@
     ],
     "defaultMode": "auto"
   },
-  "model": "Fable",
+  "model": "Opus",
   "enableWorkflows": true,
   "statusLine": {
     "type": "command",
@@ -96,7 +96,6 @@
   },
   "enabledPlugins": {
     "frontend-design@claude-plugins-official": true,
-    "superpowers@claude-plugins-official": true,
     "code-review@claude-plugins-official": true,
     "context7@claude-plugins-official": true,
     "code-simplifier@claude-plugins-official": true,
@@ -108,7 +107,7 @@
   "effortLevel": "xhigh",
   "autoUpdatesChannel": "stable",
   "tui": "fullscreen",
+  "skipWorkflowUsageWarning": true,
   "theme": "auto",
-  "showTurnDuration": true,
-  "skipWorkflowUsageWarning": true
+  "showTurnDuration": true
 }
