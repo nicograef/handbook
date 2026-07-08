@@ -67,8 +67,7 @@ Before writing any code:
 
 - [ ] Confirm with user what interface changes are needed
 - [ ] Confirm with user which behaviors to test (prioritize)
-- [ ] Identify opportunities for [deep modules](deep-modules.md) (small
-      interface, deep implementation)
+- [ ] Identify opportunities for deep modules (small interface, deep implementation)
 - [ ] Design interfaces for [testability](interface-design.md)
 - [ ] List the behaviors to test (not implementation steps)
 - [ ] Get user approval on the plan
@@ -79,6 +78,21 @@ important to test?"
 **You can't test everything.** Confirm with the user exactly which behaviors
 matter most. Focus testing effort on critical paths and complex logic, not every
 possible edge case.
+
+**Deep modules** (from *A Philosophy of Software Design*): prefer a small
+interface hiding substantial implementation over a shallow module whose
+interface is nearly as complex as what it wraps.
+
+```
+┌─────────────────────┐
+│   Small Interface   │  ← few methods, simple params
+├─────────────────────┤
+│  Deep Implementation│  ← complex logic hidden inside
+└─────────────────────┘
+```
+
+When designing an interface, ask: can I reduce the number of methods, simplify
+the parameters, or hide more complexity inside?
 
 ### 2. Tracer Bullet
 
@@ -109,15 +123,18 @@ Rules:
 
 ### 4. Refactor
 
-After all tests pass, look for [refactor candidates](refactoring.md):
+After all tests pass, look for refactor candidates:
 
-- [ ] Extract duplication
-- [ ] Deepen modules (move complexity behind simple interfaces)
-- [ ] Apply SOLID principles where natural
-- [ ] Consider what new code reveals about existing code
-- [ ] Run tests after each refactor step
+- **Duplication** → extract a function or class
+- **Long methods** → break into private helpers (keep tests on the public interface)
+- **Shallow modules** → combine or deepen them
+- **Feature envy** → move logic to where the data lives
+- **Primitive obsession** → introduce value objects
+- **Existing code** the new code reveals as problematic
+- Apply SOLID principles where natural
 
-**Never refactor while RED.** Get to GREEN first.
+Run tests after each refactor step. **Never refactor while RED** — get to GREEN
+first.
 
 ## Checklist Per Cycle
 
@@ -128,6 +145,17 @@ After all tests pass, look for [refactor candidates](refactoring.md):
 [ ] Code is minimal for this test
 [ ] No speculative features added
 ```
+
+## Constraints
+
+- **Never write all tests first.** Vertical slices only — one test, one
+  implementation, then repeat.
+- **Never refactor while RED.** Get to GREEN first.
+- One test at a time; write only enough code to pass the current test.
+- Don't anticipate future tests or add speculative features.
+- Test observable behavior through public interfaces — never private methods or
+  internal collaborators.
+- Get user approval on the behavior list before writing code.
 
 ## Quality
 

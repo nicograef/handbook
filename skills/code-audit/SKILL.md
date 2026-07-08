@@ -54,6 +54,20 @@ Per finding: **What** → **Where** (file:lines) → **Impact** → **Suggestion
 At the end: prioritised recommendations (correctness bugs > quick wins >
 larger refactors).
 
+## Constraints
+
+- This is a repo-wide audit, not incremental code review — for a single
+  change or diff, use the cleanup skill instead.
+- Report findings; do not apply fixes. The audit produces recommendations,
+  not code changes.
+- Simplification suggestions must stay readability-first — do not propose
+  rewrites or refactors that trade clarity for cleverness or brevity alone.
+- Do not flag a single-implementation interface or wrapper as a problem
+  unless it adds indirection without value — some abstractions are
+  intentional.
+- Skip Step 3 conclusions if the build/lint/test tooling itself is broken or
+  unavailable — report that as a finding rather than guessing at results.
+
 ## Quality
 
 - Before presenting results, run the shared [self-review checklist](../quality.md) — applied to the quality of the audit artifact. Surface issues in the chat only if found.

@@ -122,6 +122,22 @@ A description of the things that are out of scope for this PRD.
 Any further notes about the feature.
 ```
 
+## Constraints
+
+- Do not skip exploration to save time: read the codebase to answer a
+  question before asking the user.
+- Cap clarification at 5 questions per round and 1–3 rounds total; stop as
+  soon as ambiguities are resolved instead of over-asking.
+- Never present a question without a recommended answer and the reasoning
+  behind it.
+- If the user declines to answer, do not block — proceed with the
+  recommended default and record it as a clearly marked **Assumption:**
+  callout in the PRD.
+- Do not include specific file paths or code snippets in Implementation
+  Decisions; they go stale quickly.
+- Only test external behavior in Testing Decisions, never implementation
+  details.
+
 ## Quality
 
 - Before presenting results, run the shared [self-review checklist](../quality.md) — applied to the quality of the PRD artifact. Surface issues in the chat only if found.

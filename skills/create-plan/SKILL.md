@@ -111,7 +111,7 @@ Derive a slug from the task (e.g. `admin-dashboard`, `order-cancel`).
 Create the file `docs/plans/plan-<slug>.md` (create the directory if it
 doesn't exist).
 
-## Rules
+## Constraints
 
 - **No code changes.** Only create the plan file.
 - **Precise references.** Back every finding with file path and line numbers

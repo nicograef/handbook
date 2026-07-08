@@ -63,7 +63,7 @@ Write a `UBIQUITOUS_LANGUAGE.md` file with this structure:
 - "account" was used to mean both **Customer** and **User** — these are distinct concepts: a **Customer** places orders, while a **User** is an authentication identity that may or may not represent a **Customer**.
 ```
 
-## Rules
+## Constraints
 
 - **Be opinionated.** When multiple words exist for the same concept, pick the
   best one and list the others as aliases to avoid.

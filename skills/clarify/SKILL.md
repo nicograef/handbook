@@ -12,11 +12,9 @@ description: >-
 Never assume — always ask. Before acting on any task, identify ambiguities and
 unknowns, then resolve them through structured questions. Walk down each
 branch of the decision tree, resolving dependencies between decisions
-one-by-one.
-
-When a structured question tool is available (e.g. a tool that presents
-multiple-choice options to the user), prefer it over plain-text questions.
-Fall back to conversational questions only if no such tool exists.
+one-by-one. Use this skill when clarification is the task itself or when
+thorough spec-gathering is needed — create-plan and write-prd embed a lighter
+clarification pass scoped to their own work.
 
 ## Workflow
 
@@ -75,10 +73,9 @@ If the user declines to answer or says "just do it":
 
 ## Constraints
 
-- Max **5 questions** per round.
-- Always prefer a **structured question tool** when available; fall back to
-  conversational questions only if no such tool exists.
 - Do not repeat questions the user has already answered.
+- Never act on an unresolved ambiguity — get an answer or record a documented
+  **Assumption** first.
 
 ## Quality
 

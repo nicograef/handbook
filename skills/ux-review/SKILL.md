@@ -44,6 +44,14 @@ Per finding: **Category** → **What** → **Where** (file:lines) →
 
 At the end: quick wins first, then consistency fixes to batch.
 
+## Constraints
+
+- Stay scoped to UX: do not audit code quality, architecture, performance, or security — flag those only in passing if they directly cause a UX symptom.
+- Do not report a finding without a concrete file:lines location; vague or unverifiable claims are not usable.
+- Judge mobile-first, not desktop-first — a layout that only works at desktop widths is a finding, not an acceptable baseline.
+- Do not flag inconsistency without naming both sides of the drift (e.g. which two screens or labels disagree).
+- Avoid subjective visual-taste feedback (colors, spacing preferences) that isn't tied to friction, consistency, or clarity.
+
 ## Quality
 
 - Before presenting results, run the shared [self-review checklist](../quality.md) — applied to the quality of the review artifact. Surface issues in the chat only if found.
