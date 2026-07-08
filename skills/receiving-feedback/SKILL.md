@@ -1,0 +1,77 @@
+---
+name: receiving-feedback
+description: >-
+  Acts on code-review feedback (from a human, a PR comment, or an AI
+  reviewer) by verifying each item against the codebase before implementing,
+  and asking when items are unclear. Use when receiving code review
+  comments, PR feedback, or suggestions from another reviewer — before
+  implementing any of them.
+---
+
+# Receiving Feedback
+
+Code review requires technical evaluation, not a reflex to agree. Verify
+before implementing, ask before assuming, and prefer technical correctness
+over social comfort.
+
+## Workflow
+
+1. **Read all feedback first.** Take in the complete set of comments before
+   reacting to any single one. Do not reply or start fixing item by item —
+   items are often related and a partial read leads to a wrong fix.
+2. **Restate each item as a concrete technical requirement.** For every
+   comment, write down in your own words exactly what change it implies. If
+   an item is genuinely ambiguous, mark it unclear instead of guessing.
+3. **If any item is unclear, ask about all unclear items before implementing
+   anything.** Do not implement the clear items first and ask about the rest
+   later — resolving the unclear ones can change how the clear ones should
+   be done.
+4. **Verify each clear item against the actual codebase.** For every item,
+   check:
+   - Does it match current behavior, or is the reviewer assuming something
+     that isn't true?
+   - Would the change break existing tests or other callers?
+   - Is there a reason the code is the way it is (compatibility, a prior
+     decision, a constraint the reviewer may not see)?
+   - Is the suggestion actually used, or does it add something nothing
+     calls (YAGNI)?
+5. **Evaluate technical soundness for this stack.** A suggestion can be
+   generically reasonable and still wrong for Nico's stack (Go stdlib
+   patterns, React/TS conventions, sqlc-generated code, etc.). Judge it in
+   that context, not in the abstract.
+6. **Push back with reasoning when a suggestion is wrong.** State the
+   specific technical reason — a failing assumption, a broken test, a
+   compatibility constraint — and propose an alternative or ask which
+   tradeoff to take. Do not rubber-stamp a suggestion just because it came
+   from a reviewer.
+7. **Implement one item at a time, in this order:** blocking issues (bugs,
+   security) first, then simple fixes, then complex/structural fixes. Verify
+   each one (tests, build, manual check) before moving to the next.
+8. **Report back factually.** State what changed and where, or state why an
+   item was not implemented. If you pushed back and turned out to be wrong,
+   say so plainly and fix it — no lengthy apology, no over-explaining.
+
+## Constraints
+
+- No performative agreement. Do not open a response with "you're right" or
+  "great point" — state the requirement or just make the fix.
+- No blind implementation. Every item gets checked against the real
+  codebase before you touch code, even feedback from a trusted source.
+- No batching without testing. Multiple items get implemented and verified
+  one at a time, not all at once and tested at the end.
+- No silent partial implementation. If some items are unclear, stop and ask
+  about all of them before implementing the clear ones.
+- No gratitude filler ("thanks for catching that", "thanks for the
+  feedback"). Acknowledge with the fix itself or a one-line factual note.
+- Architectural pushback goes to Nico, not into a unilateral decision — if a
+  suggestion conflicts with an existing architectural choice, flag it and
+  ask rather than silently overriding either the reviewer or the prior
+  decision.
+- When replying to inline PR comments on GitHub, reply in the comment thread
+  (`gh api repos/{owner}/{repo}/pulls/{pr}/comments/{id}/replies`), not as a
+  new top-level PR comment.
+
+## Quality
+
+- Before presenting results, run the shared [self-review checklist](../quality.md). Surface issues in the chat only if found.
+- After task completion, propose a conventional commit message plus a short human-readable summary of what changed, why, and what the reviewer should focus on.

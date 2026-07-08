@@ -111,6 +111,25 @@ Derive a slug from the task (e.g. `admin-dashboard`, `order-cancel`).
 Create the file `docs/plans/plan-<slug>.md` (create the directory if it
 doesn't exist).
 
+### 8. Self-review the plan
+
+Read the written plan with fresh eyes before presenting it.
+
+- **Placeholder scan.** Search for vagueness that would block an implementer:
+  "TBD", "TODO", "implement later", "fill in details"; instructions like "add
+  appropriate error handling" or "add validation" that don't say how; "similar
+  to Phase N" without restating the content; acceptance criteria or phase
+  descriptions that reference a file, function, or model not defined anywhere
+  else in the plan. Fix inline.
+- **Cross-phase consistency check.** Confirm names introduced in
+  "Architectural decisions" (route paths, schema/table names, key model or
+  function names) are used identically everywhere they recur in later phases.
+  Drift — e.g. `Order` in one phase and `PurchaseOrder` in another — is a plan
+  bug. Fix inline.
+
+Fix issues directly in the plan file before presenting it to the user. No need
+to re-review after fixing.
+
 ## Constraints
 
 - **No code changes.** Only create the plan file.
@@ -121,6 +140,8 @@ doesn't exist).
 ## Quality
 
 - Before presenting results, run the shared [self-review checklist](../quality.md) — applied to the quality of the plan artifact. Surface issues in the chat only if found.
+- Placeholder scan (step 8): no TBD/TODO/vague instructions, and no acceptance criteria referencing undefined files, functions, or models.
+- Cross-phase consistency check (step 8): names from "Architectural decisions" stay identical in every phase that reuses them.
 - After task completion, propose a conventional commit message plus a short human-readable summary of what changed, why, and what the reviewer should focus on.
 
 ## Plan Template

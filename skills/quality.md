@@ -30,3 +30,16 @@ Before presenting results, silently confirm the work is:
 
 If you notice you are making, or about to make, changes outside the task scope,
 stop, name the out-of-scope changes, and ask the user before proceeding.
+
+## Verify before claiming done
+
+Evidence before assertions. Before saying work is complete, fixed, or passing —
+or before committing or opening a PR — prove it, don't assume it.
+
+- Name the exact command that proves it (the project's test, build, or lint
+  command) and run it fresh this turn, even if it "should" already pass.
+- Read the full output — exit code, failure count, error text — not just the
+  last few lines.
+- State the result only after seeing that output, and cite the command you ran.
+- If a delegated agent, sub-skill, or tool reported success, don't repeat that
+  as fact — check the actual diff or output yourself first.

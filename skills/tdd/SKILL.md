@@ -99,8 +99,11 @@ the parameters, or hide more complexity inside?
 Write ONE test that confirms ONE thing about the system:
 
 ```
-RED:   Write test for first behavior → test fails
-GREEN: Write minimal code to pass → test passes
+RED:    Write test for first behavior → test fails
+VERIFY: Confirm it fails for the EXPECTED reason (missing feature, not a
+        typo or syntax error)
+GREEN:  Write minimal code to pass → test passes
+VERIFY: Confirm it passes AND all other tests still pass, with clean output
 ```
 
 This is your tracer bullet — proves the path works end-to-end.
@@ -110,8 +113,11 @@ This is your tracer bullet — proves the path works end-to-end.
 For each remaining behavior:
 
 ```
-RED:   Write next test → fails
-GREEN: Minimal code to pass → passes
+RED:    Write next test → fails
+VERIFY: Confirm it fails for the EXPECTED reason (missing feature, not a
+        typo or syntax error)
+GREEN:  Minimal code to pass → passes
+VERIFY: Confirm it passes AND all other tests still pass, with clean output
 ```
 
 Rules:

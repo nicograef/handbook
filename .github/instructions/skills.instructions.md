@@ -40,6 +40,8 @@ description: "One-line summary of what the skill does and when to invoke it."
 - Use imperative voice ("Search the codebase", not "The agent should search").
 - Include anti-pattern warnings where common mistakes exist.
 - Reference external files with relative links: `[REFERENCE.md](REFERENCE.md)`.
+- `description` states the trigger ("Use when...") and what the skill does, in third person — never a step-by-step workflow summary; agents shortcut-follow a summarized workflow instead of reading the skill body.
+- Keep reference files short and focused; push detail out of `SKILL.md` into them so the main file stays scannable (progressive disclosure — load only what's needed).
 
 ## File Naming
 

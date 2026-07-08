@@ -17,6 +17,12 @@ You may skip steps if you don't consider them necessary.
 Ask the user for a long, detailed description of the problem they want to
 solve and any potential ideas for solutions.
 
+**Scope triage:** If the request bundles multiple independent
+subsystems/features (each could ship and be useful on its own), stop before
+spending clarification rounds. Help the user split it into separate PRDs —
+each gets its own PRD and, later, its own plan. Only continue with this
+workflow once you're working a single, cohesive PRD's worth of scope.
+
 ### 2. Explore the codebase
 
 Explore the repo to verify their assertions and understand the current state
@@ -47,7 +53,14 @@ If the user declines to answer: proceed with recommended defaults and document
 each assumption in the PRD as a clearly marked callout (e.g. blockquote
 prefixed with **Assumption:**).
 
-### 4. Design modules
+### 4. Propose approaches
+
+Once ambiguities are resolved, propose **2–3 candidate solution approaches**
+with their trade-offs (effort, risk, reversibility, fit with the existing
+codebase). Lead with a recommendation and your reasoning for it. Get the
+user to pick one — or steer a hybrid — before moving on to module design.
+
+### 5. Design modules
 
 Sketch out the major modules you will need to build or modify to complete
 the implementation. Actively look for opportunities to extract deep modules
@@ -59,12 +72,19 @@ lot of functionality in a simple, testable interface which rarely changes.
 Check with the user that these modules match their expectations. Check with
 the user which modules they want tests written for.
 
-### 5. Write the PRD
+### 6. Write the PRD
 
-Once you have a complete understanding of the problem and solution, use the
-template below to write the PRD. Save it to `docs/prds/prd-<name>.md`
-(create the directory if it doesn't exist). Use a short kebab-case name
-derived from the feature (e.g. `prd-user-onboarding.md`).
+Once you have a complete understanding of the problem and solution, build
+the PRD **section by section** instead of revealing it all at once. For each
+major section — Problem Statement, Solution, Implementation Decisions —
+present a draft and ask "does this look right so far?" before moving to the
+next. Scale the depth of each section to the complexity of the feature; a
+small feature doesn't need a long-winded Problem Statement.
+
+Only write the full PRD file once every section is confirmed. Use the
+template below and save it to `docs/prds/prd-<name>.md` (create the
+directory if it doesn't exist). Use a short kebab-case name derived from the
+feature (e.g. `prd-user-onboarding.md`).
 
 ## PRD Template
 
@@ -141,4 +161,11 @@ Any further notes about the feature.
 ## Quality
 
 - Before presenting results, run the shared [self-review checklist](../quality.md) — applied to the quality of the PRD artifact. Surface issues in the chat only if found.
+- Also run a PRD-specific self-review pass before presenting the final file:
+  - Scan for placeholders, TBDs, or unresolved brackets left over from drafting.
+  - Check internal consistency — do the User Stories, Implementation Decisions,
+    and Out of Scope sections agree with each other and with the Solution?
+  - Confirm the scope is narrow enough to be covered by a single
+    implementation plan; if not, flag it and suggest splitting.
+  - Flag any requirement that could reasonably be read two different ways.
 - After task completion, propose a conventional commit message plus a short human-readable summary of what changed, why, and what the reviewer should focus on.
