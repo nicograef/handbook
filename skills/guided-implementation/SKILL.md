@@ -104,7 +104,7 @@ five dimensions, adapted from the project's audit and quality skills:
 - Are error cases handled at the boundary?
 - Are naming and conventions consistent with the rest of the codebase?
 
-#### 5b. Interface Quality (from Design Interface / Improve Architecture)
+#### 5b. Interface Quality
 
 - Is the interface as small as possible? Could any parameter or method be
   removed without losing functionality?

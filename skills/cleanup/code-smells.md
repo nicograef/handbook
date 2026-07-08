@@ -20,8 +20,8 @@ multiple unrelated responsibilities, hard to name precisely.
 - A function takes 5+ parameters because it handles multiple concerns
 
 **Suggest:** Identify the separate responsibilities. For cleanup, note them —
-do not extract unless the change is small and self-contained. Flag the
-improve-architecture skill for large cases.
+do not extract unless the change is small and self-contained. Flag large cases
+as a separate refactor for the user to schedule.
 
 ### Feature Envy
 
@@ -48,7 +48,7 @@ One conceptual change requires edits in many unrelated files.
 - Related logic is scattered across layers with no cohesive module
 
 **Suggest:** Note the coupling. This is usually an architectural issue — flag
-the improve-architecture skill.
+it as a larger refactor for the user to schedule separately.
 
 ### Primitive Obsession / Stringly Typed
 

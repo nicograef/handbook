@@ -170,7 +170,8 @@ implementation to infrastructure. Inject the dependency.
 - A test file contains production helpers
 
 **Suggest:** Identify which concern is leaking where. For small leaks, note it.
-For large ones, flag the improve-architecture skill.
+For large ones, flag them as a larger refactor for the user to schedule
+separately.
 
 ---
 

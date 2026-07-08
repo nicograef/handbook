@@ -152,8 +152,8 @@ After all confirmed changes are applied:
 - **Never change functionality.** This is a readability and quality pass.
   The code must do exactly the same thing before and after.
 - **Never suggest large refactors.** If an issue requires significant
-  restructuring, flag it as "consider the improve-architecture skill" and move
-  on.
+  restructuring, flag it as a large refactor for the user to schedule
+  separately and move on.
 - **Never rewrite.** Subtract or simplify. Do not impose a different style.
 - **Never impose foreign conventions.** The codebase's existing style is the
   baseline. Flag only genuine principle violations, not style preferences.

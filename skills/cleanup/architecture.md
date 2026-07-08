@@ -5,7 +5,8 @@ module design. Each item is a question to ask during review, what to flag, and
 what to suggest.
 
 These are focused checks for incremental review — not a full architectural
-assessment. For large-scale restructuring, flag the improve-architecture skill.
+assessment. For large-scale restructuring, flag it as a separate refactor for
+the user to schedule.
 
 ---
 
@@ -73,7 +74,8 @@ pass-through?
 complexity behind a small interface — if there is nothing to hide, the module is
 overhead.
 
-For significant restructuring, flag the improve-architecture skill.
+For significant restructuring, flag it as a separate refactor for the user to
+schedule.
 
 ---
 
@@ -159,7 +161,8 @@ should be independent?
 **Suggest:** Define explicit contracts (interfaces, DTOs, events) between
 contexts. Each context should own its model and expose only what others need.
 
-For large boundary issues, flag the improve-architecture skill.
+For large boundary issues, flag them as a separate refactor for the user to
+schedule.
 
 ---
 

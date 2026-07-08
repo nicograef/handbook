@@ -86,24 +86,6 @@ Reusable bash scripts.
 
 ## Skills
 
-Reusable agent skills — copy individual skill directories into project repos as needed.
+Reusable agent skills for Claude Code and GitHub Copilot. Both agents consume them from the `~/.claude/skills` symlink — they are not copied into project repos.
 
-| Skill                    | Directory                                                                      | Description                                                             |
-| ------------------------ | ------------------------------------------------------------------------------ | ----------------------------------------------------------------------- |
-| Clarify                  | [skills/clarify/](skills/clarify/)                                             | Structured clarifying questions before acting — never assume             |
-| Code Audit               | [skills/code-audit/](skills/code-audit/)                                       | Cross-layer consistency, simplification, and repo verification audit    |
-| Create Plan              | [skills/create-plan/](skills/create-plan/)                                     | Plan from PRD or task description — vertical slices + acceptance criteria |
-| Write a PRD              | [skills/write-prd/](skills/write-prd/)                                     | Structured PRD creation → local `docs/prds/` file                       |
-| Guided Implementation    | [skills/guided-implementation/](skills/guided-implementation/)                 | Step-by-step coaching through a user story or plan phase — developer writes all code |
-| Implement Plan           | [skills/implement-plan/](skills/implement-plan/)                               | Execute a plan.md one section at a time — sequential task completion    |
-| TDD                      | [skills/tdd/](skills/tdd/)                                                     | Red-green-refactor with vertical slices + reference files               |
-| Test Quality             | [skills/test-quality/](skills/test-quality/)                                   | Review and refactor existing tests — remove brittle, implementation-detail tests |
-| UX Review                | [skills/ux-review/](skills/ux-review/)                                         | Mobile UX, UI consistency, workflow friction, and terminology review    |
-| Ubiquitous Language      | [skills/ubiquitous-language/](skills/ubiquitous-language/)                      | Extract DDD glossary → `UBIQUITOUS_LANGUAGE.md`                         |
-| Design Interface         | [skills/design-interface/](skills/design-interface/)                            | "Design It Twice" — parallel sub-agents generate radically different APIs |
-| Improve Architecture     | [skills/improve-architecture/](skills/improve-architecture/)                   | Find deepening opportunities → local `docs/rfcs/` RFC                   |
-| Handbook Sync            | [skills/handbook-sync/](skills/handbook-sync/)                                 | Audit a project against handbook best practices and apply improvements   |
-| Extract                  | [skills/extract/](skills/extract/)                                             | Extract text, tables, metadata from PDF, Word (.docx), and Excel (.xlsx) files |
-| Understand               | [skills/understand/](skills/understand/)                                       | Deep codebase exploration to build a human's mental model               |
-| Deslop                   | [skills/deslop/](skills/deslop/)                                               | Remove AI-generated slop from code, docs, and config files              |
-| Cleanup                  | [skills/cleanup/](skills/cleanup/)                                             | Incremental code quality review — principles, smells, architecture, readability |
+See **[skills/README.md](skills/README.md)** for the full skills index and when to use each one.
