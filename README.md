@@ -27,6 +27,7 @@ Step-by-step procedures to follow start to finish.
 | PostgreSQL operations             | [guides/postgresql-operations.md](guides/postgresql-operations.md)         |
 | External monitoring (Better Stack)| [guides/monitoring.md](guides/monitoring.md)                               |
 | Server maintenance & upkeep       | [guides/maintenance.md](guides/maintenance.md)                             |
+| End-to-end verification drill     | [guides/verification-drill.md](guides/verification-drill.md)               |
 
 ### Stack conventions
 
