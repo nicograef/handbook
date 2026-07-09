@@ -1,6 +1,6 @@
 # Go Backend Guide
 
-Best practices for Go backend projects.
+Stack-convention guide for Go backend projects — heading-grouped rules, not a runbook.
 
 ## Project Setup
 

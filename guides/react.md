@@ -1,6 +1,6 @@
 # React Frontend Guide
 
-Best practices for React + TypeScript frontend projects.
+Stack-convention guide for React + TypeScript frontend projects — heading-grouped rules, not a runbook.
 
 ## Project Setup
 

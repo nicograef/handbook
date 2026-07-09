@@ -669,29 +669,29 @@ owned by WP6/WP7.
 `cheatsheets/postgresql.md`, `cheatsheets/vim.md`.
 
 **Steps:**
-- [ ] Apply GC-15 version bumps everywhere they occur: Go `1.26` (`github-actions-cicd.md`,
+- [x] Apply GC-15 version bumps everywhere they occur: Go `1.26` (`github-actions-cicd.md`,
   `templates/ci.yml` ×3); nginx `1.30-alpine` (`docker-multi-stage-builds.md`, `letsencrypt-docker.md`,
   `templates/docker-compose.prod.yml`); certbot `v5.6.0` (`letsencrypt-docker.md` ×2,
   `templates/docker-compose.prod.yml`); action majors (`github-actions-cicd.md`, `templates/ci.yml`);
   pnpm `@10` (`docker-multi-stage-builds.md`). *(GU-3, GU-5, GU-6, GU-7, GU-15)*
-- [ ] `github-actions-cicd.md`: reduce to pattern explanations (OIDC prereqs, path-filter concept,
+- [x] `github-actions-cicd.md`: reduce to pattern explanations (OIDC prereqs, path-filter concept,
   caching table, troubleshooting) + links to `templates/ci.yml` and `templates/Makefile`; delete
   the duplicated job/`prod-release` blocks; add `## Verify` and `## Prerequisites`. *(GU-9, GU-13)*
-- [ ] `letsencrypt-docker.md`: fix the ufw prerequisite to `sudo ufw allow 80,443/tcp`; add a
+- [x] `letsencrypt-docker.md`: fix the ufw prerequisite to `sudo ufw allow 80,443/tcp`; add a
   `## Verify` section (cert-issued + dry-run-renew). *(GU-4, GU-13)*
-- [ ] `nginx-reverse-proxy.md`: keep only the two patterns NOT in `templates/nginx-tls.conf` (SPA
+- [x] `nginx-reverse-proxy.md`: keep only the two patterns NOT in `templates/nginx-tls.conf` (SPA
   try_files, static-asset caching) + one-line pointers; delete the five duplicated config blocks;
   rename `## Testing` → `## Verify`; add `## Prerequisites`. *(GU-10, GU-13)*
-- [ ] `go.md`, `java-spring-boot.md`, `react.md`: these are stack-convention guides (heading-grouped
+- [x] `go.md`, `java-spring-boot.md`, `react.md`: these are stack-convention guides (heading-grouped
   rules, tables, short rationale) — the two-guide-types convention added in WP2/`.claude/rules/guides.md`
   and WP7/guides.instructions makes them compliant; verify each opens by naming itself a
   stack-convention guide and needs no runbook restructure. No content rewrite. *(GU-11)*
-- [ ] `cheatsheets/unix-commands.md`: append the missing closing ``` after the final block; replace
+- [x] `cheatsheets/unix-commands.md`: append the missing closing ``` after the final block; replace
   the project-specific `StructuralFormat` grep with a generic commented example. *(CS-8, CS-15)*
-- [ ] `cheatsheets/postgresql.md`: move "Useful Shortcuts" SQL into a ` ```sql ` fence with `--`
+- [x] `cheatsheets/postgresql.md`: move "Useful Shortcuts" SQL into a ` ```sql ` fence with `--`
   comments; split the reload section into a bash block (`systemctl reload`) and a sql block
   (`SELECT pg_reload_conf();`). *(CS-9)*
-- [ ] `cheatsheets/vim.md`: split into `##` sections (Editing, Line Ranges, Search & Replace, Files
+- [x] `cheatsheets/vim.md`: split into `##` sections (Editing, Line Ranges, Search & Replace, Files
   & Splits); backtick every command cell; use `<before>`/`<after>` placeholders; rename title
   `# Vim Cheatsheet` → `# Vim`. *(CS-11)*
 

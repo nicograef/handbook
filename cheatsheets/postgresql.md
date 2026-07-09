@@ -115,25 +115,28 @@ SHOW config_file;                                -- location of postgresql.conf
 ```
 
 ```bash
-# reload config without restart
+# reload config without restart (from the shell)
 sudo systemctl reload postgresql
-# or from psql:
+```
+
+```sql
+-- or reload from within psql
 SELECT pg_reload_conf();
 ```
 
 ## Useful Shortcuts
 
-```bash
-# quick row count
+```sql
+-- quick row count
 SELECT count(*) FROM users;
 
-# explain query plan
+-- explain query plan
 EXPLAIN ANALYZE SELECT * FROM users WHERE email = 'a@b.com';
 
-# list table columns with types
+-- list table columns with types
 SELECT column_name, data_type, is_nullable
 FROM information_schema.columns WHERE table_name = 'users';
 
-# current timestamp
+-- current timestamp
 SELECT now();
 ```

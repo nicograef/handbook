@@ -23,7 +23,7 @@ Three Compose files:
 ## Prerequisites
 
 1. DNS A record pointing to the VPS IP (+ optional `www` subdomain)
-2. Ports 80 and 443 open (`sudo ufw allow 80/tcp 443/tcp`)
+2. Ports 80 and 443 open (`sudo ufw allow 80,443/tcp`)
 3. Docker + Compose installed
 
 ## Step 1 — Initial Certificate
@@ -35,7 +35,7 @@ Use a minimal nginx that only serves ACME challenges:
 # docker-compose.initial-cert.yml
 services:
   reverse-proxy:
-    image: nginx:1.27-alpine
+    image: nginx:1.30-alpine
     ports:
       - "80:80"
     volumes:
@@ -71,7 +71,7 @@ docker compose -f docker-compose.initial-cert.yml up -d
 docker run --rm \
   -v myapp_certbot-challenges:/var/www/certbot \
   -v myapp_letsencrypt:/etc/letsencrypt \
-  certbot/certbot:v2.11.0 certonly \
+  certbot/certbot:v5.6.0 certonly \
     --webroot -w /var/www/certbot \
     -d example.com -d www.example.com \
     --email you@example.com \
@@ -103,6 +103,20 @@ The `certbot` service in [`docker-compose.prod.yml`](../templates/docker-compose
 
 For a fully automated first-time deploy, see [`scripts/prod-init.sh`](../scripts/prod-init.sh).
 
+## Verify
+
+```bash
+# cert was issued (expect a live/<domain>/ directory)
+docker run --rm -v myapp_letsencrypt:/etc/letsencrypt alpine \
+  ls /etc/letsencrypt/live/
+
+# renewal path works end-to-end (expect "Congratulations, all simulated renewals succeeded")
+docker run --rm \
+  -v myapp_certbot-challenges:/var/www/certbot \
+  -v myapp_letsencrypt:/etc/letsencrypt \
+  certbot/certbot:v5.6.0 renew --dry-run
+```
+
 ## Troubleshooting
 
 ```bash
@@ -114,7 +128,7 @@ docker run --rm -v myapp_letsencrypt:/etc/letsencrypt alpine \
 docker run --rm \
   -v myapp_certbot-challenges:/var/www/certbot \
   -v myapp_letsencrypt:/etc/letsencrypt \
-  certbot/certbot:v2.11.0 renew --dry-run
+  certbot/certbot:v5.6.0 renew --dry-run
 
 # check cert expiry
 docker run --rm -v myapp_letsencrypt:/etc/letsencrypt alpine \

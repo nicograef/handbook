@@ -14,7 +14,7 @@ find . -path ./node_modules -prune -o -name '*.ts' -print  # skip directory
 ## grep
 
 ```bash
-grep -rnwl 'StructuralFormat' . --include=\*.ts --exclude=\*.{d,test}.ts --exclude-dir={node_modules,dist}
+grep -rnwl '<term>' . --include=\*.ts --exclude=\*.{d,test}.ts --exclude-dir={node_modules,dist}  # recursive, whole-word, files-with-matches
 grep -rn 'TODO' --include='*.go'                 # search with line numbers
 grep -c 'ERROR' /var/log/syslog                  # count matches
 grep -E 'warn|error|fatal' app.log               # extended regex (OR)
@@ -124,3 +124,4 @@ split -l 500 -d input.txt input_                 # chunk file into 500-line part
 wc -l file.txt                                   # count lines
 wc -l *.go | sort -n                             # lines per file, sorted
 sort file.txt | uniq -c | sort -rn               # frequency count
+```

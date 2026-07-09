@@ -64,7 +64,7 @@ services:
 
   # ── Reverse Proxy (TLS termination + routing) ──
   reverse-proxy:
-    image: nginx:1.27-alpine
+    image: nginx:1.30-alpine
     restart: unless-stopped
     ports:
       - "80:80"
@@ -83,7 +83,7 @@ services:
 
   # ── Certbot (Let's Encrypt auto-renewal) ──
   certbot:
-    image: certbot/certbot:v2.11.0
+    image: certbot/certbot:v5.6.0
     restart: unless-stopped
     volumes:
       - certbot-challenges:/var/www/certbot

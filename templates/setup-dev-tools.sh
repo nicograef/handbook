@@ -71,7 +71,7 @@ if command -v pnpm >/dev/null 2>&1; then
 else
   if command -v corepack >/dev/null 2>&1; then
     corepack enable
-    corepack prepare pnpm@latest --activate
+    corepack prepare pnpm@10 --activate
   else
     fatal "pnpm not found and corepack unavailable. Install pnpm manually."
   fi

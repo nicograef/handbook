@@ -1,6 +1,7 @@
 # Java / Spring Boot Backend
 
-General guide for building Java backends with Spring Boot. Derived from [nicograef/lexiban](https://github.com/nicograef/lexiban).
+Stack-convention guide for Java backends with Spring Boot — heading-grouped rules, not a runbook.
+Derived from [nicograef/lexiban](https://github.com/nicograef/lexiban).
 
 ---
 
