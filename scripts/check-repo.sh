@@ -13,9 +13,10 @@
 #   4. Language      — no German prose (umlauts / eszett) outside the allow-listed files.
 #   5. Skills index  — every SKILL.md directory is listed in .claude/skills/README.md and vice-versa.
 #   6. Compose       — every templates/docker-compose*.yml passes `docker compose config -q`.
+#   7. Plugin        — the plugin manifests pass `claude plugin validate .`.
 #
 # Idempotent: reads only, never writes. Run any subset via the STAGE argument:
-#   scripts/check-repo.sh links | lint | readme | language | skills | compose | all   (default: all)
+#   scripts/check-repo.sh links | lint | readme | language | skills | compose | plugin | all   (default: all)
 
 set -euo pipefail
 
@@ -197,6 +198,20 @@ check_compose() {
   done < <(git ls-files 'templates/docker-compose*.yml')
 }
 
+# ---------------------------------------------------------------------------
+# 7. Plugin manifests
+# ---------------------------------------------------------------------------
+check_plugin() {
+  if ! command -v claude >/dev/null 2>&1; then
+    log "claude not installed"
+    return
+  fi
+  if ! claude plugin validate . >/dev/null 2>&1; then
+    log "plugin validate failed"
+    claude plugin validate . >&2 || true
+  fi
+}
+
 case "$STAGE" in
   links)    check_links ;;
   lint)     check_shell ;;
@@ -204,8 +219,9 @@ case "$STAGE" in
   language) check_language ;;
   skills)   check_skills ;;
   compose)  check_compose ;;
-  all)      check_links; check_shell; check_readme; check_language; check_skills; check_compose ;;
-  *)        printf 'usage: %s [links|lint|readme|language|skills|compose|all]\n' "$0" >&2; exit 2 ;;
+  plugin)   check_plugin ;;
+  all)      check_links; check_shell; check_readme; check_language; check_skills; check_compose; check_plugin ;;
+  *)        printf 'usage: %s [links|lint|readme|language|skills|compose|plugin|all]\n' "$0" >&2; exit 2 ;;
 esac
 
 if [[ "$FAILED" -ne 0 ]]; then

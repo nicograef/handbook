@@ -1,8 +1,8 @@
 # Handbook dev interface. `make check` is the full repo self-check.
 
-.PHONY: check links lint readme language skills compose help
+.PHONY: check links lint readme language skills compose plugin help
 
-## check: run the full repo self-check (links, shellcheck, README index, language, skills, compose)
+## check: run the full repo self-check (links, shellcheck, README index, language, skills, compose, plugin)
 check:
 	@scripts/check-repo.sh all
 
@@ -29,6 +29,10 @@ skills:
 ## compose: verify every templates/docker-compose*.yml passes `docker compose config -q`
 compose:
 	@scripts/check-repo.sh compose
+
+## plugin: verify the plugin manifests pass `claude plugin validate .`
+plugin:
+	@scripts/check-repo.sh plugin
 
 ## help: list available targets
 help:
