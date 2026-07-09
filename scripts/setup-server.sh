@@ -29,7 +29,7 @@ SSH_PUBLIC_KEY="${SSH_PUBLIC_KEY:-}"              # paste your pubkey here or ex
 EXTRA_UFW_PORTS="${EXTRA_UFW_PORTS:-80/tcp 443/tcp}"  # space-separated
 PASSWORDLESS_SUDO="${PASSWORDLESS_SUDO:-false}"  # "true" grants NOPASSWD sudo (convenience over prompts)
 USER_PASSWORD="${USER_PASSWORD:-}"               # required unless PASSWORDLESS_SUDO=true; enables sudo prompts
-HEALTH_PING_URL="${HEALTH_PING_URL:-}"           # optional: daily dead-man health-ping URL (e.g. a Healthchecks.io ping URL)
+HEALTH_PING_URL="${HEALTH_PING_URL:-}"           # optional: daily dead-man health-ping URL (e.g. a Better Stack heartbeat)
 DRY_RUN="${DRY_RUN:-false}"                      # set to "true" or pass --dry-run
 # ─────────────────────────────────────────────────────────────────────────────
 

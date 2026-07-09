@@ -39,14 +39,16 @@ if [[ -e "$REBOOT_REQUIRED_FILE" ]]; then
 fi
 
 # Inspect only the most recent unattended-upgrades run (the block after the last
-# "Starting unattended upgrades script" marker) for an error line.
+# "Starting unattended upgrades script" marker) for an error line. Match the
+# log's severity field (" ERROR ") and Python tracebacks case-sensitively —
+# a substring match would false-alarm on package names like libgpg-error0.
 if [[ -f "$UNATTENDED_UPGRADES_LOG" ]]; then
   last_run="$(awk '
     /Starting unattended upgrades script/ { buf = "" }
     { buf = buf $0 "\n" }
     END { printf "%s", buf }
   ' "$UNATTENDED_UPGRADES_LOG")"
-  if printf '%s' "$last_run" | grep -qiE 'error|traceback'; then
+  if printf '%s' "$last_run" | grep -qE ' ERROR |^Traceback'; then
     log "UNHEALTHY: last unattended-upgrades run logged an error"
     healthy=false
   fi

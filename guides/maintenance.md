@@ -213,5 +213,3 @@ See also:
 - [guides/letsencrypt-docker.md](letsencrypt-docker.md) — cert renewal loop
 - [guides/docker-setup.md](docker-setup.md) — Docker install and pruning
 - [cheatsheets/docker-compose.md](../cheatsheets/docker-compose.md) — Compose command reference
-</content>
-</invoke>
