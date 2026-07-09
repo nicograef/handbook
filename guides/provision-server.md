@@ -25,6 +25,46 @@ ssh-keygen -t ed25519 -C "you@machine"
 
 ## Usage
 
+Two paths. Prefer **cloud-init** (the server provisions itself on first boot);
+fall back to the **manual SSH pipe** when the provider has no user-data field.
+
+> **Security:** user-data — including `USER_PASSWORD` — stays readable from the
+> instance metadata endpoint. Rotate the password at first login (`passwd`) or
+> use `PASSWORDLESS_SUDO=true` and omit `USER_PASSWORD` entirely.
+
+### Primary: cloud-init (Hetzner)
+
+Reference provider: Hetzner Cloud, which exposes a user-data field (verified
+2026-07-09).
+
+1. Copy [`templates/cloud-init.yml`](../templates/cloud-init.yml) and fill the
+   `<angle-bracket>` placeholders (`<ssh-public-key>`, `<username>`,
+   `<user-password>`, `<health-ping-url>`; adjust `EXTRA_UFW_PORTS`). To skip
+   `USER_PASSWORD`, switch to the commented passwordless-sudo block.
+2. Create the server with it — via the console **Cloud config** field, or the CLI:
+
+   ```bash
+   hcloud server create \
+     --name <name> --type <type> --image debian-12 \
+     --ssh-key <key-name> \
+     --user-data-from-file cloud-init.yml
+   ```
+
+3. Wait for cloud-init to finish, then verify it ran cleanly:
+
+   ```bash
+   ssh <username>@<host> "sudo cloud-init status --wait"   # → status: done
+   ssh <username>@<host> "sudo tail -n 40 /var/log/cloud-init-output.log"
+   ```
+
+   Then run the [Verify](#verify) block below.
+
+### Fallback: manual SSH pipe (netcup)
+
+Use this when the provider has no user-data field. netcup officially supports
+only SSH-key injection at image install — no user-data field (verified
+2026-07-09) — so netcup servers take this path.
+
 Pass configuration inline to the remote shell — the vars are consumed on the
 server, not your local machine:
 

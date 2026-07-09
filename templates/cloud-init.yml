@@ -1,0 +1,34 @@
+#cloud-config
+# cloud-init user-data for a fresh Debian / Ubuntu VPS.
+#
+# Fetches and runs scripts/setup-server.sh from the handbook (single source of
+# truth — no provisioning logic is duplicated here). Fill the <angle-bracket>
+# placeholders, then pass the file as user-data:
+#   - Hetzner Cloud console: paste into the "Cloud config" field, or
+#   - hcloud server create --user-data-from-file cloud-init.yml ...
+#
+# SECURITY: user-data (incl. USER_PASSWORD) stays readable from the instance
+# metadata endpoint. Rotate the password at first login (`passwd`) or set
+# PASSWORDLESS_SUDO=true and omit USER_PASSWORD.
+
+runcmd:
+  # ── Provision ──
+  # Env vars are consumed by setup-server.sh on the server; see the script's
+  # Configuration block for the full interface. Optional vars are commented out.
+  - >-
+    SSH_PUBLIC_KEY='<ssh-public-key>'
+    USERNAME='<username>'
+    USER_PASSWORD='<user-password>'
+    EXTRA_UFW_PORTS='80/tcp 443/tcp'
+    HEALTH_PING_URL='<health-ping-url>'
+    bash -c "curl -fsSL https://raw.githubusercontent.com/nicograef/handbook/main/scripts/setup-server.sh | bash -s"
+
+  # ── Passwordless-sudo variant ──
+  # Use this instead of the block above to skip USER_PASSWORD: sudo never prompts
+  # (any process running as the user can escalate). Comment out the block above.
+  # - >-
+  #     SSH_PUBLIC_KEY='<ssh-public-key>'
+  #     USERNAME='<username>'
+  #     PASSWORDLESS_SUDO=true
+  #     EXTRA_UFW_PORTS='80/tcp 443/tcp'
+  #     bash -c "curl -fsSL https://raw.githubusercontent.com/nicograef/handbook/main/scripts/setup-server.sh | bash -s"

@@ -4,6 +4,7 @@
 # Usage (run as root on the new server, passing config inline over SSH):
 #   ssh root@host "SSH_PUBLIC_KEY='ssh-ed25519 AAAA...' USERNAME=nico bash -s" < setup-server.sh
 #   ssh root@host "SSH_PUBLIC_KEY='ssh-ed25519 AAAA...' bash -s -- --dry-run" < setup-server.sh   # preview only
+#   Hands-off alternative: templates/cloud-init.yml fetches and runs this script at first boot.
 #
 # What it does:
 #   1. System update & base packages
