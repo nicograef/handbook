@@ -64,10 +64,15 @@ docker compose -p myapp -f docker-compose.initial-cert.yml down
 
 ## Step 2 — Production Stack
 
-Start the full stack with TLS:
+Stage the TLS config, then start the full stack:
 
 ```bash
-docker compose -f docker-compose.prod.yml up --build -d
+# stage the TLS nginx config (mounted at ./reverse-proxy/nginx.conf)
+cp templates/nginx-tls.conf reverse-proxy/nginx.conf
+# edit reverse-proxy/nginx.conf: replace example.com with your domain
+
+# same -p myapp as Step 1 so the stack shares the cert volumes
+docker compose -p myapp -f docker-compose.prod.yml up --build -d
 ```
 
 See [templates/docker-compose.prod.yml](../templates/docker-compose.prod.yml) for the full Compose file.

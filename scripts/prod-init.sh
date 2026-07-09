@@ -10,7 +10,8 @@
 # Prerequisites:
 #   1. DNS A record pointing to this server's IP
 #   2. .env file with POSTGRES_USER, POSTGRES_PASSWORD, POSTGRES_DB
-#   3. Docker + Compose installed
+#   3. nginx configs staged in reverse-proxy/ (see guides/letsencrypt-docker.md)
+#   4. Docker + Compose installed
 set -euo pipefail
 
 # ── Configuration ──
@@ -40,6 +41,13 @@ info "Checking prerequisites…"
 for key in POSTGRES_USER POSTGRES_PASSWORD POSTGRES_DB; do
   grep -Eq "^${key}=.+" .env || error "$key not set in .env"
 done
+
+# Both stacks bind-mount nginx configs from ./reverse-proxy/. A missing bind source
+# becomes an empty directory inside the container and nginx fails to start.
+[[ -f reverse-proxy/nginx.initial-cert.conf ]] || \
+  error "reverse-proxy/nginx.initial-cert.conf not found. Copy the nginx-initial-cert.conf template there."
+[[ -f reverse-proxy/nginx.conf ]] || \
+  error "reverse-proxy/nginx.conf not found. Copy the nginx-tls.conf template there and set your domain."
 
 command -v docker >/dev/null 2>&1      || error "docker is not installed."
 docker compose version >/dev/null 2>&1 || error "docker compose plugin is not installed."
