@@ -253,5 +253,4 @@ docker compose logs postgres | tail -20
 
 See also:
 - [cheatsheets/postgresql.md](../cheatsheets/postgresql.md) — quick-reference psql commands
-- [theory/postgresql.md](../theory/postgresql.md) — PostgreSQL concepts (German)
 - [cheatsheets/docker-compose.md](../cheatsheets/docker-compose.md) — Compose commands

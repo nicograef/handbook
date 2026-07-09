@@ -50,7 +50,7 @@
 
 - **jotti** — Go backend + React frontend; source-available (non-commercial) POS for non-profit orgs; event sourcing architecture
 - **lexiban** — Java/Spring Boot + React; IBAN validator; deployed on AWS via CDK
-- **handbook** — Personal knowledge base, runbooks, scripts, devcontainer templates (English; theory/ files in German)
+- **handbook** — Personal knowledge base, runbooks, scripts, devcontainer templates (English)
 - **website** — Personal website (nicograef.com), PHP, rsync-deployed
 
 ## Preferences

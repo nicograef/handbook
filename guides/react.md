@@ -146,7 +146,3 @@ See [guides/github-actions-cicd.md](github-actions-cicd.md) for the frontend CI 
 - **Consistent naming** — components in PascalCase, hooks with `use` prefix, utils in camelCase.
 - **Types at boundaries** — define types for API responses and route params; let TypeScript infer the rest.
 - **No unused dependencies** — regularly audit `package.json`. Every dependency is a maintenance cost.
-
----
-
-See also: [theory/react-frontend.md](../theory/react-frontend.md) for React frontend architecture concepts (German).

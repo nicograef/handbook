@@ -40,32 +40,6 @@ Quick-reference commands (no context needed).
 | PostgreSQL            | [cheatsheets/postgresql.md](cheatsheets/postgresql.md)         |
 | Makefile              | [cheatsheets/makefile.md](cheatsheets/makefile.md)             |
 
-## Theory
-
-Conceptual reference material (German). Imported from a separate project — covers architecture patterns, domain knowledge, and technology deep-dives.
-
-| Topic                       | File                                                 |
-| --------------------------- | ---------------------------------------------------- |
-| Agentic Coding              | [theory/agentic-coding.md](theory/agentic-coding.md) |
-| Software Architecture        | [theory/architecture.md](theory/architecture.md)     |
-| CQRS                        | [theory/cqrs.md](theory/cqrs.md)                     |
-| Domain-Driven Design        | [theory/ddd.md](theory/ddd.md)                       |
-| DevOps & Infrastructure     | [theory/devops.md](theory/devops.md)                 |
-| Event Sourcing              | [theory/event-sourcing.md](theory/event-sourcing.md) |
-| Go Backend Architecture     | [theory/go-backend.md](theory/go-backend.md)         |
-| POS Systems & Gastronomy    | [theory/pos.md](theory/pos.md)                       |
-| PostgreSQL                  | [theory/postgresql.md](theory/postgresql.md)         |
-| React Frontend Architecture | [theory/react-frontend.md](theory/react-frontend.md) |
-| Security & Authentication   | [theory/security.md](theory/security.md)             |
-
-## Research
-
-Verified research notes with sources and as-of dates.
-
-| Topic                                                            | File                                                                             |
-| ---------------------------------------------------------------- | -------------------------------------------------------------------------------- |
-| Agentic coding setup (Claude Code, Copilot, prompts, harnesses)  | [research/agentic-coding-insights.md](research/agentic-coding-insights.md)       |
-
 ## Templates
 
 Copy-paste-ready config files for new projects.

@@ -15,8 +15,6 @@ only when you touch matching files.
 - `cheatsheets/` — quick-reference commands.
 - `templates/` — copy-paste-ready config files (`.bashrc`, `Makefile`, `docker-compose.yml`, `nginx-tls.conf`).
 - `scripts/` — reusable bash scripts.
-- `theory/` — conceptual reference material (German, imported from another project).
-- `research/` — verified research notes with sources and as-of dates.
 - `.claude/skills/` — reusable agent skills (see `.claude/skills/README.md`).
 - `.claude/agents/` — subagent definitions (`web-researcher`).
 - `.claude/rules/` — path-scoped conventions for Claude Code.
@@ -56,8 +54,8 @@ Each rule is stated once and applies repo-wide.
 
 ## Language
 
-All content is written in English. Exception: `theory/` files, and the German example phrases
-in `.claude/skills/cleanup/readability-de.md` (its explanatory prose stays English).
+All content is written in English. Exception: the German example phrases in
+`.claude/skills/cleanup/readability-de.md` (its explanatory prose stays English).
 
 ## Plan-first workflow
 

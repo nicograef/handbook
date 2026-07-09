@@ -318,6 +318,8 @@ Skills are reusable, self-contained workflows defined as a `SKILL.md` file (with
 
 Agent Skills are generally available across the Copilot cloud agent, Copilot code review, Copilot CLI, and agent mode in VS Code and JetBrains.
 
+For **personal** skills (in `$HOME`, not committed) the read paths differ per surface: VS Code reads `~/.copilot/skills`, `~/.claude/skills`, and `~/.agents/skills`; Copilot CLI reads only `~/.copilot/skills` and `~/.agents/skills` — not `~/.claude/skills`. A `~/.claude/skills` symlink covers Claude Code and VS Code but is invisible to Copilot CLI, so add a second `~/.agents/skills` symlink to cover the CLI too.
+
 ### Structure
 
 ```markdown

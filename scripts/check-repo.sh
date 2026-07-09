@@ -32,9 +32,9 @@ log() {
 }
 
 # Content directories the README indexes as its file index.
-INDEX_DIRS=(guides cheatsheets theory research templates scripts)
+INDEX_DIRS=(guides cheatsheets templates scripts)
 
-# Files allowed to contain German prose (besides theory/, which is German by design).
+# Files allowed to contain German prose.
 LANG_ALLOW=(
   ".claude/skills/cleanup/readability-de.md"
   "claude/CLAUDE.md"
@@ -141,7 +141,6 @@ check_readme() {
 check_language() {
   local file allow
   while IFS= read -r file; do
-    case "$file" in theory/*) continue ;; esac
     for allow in "${LANG_ALLOW[@]}"; do
       [[ "$file" == "$allow" ]] && continue 2
     done
