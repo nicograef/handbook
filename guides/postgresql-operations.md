@@ -73,40 +73,37 @@ docker compose exec -T postgres sh -c \
 
 ## 3. Automated Backup (cron)
 
-Create a backup script on the host:
+Use [scripts/backup-postgres.sh](../scripts/backup-postgres.sh). It dumps the
+database (custom format) via the container, **verifies** the fresh dump with
+`pg_restore --list` before keeping it (so the backup dir never holds an
+unverified file), prunes old dumps, and — only after everything succeeds —
+pings a dead-man's-switch URL. Any failure exits non-zero and skips the ping.
+
+### Install on the server
 
 ```bash
-#!/usr/bin/env bash
-# /opt/scripts/pg-backup.sh
-set -euo pipefail
-
-BACKUP_DIR="/opt/backups/postgres"
-RETENTION_DAYS=14
-COMPOSE_DIR="/opt/myapp"
-
-# cron runs with a bare environment — load the compose .env so the container
-# name resolves and any host-side vars are available.
-set -a; . "$COMPOSE_DIR/.env"; set +a
-
-mkdir -p "$BACKUP_DIR"
-
-docker compose -f "$COMPOSE_DIR/docker-compose.prod.yml" exec -T postgres sh -c \
-  'pg_dump -U "$POSTGRES_USER" -d "$POSTGRES_DB" -Fc' \
-  > "$BACKUP_DIR/backup-$(date +%Y%m%d-%H%M).dump"
-
-# remove backups older than retention period
-find "$BACKUP_DIR" -name 'backup-*.dump' -mtime +"$RETENTION_DAYS" -delete
-
-echo "Backup complete. Remaining backups:"
-ls -lh "$BACKUP_DIR"
+sudo install -m 0755 scripts/backup-postgres.sh /opt/scripts/backup-postgres.sh
+sudo mkdir -p /opt/backups/postgres
 ```
 
-Add to crontab:
+### Cron line
 
 ```bash
 # daily at 03:00
-0 3 * * * /opt/scripts/pg-backup.sh >> /var/log/pg-backup.log 2>&1
+0 3 * * * BACKUP_DIR=/opt/backups/postgres COMPOSE_DIR=/opt/myapp /opt/scripts/backup-postgres.sh >> /var/log/pg-backup.log 2>&1
 ```
+
+### Configuration
+
+Set via env vars (defaults shown). The script loads the Compose `.env` from
+`COMPOSE_DIR`, so `POSTGRES_USER` / `POSTGRES_DB` come from there.
+
+| Variable          | Default                 | Purpose                                                    |
+| ----------------- | ----------------------- | ---------------------------------------------------------- |
+| `BACKUP_DIR`      | `/opt/backups/postgres` | Where verified dumps are written.                          |
+| `RETENTION_DAYS`  | `14`                    | Delete `backup-*.dump` older than this.                    |
+| `COMPOSE_DIR`     | `/opt/myapp`            | Compose project dir; its `.env` is loaded and used as cwd. |
+| `BACKUP_PING_URL` | *(unset)*               | Dead-man's-switch URL pinged on success; skipped if unset. |
 
 ## 4. Migrations with golang-migrate
 
