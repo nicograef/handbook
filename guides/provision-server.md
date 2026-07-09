@@ -10,6 +10,8 @@ Automated setup using [`scripts/setup-server.sh`](../scripts/setup-server.sh).
 4. UFW firewall – deny all, allow & rate-limit SSH
 5. fail2ban for SSH brute-force protection
 6. Docker + Compose plugin
+7. Unattended security upgrades (security origin only, **no** auto-reboot) + a daily
+   dead-man health ping via [`scripts/report-health.sh`](../scripts/report-health.sh)
 
 ## Prerequisites
 
@@ -56,11 +58,24 @@ sudo systemctl is-active fail2ban
 
 # docker works without sudo
 docker run --rm hello-world
+
+# unattended-upgrades is configured (dry run applies no changes)
+sudo unattended-upgrade --dry-run --debug 2>&1 | grep -i 'allowed origins'
+
+# apt's periodic update/upgrade timers are active
+systemctl list-timers 'apt-daily*' --no-pager
+
+# the daily health-ping cron entry is installed
+cat /etc/cron.d/report-health
 ```
 
 Expected: SSH login succeeds as `nico` but fails as `root`; `ufw status`
 shows `Status: active` with `22/tcp (LIMIT)`; `fail2ban` reports `active`;
-`hello-world` prints the Docker confirmation message.
+`hello-world` prints the Docker confirmation message; the `unattended-upgrade`
+dry run lists an `Allowed origins` line containing `-security`;
+`apt-daily.timer` and `apt-daily-upgrade.timer` appear in the timer list; and
+`/etc/cron.d/report-health` prints the `0 8 * * * root /usr/local/bin/report-health`
+line.
 
 ## Configuration
 
@@ -73,6 +88,7 @@ Edit the variables at the top of `setup-server.sh`:
 | `PASSWORDLESS_SUDO` | `false` | `true` grants NOPASSWD sudo; otherwise sudo prompts for a password |
 | `USER_PASSWORD` | *(required unless `PASSWORDLESS_SUDO=true`)* | Account password so sudo prompts work |
 | `EXTRA_UFW_PORTS` | `80/tcp 443/tcp` | Additional ports to open (space-separated) |
+| `HEALTH_PING_URL` | *(optional)* | Daily dead-man health-ping URL (e.g. a Better Stack heartbeat, see [monitoring guide](monitoring.md)). Persisted to `/etc/default/report-health`; the script + cron install even when unset |
 
 > **Sudo trade-off:** `PASSWORDLESS_SUDO=true` is convenient (sudo never prompts)
 > but any process running as the user can escalate to root without a secret. The

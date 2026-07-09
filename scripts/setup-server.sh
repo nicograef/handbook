@@ -12,11 +12,13 @@
 #   4. UFW firewall
 #   5. fail2ban
 #   6. Docker + Compose
+#   7. Unattended security upgrades + daily health ping
 #
 # Before running:
 #   - Generate an SSH key pair locally:   ssh-keygen -t ed25519
 #   - Set SSH_PUBLIC_KEY below (or pass it as env var)
 #   - Set USER_PASSWORD unless PASSWORDLESS_SUDO=true (needed for sudo prompts)
+#   - Optionally set HEALTH_PING_URL for the daily dead-man health ping
 
 set -euo pipefail
 
@@ -26,6 +28,7 @@ SSH_PUBLIC_KEY="${SSH_PUBLIC_KEY:-}"              # paste your pubkey here or ex
 EXTRA_UFW_PORTS="${EXTRA_UFW_PORTS:-80/tcp 443/tcp}"  # space-separated
 PASSWORDLESS_SUDO="${PASSWORDLESS_SUDO:-false}"  # "true" grants NOPASSWD sudo (convenience over prompts)
 USER_PASSWORD="${USER_PASSWORD:-}"               # required unless PASSWORDLESS_SUDO=true; enables sudo prompts
+HEALTH_PING_URL="${HEALTH_PING_URL:-}"           # optional: daily dead-man health-ping URL (e.g. a Healthchecks.io ping URL)
 DRY_RUN="${DRY_RUN:-false}"                      # set to "true" or pass --dry-run
 # ─────────────────────────────────────────────────────────────────────────────
 
@@ -211,6 +214,62 @@ run apt install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin do
 
 run usermod -aG docker "$USERNAME"
 
+# ── 7. Unattended upgrades & health ping ─────────────────────────────────────
+log "Configuring unattended security upgrades"
+run apt install -y unattended-upgrades
+
+# Run apt's update + unattended-upgrade steps every day.
+write_file /etc/apt/apt.conf.d/20auto-upgrades <<'EOF'
+APT::Periodic::Update-Package-Lists "1";
+APT::Periodic::Unattended-Upgrade "1";
+EOF
+
+# Restrict automatic upgrades to the security origin for the detected distro.
+# $ID is already resolved from /etc/os-release by the Docker step above. Debian
+# and Ubuntu name their security suite differently, so branch on the distro.
+# The ${distro_id}/${distro_codename} placeholders are apt-config variables, not
+# shell ones — they must land in the file verbatim, hence single quotes.
+# shellcheck disable=SC2016
+case "$ID" in
+  ubuntu)  SECURITY_ORIGIN='"${distro_id}:${distro_codename}-security";' ;;
+  debian)  SECURITY_ORIGIN='"${distro_id}:${distro_codename}-security";
+        "${distro_id}Security:${distro_codename}-security";' ;;
+  *)       echo "ERROR: unsupported distro for unattended-upgrades: $ID" >&2; exit 1 ;;
+esac
+
+# No Automatic-Reboot — reboots stay manual; the health ping surfaces the pending one.
+write_file /etc/apt/apt.conf.d/51unattended-upgrades-security <<EOF
+Unattended-Upgrade::Allowed-Origins {
+    $SECURITY_ORIGIN
+};
+EOF
+
+log "Installing daily health ping"
+# Fetch the health-ping script from the handbook and install it as a command.
+if [[ "$DRY_RUN" == "true" ]]; then
+  printf '  \033[0;33m[DRY-RUN]\033[0m fetch report-health.sh and write /usr/local/bin/report-health (executable)\n'
+else
+  curl -fsSL "https://raw.githubusercontent.com/nicograef/handbook/main/scripts/report-health.sh" \
+    -o /usr/local/bin/report-health
+  chmod +x /usr/local/bin/report-health
+fi
+
+# Persist HEALTH_PING_URL so the cron job finds it; the script+cron install either way.
+if [[ -n "$HEALTH_PING_URL" ]]; then
+  write_file /etc/default/report-health <<EOF
+HEALTH_PING_URL="$HEALTH_PING_URL"
+EOF
+else
+  echo "  HEALTH_PING_URL not set — installing script + cron, but no URL persisted; set /etc/default/report-health later to enable pings."
+fi
+
+# Daily cron entry that runs the health ping.
+write_file /etc/cron.d/report-health <<'EOF'
+# Daily dead-man health ping (see /usr/local/bin/report-health).
+0 8 * * * root /usr/local/bin/report-health
+EOF
+run chmod 644 /etc/cron.d/report-health
+
 # ── Done ─────────────────────────────────────────────────────────────────────
 log "Setup complete"
 echo ""
@@ -224,6 +283,12 @@ echo "  SSH:      key-only, root login disabled"
 echo "  Firewall: UFW active (ssh + ${EXTRA_UFW_PORTS:-no extra ports})"
 echo "  fail2ban: active"
 echo "  Docker:   $(docker --version 2>/dev/null || echo 'not installed (dry-run)')"
+echo "  Upgrades: unattended (security origin only, no auto-reboot)"
+if [[ -n "$HEALTH_PING_URL" ]]; then
+  echo "  Health:   daily ping to $HEALTH_PING_URL"
+else
+  echo "  Health:   daily check installed (no ping URL — set /etc/default/report-health to enable)"
+fi
 echo ""
 echo "  → Log in:  ssh $USERNAME@$(hostname -I | awk '{print $1}')"
 echo "  → Reboot recommended."
