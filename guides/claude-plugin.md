@@ -83,7 +83,7 @@ Or, inside a session: `/plugin marketplace update nicograef`.
 
 Smoke-test records — fill in date and result once each is run.
 
-### Smoke test 2 — clean remote install (PENDING)
+### Smoke test 2 — clean remote install (run 2026-07-10)
 
 Install from GitHub into a throwaway `HOME` with no handbook symlinks, then
 confirm the plugin loads:
@@ -98,9 +98,18 @@ claude plugin details handbook             # full skill set + web-researcher age
 rm -rf "$HOME"                             # delete the temporary HOME afterwards
 ```
 
-- Date:
-- Environment: temporary `HOME` on the dev machine, no symlinks present.
-- Result:
+- Date: 2026-07-10
+- Environment: temporary `HOME` (`mktemp -d`) on the dev machine, CLI v2.1.197,
+  no dotfile symlinks, **unauthenticated**.
+- Result: **Passed** for the install path — marketplace add from GitHub and
+  plugin install need no authentication; `claude plugin details handbook`
+  listed all 18 skills, the `web-researcher` agent, 0 hooks, 0 MCP servers;
+  the repo's `agents` symlink traveled through the GitHub clone. The live
+  in-session invocation was not run here (needs one-time interactive auth in
+  the clean `HOME` — operator step); the same invocation is proven on an
+  authenticated machine with the symlink tier hidden: `/handbook:commit`
+  executed and `handbook:web-researcher` appeared as a subagent type
+  (2026-07-10). Temporary `HOME` deleted afterwards.
 
 ### Smoke test 3 — Claude web session on an adopted repo (PENDING)
 
