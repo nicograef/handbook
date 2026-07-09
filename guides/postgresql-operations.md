@@ -105,7 +105,88 @@ Set via env vars (defaults shown). The script loads the Compose `.env` from
 | `COMPOSE_DIR`     | `/opt/myapp`            | Compose project dir; its `.env` is loaded and used as cwd. |
 | `BACKUP_PING_URL` | *(unset)*               | Dead-man's-switch URL pinged on success; skipped if unset. |
 
-## 4. Migrations with golang-migrate
+> **Accepted risk — backups are on the same disk they protect.** `BACKUP_DIR`
+> lives on the server being backed up, so losing the server (disk failure,
+> provider incident, accidental deletion) loses the backups with it. This is a
+> deliberate, documented trade-off at the current scale — the daily verified
+> dump plus the quarterly restore drill covers the failure modes that actually
+> happen (bad migration, dropped table, corruption). **Upgrade path when this
+> stops being acceptable:** push the verified dumps offsite with
+> [restic](https://restic.net/) to object storage (e.g. a Hetzner Storage Box),
+> so backup survival no longer depends on the server surviving.
+
+## 4. Restore drill
+
+Restore is only real once you have replayed a backup end-to-end. Run this drill
+**quarterly**: it proves the newest dump restores cleanly and that your row
+counts survive the round-trip. It is also the exact checklist to follow under
+real data-loss stress — for the live disaster case, restore into the production
+database with the [full-restore commands](#2-restore) instead of the throwaway
+one below.
+
+It restores into a **throwaway database** and never touches the live one. Set
+the two env vars to your server's values (same as the backup script):
+
+```bash
+export BACKUP_DIR=/opt/backups/postgres    # where scripts/backup-postgres.sh writes
+export COMPOSE_DIR=/opt/myapp              # Compose project dir (its .env is used)
+cd "$COMPOSE_DIR"
+```
+
+1. **Pick the newest verified dump.**
+
+   ```bash
+   DUMP="$(ls -t "$BACKUP_DIR"/backup-*.dump | head -1)"
+   echo "$DUMP"
+   ```
+
+2. **Create a throwaway database and restore into it** (the live DB is left
+   alone):
+
+   ```bash
+   docker compose exec postgres sh -c 'createdb -U "$POSTGRES_USER" restore_drill'
+   docker compose exec -T postgres sh -c \
+     'pg_restore -U "$POSTGRES_USER" -d restore_drill' < "$DUMP"
+   ```
+
+3. **Spot-check** that known tables came back with the expected row counts.
+   Replace `users` / `orders` with two tables you know:
+
+   ```bash
+   docker compose exec -T postgres sh -c \
+     'psql -U "$POSTGRES_USER" -d restore_drill -c "SELECT count(*) FROM users;" -c "SELECT count(*) FROM orders;"'
+   ```
+
+   Each `-c` prints its own one-row result block; expect a plausible,
+   non-zero count per table:
+
+   ```
+    count
+   -------
+       42
+   (1 row)
+
+    count
+   -------
+      100
+   (1 row)
+   ```
+
+4. **Record the outcome** — one line is enough (e.g. append to a
+   `restore-drills.log` next to the backups, or note it in your ops journal):
+
+   ```bash
+   echo "$(date +%F)  restore drill OK — users=42 orders=100 from $(basename "$DUMP")" \
+     >> "$BACKUP_DIR/restore-drills.log"
+   ```
+
+5. **Drop the throwaway database.**
+
+   ```bash
+   docker compose exec postgres sh -c 'dropdb -U "$POSTGRES_USER" restore_drill'
+   ```
+
+## 5. Migrations with golang-migrate
 
 ### Install
 
@@ -172,7 +253,7 @@ CREATE TABLE IF NOT EXISTS users (
 DROP TABLE IF EXISTS users;
 ```
 
-## 5. Monitoring Queries
+## 6. Monitoring Queries
 
 ### Active connections
 
@@ -224,7 +305,7 @@ docker compose exec -T postgres sh -c \
   'pg_restore -U "$POSTGRES_USER" -d test_restore' < backup-*.dump
 docker compose exec postgres sh -c 'dropdb -U "$POSTGRES_USER" test_restore'
 
-# check migration version (uses the migrate wrapper from section 4)
+# check migration version (uses the migrate wrapper from section 5)
 migrate version
 ```
 
