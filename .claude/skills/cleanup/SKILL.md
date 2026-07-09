@@ -17,9 +17,9 @@ Review code for clean code principles, design patterns, and anti-patterns.
 Produce a structured report with concrete, minimal suggestions. Apply fixes
 only after user confirmation.
 
-This is a focused, incremental review — not a full codebase audit or an
-architectural RFC. Work on recent changes or a user-specified area and suggest
-small improvements that make the code cleaner and more readable.
+By default this is a focused, incremental review — recent changes or a
+user-specified area — not a full codebase audit or an architectural RFC.
+For a repo-wide audit, use the repo-wide scope mode in step 1.
 
 Reference files for each review pass:
 
@@ -33,6 +33,8 @@ Reference files for each review pass:
   prose/doc slop
 - [readability-de.md](readability-de.md) — German prose/doc slop patterns
   (use instead of the prose section in readability.md when text is German)
+- [cross-layer.md](cross-layer.md) — cross-layer consistency trace for the
+  repo-wide scope mode
 
 ## Workflow
 
@@ -46,8 +48,14 @@ Identify the files to review:
 - Fall back to last commit: `git diff HEAD~1 --name-only`.
 - If still empty, ask the user what to review.
 
-Never scan the entire codebase unprompted. Ask the user to confirm scope if
-ambiguous.
+Ask the user to confirm scope if ambiguous. In the incremental default, do not
+scan the entire codebase — stay within the determined scope.
+
+**Repo-wide scope mode.** When the user asks for a repo-wide quality audit or a
+cross-layer consistency check across the whole project, widen the scope to the
+codebase. In this mode, run the [cross-layer.md](cross-layer.md) trace across
+3–5 representative flows per feature area in addition to the per-file passes,
+and report findings without applying fixes.
 
 When reviewing a diff (staged/unstaged/commit), read both the diff and the full
 files to understand context.
@@ -80,6 +88,7 @@ skip passes that are irrelevant.
 | Principles | [principles.md](principles.md) | Code files |
 | Code smells | [code-smells.md](code-smells.md) | Code files + config files |
 | Architecture & boundaries | [architecture.md](architecture.md) | Service, domain, handler, repository layers |
+| Cross-layer consistency | [cross-layer.md](cross-layer.md) | Repo-wide scope mode only |
 | Test readability | [readability.md](readability.md) + [code-smells.md](code-smells.md) | Test files only |
 
 Slop detection is folded into the Readability and Code smells passes — there
@@ -95,12 +104,25 @@ For each issue found, record:
 - **Suggestion**: a concrete, minimal change — not a rewrite
 - **Effort**: S (< 5 min) / M (5–30 min) / L (30+ min)
 
+Report each issue once, under the most specific pass that catches it. If two
+passes flag the same lines, keep the more precise one and drop the duplicate.
+
 ### 4. Report
+
+Before reporting, run a verification pass: re-read each flagged location; drop
+any finding you cannot anchor to exact lines or that does not hold on re-read;
+mark remaining uncertainty as unverified.
+
+Zero findings is a valid outcome — if nothing survives the criteria, report that
+the code is clean and stop; do not manufacture findings.
 
 Present findings grouped by file, sorted by severity within each file:
 
-1. **Correctness risks** — logic bugs, boundary violations, missing validation
-   at system edges
+1. **Boundary & consistency risks** — logic at system edges: missing validation
+   on external input (HTTP handlers, CLI, external APIs), broken dependency
+   direction, cross-layer shape/validation mismatches (see
+   [architecture.md](architecture.md) and [cross-layer.md](cross-layer.md)).
+   For general bug-hunting inside a function, use `/code-review`.
 2. **Readability wins** — naming, clarity, nesting, AI slop removal
 3. **Principle violations** — SOLID, DRY, KISS, YAGNI
 4. **Structural suggestions** — deeper modules, better boundaries, domain model
@@ -116,8 +138,8 @@ Suggestion: <concrete change>
 Effort: S
 ```
 
-End with a **prioritized summary**: the 3–5 most impactful changes across all
-files.
+End with a **prioritized summary**: up to 5 of the most impactful changes across
+all files.
 
 Do not apply any changes yet. Ask: "Which of these should I apply?"
 
@@ -126,7 +148,8 @@ Do not apply any changes yet. Ask: "Which of these should I apply?"
 Work through confirmed findings one at a time:
 
 - Make the minimal change described in the suggestion.
-- Verify the file still compiles or passes lint after each change.
+- After finishing all changes to a file, verify that file still compiles or
+  passes lint.
 - Verify no functionality changed — the output, return values, side effects,
   and behavior must remain identical.
 
@@ -164,4 +187,3 @@ After all confirmed changes are applied:
 ## Quality
 
 - Before presenting results, run the shared [self-review checklist](../quality.md). Surface issues in the chat only if found.
-- After task completion, propose a conventional commit message plus a short human-readable summary of what changed, why, and what the reviewer should focus on.

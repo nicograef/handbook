@@ -1,5 +1,8 @@
 # Readability
 
+- [Code Readability](#code-readability)
+- [Prose and Documentation Slop](#prose-and-documentation-slop)
+
 Patterns that affect how quickly a reader can understand code, documentation,
 and config files. Split into two sections: code readability and prose/doc slop.
 

@@ -1,7 +1,7 @@
 ---
 name: understand
 description: >-
-  Deep codebase exploration to build a human's mental model. Use when the user
+  Explores a codebase deeply to build a human's mental model. Use when the user
   wants to understand a specific part of the codebase holistically — database
   schema, API, function, domain model, business logic, frontend component,
   architecture, or any other concept. Invoke with one or more references to the
@@ -121,8 +121,10 @@ Let the user steer where to expand their mental model next.
   skill is purely exploratory and explanatory.
 - **Verify before claiming.** Read the actual source — never guess what code
   contains or how something works.
-- **Cite locations.** Every claim about the code must reference a file and
-  line range (e.g. `src/orders/checkout.ts:42-67`).
+- **Cite locations.** Anchor key claims to a file and line range (e.g.
+  `src/orders/checkout.ts:42-67`); cite commit hashes for history claims. A
+  synthesis paragraph needs no citation of its own when the sections it draws on
+  are already cited.
 - **Stay focused.** Explore connections broadly but keep the explanation
   centred on the user's focus area. Don't dump the entire codebase.
 - **No assumptions about intent.** If the reason behind a design choice is

@@ -1,5 +1,7 @@
 # Readability — German Prose
 
+- [Prose and Documentation Slop — German](#prose-and-documentation-slop--german)
+
 German-specific patterns that affect how quickly a reader can understand
 documentation, comments, commit messages, and README files. Supplements
 [readability.md](readability.md) for German-language content.
@@ -212,7 +214,7 @@ same thing.
 
 ### Knowledge Cutoff Hints
 
-Spuren der Trainingsdaten-Grenzen des Modells, die im Output sichtbar bleiben.
+Traces of the model's training-data cutoff that remain visible in the output.
 
 **Flag:**
 
@@ -240,7 +242,7 @@ suffice.
 
 ### False Extension
 
-"Von... bis"-Konstruktionen, die Beispiele aufzählen, ohne Information zu liefern.
+"Von... bis" constructions that enumerate examples without conveying information.
 
 **Flag:**
 

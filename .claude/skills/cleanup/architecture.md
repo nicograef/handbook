@@ -1,5 +1,15 @@
 # Architecture
 
+- [Dependency Direction](#dependency-direction)
+- [Inversion of Control](#inversion-of-control)
+- [Deep vs. Shallow Modules](#deep-vs-shallow-modules)
+- [Rich vs. Anemic Domain Model](#rich-vs-anemic-domain-model)
+- [Repository Pattern](#repository-pattern)
+- [Anti-Corruption Layer](#anti-corruption-layer)
+- [Bounded Context Violations](#bounded-context-violations)
+- [Separation from Frameworks](#separation-from-frameworks)
+- [Cross-Layer Consistency](#cross-layer-consistency)
+
 Checklist for reviewing architectural boundaries, dependency direction, and
 module design. Each item is a question to ask during review, what to flag, and
 what to suggest.
@@ -72,7 +82,8 @@ pass-through?
 
 **Suggest:** Consider inlining the shallow module. A deep module hides
 complexity behind a small interface — if there is nothing to hide, the module is
-overhead.
+overhead. For the pure-delegation wrapper and single-implementation-interface
+tells, see [code-smells.md → Redundant Abstractions](code-smells.md#redundant-abstractions).
 
 For significant restructuring, flag it as a separate refactor for the user to
 schedule.

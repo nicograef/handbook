@@ -456,43 +456,43 @@ verification, fix reference-file duplication and TOCs, and rewrite the skills co
 `.claude/skills/README.md`; `.github/instructions/skills.instructions.md`.
 
 **Steps:**
-- [ ] **Merge code-audit → cleanup.** Add a repo-wide scope mode to `cleanup/SKILL.md` step 1
+- [x] **Merge code-audit → cleanup.** Add a repo-wide scope mode to `cleanup/SKILL.md` step 1
   (relax "never scan the entire codebase unprompted" for that mode); move code-audit Step-1
   cross-layer trace into `cleanup/cross-layer.md` (canonical, quantified "trace 3–5 representative
   flows per feature area"); `git rm -r .claude/skills/code-audit`; update both READMEs and the
   guided-implementation cross-ref (guided-implementation edit itself is in WP3 — this WP only
   ensures the target file/section exists). *(PF-6, RV-5, RV-11)*
-- [ ] `cleanup/SKILL.md`: apply GC-8 (zero-findings clause + pre-report verification pass, "up to
+- [x] `cleanup/SKILL.md`: apply GC-8 (zero-findings clause + pre-report verification pass, "up to
   5" not "3–5"); rename report category-1 to "Boundary & consistency risks" mapped to real checks +
   "general bug-hunting → /code-review"; change per-change compile check to once-per-file; add
   "report each issue once, under the most specific pass". Apply GC-2/GC-3. *(RV-1, RV-7, RV-13,
   RV-14, RV-4-directive, PL-10)*
-- [ ] De-duplicate cleanup reference files (GC-9): Deep Nesting only in `readability.md`;
+- [x] De-duplicate cleanup reference files (GC-9): Deep Nesting only in `readability.md`;
   single-impl-interface + pure-delegation only in `code-smells.md`; duplicates → one-line
   cross-refs. Add TOCs (GC-10) to `code-smells.md`, `readability.md`, `readability-de.md`,
   `principles.md`, `architecture.md`. Translate the two German explanatory sentences in
   `readability-de.md` to English, keeping German example phrases (GC-16). *(RV-4, SP-4, RV-10,
   SP-6)*
-- [ ] `ux-review/SKILL.md`: add a numbered `## Workflow` (scope + how to run app → render key
+- [x] `ux-review/SKILL.md`: add a numbered `## Workflow` (scope + how to run app → render key
   screens at 375×667 via Playwright MCP when available → walk top flows → map problems to
   file:lines → report; static-only fallback labeled when app can't run); apply GC-8 zero-findings +
   verification; apply GC-11 concrete thresholds (44×44 px, 8px spacing, fold at 375×667); add
   "if `docs/UBIQUITOUS_LANGUAGE.md` exists treat it as canonical term list" for the domain-language
   check; apply GC-2/GC-3/GC-7. *(RV-2, SP-3, PF-11/RV-11, RV-8, RV-15, PL-10)*
-- [ ] `test-quality/SKILL.md`: neutralize the "-40%" example to a small reduction; add "a mostly-Keep
+- [x] `test-quality/SKILL.md`: neutralize the "-40%" example to a small reduction; add "a mostly-Keep
   suite is a successful audit — do not manufacture Delete/Merge"; drop the redundant
   ">3 tests" re-confirmation (keep the single Step-3 gate); make `evaluation-criteria.md` the
   canonical testing-doctrine source (target of tdd/guided-implementation links from WP3); apply
   GC-2/GC-3/GC-7. *(RV-3, RV-12, PF-7, PL-10)*
-- [ ] `understand/SKILL.md`: relax "every claim needs file:line" to "anchor key claims to file:line;
+- [x] `understand/SKILL.md`: relax "every claim needs file:line" to "anchor key claims to file:line;
   commit hashes for history; synthesis needs no citation if its sections are cited"; apply
   GC-2/GC-3/GC-7. *(RV-9, PL-10)*
-- [ ] `.claude/skills/README.md`: write the canonical **skill-consumption matrix** (Claude Code +
+- [x] `.claude/skills/README.md`: write the canonical **skill-consumption matrix** (Claude Code +
   VS Code Copilot via `~/.claude/skills`; Copilot CLI via `~/.agents/skills`; server-side Copilot
   surfaces presumably do not load personal skills — mark unverified). Update the "Quality section
   links…" note to GC-2's scope ("skills that produce code or documents"). Update the code-audit row
   (now a cleanup mode). *(ST-10, PF-8, SP-2, PF-4-note)*
-- [ ] Rewrite `.github/instructions/skills.instructions.md`: replace `tools` with `allowed-tools`
+- [x] Rewrite `.github/instructions/skills.instructions.md`: replace `tools` with `allowed-tools`
   in rule and YAML example (GC-13); add name/description validation limits and
   `disable-model-invocation`/`user-invocable`/`argument-hint`; add the GC-10 TOC rule to Content
   Rules; sharpen the Quality-section criterion to "skills that produce code or documents"; note

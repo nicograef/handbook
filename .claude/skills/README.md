@@ -1,6 +1,19 @@
 # Skills
 
-Agent skills for Claude Code and GitHub Copilot. They live in this handbook repo and both agents consume them from the `~/.claude/skills` symlink — they are not copied into project repos.
+Agent skills for Claude Code and GitHub Copilot. They live in this handbook repo and are exposed to the agents through symlinks — they are not copied into project repos.
+
+## Skill Consumption Matrix
+
+Which surfaces load these personal skills, and from where:
+
+| Surface | Skills location | Loaded? |
+| --- | --- | --- |
+| Claude Code (CLI + IDE) | `~/.claude/skills` → this directory | Yes |
+| VS Code Copilot | `~/.claude/skills` → this directory | Yes |
+| Copilot CLI | `~/.agents/skills` → this directory | Yes |
+| Copilot cloud agent / server-side review | n/a | Presumably no — not verified |
+
+Both `~/.claude/skills` and `~/.agents/skills` are symlinks to this directory, created by `scripts/install-dotfiles.sh`. Skills deploy as the whole `.claude/skills/` directory, so the shared `quality.md` and each skill's reference files travel with them.
 
 ## When to Use Which Skill
 
@@ -13,10 +26,9 @@ Agent skills for Claude Code and GitHub Copilot. They live in this handbook repo
 | Executing an existing plan step by step                       | **Implement Plan**              | [implement-plan/](implement-plan/)                           |
 | Building features test-first (red-green-refactor)             | **TDD**                         | [tdd/](tdd/)                                                 |
 | Reviewing, reducing and refactoring an existing test suite    | **Test Quality**                | [test-quality/](test-quality/)                               |
-| Repo-wide cross-layer consistency audit                       | **Code Audit**                  | [code-audit/](code-audit/)                                   |
 | Mobile UX, UI consistency, workflow friction                  | **UX Review**                   | [ux-review/](ux-review/)                                     |
 | Extracting DDD glossary terms                                 | **Ubiquitous Language**         | [ubiquitous-language/](ubiquitous-language/)                 |
-| Incremental code quality review, readability, or slop removal | **Cleanup**                     | [cleanup/](cleanup/)                                         |
+| Incremental code review, readability, slop removal, or a repo-wide cross-layer audit | **Cleanup** | [cleanup/](cleanup/)                             |
 | Understanding a part of the codebase holistically             | **Understand**                  | [understand/](understand/)                                   |
 | Debugging a failure root-cause-first                          | **Systematic Debugging**        | [systematic-debugging/](systematic-debugging/)               |
 | Acting on code-review feedback                                | **Receiving Feedback**          | [receiving-feedback/](receiving-feedback/)                   |
@@ -31,7 +43,7 @@ Agent skills for Claude Code and GitHub Copilot. They live in this handbook repo
 3. **Create Plan** → break PRD into vertical slices
 4. **Implement Plan** → agent executes slices (with **TDD**)
    — OR **Guided Implementation** → developer writes all code, agent coaches
-5. **Code Audit** → review the result
+5. **Cleanup** → review the result (repo-wide scope mode for a cross-layer audit)
    — hit a bug along the way? **Systematic Debugging** → root-cause it before fixing
    — got review comments? **Receiving Feedback** → act on them deliberately
 
@@ -39,4 +51,4 @@ Agent skills for Claude Code and GitHub Copilot. They live in this handbook repo
 
 See [.github/instructions/skills.instructions.md](../../.github/instructions/skills.instructions.md) for format requirements.
 
-- Every skill's Quality section links to the shared [quality.md](quality.md) self-review checklist rather than restating it.
+- Skills that produce code or documents carry a Quality section linking the shared [quality.md](quality.md) self-review checklist rather than restating it. Process-only and review-only skills omit it — their Constraints already carry the contract.

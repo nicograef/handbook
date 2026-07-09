@@ -1,5 +1,9 @@
 # Code Smells
 
+- [Structural Smells](#structural-smells)
+- [AI Slop — Code](#ai-slop--code)
+- [AI Slop — Config and Infrastructure](#ai-slop--config-and-infrastructure)
+
 Catalog of structural anti-patterns and AI-generated slop patterns. For each
 smell: what it looks like, why it hurts, what to suggest.
 
@@ -80,17 +84,8 @@ for distinct behaviors. At minimum, add name clarity at the call site.
 
 ### Deep Nesting
 
-4+ levels of indentation from nested if/for/try blocks.
-
-**Flag when:**
-
-- A function has 4+ levels of nesting
-- An else branch contains complex logic that could be an early return
-- Nested callbacks or promise chains create a "pyramid of doom"
-
-**Suggest:** Invert conditions and use early returns. Extract inner blocks only
-if they represent a genuinely separate concern — do not fragment into shallow
-helpers.
+See [readability.md → Deep Nesting](readability.md#deep-nesting) for the
+canonical rule.
 
 ### Dead Code
 
@@ -252,7 +247,8 @@ Names longer than the scope warrants.
 ### Unnecessary Complexity
 
 Over-engineered control flow where a simpler form reads better. Overlaps with
-Deep Nesting and Premature Abstraction above — the distinct tells:
+[Deep Nesting](readability.md#deep-nesting) and Premature Abstraction above —
+the distinct tells:
 
 **Flag when:**
 

@@ -1,7 +1,7 @@
 ---
 name: test-quality
 description: >-
-  Review and refactor an existing test suite. Use when the user wants to reduce
+  Reviews and refactors an existing test suite. Use when the user wants to reduce
   test count, remove implementation-detail tests, improve test readability, or
   clean up a test suite that has grown noisy or brittle.
 ---
@@ -73,13 +73,17 @@ File: src/checkout/checkout.test.ts  (12 tests)
 File: src/cart/cart.test.ts  (8 tests)
   ...
 
-Total: 20 tests → 12 tests after changes (-40%)
+Total: 20 tests → 17 tests after changes
 ```
+
+A mostly-Keep suite is a successful audit — if most tests already verify
+behavior through the public API, report that and do not manufacture Delete or
+Merge tags to show activity.
 
 After presenting the report:
 
 - Explain the biggest quality wins
-- **Ask for explicit confirmation before proceeding**
+- Ask for explicit confirmation before proceeding
 - If the user disagrees with a tag, update before proceeding
 
 Do not start Step 4 until the user confirms.
@@ -90,7 +94,7 @@ Work through changes one file at a time:
 
 - [ ] Apply **Merge** first (reduces total test count, simplifies subsequent work)
 - [ ] Apply **Refactor** next (rewrite tests to use public interface only)
-- [ ] Apply **Delete** last — confirm once more if deleting more than 3 tests at once
+- [ ] Apply **Delete** last (already confirmed in the Step 3 report)
 - [ ] Remove dead test helpers and fixtures that are no longer referenced
 - [ ] Clean up imports left orphaned by deleted tests
 
@@ -130,4 +134,3 @@ Rules during refactoring:
 ## Quality
 
 - Before presenting results, run the shared [self-review checklist](../quality.md). Surface issues in the chat only if found.
-- After task completion, propose a conventional commit message plus a short human-readable summary of what changed, why, and what the reviewer should focus on.

@@ -1,5 +1,19 @@
 # Principles
 
+- [KISS — Keep It Simple](#kiss--keep-it-simple)
+- [YAGNI — You Aren't Gonna Need It](#yagni--you-arent-gonna-need-it)
+- [DRY — Don't Repeat Yourself](#dry--dont-repeat-yourself)
+- [Single Responsibility (SOLID — S)](#single-responsibility-solid--s)
+- [Open/Closed (SOLID — O)](#openclosed-solid--o)
+- [Liskov Substitution (SOLID — L)](#liskov-substitution-solid--l)
+- [Interface Segregation (SOLID — I)](#interface-segregation-solid--i)
+- [Dependency Inversion (SOLID — D)](#dependency-inversion-solid--d)
+- [Separation of Concerns](#separation-of-concerns)
+- [Principle of Least Surprise](#principle-of-least-surprise)
+- [Composition over Inheritance](#composition-over-inheritance)
+- [Fail Fast](#fail-fast)
+- [Minimize State and Mutability](#minimize-state-and-mutability)
+
 Checklist of design principles to apply during the review pass. For each
 principle: one question to ask, what violations look like, what to suggest.
 
@@ -39,7 +53,9 @@ now? Or is it speculative?
 - An event system is wired up but only one listener exists
 
 **Suggest:** Remove the abstraction. Inline the single implementation. Add the
-extension point when a second use case actually appears.
+extension point when a second use case actually appears. For the concrete
+single-implementation-interface and pure-delegation tells, see
+[code-smells.md → Redundant Abstractions](code-smells.md#redundant-abstractions).
 
 ---
 
