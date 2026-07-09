@@ -80,10 +80,27 @@ See [templates/nginx-tls.conf](../templates/nginx-tls.conf) for the nginx TLS co
 
 ## Auto-Renewal
 
-Two loops in [`docker-compose.prod.yml`](../templates/docker-compose.prod.yml) keep certs fresh with no host cron and no Docker socket:
+Two **decoupled** loops in [`docker-compose.prod.yml`](../templates/docker-compose.prod.yml) keep certs fresh with no host cron and no Docker socket:
 
 - **certbot** runs `certbot renew` every 24 h (no `--quiet`, so failures show up in `docker compose logs certbot`). Certbot only renews within 30 days of expiry.
 - **reverse-proxy** runs `nginx -s reload` every 12 h, so a renewed cert is picked up within half a day without restarting the container.
+
+### Monitoring the renewal (heartbeat vs. TLS-expiry)
+
+The two loops are independent, so they need two independent signals:
+
+- **Cert-renewal heartbeat** — after a successful `certbot renew`, the `certbot`
+  service pings `CERT_PING_URL` (a Better Stack heartbeat). This is a dead-man's
+  switch: a failed renew withholds the ping, so a missed window alerts. It gates
+  on the **renew** only. Unset, the ping is skipped and the loop runs unchanged.
+- **External TLS-expiry monitor** — an HTTPS uptime monitor with an SSL-expiry
+  alert watches the live `:443` cert. Because renew and reload are decoupled, a
+  renew can succeed while a stuck reload keeps serving the old cert; the
+  heartbeat can't see that, but the external check on the endpoint can. It is the
+  safety net for the reload half.
+
+Set both up in [monitoring.md](monitoring.md); `CERT_PING_URL` is per-server
+config in the Compose `.env`, never committed.
 
 ## Automation
 

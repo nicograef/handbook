@@ -25,6 +25,7 @@ Step-by-step procedures to follow start to finish.
 | GitHub Copilot Agent Mode setup   | [guides/copilot-agent-setup.md](guides/copilot-agent-setup.md)             |
 | Dotfiles for GitHub Codespaces    | [guides/dotfiles-codespaces.md](guides/dotfiles-codespaces.md)             |
 | PostgreSQL operations             | [guides/postgresql-operations.md](guides/postgresql-operations.md)         |
+| External monitoring (Better Stack)| [guides/monitoring.md](guides/monitoring.md)                               |
 
 ### Stack conventions
 

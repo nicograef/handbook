@@ -78,6 +78,7 @@ database (custom format) via the container, **verifies** the fresh dump with
 `pg_restore --list` before keeping it (so the backup dir never holds an
 unverified file), prunes old dumps, and — only after everything succeeds —
 pings a dead-man's-switch URL. Any failure exits non-zero and skips the ping.
+Set up the `BACKUP_PING_URL` heartbeat in [monitoring.md](monitoring.md).
 
 ### Install on the server
 
