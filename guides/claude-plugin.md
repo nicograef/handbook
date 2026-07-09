@@ -121,9 +121,13 @@ snippet), start a Claude web session and confirm zero manual steps are needed:
 3. Confirm the `handbook:web-researcher` agent is available.
 4. Invoke one namespaced skill and confirm it runs.
 
-- Date:
+- Date: pending — needs an interactive Claude web session (operator step).
 - Environment: Claude web session on an adopted repo (record which repo).
-- Result:
+- Result: prerequisite completed 2026-07-10 — jotti (`eeddd6b`), lexiban
+  (`42c45e4`), and website (`3b101e7`) all carry the adoption snippet on
+  `main`; the dev-machine opt-out is in place in all three and verified in
+  jotti (a local session lists no `handbook:` skills, only the symlink tier).
+  The web-session check itself has not run yet.
 
 ---
 
