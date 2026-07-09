@@ -35,11 +35,11 @@ info "Checking prerequisites…"
 
 [[ -f .env ]] || error ".env file not found. Copy .env.example and fill in your credentials."
 
-# shellcheck source=/dev/null
-source .env
-[[ -n "${POSTGRES_USER:-}" ]]     || error "POSTGRES_USER not set in .env"
-[[ -n "${POSTGRES_PASSWORD:-}" ]] || error "POSTGRES_PASSWORD not set in .env"
-[[ -n "${POSTGRES_DB:-}" ]]       || error "POSTGRES_DB not set in .env"
+# Verify required keys without sourcing .env (Compose reads it directly; never exec it here).
+# Each must appear as a KEY=value line with a non-empty value.
+for key in POSTGRES_USER POSTGRES_PASSWORD POSTGRES_DB; do
+  grep -Eq "^${key}=.+" .env || error "$key not set in .env"
+done
 
 command -v docker >/dev/null 2>&1      || error "docker is not installed."
 docker compose version >/dev/null 2>&1 || error "docker compose plugin is not installed."

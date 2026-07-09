@@ -31,41 +31,18 @@ Three Compose files:
 On first deploy there's no cert yet, so the full nginx config can't start.
 Use a minimal nginx that only serves ACME challenges:
 
-```yaml
-# docker-compose.initial-cert.yml
-services:
-  reverse-proxy:
-    image: nginx:1.30-alpine
-    ports:
-      - "80:80"
-    volumes:
-      - ./reverse-proxy/nginx.initial-cert.conf:/etc/nginx/conf.d/default.conf:ro
-      - certbot-challenges:/var/www/certbot
-      - letsencrypt:/etc/letsencrypt
+- [templates/docker-compose.initial-cert.yml](../templates/docker-compose.initial-cert.yml) — port 80 only, ACME webroot.
+- [templates/nginx-initial-cert.conf](../templates/nginx-initial-cert.conf) — catch-all `default_server`; no domain edit needed.
 
-volumes:
-  certbot-challenges:
-  letsencrypt:
-```
-
-Minimal nginx config (`reverse-proxy/nginx.initial-cert.conf`):
-
-```nginx
-server {
-  listen 80;
-  server_name example.com www.example.com;
-
-  location /.well-known/acme-challenge/ {
-    root /var/www/certbot;
-  }
-}
-```
-
-Request the certificate:
+Copy the config to the layout the Compose file expects, then request the cert:
 
 ```bash
-# start minimal nginx
-docker compose -f docker-compose.initial-cert.yml up -d
+# stage the minimal nginx config (mounted at ./reverse-proxy/nginx.initial-cert.conf)
+mkdir -p reverse-proxy
+cp templates/nginx-initial-cert.conf reverse-proxy/nginx.initial-cert.conf
+
+# start minimal nginx (-p sets the project name → volume prefix)
+docker compose -p myapp -f docker-compose.initial-cert.yml up -d
 
 # request cert (replace domain + email)
 docker run --rm \
@@ -78,11 +55,12 @@ docker run --rm \
     --agree-tos --non-interactive
 
 # tear down minimal nginx
-docker compose -f docker-compose.initial-cert.yml down
+docker compose -p myapp -f docker-compose.initial-cert.yml down
 ```
 
 > Volume names are prefixed with the Compose project name (e.g. `myapp_letsencrypt`).
-> Check with `docker volume ls | grep letsencrypt`.
+> Check with `docker volume ls | grep letsencrypt`. Use the **same** `-p myapp` for the
+> production stack so both share `certbot-challenges` and `letsencrypt`.
 
 ## Step 2 — Production Stack
 
@@ -97,7 +75,10 @@ See [templates/nginx-tls.conf](../templates/nginx-tls.conf) for the nginx TLS co
 
 ## Auto-Renewal
 
-The `certbot` service in [`docker-compose.prod.yml`](../templates/docker-compose.prod.yml) runs `certbot renew` in a loop (every 24 h). Certbot only renews when certs are within 30 days of expiry. Nginx picks up new certs on reload or container restart.
+Two loops in [`docker-compose.prod.yml`](../templates/docker-compose.prod.yml) keep certs fresh with no host cron and no Docker socket:
+
+- **certbot** runs `certbot renew` every 24 h (no `--quiet`, so failures show up in `docker compose logs certbot`). Certbot only renews within 30 days of expiry.
+- **reverse-proxy** runs `nginx -s reload` every 12 h, so a renewed cert is picked up within half a day without restarting the container.
 
 ## Automation
 
@@ -105,12 +86,18 @@ For a fully automated first-time deploy, see [`scripts/prod-init.sh`](../scripts
 
 ## Verify
 
+Run this **manually after the first deploy** — a real renewal can't be exercised in CI, so
+this staging dry-run is the check that the whole renewal path (challenge → issuance) works
+end-to-end. `renew --dry-run` uses the Let's Encrypt staging environment, so it never touches
+rate limits or your live cert.
+
 ```bash
 # cert was issued (expect a live/<domain>/ directory)
 docker run --rm -v myapp_letsencrypt:/etc/letsencrypt alpine \
   ls /etc/letsencrypt/live/
 
-# renewal path works end-to-end (expect "Congratulations, all simulated renewals succeeded")
+# staging dry-run against the running stack — must print
+# "Congratulations, all simulated renewals succeeded"
 docker run --rm \
   -v myapp_certbot-challenges:/var/www/certbot \
   -v myapp_letsencrypt:/etc/letsencrypt \
