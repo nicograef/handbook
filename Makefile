@@ -1,8 +1,8 @@
 # Handbook dev interface. `make check` is the full repo self-check.
 
-.PHONY: check links lint readme language help
+.PHONY: check links lint readme language skills compose help
 
-## check: run the full repo self-check (links, shellcheck, README index, language)
+## check: run the full repo self-check (links, shellcheck, README index, language, skills, compose)
 check:
 	@scripts/check-repo.sh all
 
@@ -21,6 +21,14 @@ readme:
 ## language: verify no German prose outside the allow-listed files
 language:
 	@scripts/check-repo.sh language
+
+## skills: verify .claude/skills/README.md indexes every SKILL.md directory and vice-versa
+skills:
+	@scripts/check-repo.sh skills
+
+## compose: verify every templates/docker-compose*.yml passes `docker compose config -q`
+compose:
+	@scripts/check-repo.sh compose
 
 ## help: list available targets
 help:

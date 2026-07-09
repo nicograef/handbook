@@ -11,9 +11,11 @@
 #   2. Shellcheck    — scripts/*.sh and install.sh pass shellcheck.
 #   3. README index  — every content-dir file is indexed in README.md and vice-versa.
 #   4. Language      — no German prose (umlauts / eszett) outside the allow-listed files.
+#   5. Skills index  — every SKILL.md directory is listed in .claude/skills/README.md and vice-versa.
+#   6. Compose       — every templates/docker-compose*.yml passes `docker compose config -q`.
 #
 # Idempotent: reads only, never writes. Run any subset via the STAGE argument:
-#   scripts/check-repo.sh links | lint | readme | language | all   (default: all)
+#   scripts/check-repo.sh links | lint | readme | language | skills | compose | all   (default: all)
 
 set -euo pipefail
 
@@ -150,13 +152,60 @@ check_language() {
   done < <(tracked_md)
 }
 
+# ---------------------------------------------------------------------------
+# 5. Skills index diff
+# ---------------------------------------------------------------------------
+check_skills() {
+  local readme=".claude/skills/README.md" links skill dir
+  # Skill directories the index links (form `](name/)`, trailing slash stripped).
+  links="$(strip_code < "$readme" \
+    | grep -oE '\]\([a-z0-9-]+/\)' \
+    | sed -E 's#^\]\(##; s#/\)$##')"
+
+  # Every directory with a SKILL.md must appear in the skills index.
+  while IFS= read -r skill; do
+    dir="$(basename "$(dirname "$skill")")"
+    if ! printf '%s\n' "$links" | grep -qxF "$dir"; then
+      log "skill not indexed in .claude/skills/README.md: $dir"
+    fi
+  done < <(git ls-files '.claude/skills/*/SKILL.md')
+
+  # Every skill the index links must have a SKILL.md on disk.
+  while IFS= read -r dir; do
+    [[ -z "$dir" ]] && continue
+    if [[ ! -f ".claude/skills/$dir/SKILL.md" ]]; then
+      log ".claude/skills/README.md indexes a missing skill: $dir"
+    fi
+  done <<< "$links"
+}
+
+# ---------------------------------------------------------------------------
+# 6. Compose templates
+# ---------------------------------------------------------------------------
+check_compose() {
+  if ! command -v docker >/dev/null 2>&1; then
+    log "docker not installed"
+    return
+  fi
+  local file
+  while IFS= read -r file; do
+    [[ -e "$file" ]] || continue
+    if ! docker compose -f "$file" --env-file templates/.env.example config -q >/dev/null 2>&1; then
+      log "compose config failed for $file"
+      docker compose -f "$file" --env-file templates/.env.example config -q >&2 || true
+    fi
+  done < <(git ls-files 'templates/docker-compose*.yml')
+}
+
 case "$STAGE" in
   links)    check_links ;;
   lint)     check_shell ;;
   readme)   check_readme ;;
   language) check_language ;;
-  all)      check_links; check_shell; check_readme; check_language ;;
-  *)        printf 'usage: %s [links|lint|readme|language|all]\n' "$0" >&2; exit 2 ;;
+  skills)   check_skills ;;
+  compose)  check_compose ;;
+  all)      check_links; check_shell; check_readme; check_language; check_skills; check_compose ;;
+  *)        printf 'usage: %s [links|lint|readme|language|skills|compose|all]\n' "$0" >&2; exit 2 ;;
 esac
 
 if [[ "$FAILED" -ne 0 ]]; then
