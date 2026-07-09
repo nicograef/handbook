@@ -1,6 +1,14 @@
 alias ll='ls -la'
 alias la='ls -A'
-alias sss='eval `ssh-agent` && ssh-add'
+# Start ssh-agent only if none is reachable (ssh-add -l exit code 2 = no
+# agent), then add keys — reuses the same agent across shells/sourcing.
+sss() {
+  ssh-add -l >/dev/null 2>&1
+  if [ "$?" -eq 2 ]; then
+    eval "$(ssh-agent)" >/dev/null
+  fi
+  ssh-add
+}
 alias gfp='git fetch --prune && git pull'
 alias gct='git checkout test'
 alias gcm='git checkout main || git checkout master'

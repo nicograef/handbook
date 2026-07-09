@@ -5,6 +5,8 @@ services:
   app:
     image: node:24-slim
     # build: .
+    # replace with your dev server command, e.g. "npm run dev"
+    command: sleep infinity
     ports:
       - "3000:3000"
     volumes:

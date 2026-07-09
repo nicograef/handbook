@@ -49,25 +49,25 @@ docker compose exec -T postgres sh -c \
 ### From compressed dump
 
 ```bash
-docker compose exec -T postgres pg_restore \
-  -U "$POSTGRES_USER" -d "$POSTGRES_DB" --clean --if-exists \
+docker compose exec -T postgres sh -c \
+  'pg_restore -U "$POSTGRES_USER" -d "$POSTGRES_DB" --clean --if-exists' \
   < backup-20260101-1200.dump
 ```
 
 ### From SQL dump
 
 ```bash
-docker compose exec -T postgres psql \
-  -U "$POSTGRES_USER" -d "$POSTGRES_DB" \
+docker compose exec -T postgres sh -c \
+  'psql -U "$POSTGRES_USER" -d "$POSTGRES_DB"' \
   < backup-20260101-1200.sql
 ```
 
 ### Into a fresh database
 
 ```bash
-docker compose exec postgres createdb -U "$POSTGRES_USER" mydb_restored
-docker compose exec -T postgres pg_restore \
-  -U "$POSTGRES_USER" -d mydb_restored \
+docker compose exec postgres sh -c 'createdb -U "$POSTGRES_USER" mydb_restored'
+docker compose exec -T postgres sh -c \
+  'pg_restore -U "$POSTGRES_USER" -d mydb_restored' \
   < backup-20260101-1200.dump
 ```
 
@@ -222,10 +222,10 @@ FROM pg_statio_user_tables;
 ls -lh backup-*.dump
 
 # test restore into a throwaway database
-docker compose exec postgres createdb -U "$POSTGRES_USER" test_restore
-docker compose exec -T postgres pg_restore \
-  -U "$POSTGRES_USER" -d test_restore < backup-*.dump
-docker compose exec postgres dropdb -U "$POSTGRES_USER" test_restore
+docker compose exec postgres sh -c 'createdb -U "$POSTGRES_USER" test_restore'
+docker compose exec -T postgres sh -c \
+  'pg_restore -U "$POSTGRES_USER" -d test_restore' < backup-*.dump
+docker compose exec postgres sh -c 'dropdb -U "$POSTGRES_USER" test_restore'
 
 # check migration version (uses the migrate wrapper from section 4)
 migrate version
@@ -236,8 +236,8 @@ migrate version
 ```bash
 # "database is being accessed by other users" when restoring
 # → terminate other connections first
-docker compose exec postgres psql -U "$POSTGRES_USER" -c \
-  "SELECT pg_terminate_backend(pid) FROM pg_stat_activity WHERE datname = 'mydb' AND pid <> pg_backend_pid();"
+docker compose exec postgres sh -c \
+  'psql -U "$POSTGRES_USER" -d "$POSTGRES_DB" -c "SELECT pg_terminate_backend(pid) FROM pg_stat_activity WHERE datname = current_database() AND pid <> pg_backend_pid();"'
 
 # "dirty database version" after failed migration
 # → check which version is dirty, fix the SQL, then force
