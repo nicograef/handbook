@@ -56,6 +56,14 @@ Conceptual reference material (German). Imported from a separate project — cov
 | React Frontend Architecture | [theory/react-frontend.md](theory/react-frontend.md) |
 | Security & Authentication   | [theory/security.md](theory/security.md)             |
 
+## Research
+
+Verified research notes with sources and as-of dates.
+
+| Topic                                                            | File                                                                             |
+| ---------------------------------------------------------------- | -------------------------------------------------------------------------------- |
+| Agentic coding setup (Claude Code, Copilot, prompts, harnesses)  | [research/agentic-coding-insights.md](research/agentic-coding-insights.md)       |
+
 ## Templates
 
 Copy-paste-ready config files for new projects.
