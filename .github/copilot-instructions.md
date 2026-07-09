@@ -6,4 +6,3 @@ nothing is restated here.
 Copilot-only pointers:
 
 - Reusable prompts: `.github/prompts/`.
-- Path-scoped conventions: `.github/instructions/` (loaded by `applyTo` glob).

@@ -24,7 +24,7 @@ Every `SKILL.md` includes:
 2. **Workflow section** — numbered steps the agent follows.
 3. **Constraints section** — guardrails, anti-patterns, or things to avoid.
 4. **Quality section** (only for skills that produce code or documents) — a `../quality.md`
-   relative link to the shared verification contract.
+   relative link to the shared verification contract. Process-only and review-only skills omit it.
 
 ```yaml
 ---
@@ -61,9 +61,17 @@ description: "Third-person summary of what the skill does and when to invoke it.
 
 ## File Naming
 
-- Directory: `<verb-noun>` or `<topic>` — lowercase, hyphens. Example: `code-audit/`.
+- Directory: `<verb-noun>` or `<topic>` — lowercase, hyphens. Example: `cleanup/`.
 - Main file: always `SKILL.md`.
 - Reference files: descriptive names. Example: `interface-design.md`, `mocking.md`.
+
+## Deployment
+
+- Skills deploy as the whole `.claude/skills/` directory, so the shared `quality.md` and each
+  skill's reference files travel with the skill — reference them with relative links, not
+  absolute paths.
+- Copilot CLI pre-approves a skill's declared shell only for skills you trust; keep
+  `allowed-tools` minimal so an untrusted skill cannot silently run destructive commands.
 
 ## After Creating or Renaming a Skill
 

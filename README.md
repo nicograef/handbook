@@ -92,7 +92,6 @@ path-scoped rules, and dotfiles.
 | Skills index               | [.claude/skills/README.md](.claude/skills/README.md)                   |
 | Web research agent         | [.claude/agents/web-researcher.md](.claude/agents/web-researcher.md)   |
 | Path-scoped rules (Claude) | `.claude/rules/`                                                        |
-| Path-scoped rules (Copilot)| `.github/instructions/`                                                 |
 | Global Claude instructions | [claude/CLAUDE.md](claude/CLAUDE.md)                                   |
 | Claude settings + hooks    | [claude/settings.json](claude/settings.json)                           |
 | Status line script         | [claude/statusline.sh](claude/statusline.sh)                           |

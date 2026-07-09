@@ -37,6 +37,8 @@ Not every project needs all six layers. Add them incrementally:
 
 If the repo also uses Cursor (`.cursor/rules/`, `.cursor/commands/`), keep the conventions aligned. `AGENTS.md` is the single source of truth — Cursor rules should point to it, not duplicate it.
 
+**Path-scoped conventions: pick one surface.** Copilot's `.github/instructions/*.instructions.md` and Claude Code's `.claude/rules/*.md` are two different mechanisms for the same idea — per-directory rules loaded on a glob. Maintaining both with the same content is a duplication anti-pattern: the two copies drift (one says "expected" where the other says "mandatory", one grows a section the other lacks). Keep exactly one path-scoped surface and let the other tool read `AGENTS.md`. This repo canonicalises on `.claude/rules/` and routes Copilot through `AGENTS.md`.
+
 ### Start simple, iterate
 
 The best agent setups grow through iteration, not upfront planning. Start with a minimal `AGENTS.md`, use it, and add detail when the agent makes mistakes. Each mistake is a signal that context is missing.
@@ -108,7 +110,7 @@ Check coverage of the six core areas (see [Six Core Areas](#six-core-areas)):
 Look for distinct areas with different conventions:
 - Different directories with different patterns (e.g., `backend/` vs `frontend/`)
 - Different tech within the same repo (e.g., Go API vs React SPA)
-- Each area should get its own `.instructions.md` with code examples
+- Each area should get its own path-scoped file with code examples — in **one** surface only: `.github/instructions/*.instructions.md` for Copilot **or** `.claude/rules/*.md` for Claude Code, never both (see [Cross-tool compatibility](#cross-tool-compatibility)).
 
 ### 4. Identify candidates for skills
 
@@ -260,6 +262,8 @@ If there are no Copilot-only deltas, delete this file rather than duplicating `A
 ## .github/instructions/*.instructions.md
 
 Contextual instructions loaded automatically when the agent edits files matching the `applyTo` glob pattern. Each file covers one area of the codebase.
+
+Use this surface only if Copilot is the repo's single path-scoped mechanism. If the repo already carries `.claude/rules/*.md`, do **not** add a parallel `.github/instructions/` copy — that dual surface drifts (see [Cross-tool compatibility](#cross-tool-compatibility)). This repo dropped its `.github/instructions/` copies for exactly that reason and now routes Copilot through `AGENTS.md`.
 
 ### Structure
 

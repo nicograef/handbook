@@ -49,6 +49,6 @@ Both `~/.claude/skills` and `~/.agents/skills` are symlinks to this directory, c
 
 ## Adding a New Skill
 
-See [.github/instructions/skills.instructions.md](../../.github/instructions/skills.instructions.md) for format requirements.
+See [.claude/rules/skills.md](../rules/skills.md) for format requirements.
 
 - Skills that produce code or documents carry a Quality section linking the shared [quality.md](quality.md) self-review checklist rather than restating it. Process-only and review-only skills omit it — their Constraints already carry the contract.

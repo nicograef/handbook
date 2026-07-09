@@ -5,9 +5,9 @@ Target system: Debian / Ubuntu. It contains no runnable application — everythi
 documentation, templates, scripts, and agent skills.
 
 This file is the single canonical instruction set. Every Copilot surface reads it directly;
-Claude Code loads it via `@AGENTS.md` from `CLAUDE.md`. Per-directory conventions live in
-`.claude/rules/*.md` (Claude) and `.github/instructions/*.instructions.md` (Copilot), loaded
-only when you touch matching files.
+Claude Code loads it via `@AGENTS.md` from `CLAUDE.md`. `.claude/rules/*.md` is the only
+path-scoped conventions surface (loaded by Claude Code when you touch matching files); Copilot
+works through AGENTS.md.
 
 ## Structure
 

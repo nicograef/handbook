@@ -33,7 +33,7 @@ set -euo pipefail
 
 ## Error handling
 
-- `set -euo pipefail` is expected.
+- `set -euo pipefail` is mandatory.
 - Guard destructive operations with pre-flight checks (e.g. root check, required env vars).
 
 ## File naming
