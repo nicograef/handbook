@@ -15,15 +15,19 @@ Source: https://docs.docker.com/engine/install/debian/
 sudo apt update
 sudo apt install -y ca-certificates curl gnupg
 
+# resolve the distro once — works for both Debian and Ubuntu
+. /etc/os-release
+REPO_URL="https://download.docker.com/linux/${ID}"
+
 # add Docker GPG key
 sudo install -m 0755 -d /etc/apt/keyrings
-curl -fsSL https://download.docker.com/linux/debian/gpg | sudo gpg --dearmor -o /etc/apt/keyrings/docker.gpg
+curl -fsSL "$REPO_URL/gpg" | sudo gpg --dearmor -o /etc/apt/keyrings/docker.gpg
 sudo chmod a+r /etc/apt/keyrings/docker.gpg
 
-# add Docker repo (works for Debian and Ubuntu — uses $VERSION_CODENAME)
+# add Docker repo (uses $ID and $VERSION_CODENAME from /etc/os-release)
 echo \
-  "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/debian \
-  $(. /etc/os-release && echo "$VERSION_CODENAME") stable" | \
+  "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] $REPO_URL \
+  $VERSION_CODENAME stable" | \
   sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
 
 # install Docker

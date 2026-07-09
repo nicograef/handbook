@@ -5,8 +5,8 @@ Automated setup using [`scripts/setup-server.sh`](../scripts/setup-server.sh).
 ## What it does
 
 1. System update & base packages (curl, git, make, vim, …)
-2. Create non-root user with sudo (passwordless)
-3. SSH hardening – pubkey auth only, root login disabled
+2. Create non-root user with sudo (password-prompted by default; NOPASSWD opt-in)
+3. SSH hardening via `/etc/ssh/sshd_config.d/00-hardening.conf` – pubkey auth only, root login disabled
 4. UFW firewall – deny all, allow & rate-limit SSH
 5. fail2ban for SSH brute-force protection
 6. Docker + Compose plugin
@@ -31,9 +31,14 @@ server, not your local machine:
 ssh root@<host> "SSH_PUBLIC_KEY='$(cat ~/.ssh/id_ed25519.pub)' bash -s -- --dry-run" \
   < scripts/setup-server.sh
 
-# then run for real, optionally overriding USERNAME / EXTRA_UFW_PORTS
+# then run for real — USER_PASSWORD is required unless you opt into passwordless sudo
 ssh root@<host> \
-  "SSH_PUBLIC_KEY='$(cat ~/.ssh/id_ed25519.pub)' USERNAME=nico EXTRA_UFW_PORTS='80/tcp 443/tcp' bash -s" \
+  "SSH_PUBLIC_KEY='$(cat ~/.ssh/id_ed25519.pub)' USERNAME=nico USER_PASSWORD='<pw>' EXTRA_UFW_PORTS='80/tcp 443/tcp' bash -s" \
+  < scripts/setup-server.sh
+
+# or opt into passwordless (NOPASSWD) sudo instead of setting a password
+ssh root@<host> \
+  "SSH_PUBLIC_KEY='$(cat ~/.ssh/id_ed25519.pub)' PASSWORDLESS_SUDO=true bash -s" \
   < scripts/setup-server.sh
 ```
 
@@ -65,28 +70,40 @@ Edit the variables at the top of `setup-server.sh`:
 | -------- | ------- | ----------- |
 | `USERNAME` | `nico` | Non-root user to create |
 | `SSH_PUBLIC_KEY` | *(required)* | Your public SSH key |
+| `PASSWORDLESS_SUDO` | `false` | `true` grants NOPASSWD sudo; otherwise sudo prompts for a password |
+| `USER_PASSWORD` | *(required unless `PASSWORDLESS_SUDO=true`)* | Account password so sudo prompts work |
 | `EXTRA_UFW_PORTS` | `80/tcp 443/tcp` | Additional ports to open (space-separated) |
+
+> **Sudo trade-off:** `PASSWORDLESS_SUDO=true` is convenient (sudo never prompts)
+> but any process running as the user can escalate to root without a secret. The
+> default prompts for a password, so the account **must** have one — `adduser
+> --disabled-password` leaves it unset, which would lock the user out of sudo.
+> The script sets `USER_PASSWORD` via `chpasswd` for exactly this reason.
 
 ## Manual Reference
 
 The script automates everything below. Use these commands when debugging or
 tightening an existing server by hand.
 
-### SSH hardening (sshd_config)
+### SSH hardening (drop-in)
 
-```diff
-- #PubkeyAuthentication yes
-+ PubkeyAuthentication yes
-
-- PasswordAuthentication yes
-+ PasswordAuthentication no
-
-- PermitRootLogin yes
-+ PermitRootLogin no
-```
+Write a drop-in instead of editing `/etc/ssh/sshd_config`. sshd uses
+first-obtained-value semantics and cloud images ship `50-cloud-init.conf`, so the
+`00-` prefix guarantees these settings win:
 
 ```bash
-sudo systemctl restart sshd
+# ensure the main config includes the drop-in dir (some minimal images omit this)
+grep -qxF 'Include /etc/ssh/sshd_config.d/*.conf' /etc/ssh/sshd_config \
+  || echo 'Include /etc/ssh/sshd_config.d/*.conf' | sudo tee -a /etc/ssh/sshd_config
+
+sudo tee /etc/ssh/sshd_config.d/00-hardening.conf > /dev/null <<'EOF'
+PubkeyAuthentication yes
+PasswordAuthentication no
+PermitRootLogin no
+KbdInteractiveAuthentication no
+EOF
+
+sudo systemctl restart ssh   # 'ssh' is the canonical unit on Debian/Ubuntu
 ```
 
 ### UFW firewall

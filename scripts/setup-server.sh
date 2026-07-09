@@ -8,7 +8,7 @@
 # What it does:
 #   1. System update & base packages
 #   2. Create non-root user with sudo
-#   3. SSH hardening (pubkey only, no root login)
+#   3. SSH hardening (pubkey only, no root login) via a drop-in
 #   4. UFW firewall
 #   5. fail2ban
 #   6. Docker + Compose
@@ -16,6 +16,7 @@
 # Before running:
 #   - Generate an SSH key pair locally:   ssh-keygen -t ed25519
 #   - Set SSH_PUBLIC_KEY below (or pass it as env var)
+#   - Set USER_PASSWORD unless PASSWORDLESS_SUDO=true (needed for sudo prompts)
 
 set -euo pipefail
 
@@ -23,6 +24,8 @@ set -euo pipefail
 USERNAME="${USERNAME:-nico}"
 SSH_PUBLIC_KEY="${SSH_PUBLIC_KEY:-}"              # paste your pubkey here or export before running
 EXTRA_UFW_PORTS="${EXTRA_UFW_PORTS:-80/tcp 443/tcp}"  # space-separated
+PASSWORDLESS_SUDO="${PASSWORDLESS_SUDO:-false}"  # "true" grants NOPASSWD sudo (convenience over prompts)
+USER_PASSWORD="${USER_PASSWORD:-}"               # required unless PASSWORDLESS_SUDO=true; enables sudo prompts
 DRY_RUN="${DRY_RUN:-false}"                      # set to "true" or pass --dry-run
 # ─────────────────────────────────────────────────────────────────────────────
 
@@ -71,6 +74,13 @@ if [[ -z "$SSH_PUBLIC_KEY" ]]; then
   exit 1
 fi
 
+# Password-prompted sudo needs an account password; abort now, before any writes,
+# if the operator opted out of NOPASSWD but did not supply one.
+if [[ "$PASSWORDLESS_SUDO" != "true" && -z "$USER_PASSWORD" ]]; then
+  echo "ERROR: USER_PASSWORD is not set. Set it, or pass PASSWORDLESS_SUDO=true for NOPASSWD sudo." >&2
+  exit 1
+fi
+
 # ── 1. System update & base packages ────────────────────────────────────────
 log "Updating system"
 run apt update -y
@@ -90,9 +100,19 @@ else
 fi
 run usermod -aG sudo "$USERNAME"
 
-# allow sudo without password (optional – remove if you prefer password prompt)
-write_file "/etc/sudoers.d/$USERNAME" <<< "$USERNAME ALL=(ALL) NOPASSWD:ALL"
-run chmod 440 "/etc/sudoers.d/$USERNAME"
+if [[ "$PASSWORDLESS_SUDO" == "true" ]]; then
+  # Convenience: sudo never prompts. The account stays passwordless.
+  write_file "/etc/sudoers.d/$USERNAME" <<< "$USERNAME ALL=(ALL) NOPASSWD:ALL"
+  run chmod 440 "/etc/sudoers.d/$USERNAME"
+else
+  # Default: password-prompted sudo. Set the account password so prompts work
+  # (adduser --disabled-password leaves it unset, which locks sudo out).
+  if [[ "$DRY_RUN" == "true" ]]; then
+    printf '  \033[0;33m[DRY-RUN]\033[0m set password for %s via chpasswd\n' "$USERNAME"
+  else
+    echo "$USERNAME:$USER_PASSWORD" | chpasswd
+  fi
+fi
 
 # ── 3. SSH hardening ────────────────────────────────────────────────────────
 log "Setting up SSH key for '$USERNAME'"
@@ -109,29 +129,31 @@ run chmod 700 "$SSH_DIR"
 run chmod 600 "$SSH_DIR/authorized_keys"
 run chown -R "$USERNAME:$USERNAME" "$SSH_DIR"
 
-log "Hardening sshd_config"
+log "Hardening sshd via drop-in"
 SSHD_CONFIG="/etc/ssh/sshd_config"
-run cp "$SSHD_CONFIG" "${SSHD_CONFIG}.bak"
+SSHD_DROPIN="/etc/ssh/sshd_config.d/00-hardening.conf"
 
-# apply settings idempotently
-set_sshd() {
-  local key="$1" value="$2"
-  if [[ "$DRY_RUN" == "true" ]]; then
-    printf '  \033[0;33m[DRY-RUN]\033[0m set %s %s in %s\n' "$key" "$value" "$SSHD_CONFIG"
-    return
-  fi
-  if grep -qE "^#?${key}\b" "$SSHD_CONFIG"; then
-    sed -i "s|^#*${key}.*|${key} ${value}|" "$SSHD_CONFIG"
-  else
-    echo "${key} ${value}" >> "$SSHD_CONFIG"
-  fi
-}
+# sshd uses first-obtained-value semantics; cloud images ship 50-cloud-init.conf,
+# so the 00- prefix guarantees our hardening wins. Ensure the main config actually
+# includes the drop-in dir — some minimal images omit the Include directive.
+INCLUDE_LINE="Include /etc/ssh/sshd_config.d/*.conf"
+if [[ "$DRY_RUN" == "true" ]]; then
+  printf '  \033[0;33m[DRY-RUN]\033[0m ensure %s contains "%s"\n' "$SSHD_CONFIG" "$INCLUDE_LINE"
+elif ! grep -qxF "$INCLUDE_LINE" "$SSHD_CONFIG"; then
+  printf '%s\n' "$INCLUDE_LINE" >> "$SSHD_CONFIG"
+fi
 
-set_sshd "PubkeyAuthentication"  "yes"
-set_sshd "PasswordAuthentication" "no"
-set_sshd "PermitRootLogin"       "no"
+run install -m 0755 -d /etc/ssh/sshd_config.d
+write_file "$SSHD_DROPIN" <<'EOF'
+PubkeyAuthentication yes
+PasswordAuthentication no
+PermitRootLogin no
+KbdInteractiveAuthentication no
+EOF
+run chmod 644 "$SSHD_DROPIN"
 
-run systemctl restart sshd
+# The canonical service unit is 'ssh' on Debian/Ubuntu; 'sshd' is only an alias.
+run systemctl restart ssh
 
 # ── 4. UFW firewall ─────────────────────────────────────────────────────────
 log "Configuring UFW"
@@ -193,6 +215,11 @@ run usermod -aG docker "$USERNAME"
 log "Setup complete"
 echo ""
 echo "  User:     $USERNAME"
+if [[ "$PASSWORDLESS_SUDO" == "true" ]]; then
+  echo "  Sudo:     passwordless (NOPASSWD)"
+else
+  echo "  Sudo:     password-prompted"
+fi
 echo "  SSH:      key-only, root login disabled"
 echo "  Firewall: UFW active (ssh + ${EXTRA_UFW_PORTS:-no extra ports})"
 echo "  fail2ban: active"
