@@ -519,28 +519,28 @@ only `allowed-tools`); consumption matrix present once; `make check` passes.
 `.claude/agents/web-researcher.md`.
 
 **Steps:**
-- [ ] `using-git-worktrees/SKILL.md`: replace the auto-commit ignore (step 3) with a non-committing
+- [x] `using-git-worktrees/SKILL.md`: replace the auto-commit ignore (step 3) with a non-committing
   ignore: `echo ".worktrees/" >> "$(git rev-parse --git-common-dir)/info/exclude"`; replace step 5's
   "merge or push the branch" line with a cross-ref to the finish-branch skill. Apply GC-2 (remove
   Quality link — process-only skill), GC-4/GC-5. *(PR-1, PR-8)*
-- [ ] `finish-branch/SKILL.md`: add a worktree-aware merge/delete path (detect linked worktree via
+- [x] `finish-branch/SKILL.md`: add a worktree-aware merge/delete path (detect linked worktree via
   git-dir vs git-common-dir; run merge/pull from the main checkout with `git -C`; `git worktree
   remove` before `git branch -d/-D`); replace the `git merge-base HEAD main` base detection with
   default-branch detection (`git symbolic-ref --short refs/remotes/origin/HEAD` /
   `gh repo view --json defaultBranchRef`) and ask when other long-lived branches exist. Evaluate
   adding `disable-model-invocation: true` (side-effect flow) or keep the explicit 4-option gate as
   the cross-tool guard; apply GC-2 (remove Quality link). *(PR-2, PR-5)*
-- [ ] `systematic-debugging/SKILL.md`: compress the 10-step workflow — drop the pseudo-bash
+- [x] `systematic-debugging/SKILL.md`: compress the 10-step workflow — drop the pseudo-bash
   layer-logging block and micro-scaffolding (GC-5), keep the Constraints contract (root-cause-first,
   one change at a time, 3-attempt stop); add a competing-hypotheses escape hatch to step 7 (link
   `../dispatching-parallel-agents/SKILL.md`); replace "don't skip because it looks simple" with a
   proportionality clause (GC-4); qualify step 9's "write a failing test" with "where expressible as
   a test; otherwise re-run the original failing command"; apply GC-3 (drop commit epilogue). *(PF-10,
   PR-6, PR-9, PR-12, PR-11)*
-- [ ] `receiving-feedback/SKILL.md`: delete the three negative-form Constraints that restate
+- [x] `receiving-feedback/SKILL.md`: delete the three negative-form Constraints that restate
   workflow steps; collapse the "no performative agreement"/"no gratitude filler" pair into the one
   positive line already present; apply GC-3/GC-5. *(PR-10, PR-13, PR-11)*
-- [ ] `dispatching-parallel-agents/SKILL.md`: trim step 3's restatement of harness-native dispatch
+- [x] `dispatching-parallel-agents/SKILL.md`: trim step 3's restatement of harness-native dispatch
   (and slim step 4), keep the independence check + four-part delegation contract + collision check;
   extend step 2 with tools/sources guidance and "restate repo rules (subagents see no history;
   Explore/Plan don't see CLAUDE.md)"; add constraints for write-isolation
@@ -548,7 +548,7 @@ only `allowed-tools`); consumption matrix present once; `make check` passes.
   sharpen the description to "2+ confirmed-independent, each-substantial failures" + add the ~15×
   token-cost note; set `user-invocable: false`; apply GC-2 (remove Quality link). *(PF-9, PR-7,
   PR-14)*
-- [ ] `.claude/agents/web-researcher.md`: this is now the single owner of the research verification
+- [x] `.claude/agents/web-researcher.md`: this is now the single owner of the research verification
   policy (research/commit skill and user CLAUDE.md just point here). Verify effective MCP server
   names with `claude mcp list` and correct the `tools:` grants to the exact `mcp__<server>` names
   (playwright/context7 are plugin-namespaced). Keep `tools:` (correct for subagents). *(IS-9, IS-15,

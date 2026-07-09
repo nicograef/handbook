@@ -53,16 +53,8 @@ over social comfort.
 
 ## Constraints
 
-- No performative agreement. Do not open a response with "you're right" or
-  "great point" — state the requirement or just make the fix.
-- No blind implementation. Every item gets checked against the real
-  codebase before you touch code, even feedback from a trusted source.
-- No batching without testing. Multiple items get implemented and verified
-  one at a time, not all at once and tested at the end.
-- No silent partial implementation. If some items are unclear, stop and ask
-  about all of them before implementing the clear ones.
-- No gratitude filler ("thanks for catching that", "thanks for the
-  feedback"). Acknowledge with the fix itself or a one-line factual note.
+- Acknowledge with the fix itself or a one-line factual note — skip the social
+  filler ("you're right", "great point", "thanks for catching that").
 - Architectural pushback goes to Nico, not into a unilateral decision — if a
   suggestion conflicts with an existing architectural choice, flag it and
   ask rather than silently overriding either the reviewer or the prior
@@ -74,4 +66,3 @@ over social comfort.
 ## Quality
 
 - Before presenting results, run the shared [self-review checklist](../quality.md). Surface issues in the chat only if found.
-- After task completion, propose a conventional commit message plus a short human-readable summary of what changed, why, and what the reviewer should focus on.
