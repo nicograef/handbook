@@ -10,6 +10,8 @@ description: >-
 
 # Receiving Feedback
 
+_Adapted from the MIT-licensed [superpowers](https://github.com/obra/superpowers) plugin._
+
 Code review requires technical evaluation, not a reflex to agree. Verify
 before implementing, ask before assuming, and prefer technical correctness
 over social comfort.

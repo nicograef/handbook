@@ -9,6 +9,8 @@ description: >-
 
 # Systematic Debugging
 
+_Adapted from the MIT-licensed [superpowers](https://github.com/obra/superpowers) plugin._
+
 Find the root cause before touching code. A fix that isn't grounded in an
 understood cause is a guess — it may hide the symptom while leaving the bug in
 place, or introduce a new one.

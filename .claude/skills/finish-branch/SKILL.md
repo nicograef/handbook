@@ -8,6 +8,8 @@ description: >-
 
 # Finish Branch
 
+_Adapted from the MIT-licensed [superpowers](https://github.com/obra/superpowers) plugin._
+
 Once work on a branch is done, decide how to integrate it. Verify tests first,
 then present exactly four options and execute the one chosen.
 

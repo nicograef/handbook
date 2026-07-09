@@ -9,6 +9,8 @@ description: >-
 
 # Using Git Worktrees
 
+_Adapted from the MIT-licensed [superpowers](https://github.com/obra/superpowers) plugin._
+
 Give a piece of work its own checkout and branch so it can't collide with
 whatever is currently checked out, without stashing or branch-juggling.
 

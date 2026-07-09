@@ -10,6 +10,8 @@ user-invocable: false
 
 # Dispatching Parallel Agents
 
+_Adapted from the MIT-licensed [superpowers](https://github.com/obra/superpowers) plugin._
+
 Delegate independent problems to isolated subagents instead of investigating
 them one by one. Each subagent gets exactly the context it needs — not your
 full session history — so it stays focused and your own context stays free

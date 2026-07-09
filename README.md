@@ -10,7 +10,9 @@ Focused on **Debian / Ubuntu**. Covers infrastructure, backend, frontend, and De
 
 ## Guides
 
-Step-by-step instructions (runbook-style).
+### Runbooks
+
+Step-by-step procedures to follow start to finish.
 
 | Topic                             | File                                                                       |
 | --------------------------------- | -------------------------------------------------------------------------- |
@@ -21,11 +23,18 @@ Step-by-step instructions (runbook-style).
 | Nginx reverse proxy (HTTPS + SPA) | [guides/nginx-reverse-proxy.md](guides/nginx-reverse-proxy.md)             |
 | GitHub Actions CI/CD              | [guides/github-actions-cicd.md](guides/github-actions-cicd.md)             |
 | GitHub Copilot Agent Mode setup   | [guides/copilot-agent-setup.md](guides/copilot-agent-setup.md)             |
-| Go backend development            | [guides/go.md](guides/go.md)                                               |
-| Java / Spring Boot backend        | [guides/java-spring-boot.md](guides/java-spring-boot.md)                   |
-| React frontend development        | [guides/react.md](guides/react.md)                                         |
 | Dotfiles for GitHub Codespaces    | [guides/dotfiles-codespaces.md](guides/dotfiles-codespaces.md)             |
 | PostgreSQL operations             | [guides/postgresql-operations.md](guides/postgresql-operations.md)         |
+
+### Stack conventions
+
+Heading-grouped rules and idioms for a stack — reference material, not runbooks.
+
+| Topic                             | File                                                                       |
+| --------------------------------- | -------------------------------------------------------------------------- |
+| Go backend conventions            | [guides/go.md](guides/go.md)                                               |
+| Java / Spring Boot conventions    | [guides/java-spring-boot.md](guides/java-spring-boot.md)                   |
+| React frontend conventions        | [guides/react.md](guides/react.md)                                         |
 
 ## Cheatsheets
 

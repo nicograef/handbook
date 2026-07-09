@@ -11,9 +11,9 @@ Which surfaces load these personal skills, and from where:
 | Claude Code (CLI + IDE) | `~/.claude/skills` → this directory | Yes |
 | VS Code Copilot | `~/.claude/skills` → this directory | Yes |
 | Copilot CLI | `~/.agents/skills` → this directory | Yes |
-| Copilot cloud agent / server-side review | n/a | Presumably no — not verified |
+| Copilot cloud agent / server-side review | server-side, no `$HOME` access | Presumably no — not verified |
 
-Both `~/.claude/skills` and `~/.agents/skills` are symlinks to this directory, created by `scripts/install-dotfiles.sh`. Skills deploy as the whole `.claude/skills/` directory, so the shared `quality.md` and each skill's reference files travel with them.
+`scripts/install-dotfiles.sh` creates two symlinks to this directory: `~/.claude/skills` (read by Claude Code and VS Code Copilot) and `~/.agents/skills` (read by the Copilot CLI — GitHub's CLI docs list `~/.copilot/skills` and `~/.agents/skills`, not `~/.claude/skills`, so the second symlink is what covers the CLI). Skills deploy as the whole `.claude/skills/` directory, so the shared `quality.md` and each skill's reference files travel with them.
 
 ## When to Use Which Skill
 
@@ -30,10 +30,12 @@ Both `~/.claude/skills` and `~/.agents/skills` are symlinks to this directory, c
 | Extracting DDD glossary terms                                 | **Ubiquitous Language**         | [ubiquitous-language/](ubiquitous-language/)                 |
 | Incremental code review, readability, slop removal, or a repo-wide cross-layer audit | **Cleanup** | [cleanup/](cleanup/)                             |
 | Understanding a part of the codebase holistically             | **Understand**                  | [understand/](understand/)                                   |
+| Researching companies, jobs, or tools from live sources       | **Research**                    | [research/](research/)                                       |
 | Debugging a failure root-cause-first                          | **Systematic Debugging**        | [systematic-debugging/](systematic-debugging/)               |
 | Acting on code-review feedback                                | **Receiving Feedback**          | [receiving-feedback/](receiving-feedback/)                   |
 | Isolating work in a git worktree                              | **Using Git Worktrees**         | [using-git-worktrees/](using-git-worktrees/)                 |
 | Integrating a finished branch (merge/PR/keep/discard)         | **Finish Branch**               | [finish-branch/](finish-branch/)                             |
+| Proposing a Conventional Commit message for staged changes    | **Commit**                      | [commit/](commit/)                                          |
 | Running independent subagents in parallel                     | **Dispatching Parallel Agents** | [dispatching-parallel-agents/](dispatching-parallel-agents/) |
 
 ## Typical Workflow

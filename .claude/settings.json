@@ -6,7 +6,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "scripts/check-repo.sh"
+            "command": "\"$CLAUDE_PROJECT_DIR\"/scripts/check-repo.sh"
           }
         ]
       }
