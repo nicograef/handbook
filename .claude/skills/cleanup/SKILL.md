@@ -1,7 +1,7 @@
 ---
 name: cleanup
 description: >-
-  Review code changes for clean code principles, design patterns, and
+  Reviews code changes for clean code principles, design patterns, and
   anti-patterns. Use on recent changes (staged, unstaged, last commit) or a
   specific area (module, route, component, page). Reports findings with
   concrete suggestions, applies fixes after confirmation. Integrates AI slop
