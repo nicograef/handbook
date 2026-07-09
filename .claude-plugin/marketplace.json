@@ -1,0 +1,11 @@
+{
+  "name": "nicograef",
+  "owner": { "name": "Nico Graef", "email": "graef.nico@gmail.com" },
+  "plugins": [
+    {
+      "name": "handbook",
+      "source": "./",
+      "description": "Personal knowledge base: guides, cheatsheets, templates, scripts, and agent skills for infrastructure and CLI workflows."
+    }
+  ]
+}

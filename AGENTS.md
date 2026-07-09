@@ -16,8 +16,11 @@ works through AGENTS.md.
 - `templates/` — copy-paste-ready config files (`.bashrc`, `Makefile`, `docker-compose.yml`, `nginx-tls.conf`).
 - `scripts/` — reusable bash scripts.
 - `.claude/skills/` — reusable agent skills (see `.claude/skills/README.md`).
-- `.claude/agents/` — subagent definitions (`web-researcher`).
+- `.claude/agents/` — subagent definitions (`web-researcher`); the root `agents` symlink
+  exposes it to the plugin's default agent scan (the manifest `agents` field does not load
+  agents in Claude Code v2.1.197).
 - `.claude/rules/` — path-scoped conventions for Claude Code.
+- `.claude-plugin/` — plugin + marketplace manifests exposing the skills and agent as a public Claude Code plugin.
 - `claude/` — dotfiles: global `CLAUDE.md`, `settings.json`, `statusline.sh`.
 
 ## Searching

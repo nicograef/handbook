@@ -1,0 +1,9 @@
+{
+  "name": "handbook",
+  "description": "Personal knowledge base: guides, cheatsheets, templates, scripts, and agent skills for infrastructure and CLI workflows.",
+  "author": { "name": "Nico Graef", "email": "graef.nico@gmail.com" },
+  "homepage": "https://github.com/nicograef/handbook",
+  "repository": "https://github.com/nicograef/handbook",
+  "license": "MIT",
+  "skills": "./.claude/skills/"
+}
