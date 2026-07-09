@@ -1,10 +1,10 @@
 ---
 name: ubiquitous-language
 description: >-
-  Extract a DDD-style ubiquitous language glossary from the current conversation,
-  flagging ambiguities and proposing canonical terms. Saves to
-  UBIQUITOUS_LANGUAGE.md. Use when user wants to define domain terms, build a
-  glossary, harden terminology, create a ubiquitous language, or mentions
+  Extracts a DDD-style ubiquitous language glossary from the current
+  conversation, flagging ambiguities and proposing canonical terms. Saves to
+  docs/UBIQUITOUS_LANGUAGE.md. Use when user wants to define domain terms, build
+  a glossary, harden terminology, create a ubiquitous language, or mentions
   "domain model" or "DDD".
 ---
 
@@ -13,7 +13,7 @@ description: >-
 Extract and formalize domain terminology from the current conversation into a
 consistent glossary, saved to a local file.
 
-## Process
+## Workflow
 
 1. **Scan the conversation** for domain-relevant nouns, verbs, and concepts
 2. **Identify problems**:
@@ -21,13 +21,13 @@ consistent glossary, saved to a local file.
    - Different words used for the same concept (synonyms)
    - Vague or overloaded terms
 3. **Propose a canonical glossary** with opinionated term choices
-4. **Write to `UBIQUITOUS_LANGUAGE.md`** in the project root using the format
-   below
+4. **Write to `docs/UBIQUITOUS_LANGUAGE.md`** (create the `docs/` directory if it
+   doesn't exist) using the format below
 5. **Output a summary** inline in the conversation
 
 ## Output Format
 
-Write a `UBIQUITOUS_LANGUAGE.md` file with this structure:
+Write a `docs/UBIQUITOUS_LANGUAGE.md` file with this structure:
 
 ```md
 # Ubiquitous Language
@@ -91,7 +91,7 @@ Write a `UBIQUITOUS_LANGUAGE.md` file with this structure:
 
 When invoked again in the same conversation:
 
-1. Read the existing `UBIQUITOUS_LANGUAGE.md`
+1. Read the existing `docs/UBIQUITOUS_LANGUAGE.md`
 2. Incorporate any new terms from subsequent discussion
 3. Update definitions if understanding has evolved
 4. Re-flag any new ambiguities
@@ -99,5 +99,6 @@ When invoked again in the same conversation:
 
 ## Quality
 
-- Before presenting results, run the shared [self-review checklist](../quality.md) — applied to the quality of the glossary artifact. Surface issues in the chat only if found.
-- After task completion, propose a conventional commit message plus a short human-readable summary of what changed, why, and what the reviewer should focus on.
+- Once the glossary file is written, run the shared
+  [self-review checklist](../quality.md) on it. Surface issues in the chat only
+  if found.

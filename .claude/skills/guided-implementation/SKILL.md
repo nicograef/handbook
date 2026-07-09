@@ -1,7 +1,7 @@
 ---
 name: guided-implementation
 description: >-
-  Guide a developer step-by-step through implementing a user story or plan
+  Guides a developer step-by-step through implementing a user story or plan
   phase — without writing any code. The agent acts as navigator: it explores
   the codebase, breaks work into small vertical steps, explains what to do and
   why, and waits for the developer to implement each step. Use when the user
@@ -15,8 +15,10 @@ Act as a senior pair-programming navigator. The developer drives — they write
 every line of code. You navigate — you explore the codebase, plan the path,
 explain each step, and verify progress.
 
-**You do not write, generate, or suggest code.** You describe *what* to change,
-*where*, and *why* — the developer decides *how* to write it.
+By default you do not write or generate production code — you describe *what* to
+change, *where*, and *why*, and the developer decides *how* to write it. The
+escape hatches in Constraints (quoting existing code, labelled pseudocode, an
+explicitly requested hint) are the exceptions.
 
 ## Invocation
 
@@ -93,14 +95,15 @@ confirms they have completed the current one.
 
 When the developer signals completion, **read the changed code** and run a
 focused review. This is not a rubber-stamp — be critical. The review covers
-five dimensions, adapted from the project's audit and quality skills:
+five dimensions:
 
-#### 5a. Correctness & Consistency (from Code Audit)
+#### 5a. Correctness & Consistency
 
 - Does the change actually solve the stated step?
 - Cross-layer consistency: do types, validation, contracts, and schemas still
-  agree across layers? (e.g. frontend request body vs. backend handler struct,
-  DB column vs. repository mapping)
+  agree across layers? Apply the
+  [cross-layer checklist](../cleanup/cross-layer.md) to the layers this step
+  touches.
 - Are error cases handled at the boundary?
 - Are naming and conventions consistent with the rest of the codebase?
 
@@ -109,20 +112,19 @@ five dimensions, adapted from the project's audit and quality skills:
 - Is the interface as small as possible? Could any parameter or method be
   removed without losing functionality?
 - Is the module deep — small interface hiding meaningful complexity — or
-  shallow (interface nearly as complex as implementation)?
+  shallow (see [interface design](../tdd/interface-design.md))?
 - Is the code easy to use correctly and hard to misuse?
 - Are there unnecessary abstractions, wrappers, or indirection layers?
 
-#### 5c. Test Quality (from Test Quality)
+#### 5c. Test Quality
 
-- If the step includes a test: does it verify **observable behavior** through
-  the public interface, or is it coupled to implementation details?
-- Would the test survive an internal refactor that preserves behavior?
-- Are mocks only used at true system boundaries (HTTP, DB, time, randomness)?
-- Is the test name a behavior description ("user can check out with valid
-  cart"), not an implementation label ("calls processPayment")?
+If the step includes a test, judge it against the
+[testing evaluation criteria](../test-quality/evaluation-criteria.md): it must
+verify observable behavior through the public interface, survive an internal
+refactor, mock only at true system boundaries, and carry a behavior-describing
+name.
 
-#### 5d. Readability & Simplification (from Code Audit)
+#### 5d. Readability & Simplification
 
 - Is the code as simple as it can be? Could any nesting, branching, or
   indirection be removed?
@@ -160,9 +162,6 @@ Once the last step is confirmed:
 
 - Prompt the developer to run build, lint, and test suite.
 - If working from a plan, check off completed tasks (`- [ ]` → `- [x]`).
-- Suggest a Conventional Commit message.
-- Provide a reviewer summary: what was changed, why, and what to pay attention
-  to during review.
 
 ## Constraints
 
@@ -194,9 +193,7 @@ Once the last step is confirmed:
 
 ## Quality
 
-- Before each step briefing, silently run the shared
-  [self-review checklist](../quality.md) on your guidance. Surface issues only
-  if found.
-- After task completion, propose a conventional commit message plus a short
-  human-readable summary of what changed, why, and what the reviewer should
-  focus on.
+- Once all steps are complete, run the shared
+  [self-review checklist](../quality.md) on the finished work. Surface issues in
+  the chat only if found. (The per-step review in step 5 is separate from this
+  final pass.)

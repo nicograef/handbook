@@ -1,14 +1,15 @@
 ---
 name: write-prd
 description: >-
-  Create a PRD through structured clarification, codebase exploration, and
-  module design, then save as a local Markdown file. Use when user wants to
+  Creates a PRD through structured clarification, codebase exploration, and
+  module design, then saves it as a local Markdown file. Use when user wants to
   write a PRD, create a product requirements document, or plan a new feature.
 ---
 
 # Write a PRD
 
-You may skip steps if you don't consider them necessary.
+Skip a step only when its output already exists (e.g. the clarification is done
+or the codebase is already understood). Never skip exploration.
 
 ## Workflow
 
@@ -30,28 +31,8 @@ of the codebase.
 
 ### 3. Clarify ambiguities
 
-Resolve unknowns through **1–3 rounds** of structured questions.
-
-**Rules:**
-
-- **Explore before asking.** If a question can be answered by reading the
-  codebase, read the codebase instead of asking the user.
-- **Always recommend.** Every question must include a recommended answer.
-  Label it clearly (e.g. "(recommended)" in the option label, or a note in
-  the prompt) with brief reasoning.
-- **Context before question.** The prompt should explain *why* the question
-  matters so the user can make an informed choice.
-- **Structured over free-text.** Prefer the Ask Question tool when available;
-  fall back to conversational questions only if no such tool exists. Present
-  concrete options. Convert open-ended questions to multiple-choice with an
-  "Other (specify)" escape hatch.
-- **Max 5 questions per round.** Prioritise the most impactful unknowns.
-- **Stop when resolved.** If all ambiguities are clear after 1 round, stop.
-  Continue only if unresolved branches remain.
-
-If the user declines to answer: proceed with recommended defaults and document
-each assumption in the PRD as a clearly marked callout (e.g. blockquote
-prefixed with **Assumption:**).
+Resolve unknowns through **1–3 rounds** of structured questions, following the
+canonical [clarification question rules](../clarify/question-rules.md).
 
 ### 4. Propose approaches
 
@@ -66,8 +47,9 @@ Sketch out the major modules you will need to build or modify to complete
 the implementation. Actively look for opportunities to extract deep modules
 that can be tested in isolation.
 
-A deep module (as opposed to a shallow module) is one which encapsulates a
-lot of functionality in a simple, testable interface which rarely changes.
+A deep module hides substantial functionality behind a small, testable
+interface that rarely changes — see
+[interface design](../tdd/interface-design.md).
 
 Check with the user that these modules match their expectations. Check with
 the user which modules they want tests written for.
@@ -101,13 +83,11 @@ The solution to the problem, from the user's perspective.
 
 ## User Stories
 
-A LONG, numbered list of user stories. Each user story should be in the format
-of:
+A numbered list of user stories with at least one story per actor and one per
+distinct capability the Solution names — no capability in the Solution section
+is left without a matching story. Each user story is in the format:
 
 1. As an <actor>, I want a <feature>, so that <benefit>
-
-This list of user stories should be extremely extensive and cover all aspects
-of the feature.
 
 ## Implementation Decisions
 
@@ -146,13 +126,8 @@ Any further notes about the feature.
 
 - Do not skip exploration to save time: read the codebase to answer a
   question before asking the user.
-- Cap clarification at 5 questions per round and 1–3 rounds total; stop as
-  soon as ambiguities are resolved instead of over-asking.
-- Never present a question without a recommended answer and the reasoning
-  behind it.
-- If the user declines to answer, do not block — proceed with the
-  recommended default and record it as a clearly marked **Assumption:**
-  callout in the PRD.
+- Clarify per the [question rules](../clarify/question-rules.md), capped at
+  1–3 rounds total; stop as soon as ambiguities are resolved.
 - Do not include specific file paths or code snippets in Implementation
   Decisions; they go stale quickly.
 - Only test external behavior in Testing Decisions, never implementation
@@ -160,7 +135,9 @@ Any further notes about the feature.
 
 ## Quality
 
-- Before presenting results, run the shared [self-review checklist](../quality.md) — applied to the quality of the PRD artifact. Surface issues in the chat only if found.
+- Once the PRD file is written, run the shared
+  [self-review checklist](../quality.md) on it. Surface issues in the chat only
+  if found.
 - Also run a PRD-specific self-review pass before presenting the final file:
   - Scan for placeholders, TBDs, or unresolved brackets left over from drafting.
   - Check internal consistency — do the User Stories, Implementation Decisions,
@@ -168,4 +145,3 @@ Any further notes about the feature.
   - Confirm the scope is narrow enough to be covered by a single
     implementation plan; if not, flag it and suggest splitting.
   - Flag any requirement that could reasonably be read two different ways.
-- After task completion, propose a conventional commit message plus a short human-readable summary of what changed, why, and what the reviewer should focus on.

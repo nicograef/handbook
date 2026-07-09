@@ -1,5 +1,17 @@
 # Interface Design for Testability
 
+## Deep modules
+
+A **deep module** hides substantial functionality behind a small, testable
+interface that rarely changes — the opposite of a shallow module, whose
+interface is nearly as complex as the implementation it wraps. Prefer deep
+modules: fewer methods and simpler parameters mean less test setup and fewer
+tests, while the hidden complexity stays isolated behind a stable contract. When
+designing an interface, ask whether you can reduce the number of methods,
+simplify the parameters, or push more complexity inside.
+
+## Testability
+
 Good interfaces make testing natural:
 
 **1. Accept dependencies, don't create them**

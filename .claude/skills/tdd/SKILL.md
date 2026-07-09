@@ -1,9 +1,9 @@
 ---
 name: tdd
 description: >-
-  Test-driven development with red-green-refactor loop. Use when user wants to
-  build features or fix bugs using TDD, mentions "red-green-refactor", wants
-  integration tests, or asks for test-first development.
+  Drives development with a red-green-refactor loop, one test at a time. Use
+  when the user wants to build a feature or fix a bug using TDD, mentions
+  "red-green-refactor", or asks for test-first development.
 ---
 
 # Test-Driven Development
@@ -30,7 +30,7 @@ guidelines.
 
 ## Anti-Pattern: Horizontal Slices
 
-**DO NOT write all tests first, then all implementation.** This is "horizontal
+Avoid writing all tests first, then all implementation. That is "horizontal
 slicing" — treating RED as "write all tests" and GREEN as "write all code."
 
 This produces **crap tests**:
@@ -120,13 +120,6 @@ GREEN:  Minimal code to pass → passes
 VERIFY: Confirm it passes AND all other tests still pass, with clean output
 ```
 
-Rules:
-
-- One test at a time
-- Only enough code to pass current test
-- Don't anticipate future tests
-- Keep tests focused on observable behavior
-
 ### 4. Refactor
 
 After all tests pass, look for refactor candidates:
@@ -139,18 +132,8 @@ After all tests pass, look for refactor candidates:
 - **Existing code** the new code reveals as problematic
 - Apply SOLID principles where natural
 
-Run tests after each refactor step. **Never refactor while RED** — get to GREEN
+Run tests after each refactor step. Never refactor while RED — get to GREEN
 first.
-
-## Checklist Per Cycle
-
-```
-[ ] Test describes behavior, not implementation
-[ ] Test uses public interface only
-[ ] Test would survive internal refactor
-[ ] Code is minimal for this test
-[ ] No speculative features added
-```
 
 ## Constraints
 
@@ -165,5 +148,6 @@ first.
 
 ## Quality
 
-- Before presenting results, run the shared [self-review checklist](../quality.md). Surface issues in the chat only if found.
-- After task completion, propose a conventional commit message plus a short human-readable summary of what changed, why, and what the reviewer should focus on.
+- Once the feature or fix is done, run the shared
+  [self-review checklist](../quality.md) on it. Surface issues in the chat only
+  if found.

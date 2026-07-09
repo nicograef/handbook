@@ -396,40 +396,40 @@ blocks.
 `.claude/skills/ubiquitous-language/SKILL.md`.
 
 **Steps:**
-- [ ] Apply **GC-1** to `quality.md` (slim to Scope guard + Verify-before-claiming, official
+- [x] Apply **GC-1** to `quality.md` (slim to Scope guard + Verify-before-claiming, official
   anti-fabrication phrasing). *(PR-3, PL-9, RV-6)*
-- [ ] Create `.claude/skills/clarify/question-rules.md` as the canonical clarification rules; make
+- [x] Create `.claude/skills/clarify/question-rules.md` as the canonical clarification rules; make
   `clarify/SKILL.md` reference it. In `clarify/SKILL.md`: add explicit early-exit ("stop as soon as
   the decision tree is resolved, even after one round"), pick one question-count bound (max 5 per
   round), apply GC-12 (tool-agnostic, one term). *(PF-5, PL-2, PL-7, PL-8)*
-- [ ] `create-plan/SKILL.md`: replace the duplicated Rules block with a one-line link to
+- [x] `create-plan/SKILL.md`: replace the duplicated Rules block with a one-line link to
   `../clarify/question-rules.md`; drop the line-number mandate for plan artifacts — require file
   path + symbol name (`path/file.go — handleCheckout()`), keep line refs only for in-conversation
   citations; apply GC-2/GC-3. *(PF-5, PL-2, PL-5, PL-10)*
-- [ ] `write-prd/SKILL.md`: delete the blanket "You may skip steps" line (replace with scoped
+- [x] `write-prd/SKILL.md`: delete the blanket "You may skip steps" line (replace with scoped
   "skip a step only when its output already exists; never skip exploration"); link
   `../clarify/question-rules.md`; reduce the deep-module prose to a one-line def + link to
   `../tdd/interface-design.md`; replace "A LONG, extensive" user-stories bar with GC-11 concrete
   bar; apply GC-2/GC-3. *(PL-1, PL-2, PL-11, PL-15, PL-10)*
-- [ ] `implement-plan/SKILL.md`: reorder Workflow (find next open phase → read its Context → then
+- [x] `implement-plan/SKILL.md`: reorder Workflow (find next open phase → read its Context → then
   critically review → implement); apply GC-2/GC-3. *(PL-4, PL-10)*
-- [ ] `guided-implementation/SKILL.md`: soften the intro absolute to "default + escape hatch"
+- [x] `guided-implementation/SKILL.md`: soften the intro absolute to "default + escape hatch"
   matching the Constraints; replace the inlined "from Code Audit"/"from Test Quality" copies (§5c
   etc.) with links to `../test-quality/evaluation-criteria.md` and (post-merge) `../cleanup/cross-layer.md`;
   link deep-module def to `../tdd/interface-design.md`; apply GC-2 (single once-per-result checklist,
   not per-briefing) and GC-3. *(PL-3, PF-7, PL-12, PL-15, PL-10)*
-- [ ] `tdd/SKILL.md`: keep the Anti-Pattern section + Constraints as the single canonical statement;
+- [x] `tdd/SKILL.md`: keep the Anti-Pattern section + Constraints as the single canonical statement;
   delete the "Checklist Per Cycle" section and the redundant step-3 Rules list; de-escalate "DO
   NOT" (GC-4); narrow the frontmatter trigger (remove bare "wants integration tests"); apply GC-3.
   *(PL-6, PL-13, PL-10)*
-- [ ] `tdd/interface-design.md`: add the canonical deep-module definition (source for write-prd /
+- [x] `tdd/interface-design.md`: add the canonical deep-module definition (source for write-prd /
   guided-implementation links). *(PL-15)*
-- [ ] Add TOCs (GC-10) to `tdd/mocking.md` (158 lines) and `tdd/tests.md` (113 lines). *(PL-14,
+- [x] Add TOCs (GC-10) to `tdd/mocking.md` (158 lines) and `tdd/tests.md` (113 lines). *(PL-14,
   SP-4-subset)*
-- [ ] `ubiquitous-language/SKILL.md`: rename `## Process` → `## Workflow`; change output path to
+- [x] `ubiquitous-language/SKILL.md`: rename `## Process` → `## Workflow`; change output path to
   `docs/UBIQUITOUS_LANGUAGE.md` (frontmatter description, workflow step, Re-running section); apply
   GC-2/GC-3/GC-7. *(PF-11/RV-11, PF-12, PL-10, SP-7-subset)*
-- [ ] Apply GC-7 (third-person description) to each SKILL.md in this WP. *(SP-7 subset)*
+- [x] Apply GC-7 (third-person description) to each SKILL.md in this WP. *(SP-7 subset)*
 
 **Acceptance:** `grep -rn 'quality.md' .claude/skills` shows Quality links only in the code/doc
 skills of this WP; `question-rules.md` referenced by clarify/create-plan/write-prd, defined once;

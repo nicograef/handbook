@@ -1,5 +1,8 @@
 # When to Mock
 
+- [Designing for Mockability](#designing-for-mockability)
+- [Anti-Patterns](#anti-patterns)
+
 Mock at **system boundaries** only:
 
 - External APIs (payment, email, etc.)

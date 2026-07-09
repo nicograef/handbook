@@ -1,5 +1,8 @@
 # Good and Bad Tests
 
+- [Good Tests](#good-tests)
+- [Bad Tests](#bad-tests)
+
 ## Good Tests
 
 **Integration-style**: Test through real interfaces, not mocks of internal parts.

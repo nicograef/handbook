@@ -1,7 +1,7 @@
 ---
 name: create-plan
 description: >-
-  Create an implementation plan from a PRD or a task description. Researches
+  Creates an implementation plan from a PRD or a task description. Researches
   codebase context, clarifies ambiguities, and outputs a phased plan with
   vertical slices and acceptance criteria. Use when the user wants to plan a
   feature, break down a PRD, create an implementation plan, or mentions
@@ -31,28 +31,8 @@ contain gaps, conflicting requirements, or underspecified decisions that must
 be resolved before planning begins.
 
 Resolve unknowns through **1–3 rounds** of structured questions before
-planning.
-
-**Rules:**
-
-- **Explore before asking.** If a question can be answered by reading the
-  codebase, read the codebase instead of asking the user.
-- **Always recommend.** Every question must include a recommended answer.
-  Label it clearly (e.g. "(recommended)" in the option label, or a note in
-  the prompt) with brief reasoning.
-- **Context before question.** The prompt should explain *why* the question
-  matters so the user can make an informed choice.
-- **Structured over free-text.** Prefer the Ask Question tool when available;
-  fall back to conversational questions only if no such tool exists. Present
-  concrete options. Convert open-ended questions to multiple-choice with an
-  "Other (specify)" escape hatch.
-- **Max 5 questions per round.** Prioritise the most impactful unknowns.
-- **Stop when resolved.** If all ambiguities are clear after 1 round, stop.
-  Continue only if unresolved branches remain.
-
-If the user declines to answer: proceed with recommended defaults and document
-each assumption as a clearly marked callout (e.g. blockquote prefixed with
-**Assumption:**).
+planning, following the canonical
+[clarification question rules](../clarify/question-rules.md).
 
 ### 3. Research the codebase
 
@@ -133,16 +113,21 @@ to re-review after fixing.
 ## Constraints
 
 - **No code changes.** Only create the plan file.
-- **Precise references.** Back every finding with file path and line numbers
-  (e.g. `backend/api/product/http/handler.go:42-58`).
+- **Precise references.** In the plan file, anchor references to file path plus
+  symbol name (e.g. `backend/api/product/http/handler.go — handleCheckout()`),
+  not line numbers — lines drift as later phases land. Use line numbers only for
+  in-conversation citations while researching.
 - **Readability-first.** Prefer simple, clear, idiomatic solutions.
 
 ## Quality
 
-- Before presenting results, run the shared [self-review checklist](../quality.md) — applied to the quality of the plan artifact. Surface issues in the chat only if found.
-- Placeholder scan (step 8): no TBD/TODO/vague instructions, and no acceptance criteria referencing undefined files, functions, or models.
-- Cross-phase consistency check (step 8): names from "Architectural decisions" stay identical in every phase that reuses them.
-- After task completion, propose a conventional commit message plus a short human-readable summary of what changed, why, and what the reviewer should focus on.
+- Once the plan file is written, run the shared
+  [self-review checklist](../quality.md) on it. Surface issues in the chat only
+  if found.
+- Placeholder scan (step 8): no TBD/TODO/vague instructions, and no acceptance
+  criteria referencing undefined files, functions, or models.
+- Cross-phase consistency check (step 8): names from "Architectural decisions"
+  stay identical in every phase that reuses them.
 
 ## Plan Template
 
@@ -166,7 +151,7 @@ Durable decisions that apply across all phases:
 
 ## Inventory
 
-<Relevant existing files, patterns, dependencies — each with file path:lines>
+<Relevant existing files, patterns, dependencies — each with file path + symbol name>
 
 ## Resolved decisions
 
@@ -184,7 +169,7 @@ Durable decisions that apply across all phases:
 
 ### Context
 
-- `path/file.go:10-45` — <why relevant>
+- `path/file.go — symbolName()` — <why relevant>
 
 ### What to build
 
@@ -205,7 +190,7 @@ behavior, not layer-by-layer implementation.
 
 ### Context
 
-- `path/file.go:50-80` — <why relevant>
+- `path/file.go — otherSymbol()` — <why relevant>
 
 ### What to build
 
