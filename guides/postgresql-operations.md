@@ -15,27 +15,32 @@ sudo apt install -y postgresql-client
 
 ## 1. Manual Backup
 
+The `postgres` container already holds `POSTGRES_USER` / `POSTGRES_DB` in its
+environment, so run `pg_dump` through `sh -c` with those vars **single-quoted**
+(expanded inside the container, not by your host shell). `-T` disables the
+pseudo-TTY so binary dumps are not corrupted by CR/LF translation.
+
 ### Compressed dump (recommended)
 
 ```bash
-docker compose exec postgres pg_dump \
-  -U "$POSTGRES_USER" -d "$POSTGRES_DB" -Fc \
+docker compose exec -T postgres sh -c \
+  'pg_dump -U "$POSTGRES_USER" -d "$POSTGRES_DB" -Fc' \
   > "backup-$(date +%Y%m%d-%H%M).dump"
 ```
 
 ### Plain SQL dump
 
 ```bash
-docker compose exec postgres pg_dump \
-  -U "$POSTGRES_USER" -d "$POSTGRES_DB" \
+docker compose exec -T postgres sh -c \
+  'pg_dump -U "$POSTGRES_USER" -d "$POSTGRES_DB"' \
   > "backup-$(date +%Y%m%d-%H%M).sql"
 ```
 
 ### Single table
 
 ```bash
-docker compose exec postgres pg_dump \
-  -U "$POSTGRES_USER" -d "$POSTGRES_DB" -t users -Fc \
+docker compose exec -T postgres sh -c \
+  'pg_dump -U "$POSTGRES_USER" -d "$POSTGRES_DB" -t users -Fc' \
   > "users-$(date +%Y%m%d-%H%M).dump"
 ```
 
@@ -79,10 +84,14 @@ BACKUP_DIR="/opt/backups/postgres"
 RETENTION_DAYS=14
 COMPOSE_DIR="/opt/myapp"
 
+# cron runs with a bare environment — load the compose .env so the container
+# name resolves and any host-side vars are available.
+set -a; . "$COMPOSE_DIR/.env"; set +a
+
 mkdir -p "$BACKUP_DIR"
 
-docker compose -f "$COMPOSE_DIR/docker-compose.prod.yml" exec -T postgres \
-  pg_dump -U "$POSTGRES_USER" -d "$POSTGRES_DB" -Fc \
+docker compose -f "$COMPOSE_DIR/docker-compose.prod.yml" exec -T postgres sh -c \
+  'pg_dump -U "$POSTGRES_USER" -d "$POSTGRES_DB" -Fc' \
   > "$BACKUP_DIR/backup-$(date +%Y%m%d-%H%M).dump"
 
 # remove backups older than retention period
@@ -123,28 +132,34 @@ database/migrations/000001_add_users_table.down.sql
 
 ### Run migrations
 
+Run `migrate` as a throwaway container **on the compose network** so it reaches
+the database by its service name (`postgres`), no published port required.
+Replace `<project>` with your Compose project name (the volume/network prefix);
+the network is `<project>_db-network`.
+
 ```bash
-# connection string
-DB_URL="postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@localhost:5432/${POSTGRES_DB}?sslmode=disable"
+DB_URL="postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}?sslmode=disable"
 
-# apply all pending
-migrate -path database/migrations -database "$DB_URL" up
+migrate() {
+  docker run --rm \
+    --network <project>_db-network \
+    -v "$PWD/database/migrations:/migrations" \
+    migrate/migrate \
+    -path /migrations -database "$DB_URL" "$@"
+}
 
-# apply next N
-migrate -path database/migrations -database "$DB_URL" up 2
-
-# rollback last batch
-migrate -path database/migrations -database "$DB_URL" down 1
-
-# rollback all
-migrate -path database/migrations -database "$DB_URL" down -all
-
-# check current version
-migrate -path database/migrations -database "$DB_URL" version
-
-# force version (after fixing a dirty migration)
-migrate -path database/migrations -database "$DB_URL" force <version>
+migrate up                 # apply all pending
+migrate up 2               # apply next N
+migrate down 1             # rollback last batch
+migrate down -all          # rollback all
+migrate version            # check current version
+migrate force <version>    # force version (after fixing a dirty migration)
 ```
+
+> **Published-port form.** If the `postgres` service publishes `5432` to the
+> host, you can instead point a locally installed `migrate` binary at
+> `@localhost:5432` — replace `@postgres:5432` with `@localhost:5432` in
+> `DB_URL` and drop the `docker run` wrapper.
 
 ### Migration file template
 
@@ -212,8 +227,8 @@ docker compose exec -T postgres pg_restore \
   -U "$POSTGRES_USER" -d test_restore < backup-*.dump
 docker compose exec postgres dropdb -U "$POSTGRES_USER" test_restore
 
-# check migration version
-migrate -path database/migrations -database "$DB_URL" version
+# check migration version (uses the migrate wrapper from section 4)
+migrate version
 ```
 
 ## Troubleshooting
@@ -226,8 +241,8 @@ docker compose exec postgres psql -U "$POSTGRES_USER" -c \
 
 # "dirty database version" after failed migration
 # → check which version is dirty, fix the SQL, then force
-migrate -path database/migrations -database "$DB_URL" version
-migrate -path database/migrations -database "$DB_URL" force <last-good-version>
+migrate version
+migrate force <last-good-version>
 
 # connection refused — check if container is healthy
 docker compose ps

@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
 # setup-server.sh – provision a fresh Debian / Ubuntu VPS
 #
-# Usage (run as root on the new server):
-#   ssh root@host 'bash -s' < setup-server.sh
-#   ssh root@host 'bash -s -- --dry-run' < setup-server.sh   # preview only
+# Usage (run as root on the new server, passing config inline over SSH):
+#   ssh root@host "SSH_PUBLIC_KEY='ssh-ed25519 AAAA...' USERNAME=nico bash -s" < setup-server.sh
+#   ssh root@host "SSH_PUBLIC_KEY='ssh-ed25519 AAAA...' bash -s -- --dry-run" < setup-server.sh   # preview only
 #
 # What it does:
 #   1. System update & base packages
@@ -36,6 +36,17 @@ run() {
   fi
 }
 
+# write_file <path> — write stdin to <path>, previewing (not writing) in dry-run.
+write_file() {
+  local path="$1"
+  if [[ "$DRY_RUN" == "true" ]]; then
+    printf '  \033[0;33m[DRY-RUN]\033[0m write %s\n' "$path"
+    cat >/dev/null
+  else
+    cat > "$path"
+  fi
+}
+
 # ── Parse flags ──────────────────────────────────────────────────────────────
 for arg in "$@"; do
   case "$arg" in
@@ -49,7 +60,8 @@ if [[ "$DRY_RUN" == "true" ]]; then
 fi
 
 # ── Pre-flight checks ───────────────────────────────────────────────────────
-if [[ $EUID -ne 0 ]]; then
+# Root is required for real runs; a dry-run only previews, so allow it anywhere.
+if [[ $EUID -ne 0 && "$DRY_RUN" != "true" ]]; then
   echo "ERROR: This script must be run as root." >&2
   exit 1
 fi
@@ -79,27 +91,35 @@ fi
 run usermod -aG sudo "$USERNAME"
 
 # allow sudo without password (optional – remove if you prefer password prompt)
-echo "$USERNAME ALL=(ALL) NOPASSWD:ALL" > "/etc/sudoers.d/$USERNAME"
-chmod 440 "/etc/sudoers.d/$USERNAME"
+write_file "/etc/sudoers.d/$USERNAME" <<< "$USERNAME ALL=(ALL) NOPASSWD:ALL"
+run chmod 440 "/etc/sudoers.d/$USERNAME"
 
 # ── 3. SSH hardening ────────────────────────────────────────────────────────
 log "Setting up SSH key for '$USERNAME'"
 USER_HOME="/home/$USERNAME"
 SSH_DIR="$USER_HOME/.ssh"
-mkdir -p "$SSH_DIR"
-echo "$SSH_PUBLIC_KEY" >> "$SSH_DIR/authorized_keys"
-sort -u "$SSH_DIR/authorized_keys" -o "$SSH_DIR/authorized_keys"
-chmod 700 "$SSH_DIR"
-chmod 600 "$SSH_DIR/authorized_keys"
-chown -R "$USERNAME:$USERNAME" "$SSH_DIR"
+run mkdir -p "$SSH_DIR"
+if [[ "$DRY_RUN" == "true" ]]; then
+  printf '  \033[0;33m[DRY-RUN]\033[0m append SSH_PUBLIC_KEY to %s (deduplicated)\n' "$SSH_DIR/authorized_keys"
+else
+  echo "$SSH_PUBLIC_KEY" >> "$SSH_DIR/authorized_keys"
+  sort -u "$SSH_DIR/authorized_keys" -o "$SSH_DIR/authorized_keys"
+fi
+run chmod 700 "$SSH_DIR"
+run chmod 600 "$SSH_DIR/authorized_keys"
+run chown -R "$USERNAME:$USERNAME" "$SSH_DIR"
 
 log "Hardening sshd_config"
 SSHD_CONFIG="/etc/ssh/sshd_config"
-cp "$SSHD_CONFIG" "${SSHD_CONFIG}.bak"
+run cp "$SSHD_CONFIG" "${SSHD_CONFIG}.bak"
 
 # apply settings idempotently
 set_sshd() {
   local key="$1" value="$2"
+  if [[ "$DRY_RUN" == "true" ]]; then
+    printf '  \033[0;33m[DRY-RUN]\033[0m set %s %s in %s\n' "$key" "$value" "$SSHD_CONFIG"
+    return
+  fi
   if grep -qE "^#?${key}\b" "$SSHD_CONFIG"; then
     sed -i "s|^#*${key}.*|${key} ${value}|" "$SSHD_CONFIG"
   else
@@ -111,7 +131,7 @@ set_sshd "PubkeyAuthentication"  "yes"
 set_sshd "PasswordAuthentication" "no"
 set_sshd "PermitRootLogin"       "no"
 
-systemctl restart sshd
+run systemctl restart sshd
 
 # ── 4. UFW firewall ─────────────────────────────────────────────────────────
 log "Configuring UFW"
@@ -129,7 +149,7 @@ run systemctl enable ufw
 
 # ── 5. fail2ban ─────────────────────────────────────────────────────────────
 log "Configuring fail2ban"
-cat > /etc/fail2ban/jail.local <<EOF
+write_file /etc/fail2ban/jail.local <<'EOF'
 [sshd]
 backend  = systemd
 enabled  = true
@@ -142,19 +162,27 @@ run systemctl restart fail2ban
 
 # ── 6. Docker ───────────────────────────────────────────────────────────────
 log "Installing Docker"
-install -m 0755 -d /etc/apt/keyrings
 
-if [[ ! -f /etc/apt/keyrings/docker.gpg ]]; then
-  curl -fsSL "https://download.docker.com/linux/${ID}/gpg" \
-    | gpg --dearmor -o /etc/apt/keyrings/docker.gpg
-  chmod a+r /etc/apt/keyrings/docker.gpg
-fi
-
-# determine distro base (works for Debian and Ubuntu)
+# determine distro base (works for Debian and Ubuntu) — needed for both the
+# keyring URL and the apt source, so resolve it before either write.
+# shellcheck source=/dev/null
 . /etc/os-release
 REPO_URL="https://download.docker.com/linux/${ID}"
-echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] ${REPO_URL} ${VERSION_CODENAME} stable" \
-  | tee /etc/apt/sources.list.d/docker.list > /dev/null
+
+run install -m 0755 -d /etc/apt/keyrings
+
+if [[ ! -f /etc/apt/keyrings/docker.gpg ]]; then
+  if [[ "$DRY_RUN" == "true" ]]; then
+    printf '  \033[0;33m[DRY-RUN]\033[0m fetch %s/gpg and write /etc/apt/keyrings/docker.gpg\n' "$REPO_URL"
+  else
+    curl -fsSL "$REPO_URL/gpg" \
+      | gpg --dearmor -o /etc/apt/keyrings/docker.gpg
+    chmod a+r /etc/apt/keyrings/docker.gpg
+  fi
+fi
+
+DOCKER_LIST="deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] ${REPO_URL} ${VERSION_CODENAME} stable"
+write_file /etc/apt/sources.list.d/docker.list <<< "$DOCKER_LIST"
 
 run apt update -y
 run apt install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
@@ -168,7 +196,7 @@ echo "  User:     $USERNAME"
 echo "  SSH:      key-only, root login disabled"
 echo "  Firewall: UFW active (ssh + ${EXTRA_UFW_PORTS:-no extra ports})"
 echo "  fail2ban: active"
-echo "  Docker:   $(docker --version)"
+echo "  Docker:   $(docker --version 2>/dev/null || echo 'not installed (dry-run)')"
 echo ""
 echo "  → Log in:  ssh $USERNAME@$(hostname -I | awk '{print $1}')"
 echo "  → Reboot recommended."

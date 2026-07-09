@@ -3,8 +3,8 @@
 #
 # Called automatically by GitHub Codespaces when this repo is set as
 # your dotfiles repository (Settings → Codespaces → Dotfiles).
-# Can also be run manually:
-#   curl -sL <raw-url> | bash
+# Can also be run manually after cloning the repo:
+#   git clone https://github.com/nicograef/handbook.git && cd handbook && ./install.sh
 #
 # What it does:
 #   1. Symlinks .bash_aliases into $HOME
@@ -20,6 +20,13 @@ set -euo pipefail
 DOTFILES_DIR="$(cd "$(dirname "$0")/.." && pwd)"
 
 log() { printf '\033[1;34m▸ %s\033[0m\n' "$1"; }
+
+# Guard: abort early if the repo root is wrong (templates/.bash_aliases missing),
+# so we don't silently create broken symlinks.
+if [[ ! -f "$DOTFILES_DIR/templates/.bash_aliases" ]]; then
+  echo "ERROR: $DOTFILES_DIR/templates/.bash_aliases not found — run this from the handbook repo." >&2
+  exit 1
+fi
 
 # ── Symlink dotfiles ────────────────────────────────────────────────────────
 declare -A FILES=(
@@ -93,13 +100,15 @@ if command -v gh >/dev/null 2>&1; then
   log "gh already installed: $(gh --version | head -1)"
 else
   GH_VERSION="$(curl -fsSL https://api.github.com/repos/cli/cli/releases/latest | grep '"tag_name"' | sed 's/.*"v\(.*\)".*/\1/')" || true
+  # gh release tarballs are named linux_amd64 / linux_arm64; map from dpkg's arch.
+  GH_ARCH="$(dpkg --print-architecture)"   # amd64 or arm64 on Debian/Ubuntu
   if [[ -n "${GH_VERSION:-}" ]]; then
-    log "Installing gh ${GH_VERSION} to ~/.local/bin…"
+    log "Installing gh ${GH_VERSION} (linux_${GH_ARCH}) to ~/.local/bin…"
     mkdir -p "$HOME/.local/bin"
     TMP="$(mktemp -d)"
-    curl -fsSL "https://github.com/cli/cli/releases/download/v${GH_VERSION}/gh_${GH_VERSION}_linux_amd64.tar.gz" \
+    curl -fsSL "https://github.com/cli/cli/releases/download/v${GH_VERSION}/gh_${GH_VERSION}_linux_${GH_ARCH}.tar.gz" \
       | tar -xz -C "$TMP"
-    mv "$TMP/gh_${GH_VERSION}_linux_amd64/bin/gh" "$HOME/.local/bin/gh"
+    mv "$TMP/gh_${GH_VERSION}_linux_${GH_ARCH}/bin/gh" "$HOME/.local/bin/gh"
     chmod +x "$HOME/.local/bin/gh"
     rm -rf "$TMP"
     log "gh ${GH_VERSION} installed. Run 'gh auth login' to authenticate."

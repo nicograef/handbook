@@ -577,34 +577,34 @@ guides that document them are grouped so the runbook and its script stay consist
 > concurrently (WP6 is after WP1), so this is safe.
 
 **Steps:**
-- [ ] `setup-server.sh`: move `. /etc/os-release` (and `REPO_URL`) above the Docker-keyring `if`
+- [x] `setup-server.sh`: move `. /etc/os-release` (and `REPO_URL`) above the Docker-keyring `if`
   block; use `$REPO_URL/gpg` in the curl (fixes `ID: unbound variable`). Wrap every mutating
   command in dry-run mode through the `run` wrapper (sudoers, authorized_keys/sshd edits +
   `systemctl restart sshd`, fail2ban jail.local, Docker keyring/apt writes) so `--dry-run` is truly
   side-effect free. Fix the header-comment usage line (inline env vars over SSH). *(CS-1, CS-2,
   GU-1)*
-- [ ] `prod-init.sh`: require `DOMAIN` (drop the `example.com` default) like `EMAIL`; add
+- [x] `prod-init.sh`: require `DOMAIN` (drop the `example.com` default) like `EMAIL`; add
   `-p "$PROJECT"` to both `COMPOSE_CERT` and `COMPOSE_PROD`; replace
   `docker exec "${PROJECT}-reverse-proxy" nginx -t` with `$COMPOSE_CERT exec -T reverse-proxy nginx -t`;
   rewrite the certbot block as `if ! docker run … certonly …; then $COMPOSE_CERT down; error …; fi`
   (removes the dead `$?` check). *(CS-3, CS-4, CS-5)*
-- [ ] `install-dotfiles.sh`: remove the `curl -sL <raw-url> | bash` usage line (document
+- [x] `install-dotfiles.sh`: remove the `curl -sL <raw-url> | bash` usage line (document
   `git clone … && ./install.sh`); add a guard aborting if `$DOTFILES_DIR/templates/.bash_aliases`
   is missing; derive gh arch (`dpkg --print-architecture`→amd64/arm64) instead of hardcoding
   `linux_amd64`. *(CS-7, CS-14)*
-- [ ] `guides/provision-server.md`: change the Usage `ssh` command to pass vars inline on the remote
+- [x] `guides/provision-server.md`: change the Usage `ssh` command to pass vars inline on the remote
   (`ssh root@<host> "SSH_PUBLIC_KEY='…' USERNAME=nico … bash -s" < scripts/setup-server.sh`); replace
   the copied fail2ban jail.local block and UFW list with pointers to the script's numbered steps
   (keep the sshd_config diff block); add/rename a `## Verify` section. *(GU-1, GU-14, GU-13)*
-- [ ] `guides/postgresql-operations.md`: rewrite backups as
+- [x] `guides/postgresql-operations.md`: rewrite backups as
   `docker compose exec -T postgres sh -c 'pg_dump -U "$POSTGRES_USER" -d "$POSTGRES_DB" -Fc' > …`
   (container holds env; `-T` avoids TTY corruption); add `set -a; . "$COMPOSE_DIR/.env"; set +a` to
   the cron example; document `migrate` over the compose network (`docker run --rm --network
   <project>_db-network …`), keeping the localhost form only as a published-port note. *(GU-2, GU-8)*
-- [ ] `guides/dotfiles-codespaces.md`: replace the "create install.sh" instruction with "the wrapper
+- [x] `guides/dotfiles-codespaces.md`: replace the "create install.sh" instruction with "the wrapper
   already exists: [install.sh](../install.sh)"; drop the snippet with the mis-ordered shebang; add
   a `## Prerequisites` and `## Verify` section. *(GU-12, GU-13)*
-- [ ] Add the `install.sh` description comment (`# install.sh — Codespaces dotfiles entrypoint;
+- [x] Add the `install.sh` description comment (`# install.sh — Codespaces dotfiles entrypoint;
   delegates to scripts/install-dotfiles.sh`). *(CS-13)*
 
 **Acceptance:** `shellcheck scripts/*.sh install.sh` clean; `bash -n` on each; `setup-server.sh

@@ -3,8 +3,8 @@
 #
 # Automates: prerequisite checks → certificate request → full stack start.
 #
-# Usage:
-#   make prod-init                          (uses defaults, prompts for email)
+# Usage (DOMAIN is required; EMAIL is prompted if unset):
+#   DOMAIN=example.com make prod-init
 #   DOMAIN=example.com EMAIL=you@example.com make prod-init
 #
 # Prerequisites:
@@ -14,11 +14,11 @@
 set -euo pipefail
 
 # ── Configuration ──
-DOMAIN="${DOMAIN:-example.com}"
+DOMAIN="${DOMAIN:-}"
 EMAIL="${EMAIL:-}"
 PROJECT="${PROJECT:-myapp}"   # Docker Compose project name (for volume prefixes)
-COMPOSE_CERT="docker compose -f docker-compose.initial-cert.yml"
-COMPOSE_PROD="docker compose -f docker-compose.prod.yml"
+COMPOSE_CERT="docker compose -p $PROJECT -f docker-compose.initial-cert.yml"
+COMPOSE_PROD="docker compose -p $PROJECT -f docker-compose.prod.yml"
 
 # ── Colors ──
 RED='\033[0;31m'
@@ -35,6 +35,7 @@ info "Checking prerequisites…"
 
 [[ -f .env ]] || error ".env file not found. Copy .env.example and fill in your credentials."
 
+# shellcheck source=/dev/null
 source .env
 [[ -n "${POSTGRES_USER:-}" ]]     || error "POSTGRES_USER not set in .env"
 [[ -n "${POSTGRES_PASSWORD:-}" ]] || error "POSTGRES_PASSWORD not set in .env"
@@ -42,6 +43,8 @@ source .env
 
 command -v docker >/dev/null 2>&1      || error "docker is not installed."
 docker compose version >/dev/null 2>&1 || error "docker compose plugin is not installed."
+
+[[ -n "$DOMAIN" ]] || error "DOMAIN is required. Set it via 'DOMAIN=example.com make prod-init'."
 
 if [[ -z "$EMAIL" ]]; then
   read -rp "$(echo -e "${YELLOW}Enter email for Let's Encrypt notifications:${NC} ")" EMAIL
@@ -75,7 +78,7 @@ $COMPOSE_CERT up -d reverse-proxy
 sleep 2
 
 for i in {1..15}; do
-  if docker exec "${PROJECT}-reverse-proxy" nginx -t >/dev/null 2>&1; then
+  if $COMPOSE_CERT exec -T reverse-proxy nginx -t >/dev/null 2>&1; then
     break
   fi
   if [[ $i -eq 15 ]]; then
@@ -88,18 +91,16 @@ info "Nginx is ready."
 
 # ── Step 2: Request certificate via certbot ──
 info "Step 2/3 — Requesting Let's Encrypt certificate…"
-docker run --rm \
+if ! docker run --rm \
   -v "${PROJECT}_certbot-challenges:/var/www/certbot" \
   -v "${PROJECT}_letsencrypt:/etc/letsencrypt" \
-  certbot/certbot:v2.11.0 \
+  certbot/certbot:v5.6.0 \
   certonly \
     --webroot -w /var/www/certbot \
     -d "$DOMAIN" -d "www.$DOMAIN" \
     --email "$EMAIL" \
     --agree-tos \
-    --non-interactive
-
-if [[ $? -ne 0 ]]; then
+    --non-interactive; then
   $COMPOSE_CERT down
   error "Certbot failed. Check that DNS for $DOMAIN points to this server."
 fi

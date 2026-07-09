@@ -21,6 +21,12 @@ The script also:
 > prompt, color support, and `source ~/.bash_aliases`. Replacing it would lose
 > those features.
 
+## Prerequisites
+
+- A GitHub account with Codespaces enabled.
+- This repository forked or cloned under your account.
+- `bash`, `git`, and `curl` on the target machine (all present in Codespaces).
+
 ## Setup (one-time)
 
 1. Go to **github.com → Settings → Codespaces**.
@@ -40,16 +46,9 @@ locations. The lookup order is:
 4. `setup.sh`
 5. `script/setup`
 
-Since our script lives at `scripts/install-dotfiles.sh`, create a thin wrapper
-in the repo root so Codespaces finds it:
-
-```bash
-# install.sh (repo root) – Codespaces entry point
-#!/usr/bin/env bash
-exec "$(dirname "$0")/scripts/install-dotfiles.sh"
-```
-
-Alternatively, rename or symlink directly.
+Our script lives at `scripts/install-dotfiles.sh`, so the wrapper Codespaces
+looks for already exists in the repo root: [install.sh](../install.sh). It just
+execs the real script — nothing to create.
 
 ## Manual run
 
@@ -60,6 +59,27 @@ If the dotfiles repo is already cloned (e.g. inside a Codespace at
 bash /workspaces/.codespaces/.persistedshare/dotfiles/scripts/install-dotfiles.sh
 source ~/.bashrc
 ```
+
+## Verify
+
+```bash
+# the alias symlink resolves back into the repo
+readlink -f ~/.bash_aliases
+
+# an alias is active in the current shell
+type gcm
+
+# git defaults were applied
+git config --global --get pull.rebase        # → true
+git config --global --get init.defaultBranch # → main
+
+# gh is on PATH
+gh --version
+```
+
+Expected: `~/.bash_aliases` points at `templates/.bash_aliases` in the repo,
+`gcm` resolves to its alias, the two `git config` reads print `true` / `main`,
+and `gh --version` prints a version.
 
 ## Extending
 

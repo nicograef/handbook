@@ -23,27 +23,39 @@ ssh-keygen -t ed25519 -C "you@machine"
 
 ## Usage
 
+Pass configuration inline to the remote shell — the vars are consumed on the
+server, not your local machine:
+
 ```bash
-# set your public key
-export SSH_PUBLIC_KEY="$(cat ~/.ssh/id_ed25519.pub)"
+# preview first (no changes made)
+ssh root@<host> "SSH_PUBLIC_KEY='$(cat ~/.ssh/id_ed25519.pub)' bash -s -- --dry-run" \
+  < scripts/setup-server.sh
 
-# optional: override defaults
-export USERNAME="nico"
-export EXTRA_UFW_PORTS="80/tcp 443/tcp"
-
-# run on the remote server
-ssh root@<host> 'bash -s' < scripts/setup-server.sh
+# then run for real, optionally overriding USERNAME / EXTRA_UFW_PORTS
+ssh root@<host> \
+  "SSH_PUBLIC_KEY='$(cat ~/.ssh/id_ed25519.pub)' USERNAME=nico EXTRA_UFW_PORTS='80/tcp 443/tcp' bash -s" \
+  < scripts/setup-server.sh
 ```
 
-After the script finishes:
+## Verify
 
 ```bash
-# verify login with new user
+# log in as the new user (root login is now disabled)
 ssh nico@<host>
 
-# verify docker
-docker run hello-world
+# firewall is active and rate-limiting SSH
+sudo ufw status verbose
+
+# fail2ban is running
+sudo systemctl is-active fail2ban
+
+# docker works without sudo
+docker run --rm hello-world
 ```
+
+Expected: SSH login succeeds as `nico` but fails as `root`; `ufw status`
+shows `Status: active` with `22/tcp (LIMIT)`; `fail2ban` reports `active`;
+`hello-world` prints the Docker confirmation message.
 
 ## Configuration
 
@@ -79,32 +91,17 @@ sudo systemctl restart sshd
 
 ### UFW firewall
 
-```bash
-sudo ufw default deny incoming
-sudo ufw default allow outgoing
-sudo ufw allow ssh
-sudo ufw limit ssh          # rate-limit: 6 attempts / 30 s
-sudo ufw allow 80/tcp
-sudo ufw allow 443/tcp
-sudo ufw --force enable
-```
+See step 4 (`── 4. UFW firewall`) in
+[`scripts/setup-server.sh`](../scripts/setup-server.sh) for the exact `ufw`
+commands (default deny incoming, rate-limited SSH, extra ports from
+`EXTRA_UFW_PORTS`).
 
 ### fail2ban
 
-If fail2ban errors on systemd-based distros, create `/etc/fail2ban/jail.local`:
-
-```ini
-[sshd]
-backend  = systemd
-enabled  = true
-maxretry = 5
-bantime  = 3600
-```
-
-```bash
-sudo systemctl enable fail2ban
-sudo systemctl restart fail2ban
-```
+See step 5 (`── 5. fail2ban`) in
+[`scripts/setup-server.sh`](../scripts/setup-server.sh) for the
+`/etc/fail2ban/jail.local` contents and the enable/restart commands (uses the
+`systemd` backend, which fixes fail2ban errors on systemd-based distros).
 
 ## After provisioning
 
