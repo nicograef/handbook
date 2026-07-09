@@ -1,0 +1,34 @@
+// Dev Container for the handbook repo itself — the proven specialization of
+// templates/devcontainer.json. Carries the toolchain make check needs.
+// Docs: https://containers.dev/implementors/json_reference/
+{
+  "name": "handbook-dev",
+
+  "image": "mcr.microsoft.com/devcontainers/base:ubuntu-24.04",
+
+  // ── Dev Container Features ────────────────────────────────────────────────
+  "features": {
+    // Docker-in-Docker: the `compose` check stage runs `docker compose config`.
+    "ghcr.io/devcontainers/features/docker-in-docker:2": {},
+    // Claude Code CLI: the `plugin` check stage runs `claude plugin validate .`,
+    // and the container uses the skills in-session. Pinned to major :1.
+    "ghcr.io/anthropics/devcontainer-features/claude-code:1": {}
+  },
+
+  // ── Post-create setup ─────────────────────────────────────────────────────
+  // This repo ships no app toolchain, so the template's setup-dev-tools.sh does
+  // not apply — the checks only need make and shellcheck.
+  "postCreateCommand": "sudo apt-get update && sudo apt-get install -y make shellcheck",
+
+  "customizations": {
+    "vscode": {
+      "settings": {
+        "terminal.integrated.defaultProfile.linux": "bash"
+      },
+      "extensions": [
+        // EditorConfig enforces the repo's whitespace rules (kept from template).
+        "editorconfig.editorconfig"
+      ]
+    }
+  }
+}

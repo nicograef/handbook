@@ -1,4 +1,5 @@
 // Dev Container configuration – copy to .devcontainer/devcontainer.json
+// This repo's own .devcontainer/devcontainer.json is the tested/proven instance of this template.
 // Docs: https://containers.dev/implementors/json_reference/
 {
   "name": "my-project-dev", // TODO: rename to your project

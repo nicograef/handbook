@@ -21,6 +21,7 @@ works through AGENTS.md.
   agents in Claude Code v2.1.197).
 - `.claude/rules/` — path-scoped conventions for Claude Code.
 - `.claude-plugin/` — plugin + marketplace manifests exposing the skills and agent as a public Claude Code plugin.
+- `.devcontainer/` — the repo's own dev container (proven instance of `templates/devcontainer.json`).
 - `claude/` — dotfiles: global `CLAUDE.md`, `settings.json`, `statusline.sh`.
 
 ## Searching

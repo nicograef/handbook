@@ -116,6 +116,7 @@ path-scoped rules, and dotfiles.
 | Status line script         | [claude/statusline.sh](claude/statusline.sh)                           |
 | Repo self-check            | [Makefile](Makefile) (`make check`)                                    |
 | Dotfiles entrypoint        | [install.sh](install.sh)                                               |
+| Repo devcontainer          | [.devcontainer/devcontainer.json](.devcontainer/devcontainer.json)     |
 
 ## License
 

@@ -81,6 +81,19 @@ Expected: `~/.bash_aliases` points at `templates/.bash_aliases` in the repo,
 `gcm` resolves to its alias, the two `git config` reads print `true` / `main`,
 and `gh --version` prints a version.
 
+### Smoke test 1 — fresh Codespace on this repo (PENDING)
+
+Create a fresh Codespace on `nicograef/handbook` (the root
+[.devcontainer/devcontainer.json](../.devcontainer/devcontainer.json) applies),
+then confirm: the account-level dotfiles install ran automatically, the Verify
+commands above pass, skills load in a Claude Code session, and `make check` is
+green with all seven stages (docker and the claude CLI come from the dev
+container features). Requires an interactive Codespace — operator step.
+
+- Date:
+- Environment:
+- Result:
+
 ## Extending
 
 - **Git config** – `install-dotfiles.sh` already sets global defaults
