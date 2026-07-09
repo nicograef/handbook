@@ -46,6 +46,7 @@ Conceptual reference material (German). Imported from a separate project — cov
 
 | Topic                       | File                                                 |
 | --------------------------- | ---------------------------------------------------- |
+| Agentic Coding              | [theory/agentic-coding.md](theory/agentic-coding.md) |
 | Software Architecture        | [theory/architecture.md](theory/architecture.md)     |
 | CQRS                        | [theory/cqrs.md](theory/cqrs.md)                     |
 | Domain-Driven Design        | [theory/ddd.md](theory/ddd.md)                       |
