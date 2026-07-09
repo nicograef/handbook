@@ -24,6 +24,7 @@ Step-by-step procedures to follow start to finish.
 | GitHub Actions CI/CD              | [guides/github-actions-cicd.md](guides/github-actions-cicd.md)             |
 | GitHub Copilot Agent Mode setup   | [guides/copilot-agent-setup.md](guides/copilot-agent-setup.md)             |
 | Dotfiles for GitHub Codespaces    | [guides/dotfiles-codespaces.md](guides/dotfiles-codespaces.md)             |
+| Install the handbook plugin       | [guides/claude-plugin.md](guides/claude-plugin.md)                         |
 | PostgreSQL operations             | [guides/postgresql-operations.md](guides/postgresql-operations.md)         |
 | External monitoring (Better Stack)| [guides/monitoring.md](guides/monitoring.md)                               |
 | Server maintenance & upkeep       | [guides/maintenance.md](guides/maintenance.md)                             |
@@ -75,6 +76,7 @@ Copy-paste-ready config files for new projects.
 | [templates/AGENTS.md](templates/AGENTS.md)                             | Agent instructions template for Copilot Agent Mode                |
 | [templates/copilot-instructions.md](templates/copilot-instructions.md) | Copilot instructions template (`.github/copilot-instructions.md`) |
 | [templates/vscode-settings.json](templates/vscode-settings.json)       | VS Code workspace settings for consistent formatting              |
+| [templates/claude-settings.json](templates/claude-settings.json)       | Project `.claude/settings.json` to adopt the handbook plugin      |
 
 ## Scripts
 
