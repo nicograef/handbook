@@ -241,14 +241,14 @@ before any structural work begins.
 **Files:** `claude/settings.json`, `.gitignore` (new), `scripts/.gitkeep` (delete).
 
 **Steps:**
-- [ ] Commit the already-modified `claude/settings.json` (`"model": "Opus"`→`"Fable"`) exactly as
+- [x] Commit the already-modified `claude/settings.json` (`"model": "Opus"`→`"Fable"`) exactly as
   it stands on disk — no other edits in this commit.
-- [ ] Create root `.gitignore` mirroring `.git/info/exclude` runtime patterns:
+- [x] Create root `.gitignore` mirroring `.git/info/exclude` runtime patterns:
   `**/.claude/scheduled_tasks.lock`, `**/.claude/scheduled_tasks.json`, `**/.claude/routines/.state/`,
   `**/.claude/worktrees/`, `**/.claude/checkpoints/`, `**/.claude/mailbox/`,
   `**/.claude/agent-registry.json`, `**/.claude/agent-memory-local`, `**/.claude/first-run`,
   `**/.claude/assistant-daemon-state.json`, `**/.claude/settings.local.json`. *(ST-11)*
-- [ ] `git rm scripts/.gitkeep` (directory has three real scripts). *(ST-15, CS-10)*
+- [x] `git rm scripts/.gitkeep` (directory has three real scripts). *(ST-15, CS-10)*
 
 **Acceptance:** `git status` clean after commits; `.gitignore` tracked; `.claude/scheduled_tasks.lock`
 shows ignored via `git check-ignore`; `scripts/.gitkeep` gone.
@@ -272,23 +272,23 @@ delete `commands/`; `README.md`; `.claude/skills/README.md` (moved); `scripts/in
 `~/.claude/skills`, add `~/.agents/skills`, add `~/.claude/agents`.
 
 **Steps:**
-- [ ] `git mv skills .claude/skills` and `git mv agents .claude/agents`. *(ST-7, CP-4)*
-- [ ] Create `.claude/skills/commit/SKILL.md` from `commands/commit.md`: same body, frontmatter
+- [x] `git mv skills .claude/skills` and `git mv agents .claude/agents`. *(ST-7, CP-4)*
+- [x] Create `.claude/skills/commit/SKILL.md` from `commands/commit.md`: same body, frontmatter
   gains `disable-model-invocation: true`; keep `allowed-tools`, `argument-hint`, `description`.
   *(IS-13, PF-3, ST-8)*
-- [ ] Create `.claude/skills/research/SKILL.md` from `commands/research.md`: reduce to a thin
+- [x] Create `.claude/skills/research/SKILL.md` from `commands/research.md`: reduce to a thin
   wrapper — a `## Workflow` that delegates the task to the `web-researcher` subagent
   (`.claude/agents/web-researcher.md`) and returns its findings; remove the inline verification
   policy (it now lives once in `web-researcher.md`). *(IS-9, PF-4)*
-- [ ] `git rm -r commands`. *(ST-8)*
-- [ ] Grep the whole repo for dead path references and update every one to the new locations:
+- [x] `git rm -r commands`. *(ST-8)*
+- [x] Grep the whole repo for dead path references and update every one to the new locations:
   `grep -rn 'skills/' . --include=*.md`, same for `agents/`, `commands/`, `\.\./quality.md`,
   `~/.claude/commands`. Update `.claude/skills/README.md` internal links and root README links.
-- [ ] Update `.github/instructions/skills.instructions.md` frontmatter `applyTo: "skills/**"` →
+- [x] Update `.github/instructions/skills.instructions.md` frontmatter `applyTo: "skills/**"` →
   `applyTo: ".claude/skills/**"` and the "under `skills/`" body text → `.claude/skills/`. (Full
   content rewrite of this file is WP4; here change ONLY the path/glob so it is not left dangling.)
   *(CP-4)*
-- [ ] Rebuild `README.md` index completely:
+- [x] Rebuild `README.md` index completely:
   - Split the malformed line-82 Templates row into three rows (`ci.yml`, `.env.example`,
     `AGENTS.md`). *(ST-4)*
   - Add Theory row `theory/architecture.md` and Templates row `templates/vscode-settings.json`.
@@ -300,11 +300,11 @@ delete `commands/`; `README.md`; `.claude/skills/README.md` (moved); `scripts/in
   - Update the Skills section: link to `.claude/skills/README.md`, and replace the inaccurate
     "Both agents consume them from the `~/.claude/skills` symlink" sentence with a link to the
     consumption matrix in `.claude/skills/README.md` (matrix authored in WP4). *(ST-10)*
-- [ ] Update `scripts/install-dotfiles.sh` `CLAUDE_LINKS`: source `agents`→`.claude/agents`,
+- [x] Update `scripts/install-dotfiles.sh` `CLAUDE_LINKS`: source `agents`→`.claude/agents`,
   `skills`→`.claude/skills`; remove the `["commands"]` entry; add `mkdir -p "$HOME/.agents"` and a
   second link `ln -sfn "$DOTFILES_DIR/.claude/skills" "$HOME/.agents/skills"`. Update the block
   comment to drop "commands" and mention the `~/.agents/skills` mirror. *(IS-10, ST-9, CS-6)*
-- [ ] Retarget live symlinks so the running environment stays intact:
+- [x] Retarget live symlinks so the running environment stays intact:
   `ln -sfn "$PWD/.claude/skills" ~/.claude/skills`; `mkdir -p ~/.agents && ln -sfn "$PWD/.claude/skills" ~/.agents/skills`;
   `ln -sfn "$PWD/.claude/agents" ~/.claude/agents`. *(IS-10, IS-15)*
 

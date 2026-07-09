@@ -1,16 +1,16 @@
 ---
-description: "Use when editing or creating agent skills in the skills/ directory."
-applyTo: "skills/**"
+description: "Use when editing or creating agent skills in the .claude/skills/ directory."
+applyTo: ".claude/skills/**"
 ---
 
 # Skill Conventions
 
 ## Directory Structure
 
-Each skill lives in its own directory under `skills/`:
+Each skill lives in its own directory under `.claude/skills/`:
 
 ```
-skills/<skill-name>/
+.claude/skills/<skill-name>/
 ├── SKILL.md           # required — main skill definition
 ├── REFERENCE.md       # optional — supplementary reference material
 └── <topic>.md         # optional — additional reference files
@@ -23,7 +23,7 @@ Every `SKILL.md` must include:
 1. **YAML frontmatter** with `name`, `description`, and `tools` (if applicable).
 2. **Workflow section** — numbered steps the agent follows.
 3. **Constraints section** — guardrails, anti-patterns, or things to avoid.
-4. **Quality section** (for skills that present results) — links to the shared self-review checklist at `skills/quality.md` via a `../quality.md` relative link.
+4. **Quality section** (for skills that present results) — links to the shared self-review checklist at `.claude/skills/quality.md` via a `../quality.md` relative link.
 
 ```yaml
 ---
@@ -52,5 +52,5 @@ description: "One-line summary of what the skill does and when to invoke it."
 ## After Creating or Renaming a Skill
 
 1. Add or update the entry in `README.md` (Skills table).
-2. Add or update the entry in `skills/README.md` (discovery index).
+2. Add or update the entry in `.claude/skills/README.md` (discovery index).
 3. Search for references to the old name: `grep -r '<old-name>' .`

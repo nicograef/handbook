@@ -1,7 +1,9 @@
 ---
+name: commit
 description: Propose a Conventional Commit message for the staged changes, then commit only after confirmation.
 argument-hint: "[optional scope or hint, e.g. 'auth' or 'fix the flaky test']"
 allowed-tools: Bash(git status:*), Bash(git diff:*), Bash(git log:*), Bash(git add:*), Bash(git commit:*), Bash(git branch:*), Bash(git rev-parse:*)
+disable-model-invocation: true
 ---
 
 You are preparing a git commit for Nico. Follow his rules strictly:

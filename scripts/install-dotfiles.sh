@@ -39,16 +39,17 @@ done
 
 # ── Claude Code config ──────────────────────────────────────────────────────
 # Shared global instructions, permissions, plugins, status line and the
-# agents/commands/skills directories – one source of truth for every machine.
+# agents/skills directories – one source of truth for every machine.
+# The skills directory is also mirrored to ~/.agents/skills for the Copilot CLI,
+# which reads that location instead of ~/.claude/skills.
 # settings.local.json stays machine-local and is intentionally NOT linked.
 mkdir -p "$HOME/.claude"
 declare -A CLAUDE_LINKS=(
   ["claude/CLAUDE.md"]=".claude/CLAUDE.md"
   ["claude/settings.json"]=".claude/settings.json"
   ["claude/statusline.sh"]=".claude/statusline.sh"
-  ["agents"]=".claude/agents"
-  ["commands"]=".claude/commands"
-  ["skills"]=".claude/skills"
+  [".claude/agents"]=".claude/agents"
+  [".claude/skills"]=".claude/skills"
 )
 for src in "${!CLAUDE_LINKS[@]}"; do
   origin="$DOTFILES_DIR/$src"
@@ -60,6 +61,15 @@ for src in "${!CLAUDE_LINKS[@]}"; do
     echo "SKIP: $origin not found"
   fi
 done
+
+# Copilot CLI reads ~/.agents/skills, not ~/.claude/skills — mirror the skills there.
+mkdir -p "$HOME/.agents"
+if [[ -d "$DOTFILES_DIR/.claude/skills" ]]; then
+  ln -sfn "$DOTFILES_DIR/.claude/skills" "$HOME/.agents/skills"
+  log "Linked $HOME/.agents/skills → $DOTFILES_DIR/.claude/skills"
+else
+  echo "SKIP: $DOTFILES_DIR/.claude/skills not found"
+fi
 
 # ── Git config defaults ─────────────────────────────────────────────────────
 # Idempotent – safe to run on every Codespace create.

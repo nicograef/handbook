@@ -46,6 +46,7 @@ Conceptual reference material (German). Imported from a separate project — cov
 
 | Topic                       | File                                                 |
 | --------------------------- | ---------------------------------------------------- |
+| Software Architecture        | [theory/architecture.md](theory/architecture.md)     |
 | CQRS                        | [theory/cqrs.md](theory/cqrs.md)                     |
 | Domain-Driven Design        | [theory/ddd.md](theory/ddd.md)                       |
 | DevOps & Infrastructure     | [theory/devops.md](theory/devops.md)                 |
@@ -79,8 +80,11 @@ Copy-paste-ready config files for new projects.
 | [templates/docker-compose.prod.yml](templates/docker-compose.prod.yml) | Production Compose (reverse proxy + Let's Encrypt)                |
 | [templates/nginx-tls.conf](templates/nginx-tls.conf)                   | Nginx TLS reverse proxy config                                    |
 | [templates/setup-dev-tools.sh](templates/setup-dev-tools.sh)           | Dev tool setup script skeleton (Go, Node/pnpm blocks)             |
-| [templates/ci.yml](templates/ci.yml)                                   | GitHub Actions CI workflow (Go, Node, integration tests)          || [templates/.env.example](templates/.env.example)                           | Standard env vars for Docker Compose templates                    || [templates/AGENTS.md](templates/AGENTS.md)                             | Agent instructions template for Copilot Agent Mode                |
+| [templates/ci.yml](templates/ci.yml)                                   | GitHub Actions CI workflow (Go, Node, integration tests)          |
+| [templates/.env.example](templates/.env.example)                       | Standard env vars for Docker Compose templates                    |
+| [templates/AGENTS.md](templates/AGENTS.md)                             | Agent instructions template for Copilot Agent Mode                |
 | [templates/copilot-instructions.md](templates/copilot-instructions.md) | Copilot instructions template (`.github/copilot-instructions.md`) |
+| [templates/vscode-settings.json](templates/vscode-settings.json)       | VS Code workspace settings for consistent formatting              |
 
 ## Scripts
 
@@ -94,6 +98,22 @@ Reusable bash scripts.
 
 ## Skills
 
-Reusable agent skills for Claude Code and GitHub Copilot. Both agents consume them from the `~/.claude/skills` symlink — they are not copied into project repos.
+Reusable agent skills for Claude Code and GitHub Copilot, living under `.claude/skills/`.
 
-See **[skills/README.md](skills/README.md)** for the full skills index and when to use each one.
+See **[.claude/skills/README.md](.claude/skills/README.md)** for the full skills index, when to use
+each one, and the skill-consumption matrix (which surface loads them and from where).
+
+## Agent Setup
+
+Configuration for Claude Code and GitHub Copilot — the instruction surface, skills, agents,
+path-scoped rules, and dotfiles.
+
+| Item                       | File / Directory                                                       |
+| -------------------------- | ---------------------------------------------------------------------- |
+| Skills index               | [.claude/skills/README.md](.claude/skills/README.md)                   |
+| Web research agent         | [.claude/agents/web-researcher.md](.claude/agents/web-researcher.md)   |
+| Path-scoped rules          | `.claude/rules/` (added in a later change)                             |
+| Global Claude instructions | [claude/CLAUDE.md](claude/CLAUDE.md)                                   |
+| Claude settings + hooks    | [claude/settings.json](claude/settings.json)                           |
+| Status line script         | [claude/statusline.sh](claude/statusline.sh)                           |
+| Dotfiles entrypoint        | [install.sh](install.sh)                                               |
