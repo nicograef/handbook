@@ -1,25 +1,15 @@
 # <project-name> — Copilot Instructions
 
-# <One-line project description.>
-# Full agent instructions: see `AGENTS.md` in the project root.
+<!-- One-line project description. -->
+<!-- Shared rules live in AGENTS.md — Copilot loads it on every surface (Chat, Inline,
+     Agent, code review, cloud agent, CLI). Do NOT restate AGENTS.md rules here.
+     This file holds only Copilot-only deltas. If there are none, delete this file. -->
 
-## Rules
+## Copilot-only notes
 
-# Keep this list short — only rules that apply everywhere.
-# This file is loaded on every Copilot request (token budget).
+<!-- Keep this list short — it is loaded on every Copilot request (token budget).
+     Only put things here that are NOT already in AGENTS.md, for example:
+       - Pointers to .github/prompts/ and .github/instructions/.
+       - A rule that applies only in a specific Copilot surface (e.g. code review). -->
 
-1. <Most critical rule — e.g. "All API endpoints are POST-only.">
-2. <Second rule — e.g. "Never use floats for money. Always cents (int).">
-3. <Third rule — e.g. "Never edit generated code in `gen/`.">
-4. <Fourth rule — e.g. "No secrets or passwords in code.">
-
-## Quality Principles
-
-- Quality over quantity, correctness over speed.
-- Self-review before presenting: correct, clean, readable, maintainable, in scope.
-- After every task, include a narrative summary paragraph for the reviewer.
-
-## Commands
-
-# All commands via **Makefile** in the project root: `make test`, `make lint`, `make build`, `make dev`.
-# Run `make help` for the full list.
+1. <First Copilot-only note — or delete this file if AGENTS.md covers everything.>

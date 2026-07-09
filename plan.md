@@ -626,7 +626,7 @@ are disjoint from the skills and other guides.
 `.github/instructions/guides.instructions.md`.
 
 **Steps:**
-- [ ] `guides/copilot-agent-setup.md`: rewrite the custom-agents section to `NAME.agent.md` with
+- [x] `guides/copilot-agent-setup.md`: rewrite the custom-agents section to `NAME.agent.md` with
   `description` required, 30,000-char limit, `tools`/`mcp-servers`/`model`/`target` fields, and the
   `.chatmode.md`→`.agent.md` rename note; add a **skills** row/section (locations `.github/skills/`,
   `.claude/skills/`, `.agents/skills/`; GA across cloud agent, code review, CLI, VS Code/JetBrains);
@@ -636,15 +636,15 @@ are disjoint from the skills and other guides.
   fix the `applyTo`-required bullet (line 285) and add `excludeAgent` (`"code-review"`/`"cloud-agent"`)
   + `copilot-setup-steps.yml` constraints to the audit checklist; drop the `IMPORTANT:` emphasis
   (GC-4). *(CP-2, CP-6, CP-7, CP-8, CP-10, CP-11, CP-15)*
-- [ ] `templates/copilot-instructions.md`: convert `#` meta-comments to `<!-- -->` (GC-14); make it
+- [x] `templates/copilot-instructions.md`: convert `#` meta-comments to `<!-- -->` (GC-14); make it
   a Copilot-only-deltas template (not an AGENTS.md restatement) per CP-8. *(CP-9, CP-8)*
-- [ ] `templates/AGENTS.md`: add a top HTML comment — "create a sibling CLAUDE.md whose first line
+- [x] `templates/AGENTS.md`: add a top HTML comment — "create a sibling CLAUDE.md whose first line
   is `@AGENTS.md`, or `ln -s AGENTS.md CLAUDE.md`, so Claude Code loads the same rules"; trim the
   6-item silent self-review checklist and merge Change-presentation + Reviewer-summary into one
   short post-task rule (GC-5). *(CP-12, CP-14)*
-- [ ] `.github/prompts/new-guide.prompt.md` and `new-template.prompt.md`: delete the `## Conventions`
+- [x] `.github/prompts/new-guide.prompt.md` and `new-template.prompt.md`: delete the `## Conventions`
   sections (supplied by the `applyTo` instructions); keep only Input + Steps. *(CP-13)*
-- [ ] `.github/instructions/guides.instructions.md`: fix the link-depth example
+- [x] `.github/instructions/guides.instructions.md`: fix the link-depth example
   `../../templates/Makefile` → `../templates/Makefile`; add the two-guide-types distinction (GU-11,
   mirroring `.claude/rules/guides.md`). *(CP-5, GU-11)*
 

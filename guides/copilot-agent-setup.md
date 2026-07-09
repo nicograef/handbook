@@ -6,26 +6,30 @@ Based in part on lessons from [How to write a great agents.md](https://github.bl
 
 ## Overview
 
-Five layers of context, loaded at different times:
+Six layers of context, loaded at different times:
 
 | Layer                       | File                                     | Loaded when                                          | Token cost      |
 | --------------------------- | ---------------------------------------- | ---------------------------------------------------- | --------------- |
-| **Root instructions**       | `AGENTS.md`                              | Agent Mode — always                                  | High (full)     |
+| **Root instructions**       | `AGENTS.md`                              | Every Copilot surface — always                       | High (full)     |
 | **Copilot instructions**    | `.github/copilot-instructions.md`        | Copilot Chat / Inline / Agent — always               | Low (compact)   |
 | **Contextual instructions** | `.github/instructions/*.instructions.md` | Automatically, when editing files matching `applyTo` | Per-area        |
-| **Custom agents**           | `.github/agents/*.md`                    | When invoked via `@agent-name` in chat               | Zero until used |
+| **Skills**                  | `.github/skills/<name>/SKILL.md`         | Loaded on demand when a task matches the skill       | Zero until used |
+| **Custom agents**           | `.github/agents/*.agent.md`              | When invoked by name (agent picker / `@name`)        | Zero until used |
 | **Reusable prompts**        | `.github/prompts/*.prompt.md`            | On demand (`/prompt-name` in chat)                   | Zero until used |
+
+`AGENTS.md` is read by every Copilot surface (Chat, Inline, Agent Mode, code review, cloud agent, and Copilot CLI). One agent file at the repo root is the norm; nested `AGENTS.md` files apply to their subtree and the nearest file wins. A root `CLAUDE.md` is only a fallback when no `AGENTS.md` is present — do not maintain both with different content.
 
 Design principle: **layer context from always → contextual → on-demand** so the agent gets the right information at the right time without wasting token budget.
 
 ### When to add each layer
 
-Not every project needs all five layers. Add them incrementally:
+Not every project needs all six layers. Add them incrementally:
 
 | Project shape                                         | Recommended layers                                            |
 | ----------------------------------------------------- | ------------------------------------------------------------- |
 | Small / single-area                                   | `AGENTS.md` only                                              |
 | Multi-area (backend + frontend, library + docs site)  | + `.github/copilot-instructions.md` + contextual instructions |
+| Reusable expertise across tools (a repeatable workflow)| + skills                                                      |
 | Specialised roles (docs writer, test engineer)        | + custom agents                                               |
 | Recurring multi-step tasks (scaffolding, migrations)  | + reusable prompts                                            |
 
@@ -77,8 +81,10 @@ When an agent is asked to **analyze and improve** a repo's agent setup, follow t
 - [ ] `AGENTS.md` — exists? Has recommended sections?
 - [ ] `.github/copilot-instructions.md` — exists?
 - [ ] `.github/instructions/*.instructions.md` — any contextual instructions?
-- [ ] `.github/agents/*.md` — any custom agent personas?
+- [ ] `.github/skills/<name>/SKILL.md` — any reusable skills?
+- [ ] `.github/agents/*.agent.md` — any custom agent personas? (legacy `.chatmode.md` files should be renamed)
 - [ ] `.github/prompts/*.prompt.md` — any reusable prompts?
+- [ ] `.github/workflows/copilot-setup-steps.yml` — cloud-agent environment setup present if the agent needs tooling/deps?
 - [ ] `.cursor/` or other tool-specific configs — anything that should be ported?
 - [ ] `docs/` — detailed documentation that could feed contextual instructions?
 
@@ -104,27 +110,37 @@ Look for distinct areas with different conventions:
 - Different tech within the same repo (e.g., Go API vs React SPA)
 - Each area should get its own `.instructions.md` with code examples
 
-### 4. Identify candidates for custom agents
+### 4. Identify candidates for skills
+
+Consider a skill for a reusable, self-contained workflow that should behave the same across tools (VS Code, Copilot CLI, cloud agent, code review):
+- A repeatable review or refactor pass (readability review, test-suite cleanup)
+- A domain workflow with its own steps and reference material
+
+Skills are portable across agents; a custom agent is repo- and Copilot-specific. Prefer a skill when the workflow is not tied to a single tool.
+
+### 5. Identify candidates for custom agents
 
 Consider agents for specialised, repeatable roles:
 - Documentation writing (reads code, writes Markdown)
 - Test creation (writes tests, never modifies source code)
 - Linting/formatting (fixes style, never changes logic)
 
-### 5. Identify recurring tasks for prompts
+### 6. Identify recurring tasks for prompts
 
 Look for tasks that happen repeatedly and follow a fixed pattern:
 - Scaffolding new artifacts (components, endpoints, pages)
 - Multi-step workflows (analyze → plan → implement)
 
-### 6. Propose changes, then implement
+### 7. Propose changes, then implement
 
 Present findings as a decision list. Implementation order:
 1. Fix broken references in AGENTS.md
 2. Add missing AGENTS.md sections (boundaries, negative scope)
 3. Create `.github/copilot-instructions.md`
 4. Create contextual instructions (one per area)
-5. Create prompts (highest-value recurring task first)
+5. Create skills for portable, tool-agnostic workflows
+6. Create custom agents for specialised roles
+7. Create prompts (highest-value recurring task first)
 
 ---
 
@@ -143,7 +159,7 @@ Root-level file read by VS Code Agent Mode on every request. Contains everything
 
 | Component | Technology                        |
 | --------- | --------------------------------- |
-| Backend   | Go 1.24, net/http, pgx/v5        |
+| Backend   | Go 1.26, net/http, pgx/v5        |
 | Frontend  | React 19, Vite 6, TypeScript 5.7 |
 | Database  | PostgreSQL 17                     |
 | Runtime   | Docker Compose, nginx             |
@@ -190,8 +206,8 @@ Include flags and options, not just tool names. The agent will reference these o
 - [Backend conventions](docs/backend.md)
 - [Frontend patterns](docs/frontend.md)
 
-IMPORTANT: Prefer retrieval-led reasoning over pre-training-led reasoning
-for topics covered in the linked documentation.
+For topics covered in the linked documentation, prefer reading those docs over
+relying on training data.
 ```
 
 ### Best practices
@@ -208,35 +224,36 @@ for topics covered in the linked documentation.
 
 ## .github/copilot-instructions.md
 
-Compact subset of AGENTS.md. Loaded by Copilot in every mode (Chat, Inline, Agent). Keep it short — this file counts against token budget on **every** request.
+Copilot loads both `AGENTS.md` and this file (combined) on every request, so **do not restate AGENTS.md rules here** — that only wastes token budget and creates two copies to keep in sync. This file holds **Copilot-only deltas**, or is omitted entirely when there are none.
 
 ```markdown
 # <project> — Copilot Instructions
 
 <One-line project description.>
-Full agent instructions: see AGENTS.md in the project root.
+Shared rules live in AGENTS.md (Copilot loads it too). Only Copilot-specific notes below.
 
 ## Rules
 
-1. Most critical rule.
-2. Second critical rule.
+1. First Copilot-only rule.
+2. Second Copilot-only rule.
 ...
 ```
 
 ### What belongs here
 
-Only rules that apply **everywhere** — things the agent must never get wrong regardless of which file it's editing:
+Only Copilot-specific deltas that are not already in `AGENTS.md`:
 
-- Package manager constraints (e.g., "use pnpm, never npm")
-- Import conventions (e.g., "use `import type` for type-only imports")
-- Generated file warnings (e.g., "never edit files with a generated header")
-- Naming conventions that apply project-wide
+- Pointers to `.github/prompts/` and `.github/instructions/` if the project relies on them.
+- Copilot-surface caveats (e.g. a rule that only applies in Copilot code review).
 
 ### What does NOT belong here
 
-- Area-specific patterns (put in contextual instructions)
-- Detailed code examples (put in contextual instructions)
-- Full project structure (already in AGENTS.md)
+- Any rule already in `AGENTS.md` (Copilot reads it — no need to repeat).
+- Area-specific patterns (put in contextual instructions).
+- Detailed code examples (put in contextual instructions).
+- Full project structure (already in AGENTS.md).
+
+If there are no Copilot-only deltas, delete this file rather than duplicating `AGENTS.md`.
 
 ---
 
@@ -281,22 +298,71 @@ backend/
 - **Code examples are the most effective tool** — an agent that sees a complete handler example will replicate the pattern exactly. Prose rules alone are often ignored or misinterpreted. Include at least one full canonical example per area.
 - **Include directory layout** — agents need to know where files go.
 - **List relevant commands** — so the agent runs the right check after making changes.
-- Use `applyTo` to limit scope — `backend/**`, `frontend/**`, `scripts/**`.
-- Files without `applyTo` (e.g. `new-feature.instructions.md`) are loaded based on `description` match.
+- **`applyTo` is required** — every instructions file needs an `applyTo` glob (e.g. `backend/**`, `frontend/**`, `scripts/**`) that scopes where it loads. Use `applyTo: "**"` for repo-wide instructions.
+- Use `excludeAgent: "code-review"` or `excludeAgent: "cloud-agent"` to hide a file from a specific Copilot agent; without it, every agent loads the file.
 - **Pull from existing docs** — if the repo already has detailed docs (e.g., `docs/testing.md`), extract the most important rules and one code example into the instructions file. Link to the full doc for details.
 
 ---
 
-## .github/agents/*.md
+## .github/skills/<name>/SKILL.md
 
-Custom agent personas invoked via `@agent-name` in Copilot Chat. Each file defines a specialist with a specific role, constraints, and tools. Unlike `AGENTS.md` (which instructs the general agent), these create **focused specialists** that excel at one job.
+Skills are reusable, self-contained workflows defined as a `SKILL.md` file (with optional bundled reference files) in a per-skill directory. They follow the cross-tool [Agent Skills](https://agentskills.io) open standard, so the same skill works in Claude Code, Cursor, Codex CLI, and GitHub Copilot.
+
+### Locations Copilot reads
+
+| Location            | Scope                                  |
+| ------------------- | -------------------------------------- |
+| `.github/skills/`   | Repo skills (Copilot code review, cloud agent, VS Code, CLI) |
+| `.claude/skills/`   | Personal + project skills (also read by VS Code Copilot) |
+| `.agents/skills/`   | Personal skills for Copilot CLI (`~/.agents/skills`)   |
+
+Agent Skills are generally available across the Copilot cloud agent, Copilot code review, Copilot CLI, and agent mode in VS Code and JetBrains.
+
+### Structure
+
+```markdown
+---
+name: skill-name
+description: "Reviews test suites for implementation-detail tests and redundancy."
+---
+
+# Skill Name
+
+## Workflow
+
+1. Numbered steps the agent follows.
+
+## Constraints
+
+- Hard rules and scope guards.
+```
+
+Bundled reference files (`REFERENCE.md`, `<topic>.md`) load only when the skill runs, keeping the always-loaded surface small.
+
+### When to use a skill vs a custom agent
+
+- **Skill** — for a portable, tool-agnostic *workflow* that should behave the same everywhere. Prefer this by default.
+- **Custom agent** — for a Copilot-specific *persona/role* that a user invokes explicitly.
+
+---
+
+## .github/agents/*.agent.md
+
+Custom agent personas selected from the agent picker (or invoked by name) in Copilot. Each file defines a specialist with a specific role, constraints, and tools. Unlike `AGENTS.md` (which instructs the general agent), these create **focused specialists** that excel at one job. The same `.agent.md` file works for the Copilot cloud agent and Copilot CLI.
+
+> **Rename note:** the earlier `.chatmode.md` (custom chat mode) format is superseded by `.agent.md`. Rename existing `.chatmode.md` files to `.agent.md` and place them in `.github/agents/`; legacy files in `.github/chatmodes/` still load but should be migrated.
 
 ### Structure
 
 ```markdown
 ---
 name: test-agent
-description: "Writes and maintains unit tests for this project"
+description: "Writes and maintains unit tests for this project."
+# Optional fields:
+# tools: ["read", "edit", "search", "some-mcp-server/tool-1"]  # omit = all tools; [] = none
+# mcp-servers: {}          # MCP server configs available to this agent
+# model: <model id>        # pin a model
+# target: <surface>        # which Copilot surface the agent targets
 ---
 
 You are a QA engineer for this project.
@@ -323,6 +389,10 @@ You are a QA engineer for this project.
 - 🚫 **Never:** Modify source code in `src/`, remove failing tests
 ```
 
+- Name the file `<name>.agent.md`; the `<name>` part becomes the agent's identifier and may only contain `.`, `-`, `_`, and alphanumerics.
+- `description` is **required**; `name` and the rest are optional.
+- The Markdown body (the prompt) is limited to **30,000 characters**.
+
 ### When to use custom agents vs contextual instructions
 
 - **Custom agents** — for _roles_ (docs writer, test engineer, security reviewer). They define a persona and can be invoked explicitly.
@@ -331,7 +401,7 @@ You are a QA engineer for this project.
 ### Best practices
 
 - **Specific persona over general helper** — "Expert test engineer who writes Vitest tests" works. "Helpful coding assistant" does not.
-- **Give agents tools** — include the exact commands the agent can run to validate its own work.
+- **Give agents tools** — scope the `tools` list to what the agent needs; include the exact commands it can run to validate its own work.
 - **Tight boundaries** — each agent should have a clear "write zone" and "never touch" zone.
 - **Start with one agent** — pick the simplest repeatable task (docs, tests, linting). Add more as needed.
 
@@ -339,7 +409,7 @@ You are a QA engineer for this project.
 
 ## .github/prompts/*.prompt.md
 
-Reusable prompts invoked via `/prompt-name` in Copilot Chat. Useful for recurring multi-step tasks.
+Reusable prompts invoked via `/prompt-name` in Copilot Chat. Useful for recurring multi-step tasks. These are an **IDE-only preview** feature (VS Code / JetBrains) — they are not loaded by the cloud agent or Copilot CLI. The optional `agent:` frontmatter field (formerly `mode:`) selects which agent runs the prompt: `ask`, `agent`, `plan`, or a custom agent name.
 
 ### Scaffolding prompts
 
@@ -348,6 +418,7 @@ Automate the creation of new standardised artifacts (components, endpoints, page
 ```markdown
 ---
 description: "Scaffolds a new API endpoint with all layers."
+agent: agent
 ---
 
 # New Endpoint
@@ -427,7 +498,7 @@ For smaller projects or documentation repos, collapse the three phases into one:
 5. **Be specific about your stack** — say "React 19 with TypeScript 5.7, Vite 6" not "React project." Include versions and key dependencies.
 6. **Negative scope** — state what the project is NOT and what agents must NEVER do. Prevents scope creep.
 7. **Layer the context** — always-loaded files stay small; detail goes into contextual instructions loaded only when relevant.
-8. **Single source of truth** — `copilot-instructions.md` extracts from `AGENTS.md`, never contradicts it.
+8. **Single source of truth** — `AGENTS.md` carries the shared rules; Copilot loads it on every surface. `copilot-instructions.md` holds only Copilot-only deltas (or is deleted), never a restatement of `AGENTS.md`.
 9. **Start simple, iterate** — begin with a minimal `AGENTS.md`. Add detail when the agent makes mistakes. The best agent files grow through iteration, not upfront planning.
 10. **Don't over-layer** — add contextual instructions, agents, and prompts only when they solve a real pain point. A single good `AGENTS.md` beats four mediocre files.
 11. **Keep cross-references alive** — if `AGENTS.md` links to a file, that file must exist. Broken references erode agent trust in the instructions.

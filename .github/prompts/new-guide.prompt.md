@@ -21,10 +21,3 @@ Create a new guide in `guides/`. Follow these steps in order:
 2. **Cross-reference** existing templates or scripts where applicable — link, don't copy.
 3. **Update `README.md`** — add a row to the Guides table in alphabetical position.
 4. **Verify links** — `grep -r '<filename>' .` to ensure no dead references.
-
-## Conventions
-
-- English only.
-- Runbook-style — a reader follows steps top-to-bottom.
-- Fenced code blocks for every command, `diff` blocks for config changes.
-- No explanatory paragraphs — keep it scannable.

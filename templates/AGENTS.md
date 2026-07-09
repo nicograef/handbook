@@ -1,3 +1,7 @@
+<!-- Claude Code: create a sibling CLAUDE.md whose first line is `@AGENTS.md`
+     (or run `ln -s AGENTS.md CLAUDE.md`) so it loads the same rules as every
+     Copilot surface. Keep the rules in this one file. -->
+
 # Agent Instructions — <project-name>
 
 <!-- One-paragraph project description.
@@ -83,20 +87,9 @@
 ## Quality Principles
 
 - **Quality over quantity, correctness over speed.** Fewer, correct changes beat many fast changes.
-- **Human-reviewable changes.** Every change must be clean, readable, and maintainable enough for a senior developer to review, understand, and maintain long-term. No clever code, no unnecessary abstractions, no changes that require deep context to understand.
-- **Small, explainable changes.** Each change should be small enough that the developer can explain every line in a review. One logical concept per step — one method, one migration, one component refactoring. Mechanical bulk changes (renames, dependency updates) are exempt.
-- **Self-review checklist** (run silently before presenting changes — only report issues found in the chat):
-  1. Are the changes **correct** — do they actually solve the stated problem?
-  2. Are the changes **clean** — no dead code, no debug artifacts, consistent style?
-  3. Are the changes **readable** — would a human reviewer understand them without extra explanation?
-  4. Are the changes **maintainable** — no over-engineering, no unnecessary abstractions?
-  5. Are the changes **in scope** — nothing beyond what was requested or clearly necessary?
-  6. Are the changes **complete** — tests, validation, both sides updated where needed?
-- **Scope guard.** If the agent notices it is making or about to make changes outside the task scope, it must stop, name the out-of-scope changes, and ask the user before proceeding.
-- **Change presentation.** After each change, explain in the chat:
-  1. **What** — which file(s) changed and how (concrete diff overview).
-  2. **Why** — what problem does this solve? What design decision is behind it?
-  3. **How** — how does the changed code work? What happens at runtime?
+- **Human-reviewable changes.** Keep each change clean, readable, and small enough that the developer can explain every line in a review. One logical concept per step; mechanical bulk changes (renames, dependency updates) are exempt.
+- **Scope guard.** If a change would go outside the task scope, stop, name the out-of-scope change, and ask before proceeding.
+- **Verify before claiming done.** Before reporting work complete, run the relevant test/lint/build command this turn and cite its result; re-read any document artifact and confirm its links and paths exist.
 
 ## Areas
 
@@ -124,6 +117,6 @@ It enforces stricter granularity and requires explicit confirmation between step
 
 ## Git Workflow
 
-- **Commit messages:** After completing a task, always propose a conventional commit message (`feat:`, `fix:`, `refactor:`, `docs:`, `test:`, `chore:`) with a concise subject line and bullet-point body for multi-file changes. Do not commit — only output the message.
-- **Reviewer summary.** After every completed task, the agent posts — in addition to the commit message — a narrative paragraph explaining: what was changed, why, and what the reviewer should pay attention to. The summary language matches the conversation language. The summary is written for a senior developer who wants to quickly understand intent and impact without reading every diff line.
+- **Commit messages:** After completing a task, propose a conventional commit message (`feat:`, `fix:`, `refactor:`, `docs:`, `test:`, `chore:`) — concise subject, bullet body for multi-file changes. Do not commit; only output the message.
+- **Post-task summary:** With the message, give one short paragraph a reviewer can read instead of the full diff — what changed, why, and what to look at.
 - **No `--force` push or `--no-verify`.**

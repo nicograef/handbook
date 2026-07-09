@@ -20,9 +20,3 @@ Create a new template in `templates/`. Follow these steps in order:
    - Use `<angle-bracket>` placeholders: `<your-domain>`, `<db-password>`.
 2. **Update `README.md`** — add a row to the Templates table.
 3. **Check guides** — if any existing guide covers this topic, add a cross-reference link.
-
-## Conventions
-
-- English only.
-- Prefer sensible defaults over empty values.
-- Inline comments explain *why*, not *what*.
