@@ -63,6 +63,11 @@
 
 ## Agent Working Rules
 
+- **Subagent model routing (cost control):** Keep using parallel agents, git worktrees, and ultracode/Workflow orchestration — but when the top-level session runs Fable 5, worker/implementer/verifier/reviewer subagents must not silently inherit it (too expensive, burns tokens). Decide the model per task:
+  - `sonnet` (Sonnet 5) — mechanical, well-specified work: exploration/searches, renames, formatting, doc sweeps, boilerplate, scaffolding, simple fixes.
+  - `opus` (Opus 4.8) — the default worker: implementation, code review, verification, debugging.
+  - `fable` (Fable 5) — only where top-tier reasoning demonstrably matters: architecture/design decisions, subtle correctness or concurrency analysis, final adversarial verification of critical findings, cross-cutting synthesis.
+  - Mechanics: Agent tool → `model` parameter; Workflow scripts → set `model` in the opts of every `agent()` call (omitting it inherits the session model) and use `effort: 'low'` for cheap mechanical stages; forks (`subagent_type: "fork"`) always inherit the parent model — never fork for work a cheaper model could do.
 - **Research:** External facts (companies, tools, market data) only from live verification (official sources) with an as-of date; label anything unverified as "not verified" — no claims from training data alone.
 - **No autonomous outbound actions:** Never send emails, publish posts, or submit anything externally on your own — drafts stay drafts (same spirit as the no-auto-commit rule).
 - **Reviews & feedback:** Be honest and critical, not just affirming — name weaknesses and risks instead of cheerleading.

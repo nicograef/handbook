@@ -92,7 +92,6 @@
     "defaultMode": "auto"
   },
   "model": "Fable",
-  "enableWorkflows": true,
   "hooks": {
     "PreToolUse": [
       {
@@ -106,6 +105,7 @@
       }
     ]
   },
+  "enableWorkflows": true,
   "statusLine": {
     "type": "command",
     "command": "bash \"$HOME/.claude/statusline.sh\""
