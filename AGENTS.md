@@ -1,78 +1,78 @@
 # Agents
 
 This is a personal knowledge base for infrastructure, server setup and CLI workflows.
-Target system: Debian / Ubuntu.
+Target system: Debian / Ubuntu. It contains no runnable application — everything is
+documentation, templates, scripts, and agent skills.
+
+This file is the single canonical instruction set. Every Copilot surface reads it directly;
+Claude Code loads it via `@AGENTS.md` from `CLAUDE.md`. Per-directory conventions live in
+`.claude/rules/*.md` (Claude) and `.github/instructions/*.instructions.md` (Copilot), loaded
+only when you touch matching files.
 
 ## Structure
 
-- `guides/` – step-by-step instructions (runbook-style)
-- `cheatsheets/` – quick-reference commands
-- `templates/` – copy-paste-ready config files (.bashrc, Makefile, docker-compose.yml, nginx.conf)
-- `scripts/` – reusable bash scripts
-- `theory/` – conceptual reference material (German, imported from another project)
+- `guides/` — step-by-step instructions (runbook-style) and stack-convention guides.
+- `cheatsheets/` — quick-reference commands.
+- `templates/` — copy-paste-ready config files (`.bashrc`, `Makefile`, `docker-compose.yml`, `nginx-tls.conf`).
+- `scripts/` — reusable bash scripts.
+- `theory/` — conceptual reference material (German, imported from another project).
+- `research/` — verified research notes with sources and as-of dates.
+- `.claude/skills/` — reusable agent skills (see `.claude/skills/README.md`).
+- `.claude/agents/` — subagent definitions (`web-researcher`).
+- `.claude/rules/` — path-scoped conventions for Claude Code.
+- `claude/` — dotfiles: global `CLAUDE.md`, `settings.json`, `statusline.sh`.
 
-## Language
-
-All documentation is written in English. Keep it that way.
-
-**Exception:** Files in `theory/` are written in German. These were imported from another project and will stay in German. Do not translate them.
-
-## Commands
+## Searching
 
 | Command | Description |
-|---------|------------|
+|---------|-------------|
 | `grep -r '<term>' .` | Search for references across all files |
 | `find . -name '*.md'` | List all Markdown files |
 
-## Boundaries
+## Working rules
 
-- ✅ **Always:** Update `README.md` when adding, removing or renaming files
-- ✅ **Always:** Cross-reference instead of duplicating content
-- ✅ **Always:** Verify links after renaming or deleting a file
-- ✅ **Always:** Verify before claiming — search the codebase before making assertions about existing code, structure, or behaviour. Never guess what a file contains or how something works — read the actual source.
-- ✅ **Always:** Ask instead of assuming — when uncertain about requirements, design intent, or user expectations, ask structured questions to clarify. Only proceed with documented assumptions if the user explicitly declines to answer.
-- ✅ **Always:** Web search for external knowledge — when working with external tools, libraries, or specs, consult authoritative sources (official docs, RFCs) instead of relying on training data.
-- ⚠️ **Ask first:** Deleting a file (check for references first)
-- ⚠️ **Ask first:** Renaming a file (update all references)
-- 🚫 **Never:** Duplicate content across files
-- 🚫 **Never:** Write content in a language other than English
-- 🚫 **Never:** Leave dead links in the repository
+Each rule is stated once and applies repo-wide.
 
-## Conventions
+- **Read `README.md` first** — it is the file index. Read the target directory to understand
+  existing content and style before editing or creating a file.
+- **Verify before claiming** — search the codebase before asserting anything about existing
+  code, structure, or behaviour; read the actual source instead of guessing.
+- **Ask instead of assuming** — when uncertain about requirements or intent, ask structured
+  questions. Proceed on documented assumptions only if the user declines to answer.
+- **Web search for external knowledge** — when working with external tools, libraries, or
+  specs, consult authoritative sources (official docs, RFCs) rather than training data.
+- **Single source of truth** — never duplicate content across files. Reference a template,
+  script, or another doc with a relative link instead of copying it inline.
+- **README is the index** — update it after every file add, remove, or rename so its table
+  entries match the files on disk.
+- **No dead links** — after renaming or deleting a file, `grep -r '<filename>' .` and update
+  or remove every reference.
+- **Delete, don't deprecate** — if a file becomes redundant, delete it and remove all
+  references.
+- **Version consistency** — when a tool version changes, `grep` the whole repo and update
+  every occurrence.
+- **Keep files concise** — no boilerplate prose; optimise for fast scanning.
+- Ask before deleting or renaming a file (check for references first).
 
-- Read `README.md` for a full index of all files before making changes.
-- Before editing or creating a file, read the target directory to understand existing content and style.
-- Keep files concise and practical – no boilerplate prose. Optimise for fast scanning.
-- Guides use fenced code blocks with copy-paste-ready commands and `diff` blocks for config changes.
-- Cheatsheets use tables or commented code blocks – no explanatory paragraphs.
-- Templates must be functional as-is, with commented-out optional sections.
-- Update `README.md` when adding, removing or renaming files.
+## Language
 
-## Workflow
+All content is written in English. Exception: `theory/` files, and the German example phrases
+in `.claude/skills/cleanup/readability-de.md` (its explanatory prose stays English).
 
-For multi-file changes, follow the **plan-first** principle:
+## Plan-first workflow
 
-1. **Research** — read affected files, understand existing style and cross-references.
-2. **Plan** — create `plan.md` in the project root with goal, affected files, and a step-by-step checklist. Do not make changes yet.
-3. **Execute** — work through the checklist one step at a time. Tick off each step (`- [x]`) immediately after completing it.
-4. **Verify** — after all steps: check links (`grep -r '<filename>'`), confirm `README.md` is up to date, re-read changed files for consistency.
+For multi-file changes:
+
+1. **Research** — read affected files; understand existing style and cross-references.
+2. **Plan** — create `plan.md` in the project root with the goal, affected files, and a
+   step-by-step checklist. Do not make changes yet.
+3. **Execute** — work through the checklist; tick off each step (`- [x]`) as you complete it.
+4. **Verify** — check links, confirm `README.md` is up to date, re-read changed files.
 5. **Clean up** — delete `plan.md` when done.
 
-Use the `/plan` prompt to generate a plan. For trivial single-file changes (typo fix, adding one section), skip the plan and edit directly.
+For trivial single-file changes (typo fix, adding one section), skip the plan and edit directly.
 
-## Keeping Docs in Sync
+## Git
 
-Every change must leave the knowledge base consistent. Follow these rules:
-
-- **Single source of truth** – never duplicate content across files. If something is defined in a template or script, reference it from guides instead of copying it inline.
-- **Cross-references over copies** – use relative links (`[docker-compose.prod.yml](templates/docker-compose.prod.yml)`) instead of repeating config blocks.
-- **Delete, don't deprecate** – if a file becomes redundant, delete it and remove all references.
-- **Version consistency** – when a tool version changes (Docker image tag, Node version, action version), grep the whole repo and update every occurrence.
-- **README is the index** – it must always reflect the exact files on disk. After any file add/remove/rename, verify the table entries match.
-- **No dead links** – after renaming or deleting a file, search for all references (`grep -r '<filename>'`) and update or remove them.
-- **English only** – all content, examples and placeholder data must be in English.
-
-## Git Workflow
-
-- **Commit messages:** After completing a task, always propose a conventional commit message (`docs:`, `chore:`, `fix:`) with a concise subject line and bullet-point body for multi-file changes. Do not commit — only output the message.
-- **No `--force` push or `--no-verify`.**
+Do not commit without explicit user approval — propose the message first (use `/commit`);
+no `--force` / `--no-verify` push.

@@ -95,6 +95,7 @@ Reusable bash scripts.
 | [scripts/setup-server.sh](scripts/setup-server.sh)         | Provision a fresh Debian/Ubuntu VPS (user, SSH, UFW, fail2ban, Docker) |
 | [scripts/prod-init.sh](scripts/prod-init.sh)               | First-time production deploy (cert request + stack start)              |
 | [scripts/install-dotfiles.sh](scripts/install-dotfiles.sh) | Bootstrap shell config in a new Codespace or VM                        |
+| [scripts/check-repo.sh](scripts/check-repo.sh)             | Repo self-check (links, shellcheck, README index, language); `make check` |
 
 ## Skills
 
@@ -110,10 +111,15 @@ path-scoped rules, and dotfiles.
 
 | Item                       | File / Directory                                                       |
 | -------------------------- | ---------------------------------------------------------------------- |
+| Canonical instructions     | [AGENTS.md](AGENTS.md)                                                  |
+| Claude Code entrypoint     | [CLAUDE.md](CLAUDE.md) (imports `AGENTS.md`)                            |
+| Copilot instructions       | [.github/copilot-instructions.md](.github/copilot-instructions.md)     |
 | Skills index               | [.claude/skills/README.md](.claude/skills/README.md)                   |
 | Web research agent         | [.claude/agents/web-researcher.md](.claude/agents/web-researcher.md)   |
-| Path-scoped rules          | `.claude/rules/` (added in a later change)                             |
+| Path-scoped rules (Claude) | `.claude/rules/`                                                        |
+| Path-scoped rules (Copilot)| `.github/instructions/`                                                 |
 | Global Claude instructions | [claude/CLAUDE.md](claude/CLAUDE.md)                                   |
 | Claude settings + hooks    | [claude/settings.json](claude/settings.json)                           |
 | Status line script         | [claude/statusline.sh](claude/statusline.sh)                           |
+| Repo self-check            | [Makefile](Makefile) (`make check`)                                    |
 | Dotfiles entrypoint        | [install.sh](install.sh)                                               |

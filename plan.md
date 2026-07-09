@@ -330,7 +330,7 @@ the whole repo depend on. Sequential because it creates `.claude/rules/` and the
 `.claude/rules/skills.md`, `.claude/rules/theory.md`; new `scripts/check-repo.sh`; new root `Makefile`.
 
 **Steps:**
-- [ ] Rewrite `AGENTS.md` as the single canonical file. Merge Boundaries + Conventions + Keeping
+- [x] Rewrite `AGENTS.md` as the single canonical file. Merge Boundaries + Conventions + Keeping
   Docs in Sync into ONE deduplicated rules section; each rule stated once (README-index rule once,
   no-duplication once, no-dead-links once). Keep the ask-first/verify-before-claiming/web-search
   Boundaries. Move the per-directory conventions OUT (to `.claude/rules/` + `.github/instructions/`).
@@ -339,37 +339,37 @@ the whole repo depend on. Sequential because it creates `.claude/rules/` and the
   DELETE the `/plan` reference. Reword Git rule to *"Do not commit without explicit user approval —
   propose the message first (use /commit); no `--force`/`--no-verify` push."* Add the GC-16 language
   exception. Apply GC-4/GC-5 to any emphasis. *(IS-1, IS-3, IS-12, ST-1, ST-3, ST-12, IS-7)*
-- [ ] Rewrite `CLAUDE.md` to: line 1 `@AGENTS.md`; then only the `grep`/`find` Searching block, a
+- [x] Rewrite `CLAUDE.md` to: line 1 `@AGENTS.md`; then only the `grep`/`find` Searching block, a
   `/compact` steering line (preserve modified-file list + test commands), and the always-on
   non-negotiables (no-auto-commit, no `--force`/`--no-verify` push) that must survive compaction.
   Remove the per-directory conventions block, the duplicated plan-first workflow, and the
   contradictory Git line. *(IS-1, IS-6, IS-7)*
-- [ ] Shrink `.github/copilot-instructions.md` to Copilot-only deltas: one line noting AGENTS.md
+- [x] Shrink `.github/copilot-instructions.md` to Copilot-only deltas: one line noting AGENTS.md
   carries the shared rules; pointers to `.github/prompts/` and `.github/instructions/`. Remove all
   9 duplicated rules and the dead `/plan` reference. *(IS-5, CP-3, ST-1)*
-- [ ] Edit `claude/CLAUDE.md` line 53: `(German)` → `(English; theory/ files in German)`. (This is
+- [x] Edit `claude/CLAUDE.md` line 53: `(German)` → `(English; theory/ files in German)`. (This is
   the live user memory, symlinked — editing the repo file updates it.) *(IS-2, ST-13)*
-- [ ] Create six `.claude/rules/<dir>.md` files (`guides`,`cheatsheets`,`templates`,`scripts`,
+- [x] Create six `.claude/rules/<dir>.md` files (`guides`,`cheatsheets`,`templates`,`scripts`,
   `skills`,`theory`) with `paths:` frontmatter matching the `.github/instructions/*.instructions.md`
   globs (post-move: `skills` → `.claude/skills/**`) and canonical convention body text copied from
   the corresponding instructions file. For `guides`, encode the two guide types (runbooks vs
   stack-convention guides) per GU-11. For `skills`, apply GC-13 (allowed-tools, validation limits,
   invocation-control fields) and GC-10 (TOC rule). *(IS-6, GU-11; feeds SP-5/CP-1)*
-- [ ] Edit `claude/settings.json`: add `"$schema"` as first key; add a `hooks.PreToolUse` entry on
+- [x] Edit `claude/settings.json`: add `"$schema"` as first key; add a `hooks.PreToolUse` entry on
   `Bash` whose command handler exits 2 when the input matches
   `git push` with `--force|-f|--force-with-lease|--no-verify` anywhere; extend `permissions.deny`
   with flag-last / `--no-verify` variants. Change `statusLine.command` to
   `bash "$HOME/.claude/statusline.sh"`. *(IS-8, IS-14, ST-14)*
-- [ ] Add a header comment to `claude/statusline.sh` stating it intentionally omits
+- [x] Add a header comment to `claude/statusline.sh` stating it intentionally omits
   `set -euo pipefail` so the statusline degrades instead of crashing; switch `[ ]`→`[[ ]]`.
   *(CS-12)*
-- [ ] Create `scripts/check-repo.sh` (`#!/usr/bin/env bash`, description, usage, `set -euo pipefail`,
+- [x] Create `scripts/check-repo.sh` (`#!/usr/bin/env bash`, description, usage, `set -euo pipefail`,
   `log()` helper): markdown link check, `shellcheck` on `scripts/*.sh`+`install.sh`, README-vs-disk
   index diff, language check (non-ASCII prose outside `theory/` and the two allow-listed German
   files). Silent on pass (exit 0), focused errors + exit 2 on fail. Idempotent. *(IS-11)*
-- [ ] Create root `Makefile`: `check` (runs `scripts/check-repo.sh`), `links`, `lint`, `readme`
+- [x] Create root `Makefile`: `check` (runs `scripts/check-repo.sh`), `links`, `lint`, `readme`
   targets. *(IS-11, research §4)*
-- [ ] Create project `.claude/settings.json` with `"$schema"` and a `hooks.Stop` entry running
+- [x] Create project `.claude/settings.json` with `"$schema"` and a `hooks.Stop` entry running
   `scripts/check-repo.sh`. *(IS-11)*
 
 **Acceptance:** `head -1 CLAUDE.md` == `@AGENTS.md`; `grep -c` shows each canonical rule appears
