@@ -1,19 +1,24 @@
 # Skills
 
-Agent skills for Claude Code and GitHub Copilot. They live in this handbook repo and are exposed to the agents through symlinks — they are not copied into project repos.
+Agent skills for Claude Code and GitHub Copilot. They live in this handbook repo and reach the agents through **two tiers** from this single source: local symlinks on the dev machine, and the public **`handbook@nicograef` Claude Code plugin** served from this repo (its own marketplace) for every other machine and Claude web session — see [guides/claude-plugin.md](../../guides/claude-plugin.md). Nothing is copied into project repos; adopted repos commit only enablement keys.
+
+Namespacing differs per tier: symlink-tier skills invoke plain (`/commit`), plugin-tier skills namespaced (`/handbook:commit`, agent `handbook:web-researcher`). On the dev machine the plugin is disabled per repo via a gitignored `.claude/settings.local.json` so skills never load twice.
 
 ## Skill Consumption Matrix
 
 Which surfaces load these personal skills, and from where:
 
-| Surface | Skills location | Loaded? |
+| Surface | Tier / skills location | Loaded? |
 | --- | --- | --- |
-| Claude Code (CLI + IDE) | `~/.claude/skills` → this directory | Yes |
-| VS Code Copilot | `~/.claude/skills` → this directory | Yes |
-| Copilot CLI | `~/.agents/skills` → this directory | Yes |
-| Copilot cloud agent / server-side review | server-side, no `$HOME` access | Presumably no — not verified |
+| Claude Code (CLI + IDE), dev machine | symlink: `~/.claude/skills` → this directory | Yes — verified 2026-07-10 (skill enumeration during the plugin install demo, [guides/claude-plugin.md](../../guides/claude-plugin.md)) |
+| VS Code Copilot, dev machine | symlink: `~/.claude/skills` → this directory | Yes — loading path per [guides/copilot-agent-setup.md](../../guides/copilot-agent-setup.md) |
+| Copilot CLI, dev machine | symlink: `~/.agents/skills` → this directory | Yes — loading path per [guides/copilot-agent-setup.md](../../guides/copilot-agent-setup.md) |
+| Codespaces on this repo (dotfiles install) | symlink tier via `install.sh` | Not verified — smoke test 1 pending ([guides/dotfiles-codespaces.md](../../guides/dotfiles-codespaces.md)) |
+| Any other Claude Code machine | plugin: `claude plugin install handbook@nicograef` | Yes — smoke test 2, 2026-07-10 ([guides/claude-plugin.md](../../guides/claude-plugin.md)); in-session invocation proven with the symlink tier hidden |
+| Claude web session on an adopted repo | plugin: committed `.claude/settings.json` enablement | Not verified — smoke test 3 pending ([guides/claude-plugin.md](../../guides/claude-plugin.md)); adoption committed in jotti, lexiban, website (2026-07-10) |
+| Copilot cloud agent / server-side review | server-side, no `$HOME` access | Not verified — Copilot's cloud surfaces would require vendoring skills into each project repo (`.github/skills/`), which this handbook deliberately avoids |
 
-`scripts/install-dotfiles.sh` creates two symlinks to this directory: `~/.claude/skills` (read by Claude Code and VS Code Copilot) and `~/.agents/skills` (read by the Copilot CLI — GitHub's CLI docs list `~/.copilot/skills` and `~/.agents/skills`, not `~/.claude/skills`, so the second symlink is what covers the CLI). Skills deploy as the whole `.claude/skills/` directory, so the shared `quality.md` and each skill's reference files travel with them.
+`scripts/install-dotfiles.sh` creates the two symlink-tier links to this directory: `~/.claude/skills` (read by Claude Code and VS Code Copilot) and `~/.agents/skills` (read by the Copilot CLI — GitHub's CLI docs list `~/.copilot/skills` and `~/.agents/skills`, not `~/.claude/skills`, so the second symlink is what covers the CLI). Both tiers deploy the whole `.claude/skills/` directory, so the shared `quality.md` and each skill's reference files travel with them (plugin tier verified 2026-07-10: reference files present in the plugin cache copy).
 
 ## When to Use Which Skill
 

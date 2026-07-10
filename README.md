@@ -110,6 +110,8 @@ path-scoped rules, and dotfiles.
 | Copilot instructions       | [.github/copilot-instructions.md](.github/copilot-instructions.md)     |
 | Skills index               | [.claude/skills/README.md](.claude/skills/README.md)                   |
 | Web research agent         | [.claude/agents/web-researcher.md](.claude/agents/web-researcher.md)   |
+| Plugin manifests           | [.claude-plugin/plugin.json](.claude-plugin/plugin.json), [.claude-plugin/marketplace.json](.claude-plugin/marketplace.json) |
+| Plugin install & adoption  | [guides/claude-plugin.md](guides/claude-plugin.md)                     |
 | Path-scoped rules (Claude) | `.claude/rules/`                                                        |
 | Global Claude instructions | [claude/CLAUDE.md](claude/CLAUDE.md)                                   |
 | Claude settings + hooks    | [claude/settings.json](claude/settings.json)                           |
