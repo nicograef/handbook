@@ -180,6 +180,14 @@ See step 5 (`── 5. fail2ban`) in
 
 - Open extra firewall ports as needed: `sudo ufw allow 443/tcp`
 - Deploy apps via Docker Compose – see [docker-setup.md](docker-setup.md)
+- Install personal dotfiles (shell aliases, git defaults, gh CLI config;
+  idempotent to re-run; the Claude config symlinks it also creates are inert
+  on servers without Claude Code – see [dotfiles-codespaces.md](dotfiles-codespaces.md)
+  for what the installer does in detail):
+
+  ```bash
+  git clone https://github.com/nicograef/handbook.git ~/handbook && ~/handbook/install.sh
+  ```
 
 ---
 
