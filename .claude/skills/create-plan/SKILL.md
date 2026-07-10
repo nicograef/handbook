@@ -70,28 +70,19 @@ slice that cuts through ALL integration layers end-to-end.
 For small tasks (refactors, config changes, single-module work), a **single
 phase** is perfectly valid.
 
-### 6. Validate with the user
+Decide the granularity yourself — do not ask the user to approve the phase
+breakdown. The finished plan file is the review surface; the user can merge
+or split phases there. Only raise a phasing question if two breakdowns
+imply genuinely different scope or risk (then it belongs in step 2's
+clarification rounds).
 
-Present the proposed breakdown as a numbered list. For each phase show:
-
-- **Title**: short descriptive name
-- **User stories covered** (if working from a PRD): which user stories this
-  addresses.
-
-Ask the user:
-
-- Does the granularity feel right? (too coarse / too fine)
-- Should any phases be merged or split further?
-
-Iterate until the user approves the breakdown.
-
-### 7. Write the plan file
+### 6. Write the plan file
 
 Derive a slug from the task (e.g. `admin-dashboard`, `order-cancel`).
 Create the file `docs/plans/plan-<slug>.md` (create the directory if it
 doesn't exist).
 
-### 8. Self-review the plan
+### 7. Self-review the plan
 
 Read the written plan with fresh eyes before presenting it.
 
@@ -124,9 +115,9 @@ to re-review after fixing.
 - Once the plan file is written, run the shared
   [self-review checklist](../quality.md) on it. Surface issues in the chat only
   if found.
-- Placeholder scan (step 8): no TBD/TODO/vague instructions, and no acceptance
+- Placeholder scan (step 7): no TBD/TODO/vague instructions, and no acceptance
   criteria referencing undefined files, functions, or models.
-- Cross-phase consistency check (step 8): names from "Architectural decisions"
+- Cross-phase consistency check (step 7): names from "Architectural decisions"
   stay identical in every phase that reuses them.
 
 ## Plan Template

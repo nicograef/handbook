@@ -51,20 +51,21 @@ A deep module hides substantial functionality behind a small, testable
 interface that rarely changes — see
 [interface design](../tdd/interface-design.md).
 
-Check with the user that these modules match their expectations. Check with
-the user which modules they want tests written for.
+Present the module design as part of the flow — do not block on a separate
+confirmation. Decide the test scope yourself based on the design; raise it
+as a clarification question (within the rounds from step 3) only if it is a
+genuine judgment call the codebase cannot answer.
 
 ### 6. Write the PRD
 
-Once you have a complete understanding of the problem and solution, build
-the PRD **section by section** instead of revealing it all at once. For each
-major section — Problem Statement, Solution, Implementation Decisions —
-present a draft and ask "does this look right so far?" before moving to the
-next. Scale the depth of each section to the complexity of the feature; a
-small feature doesn't need a long-winded Problem Statement.
+Once you have a complete understanding of the problem and solution, write
+the full PRD in one pass — no section-by-section confirmation gates. The
+user reviews the finished document and requests changes there; that is
+cheaper and more informed than approving fragments. Scale the depth of each
+section to the complexity of the feature; a small feature doesn't need a
+long-winded Problem Statement.
 
-Only write the full PRD file once every section is confirmed. Use the
-template below and save it to `docs/prds/prd-<name>.md` (create the
+Use the template below and save it to `docs/prds/prd-<name>.md` (create the
 directory if it doesn't exist). Use a short kebab-case name derived from the
 feature (e.g. `prd-user-onboarding.md`).
 
