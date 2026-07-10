@@ -10,9 +10,9 @@ Which surfaces load these personal skills, and from where:
 
 | Surface | Tier / skills location | Loaded? |
 | --- | --- | --- |
-| Claude Code (CLI + IDE), dev machine | symlink: `~/.claude/skills` → this directory | Yes — verified 2026-07-10 (skill enumeration during the plugin install demo, [guides/claude-plugin.md](../../guides/claude-plugin.md)) |
-| VS Code Copilot, dev machine | symlink: `~/.claude/skills` → this directory | Yes — loading path per [guides/copilot-agent-setup.md](../../guides/copilot-agent-setup.md) |
-| Copilot CLI, dev machine | symlink: `~/.agents/skills` → this directory | Yes — loading path per [guides/copilot-agent-setup.md](../../guides/copilot-agent-setup.md) |
+| Claude Code (CLI + IDE), dev machine | symlink: `~/.claude/skills` → this directory | Yes — verified 2026-07-10 (live-session skill enumeration from a neutral directory, loading only through the symlink) |
+| VS Code Copilot, dev machine | symlink: `~/.claude/skills` → this directory | Yes — documented loading path, not smoke-tested ([guides/copilot-agent-setup.md](../../guides/copilot-agent-setup.md)) |
+| Copilot CLI, dev machine | symlink: `~/.agents/skills` → this directory | Yes — documented loading path, not smoke-tested ([guides/copilot-agent-setup.md](../../guides/copilot-agent-setup.md)) |
 | Codespaces on this repo (dotfiles install) | symlink tier via `install.sh` | Not verified — smoke test 1 pending ([guides/dotfiles-codespaces.md](../../guides/dotfiles-codespaces.md)) |
 | Any other Claude Code machine | plugin: `claude plugin install handbook@nicograef` | Yes — smoke test 2, 2026-07-10 ([guides/claude-plugin.md](../../guides/claude-plugin.md)); in-session invocation proven with the symlink tier hidden |
 | Claude web session on an adopted repo | plugin: committed `.claude/settings.json` enablement | Not verified — smoke test 3 pending ([guides/claude-plugin.md](../../guides/claude-plugin.md)); adoption committed in jotti, lexiban, website (2026-07-10) |
