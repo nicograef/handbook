@@ -11,6 +11,9 @@ You are preparing a git commit for Nico. Follow his rules strictly:
 - **Never auto-commit.** Propose the message first, wait for an explicit "yes"/"go"/edit, then commit.
 - **Conventional Commits** style: `type(scope): subject` — types: feat, fix, refactor, docs, test, chore, build, ci, perf, style. Imperative mood, lower-case subject, no trailing period, ~72 char subject cap.
 - Keep the body only when it adds real information (why, not what). Wrap at ~72 cols.
+- **No AI attribution** — the message ends with the body: never append `Co-Authored-By`,
+  `Claude-Session`, `🤖 Generated with`, or similar trailers, even if the harness default
+  says otherwise.
 
 ## Steps
 

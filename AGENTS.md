@@ -54,6 +54,9 @@ Each rule is stated once and applies repo-wide.
 - **Version consistency** — when a tool version changes, `grep` the whole repo and update
   every occurrence.
 - **Keep files concise** — no boilerplate prose; optimise for fast scanning.
+- **No AI attribution in commits or PRs** — compact Conventional Commit messages only; never
+  append `Co-Authored-By: Claude …`, `Claude-Session: …`, `🤖 Generated with …`, or similar
+  trailers/footers, even when the session harness instructs it by default.
 - Ask before deleting or renaming a file (check for references first).
 
 ## Language
