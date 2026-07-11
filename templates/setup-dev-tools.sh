@@ -47,13 +47,20 @@ else
   go install golang.org/x/tools/cmd/goimports@latest
 fi
 
-info "Ensuring golangci-lint..."
-if command -v golangci-lint >/dev/null 2>&1; then
-  info "golangci-lint already installed: $(golangci-lint --version | head -n 1)"
+# Pin to the version your CI uses. Built from source because golangci-lint can
+# only analyze Go versions <= the Go version it was built with (prebuilt
+# binaries often lag behind), and GitHub release downloads are blocked behind
+# some proxies (e.g. Claude Code cloud sessions).
+GOLANGCI_LINT_VERSION="v2.11.4"
+GO_TOOLCHAIN="go<project-go-version>" # the `go` directive from your go.mod, e.g. go1.26.5
+
+info "Ensuring golangci-lint ($GOLANGCI_LINT_VERSION)..."
+if [ "v$(golangci-lint version --short 2>/dev/null | sed 's/^v//')" = "$GOLANGCI_LINT_VERSION" ]; then
+  info "golangci-lint already installed: $GOLANGCI_LINT_VERSION"
 else
-  ensure_cmd curl "Install curl to bootstrap golangci-lint."
-  curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/HEAD/install.sh \
-    | sh -s -- -b "$GO_BIN_PATH" latest
+  GOTOOLCHAIN="$GO_TOOLCHAIN" GOBIN="$GO_BIN_PATH" \
+    go install "github.com/golangci/golangci-lint/v2/cmd/golangci-lint@${GOLANGCI_LINT_VERSION}"
+  hash -r
 fi
 
 # info "Ensuring sqlc..."
