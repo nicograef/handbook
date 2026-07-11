@@ -1,0 +1,46 @@
+# Dependabot template – copy to .github/dependabot.yml
+# Monthly + grouped: one batched PR per ecosystem instead of per-dependency noise.
+# Keep only the ecosystems your project uses; adapt <angle-bracket> directories.
+# The github-actions updater also keeps pinned action refs from rotting.
+version: 2
+updates:
+  # ── GitHub Actions ──
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "monthly"
+    groups:
+      github-actions:
+        patterns:
+          - "*"
+
+  # ── Go modules ──
+  - package-ecosystem: "gomod"
+    directory: "/<backend-dir>" # e.g. /backend
+    schedule:
+      interval: "monthly"
+    groups:
+      gomod:
+        patterns:
+          - "*"
+
+  # ── npm / pnpm ──
+  - package-ecosystem: "npm"
+    directory: "/<frontend-dir>" # e.g. /frontend
+    schedule:
+      interval: "monthly"
+    groups:
+      npm:
+        patterns:
+          - "*"
+
+  # ── Docker base images ──
+  # Scans Dockerfiles (FROM lines) — not docker-compose.yml image pins.
+  # - package-ecosystem: "docker"
+  #   directory: "/<backend-dir>" # one entry per directory containing a Dockerfile
+  #   schedule:
+  #     interval: "monthly"
+  #   groups:
+  #     docker:
+  #       patterns:
+  #         - "*"

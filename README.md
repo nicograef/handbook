@@ -72,6 +72,7 @@ Copy-paste-ready config files for new projects.
 | [templates/cloud-init.yml](templates/cloud-init.yml)                   | cloud-init user-data that fetches & runs `setup-server.sh`        |
 | [templates/setup-dev-tools.sh](templates/setup-dev-tools.sh)           | Dev tool setup script skeleton (Go, Node/pnpm blocks)             |
 | [templates/ci.yml](templates/ci.yml)                                   | GitHub Actions CI workflow (Go, Node, integration tests)          |
+| [templates/dependabot.yml](templates/dependabot.yml)                   | Dependabot config (monthly, one grouped PR per ecosystem)         |
 | [templates/.env.example](templates/.env.example)                       | Standard env vars for Docker Compose templates                    |
 | [templates/AGENTS.md](templates/AGENTS.md)                             | Agent instructions template for Copilot Agent Mode                |
 | [templates/copilot-instructions.md](templates/copilot-instructions.md) | Copilot instructions template (`.github/copilot-instructions.md`) |

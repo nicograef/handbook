@@ -9,11 +9,20 @@
 # Usage:
 #   docker compose -f docker-compose.prod.yml up --build -d
 
+# Cap container logs — the json-file driver grows unbounded otherwise and can
+# fill the server disk over time.
+x-logging: &default-logging
+  driver: json-file
+  options:
+    max-size: "5m"
+    max-file: "3"
+
 services:
   # ── Database ──
   postgres:
     image: postgres:17
     restart: unless-stopped
+    logging: *default-logging
     environment:
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
@@ -35,6 +44,7 @@ services:
       context: ./backend
       dockerfile: Dockerfile
     restart: unless-stopped
+    logging: *default-logging
     environment:
       DB_HOST: postgres
       POSTGRES_USER: ${POSTGRES_USER}
@@ -55,6 +65,7 @@ services:
       context: ./frontend
       dockerfile: Dockerfile
     restart: unless-stopped
+    logging: *default-logging
     networks:
       - app-network
     depends_on:
@@ -66,6 +77,7 @@ services:
   reverse-proxy:
     image: nginx:1.30-alpine
     restart: unless-stopped
+    logging: *default-logging
     ports:
       - "80:80"
       - "443:443"
@@ -89,6 +101,7 @@ services:
   certbot:
     image: certbot/certbot:v5.6.0
     restart: unless-stopped
+    logging: *default-logging
     volumes:
       - certbot-challenges:/var/www/certbot
       - letsencrypt:/etc/letsencrypt

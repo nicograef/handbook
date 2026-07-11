@@ -27,6 +27,21 @@ One-time AWS setup:
 The deploy job then assumes the role with `aws-actions/configure-aws-credentials@v6` and runs
 `cdk deploy`. Gate it on `needs: [backend-ci, frontend-ci]` so it only runs when CI passes.
 
+## Workflow Hardening
+
+Two zero-maintenance top-level keys in every workflow (see [templates/ci.yml](../templates/ci.yml)):
+
+- `permissions: contents: read` — least-privilege `GITHUB_TOKEN`; a job that needs more
+  (e.g. the OIDC deploy) requests its scopes at job level.
+- `concurrency` with `cancel-in-progress: true` — rapid pushes cancel superseded runs.
+
+## Dependency Updates
+
+[templates/dependabot.yml](../templates/dependabot.yml) — monthly Dependabot updates, one grouped
+PR per ecosystem (github-actions, gomod, npm, docker). The `github-actions` updater keeps action
+refs current; in CI, `go mod tidy -diff` (backend) and `pnpm install --frozen-lockfile` (frontend)
+enforce that lockfiles stay in sync with their manifests.
+
 ## Path Filtering
 
 Skip jobs when unrelated files change. A `changes` job runs `dorny/paths-filter@v4` to detect
@@ -92,6 +107,7 @@ last (and only on `main` / a `prod-*` tag).
 
 See also:
 - [templates/ci.yml](../templates/ci.yml) — full CI workflow template
+- [templates/dependabot.yml](../templates/dependabot.yml) — grouped monthly dependency updates
 - [templates/Makefile](../templates/Makefile) — Makefile with release targets
 - [guides/docker-multi-stage-builds.md](docker-multi-stage-builds.md) — production Docker images
 - [guides/go.md](go.md) — Go build-tag separation and integration test setup

@@ -9,6 +9,16 @@ on:
   pull_request:
     branches: [main]
 
+# Least-privilege token; a job that needs more (e.g. OIDC deploy) requests
+# its scopes at job level (id-token: write, contents: read).
+permissions:
+  contents: read
+
+# Cancel superseded runs on rapid pushes to the same ref.
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   # ── Change Detection ───────────────────────────────────────────────────────
   # Only run jobs whose files actually changed.
@@ -51,6 +61,10 @@ jobs:
 
       - name: Verify dependencies
         run: go mod verify
+
+      # Fails if go.mod/go.sum drift from the source (edited without re-tidying).
+      - name: Verify go.mod/go.sum are tidy
+        run: go mod tidy -diff
 
       - name: Check format
         run: |
