@@ -6,14 +6,21 @@ to symlink config files into `$HOME`.
 
 ## Files used
 
-| Source in this repo       | Symlinked to      | Content                                      |
-| ------------------------- | ----------------- | -------------------------------------------- |
-| `templates/.bash_aliases` | `~/.bash_aliases` | Personal aliases (`gfp`, `gcm`, `m`, `p`, …) |
+| Source in this repo       | Symlinked to               | Content                                  |
+| ------------------------- | --------------------------- | ----------------------------------------- |
+| `templates/.bash_aliases` | `~/.bash_aliases`           | Personal aliases (`gfp`, `gcm`, `m`, `p`, …) |
+| `claude/CLAUDE.md`        | `~/.claude/CLAUDE.md`       | Global Claude Code instructions |
+| `claude/settings.json`    | `~/.claude/settings.json`   | Claude Code permissions, plugins, hooks |
+| `claude/statusline.sh`    | `~/.claude/statusline.sh`   | Claude Code status line script |
+| `.claude/agents`          | `~/.claude/agents`          | Shared subagent definitions |
+| `.claude/skills`          | `~/.claude/skills`          | Shared agent skills |
+| `.claude/skills`          | `~/.agents/skills`          | Same skills, mirrored for the Copilot CLI |
+
+`~/.claude/settings.local.json` stays machine-local and is intentionally not linked.
 
 The script also:
 
-- Sets **git config** defaults (`pull.rebase`, `push.autoSetupRemote`,
-  `rerere.enabled`, `init.defaultBranch`)
+- Sets **git config** defaults — see [Extending → Git config](#extending) below.
 - Installs **gh CLI** if missing (binary to `~/.local/bin`, no sudo needed;
   already pre-installed in Codespaces)
 
@@ -72,14 +79,21 @@ type gcm
 # git defaults were applied
 git config --global --get pull.rebase        # → true
 git config --global --get init.defaultBranch # → main
+git config --global --get core.editor        # → nano
+git config --global --get merge.conflictStyle # → zdiff3
+
+# Claude Code config symlinked
+readlink -f ~/.claude/CLAUDE.md
+readlink -f ~/.agents/skills
 
 # gh is on PATH
 gh --version
 ```
 
 Expected: `~/.bash_aliases` points at `templates/.bash_aliases` in the repo,
-`gcm` resolves to its alias, the two `git config` reads print `true` / `main`,
-and `gh --version` prints a version.
+`gcm` resolves to its alias, the `git config` reads print `true` / `main` /
+`nano` / `zdiff3`, `~/.claude/CLAUDE.md` and `~/.agents/skills` resolve into
+the repo, and `gh --version` prints a version.
 
 ### Smoke test 1 — fresh Codespace on this repo (PENDING)
 
@@ -96,10 +110,13 @@ container features). Requires an interactive Codespace — operator step.
 
 ## Extending
 
-- **Git config** – `install-dotfiles.sh` already sets global defaults
-  (`pull.rebase`, `push.autoSetupRemote`, `rerere.enabled`,
-  `init.defaultBranch`). To add more, append `git config --global` lines to the
-  script.
+- **Git config** – `install-dotfiles.sh` already sets global defaults:
+  `init.defaultBranch main`, `pull.rebase true`, `push.autoSetupRemote true`,
+  `rerere.enabled true`, `core.editor nano`, `merge.conflictStyle zdiff3`, and
+  a `delta`-based pager setup (`core.pager`, `interactive.diffFilter`,
+  `delta.navigate`, `delta.line-numbers` — falls back to `less`/`cat` if
+  `delta` isn't installed). To add more, append `git config --global` lines to
+  the script.
 - **gh CLI** – automatically installed by `install-dotfiles.sh` if missing
   (binary to `~/.local/bin`). Pre-installed in Codespaces.
 - **VS Code settings** – use _Settings Sync_ (syncs extensions, keybindings,
