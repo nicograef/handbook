@@ -20,6 +20,10 @@ to symlink config files into `$HOME`.
 
 The script also:
 
+- Creates the **handbook-plugin opt-out** (`.claude/settings.local.json`) in
+  every `/workspaces` repo whose committed `.claude/settings.json` enables
+  `handbook@nicograef`, so skills don't load twice next to the symlink tier —
+  see [claude-plugin.md → Dev-machine opt-out](claude-plugin.md#dev-machine-opt-out).
 - Sets **git config** defaults — see [Extending → Git config](#extending) below.
 - Installs **gh CLI** if missing (binary to `~/.local/bin`, no sudo needed;
   already pre-installed in Codespaces)
@@ -85,6 +89,9 @@ git config --global --get merge.conflictStyle # → zdiff3
 # Claude Code config symlinked
 readlink -f ~/.claude/CLAUDE.md
 readlink -f ~/.agents/skills
+
+# plugin opt-out created (Codespace on an adopted repo)
+cat /workspaces/*/.claude/settings.local.json
 
 # gh is on PATH
 gh --version

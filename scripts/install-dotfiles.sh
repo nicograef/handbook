@@ -8,9 +8,10 @@
 #
 # What it does:
 #   1. Symlinks .bash_aliases into $HOME
-#   2. Sets git config defaults (pull.rebase, push.autoSetupRemote, etc.)
-#   3. Installs gh CLI if missing (binary to ~/.local/bin, no sudo)
-#   4. Sources the new config in the current shell
+#   2. Symlinks Claude Code config (global CLAUDE.md, settings, agents, skills)
+#   3. Creates the handbook-plugin opt-out in adopted /workspaces repos
+#   4. Sets git config defaults (pull.rebase, push.autoSetupRemote, etc.)
+#   5. Installs gh CLI if missing (binary to ~/.local/bin, no sudo)
 #
 # Note: We intentionally do NOT replace .bashrc. The Codespaces default
 # already includes a git-branch prompt, color support, and sources
@@ -77,6 +78,28 @@ if [[ -d "$DOTFILES_DIR/.claude/skills" ]]; then
 else
   echo "SKIP: $DOTFILES_DIR/.claude/skills not found"
 fi
+
+# ── Handbook plugin opt-out (Codespaces) ────────────────────────────────────
+# Repos that adopt the handbook plugin via a committed .claude/settings.json
+# would load every skill twice on a machine that also has the symlink tier
+# above (guides/claude-plugin.md → "Dev-machine opt-out"). Codespaces clones
+# the workspace repo before dotfiles run, so create the machine-local opt-out
+# here. No-op outside Codespaces (no /workspaces) and on already-opted-out repos.
+for settings in /workspaces/*/.claude/settings.json; do
+  [[ -f "$settings" ]] || continue
+  grep -Eq '"handbook@nicograef"[[:space:]]*:[[:space:]]*true' "$settings" || continue
+  repo_dir="$(dirname "$(dirname "$settings")")"
+  local_settings="$repo_dir/.claude/settings.local.json"
+  if [[ -f "$local_settings" ]]; then
+    log "Plugin opt-out already present: $local_settings"
+  else
+    printf '{ "enabledPlugins": { "handbook@nicograef": false } }\n' > "$local_settings"
+    log "Created plugin opt-out: $local_settings"
+  fi
+  if ! git -C "$repo_dir" check-ignore -q .claude/settings.local.json 2>/dev/null; then
+    echo "WARN: $repo_dir does not gitignore .claude/settings.local.json — add it there."
+  fi
+done
 
 # ── Git config defaults ─────────────────────────────────────────────────────
 # Idempotent – safe to run on every Codespace create.

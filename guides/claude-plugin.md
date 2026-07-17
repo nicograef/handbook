@@ -66,6 +66,13 @@ Local scope overrides project scope, so skills never load twice on the dev
 machine while cloud sessions on the same repo stay enabled. Keep
 `.claude/settings.local.json` out of version control.
 
+In **Codespaces** this file is created automatically:
+[`scripts/install-dotfiles.sh`](../scripts/install-dotfiles.sh) scans
+`/workspaces` for adopted repos and writes the opt-out wherever it is missing
+(the symlink tier is always present there, since the dotfiles install runs in
+every Codespace). Manual creation is only needed on machines that don't use
+the dotfiles install.
+
 ## Update behavior
 
 There is no `version` field in the manifests — the git commit SHA is the
