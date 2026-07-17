@@ -95,12 +95,17 @@ cat /workspaces/*/.claude/settings.local.json
 
 # gh is on PATH
 gh --version
+
+# git tab-completion is the real one, not fzf's path completer
+# (fzf must wrap git's completion, not clobber it — see templates/.bash_aliases)
+bash -i -c '_completion_loader git 2>/dev/null; complete -p git' | grep -q __git_wrap__git_main \
+  && echo "git completion OK" || echo "git completion BROKEN (fzf clobbered it)"
 ```
 
 Expected: `~/.bash_aliases` points at `templates/.bash_aliases` in the repo,
 `gcm` resolves to its alias, the `git config` reads print `true` / `main` /
 `nano` / `zdiff3`, `~/.claude/CLAUDE.md` and `~/.agents/skills` resolve into
-the repo, and `gh --version` prints a version.
+the repo, `gh --version` prints a version, and git completion prints `OK`.
 
 ### Smoke test 1 — fresh Codespace on this repo (PENDING)
 

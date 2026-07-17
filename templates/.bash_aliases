@@ -32,8 +32,19 @@ elif command -v bat >/dev/null; then
 fi
 # eza as an ls replacement with a git column (ll/la inherit this)
 command -v eza >/dev/null && alias ls='eza --group-directories-first --git'
-# fzf: Ctrl-R fuzzy history, Ctrl-T insert file
+# fzf: Ctrl-R fuzzy history, Ctrl-T insert file, ** fuzzy completion.
+# The stock Ubuntu .bashrc sources this file BEFORE enabling bash-completion, so
+# load bash-completion here first: fzf only *wraps* an existing completion (e.g.
+# git's) when _completion_loader already exists — otherwise it clobbers git with
+# plain path completion. bash-completion is idempotent, so .bashrc's later load
+# is a harmless no-op.
 if command -v fzf >/dev/null; then
+  if ! declare -F _completion_loader >/dev/null; then
+    for _bc in /usr/share/bash-completion/bash_completion /etc/bash_completion; do
+      [ -r "$_bc" ] && { . "$_bc"; break; }
+    done
+    unset _bc
+  fi
   for _f in /usr/share/doc/fzf/examples/key-bindings.bash \
             /usr/share/bash-completion/completions/fzf \
             "$HOME/.fzf/shell/key-bindings.bash"; do
