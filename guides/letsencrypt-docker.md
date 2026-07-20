@@ -26,6 +26,18 @@ Three Compose files:
 2. Ports 80 and 443 open (`sudo ufw allow 80,443/tcp`)
 3. Docker + Compose installed
 
+### Inputs
+
+Collect these before starting:
+
+| Placeholder | Description | Example |
+| ----------- | ----------- | ------- |
+| `<domain>` | Primary domain served over HTTPS (replaces `example.com` in the steps) | `example.com` |
+| `<www-domain>` | Optional `www` subdomain to add to the cert | `www.example.com` |
+| `<email>` | Registration email for Let's Encrypt (replaces `you@example.com`) | `you@example.com` |
+| `<project-name>` | Compose project name — the volume prefix set with `-p` (replaces `myapp`) | `myapp` |
+| `CERT_PING_URL` | Optional cert-renewal heartbeat — see [Monitoring the renewal](#monitoring-the-renewal-heartbeat-vs-tls-expiry) | — |
+
 ## Step 1 — Initial Certificate
 
 On first deploy there's no cert yet, so the full nginx config can't start.

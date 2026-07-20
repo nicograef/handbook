@@ -23,6 +23,15 @@ Automated setup using [`scripts/setup-server.sh`](../scripts/setup-server.sh).
 ssh-keygen -t ed25519 -C "you@machine"
 ```
 
+### Inputs
+
+Collect a value for every variable in [Configuration](#configuration) before running.
+The steps also use placeholders not in that table:
+
+- `<host>` — server IP or hostname (SSH target)
+- Hetzner cloud-init path only: `<name>`, `<type>`, `<key-name>` — server name, server
+  type, and the name of the SSH key to inject
+
 ## Usage
 
 Two paths. Prefer **cloud-init** (the server provisions itself on first boot);

@@ -9,6 +9,9 @@ Claude Code loads it via `@AGENTS.md` from `CLAUDE.md`. `.claude/rules/*.md` is 
 path-scoped conventions surface (loaded by Claude Code when you touch matching files); Copilot
 works through AGENTS.md.
 
+This file governs maintaining the repo; to consume the handbook (set up a VPS, Codespace, dev
+machine, or project), start at [guides/bootstrap.md](guides/bootstrap.md).
+
 ## Structure
 
 - `guides/` — step-by-step instructions (runbook-style) and stack-convention guides.

@@ -53,6 +53,14 @@ the Compose stack.
 > 3-minute checks. This runbook uses **4 of the 10 slots**: one uptime monitor
 > and three heartbeats.
 
+### Inputs
+
+The three URLs in [Ping URLs are configuration, never git](#ping-urls-are-configuration-never-git)
+are generated in Steps 3–5 (copy each into the location that table names). Before
+starting you only need:
+
+- `<your-domain>` — public HTTPS endpoint the uptime monitor checks (Step 2)
+
 ## Step 1 — Create the account
 
 1. Sign up at [betterstack.com](https://betterstack.com/) and confirm the email.
