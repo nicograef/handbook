@@ -41,6 +41,7 @@ Which surfaces load these personal skills, and from where:
 | Isolating work in a git worktree                              | **Using Git Worktrees**         | [using-git-worktrees/](using-git-worktrees/)                 |
 | Integrating a finished branch (merge/PR/keep/discard)         | **Finish Branch**               | [finish-branch/](finish-branch/)                             |
 | Proposing a Conventional Commit message for staged changes    | **Commit**                      | [commit/](commit/)                                          |
+| End-of-session retrospective; harvest learnings into memory, rules, skills, docs, tooling | **Reflect** | [reflect/](reflect/)                             |
 | Running independent subagents in parallel                     | **Dispatching Parallel Agents** | [dispatching-parallel-agents/](dispatching-parallel-agents/) |
 
 ## Typical Workflow
