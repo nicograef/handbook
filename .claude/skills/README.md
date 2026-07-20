@@ -42,6 +42,7 @@ Which surfaces load these personal skills, and from where:
 | Integrating a finished branch (merge/PR/keep/discard)         | **Finish Branch**               | [finish-branch/](finish-branch/)                             |
 | Proposing a Conventional Commit message for staged changes    | **Commit**                      | [commit/](commit/)                                          |
 | End-of-session retrospective; harvest learnings into memory, rules, skills, docs, tooling | **Reflect** | [reflect/](reflect/)                             |
+| Deleting stale agent state: old sessions, stale memories, outdated rules, repo leftovers | **Prune** | [prune/](prune/)                                 |
 | Running independent subagents in parallel                     | **Dispatching Parallel Agents** | [dispatching-parallel-agents/](dispatching-parallel-agents/) |
 
 ## Typical Workflow

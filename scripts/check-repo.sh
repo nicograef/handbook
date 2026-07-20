@@ -8,7 +8,7 @@
 #
 # What it does (silent on success, exit 0; focused errors + exit 2 on failure):
 #   1. Link check    — every relative Markdown link resolves to a file on disk.
-#   2. Shellcheck    — scripts/*.sh and install.sh pass shellcheck.
+#   2. Shellcheck    — scripts/*.sh, install.sh, and .claude/skills/*/*.sh pass shellcheck.
 #   3. README index  — every content-dir file is indexed in README.md and vice-versa.
 #   4. Language      — no German prose (umlauts / eszett) outside the allow-listed files.
 #   5. Skills index  — every SKILL.md directory is listed in .claude/skills/README.md and vice-versa.
@@ -99,7 +99,7 @@ check_shell() {
       log "shellcheck failed for $script"
       shellcheck "$script" >&2 || true
     fi
-  done < <(git ls-files 'scripts/*.sh' 'install.sh')
+  done < <(git ls-files 'scripts/*.sh' 'install.sh' '.claude/skills/*/*.sh')
 }
 
 # ---------------------------------------------------------------------------

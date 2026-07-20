@@ -92,7 +92,7 @@
     ],
     "defaultMode": "auto"
   },
-  "model": "Opus",
+  "model": "Fable",
   "hooks": {
     "PreToolUse": [
       {

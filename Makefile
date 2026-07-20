@@ -1,6 +1,6 @@
 # Handbook dev interface. `make check` is the full repo self-check.
 
-.PHONY: check links lint readme language skills compose plugin help
+.PHONY: check links lint readme language skills compose plugin test-prune help
 
 ## check: run the full repo self-check (links, shellcheck, README index, language, skills, compose, plugin)
 check:
@@ -10,7 +10,7 @@ check:
 links:
 	@scripts/check-repo.sh links
 
-## lint: run shellcheck on scripts/*.sh and install.sh
+## lint: run shellcheck on scripts/*.sh, install.sh, and .claude/skills/*/*.sh
 lint:
 	@scripts/check-repo.sh lint
 
@@ -33,6 +33,10 @@ compose:
 ## plugin: verify the plugin manifests pass `claude plugin validate .`
 plugin:
 	@scripts/check-repo.sh plugin
+
+## test-prune: run the fixture test for the prune skill's prune-state.sh
+test-prune:
+	@scripts/test-prune.sh
 
 ## help: list available targets
 help:
