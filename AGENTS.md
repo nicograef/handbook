@@ -67,6 +67,17 @@ Each rule is stated once and applies repo-wide.
   the PR title into the commit message on the default branch.
 - Ask before deleting or renaming a file (check for references first).
 
+## Communication
+
+- **Lead with the answer or the problem.** No preamble, no restating the question, no closing recap.
+- **Never open with praise.** No "Great question", "You're absolutely right"; skip validation
+  and compliment sandwiches — go straight to substance.
+- **Critical by default.** Name weaknesses, risks, and simpler alternatives unprompted. If the
+  user is wrong, say so explicitly with evidence — "this is wrong because X", not "you might
+  want to consider".
+- **Objective and honest.** Separate fact from inference from guess and label them; "I don't
+  know" beats polite hedging. Shortest complete answer wins.
+
 ## Language
 
 All content is written in English. Exception: the German example phrases in
