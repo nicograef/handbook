@@ -26,21 +26,24 @@ workload needs.
 1. **Provision & harden** — [provision-server.md](provision-server.md) via the
    cloud-init primary path. Creates the non-root user, SSH hardening, UFW,
    fail2ban, Docker + Compose, and unattended-upgrades. Always.
-2. **Install dotfiles on the server** (optional) —
+2. **IPv6-only box only** — [ipv6-only-vps.md](ipv6-only-vps.md): DNS64
+   resolvers for IPv4-only services (GitHub!) and Docker IPv6 networking. Skip
+   on dual-stack servers.
+3. **Install dotfiles on the server** (optional) —
    [After provisioning](provision-server.md#after-provisioning); only if you SSH
    in to work on the box.
-3. **Deploy TLS + reverse proxy** (web app only) — point DNS at the VPS, then
+4. **Deploy TLS + reverse proxy** (web app only) — point DNS at the VPS, then
    [letsencrypt-docker.md](letsencrypt-docker.md) with
    [nginx-reverse-proxy.md](nginx-reverse-proxy.md) for the config patterns,
    using [templates/docker-compose.prod.yml](../templates/docker-compose.prod.yml)
    and [scripts/prod-init.sh](../scripts/prod-init.sh) for the first deploy.
-4. **External monitoring** — [monitoring.md](monitoring.md): the health-ping
+5. **External monitoring** — [monitoring.md](monitoring.md): the health-ping
    heartbeat applies to any box; add the HTTPS uptime monitor plus the cert and
    backup heartbeats once it hosts a web app.
-5. **Backups** (app has a database) —
+6. **Backups** (app has a database) —
    [postgresql-operations.md](postgresql-operations.md) with
    [scripts/backup-postgres.sh](../scripts/backup-postgres.sh) on the daily cron.
-6. **Ongoing upkeep** — [maintenance.md](maintenance.md): image bumps, the
+7. **Ongoing upkeep** — [maintenance.md](maintenance.md): image bumps, the
    monthly reboot routine, disk checks, and the quarterly restore drill.
 
 **Done when** the Verify sections pass:

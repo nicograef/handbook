@@ -41,6 +41,10 @@ newgrp docker
 
 ## Post-Install Configuration
 
+> **IPv6-only host?** Use the merged `daemon.json` from
+> [ipv6-only-vps.md](ipv6-only-vps.md) instead — the block below would overwrite
+> its IPv6 keys.
+
 ### Log rotation (prevent disk fill)
 
 ```bash
@@ -90,6 +94,7 @@ sudo journalctl -u docker --since '10 min ago'
 
 See also:
 - [cheatsheets/docker-compose.md](../cheatsheets/docker-compose.md) — Compose commands
+- [guides/ipv6-only-vps.md](ipv6-only-vps.md) — Docker IPv6 on IPv6-only hosts
 - [guides/docker-multi-stage-builds.md](docker-multi-stage-builds.md) — minimal production images
 - [guides/letsencrypt-docker.md](letsencrypt-docker.md) — TLS with Compose
 - [templates/docker-compose.yml](../templates/docker-compose.yml) — local dev template

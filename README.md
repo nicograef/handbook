@@ -21,6 +21,7 @@ Step-by-step procedures to follow start to finish.
 | Using this handbook (start here)  | [guides/bootstrap.md](guides/bootstrap.md)                                 |
 | Set up a new project repository   | [guides/new-project.md](guides/new-project.md)                             |
 | Provision & harden a new VPS      | [guides/provision-server.md](guides/provision-server.md)                   |
+| IPv6-only VPS (DNS64/NAT64, Docker) | [guides/ipv6-only-vps.md](guides/ipv6-only-vps.md)                       |
 | Docker installation & Compose     | [guides/docker-setup.md](guides/docker-setup.md)                           |
 | Docker multi-stage builds         | [guides/docker-multi-stage-builds.md](guides/docker-multi-stage-builds.md) |
 | Let's Encrypt with Docker Compose | [guides/letsencrypt-docker.md](guides/letsencrypt-docker.md)               |

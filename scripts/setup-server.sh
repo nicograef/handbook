@@ -12,7 +12,7 @@
 #   3. SSH hardening (pubkey only, no root login) via a drop-in
 #   4. UFW firewall
 #   5. fail2ban
-#   6. Docker + Compose
+#   6. Docker + Compose (IPv6 networking auto-enabled on IPv6-only hosts)
 #   7. Unattended security upgrades + daily health ping
 #
 # Before running:
@@ -215,6 +215,31 @@ run apt install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin do
 
 run usermod -aG docker "$USERNAME"
 
+# ── 6b. Docker IPv6 (IPv6-only hosts) ───────────────────────────────────────
+# Without an IPv4 default route, the default bridge (IPv4 NAT only) leaves
+# containers with no egress at all. Enable IPv6 for the default bridge and for
+# new networks (Compose); ULA subnets are NAT66-masqueraded by Docker's default
+# ip6tables handling. See guides/ipv6-only-vps.md.
+if ! ip -4 route get 1.1.1.1 &>/dev/null; then
+  log "No IPv4 route — enabling IPv6 in Docker"
+  if [[ -f /etc/docker/daemon.json ]]; then
+    echo "  /etc/docker/daemon.json already exists — merge the IPv6 keys manually (see guides/ipv6-only-vps.md)."
+  else
+    write_file /etc/docker/daemon.json <<'EOF'
+{
+  "ipv6": true,
+  "fixed-cidr-v6": "fd00:d0c:1::/64",
+  "default-network-opts": {
+    "bridge": { "com.docker.network.enable_ipv6": "true" }
+  },
+  "log-driver": "json-file",
+  "log-opts": { "max-size": "10m", "max-file": "3" }
+}
+EOF
+    run systemctl restart docker
+  fi
+fi
+
 # ── 7. Unattended upgrades & health ping ─────────────────────────────────────
 log "Configuring unattended security upgrades"
 run apt install -y unattended-upgrades
@@ -291,5 +316,10 @@ else
   echo "  Health:   daily check installed (no ping URL — set /etc/default/report-health to enable)"
 fi
 echo ""
-echo "  → Log in:  ssh $USERNAME@$(hostname -I | awk '{print $1}')"
+# Route-based lookup returns the source address of real outbound traffic, so
+# virtual bridges (e.g. docker0's 172.17.0.1) can never win; IPv6-only hosts
+# have no IPv4 route, so fall back to the IPv6 source address.
+SERVER_IP="$(ip -4 route get 1.1.1.1 2>/dev/null | grep -oP 'src \K\S+' || true)"
+[[ -n "$SERVER_IP" ]] || SERVER_IP="$(ip -6 route get 2606:4700:4700::1111 2>/dev/null | grep -oP 'src \K\S+' || true)"
+echo "  → Log in:  ssh $USERNAME@${SERVER_IP:-<server-ip>}"
 echo "  → Reboot recommended."

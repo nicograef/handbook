@@ -9,7 +9,8 @@ Automated setup using [`scripts/setup-server.sh`](../scripts/setup-server.sh).
 3. SSH hardening via `/etc/ssh/sshd_config.d/00-hardening.conf` – pubkey auth only, root login disabled
 4. UFW firewall – deny all, allow & rate-limit SSH
 5. fail2ban for SSH brute-force protection
-6. Docker + Compose plugin
+6. Docker + Compose plugin (IPv6 networking auto-enabled on IPv6-only hosts —
+   see [ipv6-only-vps.md](ipv6-only-vps.md))
 7. Unattended security upgrades (security origin only, **no** auto-reboot) + a daily
    dead-man health ping via [`scripts/report-health.sh`](../scripts/report-health.sh)
 
@@ -187,6 +188,8 @@ See step 5 (`── 5. fail2ban`) in
 
 ## After provisioning
 
+- IPv6-only server? Set up DNS64 resolvers (and check the limits) —
+  see [ipv6-only-vps.md](ipv6-only-vps.md)
 - Open extra firewall ports as needed: `sudo ufw allow 443/tcp`
 - Deploy apps via Docker Compose – see [docker-setup.md](docker-setup.md)
 - Install personal dotfiles (shell aliases, git defaults, gh CLI config;
@@ -202,5 +205,6 @@ See step 5 (`── 5. fail2ban`) in
 
 See also:
 - [scripts/setup-server.sh](../scripts/setup-server.sh) — automated server provisioning script
+- [guides/ipv6-only-vps.md](ipv6-only-vps.md) — IPv6-only servers (DNS64/NAT64, Docker IPv6)
 - [guides/docker-setup.md](docker-setup.md) — Docker installation
 - [guides/letsencrypt-docker.md](letsencrypt-docker.md) — TLS certificates
