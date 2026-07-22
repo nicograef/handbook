@@ -217,11 +217,12 @@ run usermod -aG docker "$USERNAME"
 
 # ── 6b. Docker IPv6 (IPv6-only hosts) ───────────────────────────────────────
 # Without an IPv4 default route, the default bridge (IPv4 NAT only) leaves
-# containers with no egress at all. Enable IPv6 for the default bridge and for
-# new networks (Compose); ULA subnets are NAT66-masqueraded by Docker's default
-# ip6tables handling. See guides/ipv6-only-vps.md.
+# containers with no egress at all. New networks (Compose) become IPv6-only:
+# keeping a dead IPv4 in the container makes RFC 6724 address selection prefer
+# it over a ULA source for dual-stack targets, so IPv4 must go entirely. ULA
+# subnets are NAT66-masqueraded by default. See guides/ipv6-only-vps.md.
 if ! ip -4 route get 1.1.1.1 &>/dev/null; then
-  log "No IPv4 route — enabling IPv6 in Docker"
+  log "No IPv4 route — enabling IPv6-only container networking"
   if [[ -f /etc/docker/daemon.json ]]; then
     echo "  /etc/docker/daemon.json already exists — merge the IPv6 keys manually (see guides/ipv6-only-vps.md)."
   else
@@ -230,7 +231,10 @@ if ! ip -4 route get 1.1.1.1 &>/dev/null; then
   "ipv6": true,
   "fixed-cidr-v6": "fd00:d0c:1::/64",
   "default-network-opts": {
-    "bridge": { "com.docker.network.enable_ipv6": "true" }
+    "bridge": {
+      "com.docker.network.enable_ipv6": "true",
+      "com.docker.network.enable_ipv4": "false"
+    }
   },
   "log-driver": "json-file",
   "log-opts": { "max-size": "10m", "max-file": "3" }
