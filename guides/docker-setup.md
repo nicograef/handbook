@@ -47,6 +47,9 @@ newgrp docker
 
 ### Log rotation (prevent disk fill)
 
+> Provisioned with [`scripts/setup-server.sh`](../scripts/setup-server.sh)?
+> This is already applied — skip this block.
+
 ```bash
 sudo tee /etc/docker/daemon.json > /dev/null <<'EOF'
 {

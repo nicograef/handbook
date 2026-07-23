@@ -12,7 +12,7 @@
 #   3. SSH hardening (pubkey only, no root login) via a drop-in
 #   4. UFW firewall
 #   5. fail2ban
-#   6. Docker + Compose (IPv6 networking auto-enabled on IPv6-only hosts)
+#   6. Docker + Compose, container-log rotation (IPv6 networking auto-enabled on IPv6-only hosts)
 #   7. Unattended security upgrades + daily health ping
 #
 # Before running:
@@ -215,18 +215,19 @@ run apt install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin do
 
 run usermod -aG docker "$USERNAME"
 
-# ── 6b. Docker IPv6 (IPv6-only hosts) ───────────────────────────────────────
-# Without an IPv4 default route, the default bridge (IPv4 NAT only) leaves
-# containers with no egress at all. New networks (Compose) become IPv6-only:
-# keeping a dead IPv4 in the container makes RFC 6724 address selection prefer
-# it over a ULA source for dual-stack targets, so IPv4 must go entirely. ULA
-# subnets are NAT66-masqueraded by default. See guides/ipv6-only-vps.md.
-if ! ip -4 route get 1.1.1.1 &>/dev/null; then
-  log "No IPv4 route — enabling IPv6-only container networking"
-  if [[ -f /etc/docker/daemon.json ]]; then
-    echo "  /etc/docker/daemon.json already exists — merge the IPv6 keys manually (see guides/ipv6-only-vps.md)."
-  else
-    write_file /etc/docker/daemon.json <<'EOF'
+# ── 6b. Docker daemon config ────────────────────────────────────────────────
+# Every host gets container-log rotation (see guides/docker-setup.md — unbounded
+# json-file logs fill the disk). IPv6-only hosts additionally need IPv6 container
+# networking: without an IPv4 default route, the default bridge (IPv4 NAT only)
+# leaves containers with no egress at all. New networks (Compose) become
+# IPv6-only: keeping a dead IPv4 in the container makes RFC 6724 address
+# selection prefer it over a ULA source for dual-stack targets, so IPv4 must go
+# entirely. ULA subnets are NAT66-masqueraded by default. See guides/ipv6-only-vps.md.
+if [[ -f /etc/docker/daemon.json ]]; then
+  echo "  /etc/docker/daemon.json already exists — merge the log-rotation (and on IPv6-only hosts the IPv6) keys manually (see guides/docker-setup.md, guides/ipv6-only-vps.md)."
+elif ! ip -4 route get 1.1.1.1 &>/dev/null; then
+  log "No IPv4 route — enabling IPv6-only container networking + log rotation"
+  write_file /etc/docker/daemon.json <<'EOF'
 {
   "ipv6": true,
   "fixed-cidr-v6": "fd00:d0c:1::/64",
@@ -240,8 +241,16 @@ if ! ip -4 route get 1.1.1.1 &>/dev/null; then
   "log-opts": { "max-size": "10m", "max-file": "3" }
 }
 EOF
-    run systemctl restart docker
-  fi
+  run systemctl restart docker
+else
+  log "Configuring Docker log rotation"
+  write_file /etc/docker/daemon.json <<'EOF'
+{
+  "log-driver": "json-file",
+  "log-opts": { "max-size": "10m", "max-file": "3" }
+}
+EOF
+  run systemctl restart docker
 fi
 
 # ── 7. Unattended upgrades & health ping ─────────────────────────────────────

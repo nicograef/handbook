@@ -9,8 +9,9 @@ Automated setup using [`scripts/setup-server.sh`](../scripts/setup-server.sh).
 3. SSH hardening via `/etc/ssh/sshd_config.d/00-hardening.conf` – pubkey auth only, root login disabled
 4. UFW firewall – deny all, allow & rate-limit SSH
 5. fail2ban for SSH brute-force protection
-6. Docker + Compose plugin (IPv6 networking auto-enabled on IPv6-only hosts —
-   see [ipv6-only-vps.md](ipv6-only-vps.md))
+6. Docker + Compose plugin, container-log rotation via `/etc/docker/daemon.json`
+   (IPv6 networking auto-enabled on IPv6-only hosts — see
+   [ipv6-only-vps.md](ipv6-only-vps.md))
 7. Unattended upgrades (security origin; on Debian the stock config also
    auto-applies stable point-release updates; **no** auto-reboot) + a daily
    dead-man health ping via [`scripts/report-health.sh`](../scripts/report-health.sh)
@@ -110,6 +111,9 @@ sudo systemctl is-active fail2ban
 # docker works without sudo
 docker run --rm hello-world
 
+# container-log rotation is configured
+cat /etc/docker/daemon.json
+
 # unattended-upgrades is configured (dry run applies no changes)
 sudo unattended-upgrade --dry-run --debug 2>&1 | grep -i 'allowed origins'
 
@@ -122,7 +126,8 @@ cat /etc/cron.d/report-health
 
 Expected: SSH login succeeds as `nico` but fails as `root`; `ufw status`
 shows `Status: active` with `22/tcp (LIMIT)`; `fail2ban` reports `active`;
-`hello-world` prints the Docker confirmation message; the `unattended-upgrade`
+`hello-world` prints the Docker confirmation message; `daemon.json` contains
+`"max-size": "10m"` (plus the IPv6 keys on IPv6-only hosts); the `unattended-upgrade`
 dry run lists an `Allowed origins` line containing `-security` (on Debian it
 also carries `label=Debian` stable origins from the stock `50unattended-upgrades`
 `Origins-Pattern` — expected, our drop-in extends rather than replaces it);
