@@ -35,6 +35,7 @@ Which surfaces load these personal skills, and from where:
 | Extracting DDD glossary terms                                 | **Ubiquitous Language**         | [ubiquitous-language/](ubiquitous-language/)                 |
 | Incremental code review, readability, slop removal, or a repo-wide cross-layer audit | **Cleanup** | [cleanup/](cleanup/)                             |
 | Understanding a part of the codebase holistically             | **Understand**                  | [understand/](understand/)                                   |
+| Learning a subject through quizzes with scaffolded hints      | **Tutor**                       | [tutor/](tutor/)                                             |
 | Researching companies, jobs, or tools from live sources       | **Research**                    | [research/](research/)                                       |
 | Debugging a failure root-cause-first                          | **Systematic Debugging**        | [systematic-debugging/](systematic-debugging/)               |
 | Acting on code-review feedback                                | **Receiving Feedback**          | [receiving-feedback/](receiving-feedback/)                   |
