@@ -8,7 +8,8 @@ to symlink config files into `$HOME`.
 
 | Source in this repo       | Symlinked to               | Content                                  |
 | ------------------------- | --------------------------- | ----------------------------------------- |
-| `templates/.bash_aliases` | `~/.bash_aliases`           | Personal aliases (`gfp`, `gcm`, `m`, `p`, …) |
+| `templates/.bash_aliases` | `~/.bash_aliases`           | Aliases (`gfp`, `gcm`, `m`, `p`, …), history tuning, git prompt |
+| `templates/.tmux.conf`    | `~/.tmux.conf`              | tmux defaults (mouse, scrollback, escape-time) |
 | `claude/CLAUDE.md`        | `~/.claude/CLAUDE.md`       | Global Claude Code instructions |
 | `claude/settings.json`    | `~/.claude/settings.json`   | Claude Code permissions, plugins, hooks |
 | `claude/statusline.sh`    | `~/.claude/statusline.sh`   | Claude Code status line script |
@@ -28,9 +29,11 @@ The script also:
 - Installs **gh CLI** if missing (binary to `~/.local/bin`, no sudo needed;
   already pre-installed in Codespaces)
 
-> **Why no `.bashrc`?** The Codespaces default already includes a git-branch
-> prompt, color support, and `source ~/.bash_aliases`. Replacing it would lose
-> those features.
+> **Why no `.bashrc`?** Every stock `.bashrc` (Debian, Ubuntu, Codespaces)
+> already sources `~/.bash_aliases` *after* setting its own history defaults
+> and PS1, so all portable config — aliases, history tuning, the git prompt —
+> lives there and wins by sourcing order. Replacing `.bashrc` would only lose
+> distro-specific defaults.
 
 ## Prerequisites
 
@@ -74,8 +77,12 @@ source ~/.bashrc
 ## Verify
 
 ```bash
-# the alias symlink resolves back into the repo
+# the dotfile symlinks resolve back into the repo
 readlink -f ~/.bash_aliases
+readlink -f ~/.tmux.conf
+
+# history tuning from .bash_aliases is active
+bash -i -c 'echo $HISTSIZE'                  # → 100000
 
 # an alias is active in the current shell
 type gcm
@@ -102,7 +109,8 @@ bash -i -c '_completion_loader git 2>/dev/null; complete -p git' | grep -q __git
   && echo "git completion OK" || echo "git completion BROKEN (fzf clobbered it)"
 ```
 
-Expected: `~/.bash_aliases` points at `templates/.bash_aliases` in the repo,
+Expected: `~/.bash_aliases` and `~/.tmux.conf` point into the repo's
+`templates/`, `HISTSIZE` prints `100000`,
 `gcm` resolves to its alias, the `git config` reads print `true` / `main` /
 `nano` / `zdiff3`, `~/.claude/CLAUDE.md` and `~/.agents/skills` resolve into
 the repo, `gh --version` prints a version, and git completion prints `OK`.

@@ -53,6 +53,7 @@ Quick-reference commands (no context needed).
 | Topic                 | File                                                           |
 | --------------------- | -------------------------------------------------------------- |
 | Unix / shell commands | [cheatsheets/unix-commands.md](cheatsheets/unix-commands.md)   |
+| tmux                  | [cheatsheets/tmux.md](cheatsheets/tmux.md)                     |
 | Docker Compose        | [cheatsheets/docker-compose.md](cheatsheets/docker-compose.md) |
 | Vim                   | [cheatsheets/vim.md](cheatsheets/vim.md)                       |
 | Git                   | [cheatsheets/git.md](cheatsheets/git.md)                       |
@@ -65,7 +66,8 @@ Copy-paste-ready config files for new projects.
 
 | File                                                                   | Description                                                       |
 | ---------------------------------------------------------------------- | ----------------------------------------------------------------- |
-| [templates/.bash_aliases](templates/.bash_aliases)                     | Personal shell aliases (git, make, pnpm, navigation)              |
+| [templates/.bash_aliases](templates/.bash_aliases)                     | Shell aliases (git, make, pnpm), history tuning, git prompt       |
+| [templates/.tmux.conf](templates/.tmux.conf)                           | tmux defaults for remote work (mouse, scrollback, escape-time)    |
 | [templates/.editorconfig](templates/.editorconfig)                     | EditorConfig for consistent formatting (Go tabs, JS/TS 2-space)   |
 | [templates/.gitignore](templates/.gitignore)                           | Universal .gitignore (OS, IDE, env, build artifacts, logs)        |
 | [templates/devcontainer.json](templates/devcontainer.json)             | Dev Container config with commented feature blocks per stack      |

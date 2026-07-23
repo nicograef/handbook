@@ -7,7 +7,7 @@
 #   git clone https://github.com/nicograef/handbook.git && cd handbook && ./install.sh
 #
 # What it does:
-#   1. Symlinks .bash_aliases into $HOME
+#   1. Symlinks .bash_aliases and .tmux.conf into $HOME
 #   2. Symlinks Claude Code config (global CLAUDE.md, settings, agents, skills)
 #   3. Creates the handbook-plugin opt-out in adopted /workspaces repos
 #   4. Sets git config defaults (pull.rebase, push.autoSetupRemote, etc.)
@@ -32,6 +32,7 @@ fi
 # ── Symlink dotfiles ────────────────────────────────────────────────────────
 declare -A FILES=(
   ["templates/.bash_aliases"]=".bash_aliases"
+  ["templates/.tmux.conf"]=".tmux.conf"
 )
 
 for src in "${!FILES[@]}"; do

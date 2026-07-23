@@ -32,6 +32,10 @@ elif command -v bat >/dev/null; then
 fi
 # eza as an ls replacement with a git column (ll/la inherit this)
 command -v eza >/dev/null && alias ls='eza --group-directories-first --git'
+# fd under its real name (Debian/Ubuntu package fd-find installs it as fdfind)
+if command -v fdfind >/dev/null && ! command -v fd >/dev/null; then
+  alias fd='fdfind'
+fi
 # fzf: Ctrl-R fuzzy history, Ctrl-T insert file, ** fuzzy completion.
 # The stock Ubuntu .bashrc sources this file BEFORE enabling bash-completion, so
 # load bash-completion here first: fzf only *wraps* an existing completion (e.g.
@@ -51,4 +55,33 @@ if command -v fzf >/dev/null; then
     [ -f "$_f" ] && source "$_f"
   done
   unset _f
+fi
+
+# History: bigger, timestamped, shared across terminals immediately.
+# Sourced after the stock .bashrc history block, so these settings win.
+HISTSIZE=100000
+HISTFILESIZE=200000
+HISTCONTROL=ignoreboth:erasedups
+HISTTIMEFORMAT='%F %T '
+shopt -s histappend histverify
+# Append each command to the history file as it runs (guard keeps re-sourcing
+# from stacking duplicate hooks).
+case "${PROMPT_COMMAND:-}" in
+  *"history -a"*) ;;
+  *) PROMPT_COMMAND="${PROMPT_COMMAND:+$PROMPT_COMMAND$'\n'}history -a" ;;
+esac
+
+# Prompt: path + git branch with dirty state (* modified, + staged).
+# Overrides the stock PS1, which every stock .bashrc sets before sourcing this
+# file. Skipped when no git prompt helper is available.
+if ! declare -F __git_ps1 >/dev/null; then
+  [ -f /usr/lib/git-core/git-sh-prompt ] && . /usr/lib/git-core/git-sh-prompt
+fi
+if declare -F __git_ps1 >/dev/null; then
+  GIT_PS1_SHOWDIRTYSTATE=1
+  PS1='\[\e[32m\]\w\[\e[33m\]$(__git_ps1 " (%s)")\[\e[0m\] \$ '
+  # terminal window title: path only
+  case "$TERM" in
+    xterm*|rxvt*|tmux*|screen*) PS1="\[\e]0;\w\a\]$PS1" ;;
+  esac
 fi

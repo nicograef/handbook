@@ -200,14 +200,27 @@ See step 5 (`── 5. fail2ban`) in
   see [ipv6-only-vps.md](ipv6-only-vps.md)
 - Open extra firewall ports as needed: `sudo ufw allow 443/tcp`
 - Deploy apps via Docker Compose – see [docker-setup.md](docker-setup.md)
-- Install personal dotfiles (shell aliases, git defaults, gh CLI config;
-  idempotent to re-run; the Claude config symlinks it also creates are inert
-  on servers without Claude Code – see [dotfiles-codespaces.md](dotfiles-codespaces.md)
-  for what the installer does in detail):
+- Install tmux and the modern CLI tools the shell aliases expect (all in
+  Debian 13 `main`, verified 2026-07; without them the aliases in
+  [templates/.bash_aliases](../templates/.bash_aliases) silently stay inactive):
+
+  ```bash
+  sudo apt install -y tmux bat eza fzf fd-find ripgrep git-delta
+  ```
+
+- Install personal dotfiles (shell aliases, history + git prompt, tmux config,
+  git defaults, gh CLI; idempotent to re-run; the Claude config symlinks it
+  also creates are inert on servers without Claude Code – see
+  [dotfiles-codespaces.md](dotfiles-codespaces.md) for what the installer does
+  in detail):
 
   ```bash
   git clone https://github.com/nicograef/handbook.git ~/handbook && ~/handbook/install.sh
   ```
+
+- Work in a named tmux session so an ssh disconnect only detaches instead of
+  killing running processes (Claude Code, builds):
+  `tmux new -A -s <project>` — see [cheatsheets/tmux.md](../cheatsheets/tmux.md).
 
 ---
 
