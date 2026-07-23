@@ -116,7 +116,9 @@ mkdir -p .github && cp "$HANDBOOK/templates/copilot-instructions.md" .github/cop
 ```
 
 - [templates/AGENTS.md](../templates/AGENTS.md) — fill in every `<placeholder>` (tech stack,
-  commands, structure, boundaries). Single source of truth for all agent surfaces.
+  commands, structure, boundaries). Single source of truth for all agent surfaces. Its
+  Communication section carries the anti-sycophancy rules — see
+  [anti-sycophancy.md](anti-sycophancy.md) for the rationale and full countermeasure map.
 - `CLAUDE.md` — sibling whose first line is `@AGENTS.md` so Claude Code loads the same rules.
 - [templates/copilot-instructions.md](../templates/copilot-instructions.md) →
   `.github/copilot-instructions.md` — Copilot-only deltas, or delete it if none.

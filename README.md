@@ -44,6 +44,7 @@ Heading-grouped rules and idioms for a stack — reference material, not runbook
 | Go backend conventions            | [guides/go.md](guides/go.md)                                               |
 | Java / Spring Boot conventions    | [guides/java-spring-boot.md](guides/java-spring-boot.md)                   |
 | React frontend conventions        | [guides/react.md](guides/react.md)                                         |
+| Anti-sycophancy agent setup       | [guides/anti-sycophancy.md](guides/anti-sycophancy.md)                     |
 
 ## Cheatsheets
 
