@@ -254,7 +254,9 @@ APT::Periodic::Update-Package-Lists "1";
 APT::Periodic::Unattended-Upgrade "1";
 EOF
 
-# Restrict automatic upgrades to the security origin for the detected distro.
+# Add the security origin for the detected distro. This extends (not replaces)
+# the stock Origins-Pattern list — Debian's 50unattended-upgrades also enables
+# stable point-release updates by default, so Debian boxes auto-apply those too.
 # $ID is already resolved from /etc/os-release by the Docker step above. Debian
 # and Ubuntu name their security suite differently, so branch on the distro.
 # The ${distro_id}/${distro_codename} placeholders are apt-config variables, not
@@ -313,7 +315,7 @@ echo "  SSH:      key-only, root login disabled"
 echo "  Firewall: UFW active (ssh + ${EXTRA_UFW_PORTS:-no extra ports})"
 echo "  fail2ban: active"
 echo "  Docker:   $(docker --version 2>/dev/null || echo 'not installed (dry-run)')"
-echo "  Upgrades: unattended (security origin only, no auto-reboot)"
+echo "  Upgrades: unattended (security origin + distro stock defaults, no auto-reboot)"
 if [[ -n "$HEALTH_PING_URL" ]]; then
   echo "  Health:   daily ping to $HEALTH_PING_URL"
 else

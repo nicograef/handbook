@@ -11,7 +11,8 @@ Automated setup using [`scripts/setup-server.sh`](../scripts/setup-server.sh).
 5. fail2ban for SSH brute-force protection
 6. Docker + Compose plugin (IPv6 networking auto-enabled on IPv6-only hosts —
    see [ipv6-only-vps.md](ipv6-only-vps.md))
-7. Unattended security upgrades (security origin only, **no** auto-reboot) + a daily
+7. Unattended upgrades (security origin; on Debian the stock config also
+   auto-applies stable point-release updates; **no** auto-reboot) + a daily
    dead-man health ping via [`scripts/report-health.sh`](../scripts/report-health.sh)
 
 ## Prerequisites
@@ -122,7 +123,9 @@ cat /etc/cron.d/report-health
 Expected: SSH login succeeds as `nico` but fails as `root`; `ufw status`
 shows `Status: active` with `22/tcp (LIMIT)`; `fail2ban` reports `active`;
 `hello-world` prints the Docker confirmation message; the `unattended-upgrade`
-dry run lists an `Allowed origins` line containing `-security`;
+dry run lists an `Allowed origins` line containing `-security` (on Debian it
+also carries `label=Debian` stable origins from the stock `50unattended-upgrades`
+`Origins-Pattern` — expected, our drop-in extends rather than replaces it);
 `apt-daily.timer` and `apt-daily-upgrade.timer` appear in the timer list; and
 `/etc/cron.d/report-health` prints the `0 8 * * * root /usr/local/bin/report-health`
 line.
