@@ -17,7 +17,7 @@ cwd=$(echo "$input" | jq -r '.workspace.current_dir // .cwd // ""')
 dir=$(basename "$cwd")
 
 # Shorten model name: keep only the tier word (case-insensitive)
-short_model=$(echo "$model" | grep -oiE 'opus|sonnet|haiku|fable' | head -1)
+short_model=$(echo "$model" | grep -oiE 'opus|sonnet|haiku' | head -1)
 if [[ -z "$short_model" ]]; then
   short_model="$model"
 fi

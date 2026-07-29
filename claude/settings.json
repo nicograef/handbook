@@ -92,7 +92,7 @@
     ],
     "defaultMode": "auto"
   },
-  "model": "Fable",
+  "model": "claude-opus-5",
   "hooks": {
     "PreToolUse": [
       {
