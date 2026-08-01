@@ -10,7 +10,6 @@ description: >-
   reach, and never settles a claim on anything but evidence gathered in the
   session.
 argument-hint: "[path ...] [since <ref>] [report-only]"
-disable-model-invocation: true
 allowed-tools:
   - Bash
   - Read

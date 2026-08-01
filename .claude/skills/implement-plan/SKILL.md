@@ -7,7 +7,6 @@ description: >-
   branch. Use when the user wants a whole plan implemented autonomously, or
   wants to pick a plan run back up after a crash, a usage limit, or a stopped
   workflow.
-disable-model-invocation: true
 argument-hint: "<path to plan file>"
 ---
 

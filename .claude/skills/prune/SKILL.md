@@ -8,7 +8,6 @@ description: >-
   leftovers for deletion or update with cited evidence. Deletion is hard — no
   archive or trash; the chat report is the only record.
 argument-hint: "[all] [<N>d] [dry-run]"
-disable-model-invocation: true
 allowed-tools:
   - Bash
   - Read
@@ -105,8 +104,10 @@ One chat report, in this order:
 
 ## Constraints
 
-- Pruning is a deliberate, destructive user ritual — never auto-triggered
-  (`disable-model-invocation`), never suggested mid-task.
+- Pruning is a deliberate, destructive ritual — never suggested mid-task. The
+  model may invoke this skill, so when the user did not explicitly ask for a
+  prune, confirm intent before the mechanical sweep: that sweep deletes on its
+  own, and pruned transcripts cannot be recovered.
 - Every semantic change is gated: nothing judgment-based is deleted or
   updated without being picked in the multi-select. Uncommitted work is never
   proposed for deletion.

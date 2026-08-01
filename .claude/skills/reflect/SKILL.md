@@ -7,7 +7,6 @@ description: >-
   the items the user picks. Use as a deliberate end-of-session ritual to
   capture learnings before they evaporate.
 argument-hint: "[last N sessions | last N commits | <rev>..<rev>] (default: current session)"
-disable-model-invocation: true
 ---
 
 # Reflect
