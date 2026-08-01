@@ -66,6 +66,10 @@ slice that cuts through ALL integration layers end-to-end.
 - Do NOT include specific file names, function names, or implementation
   details that are likely to change as later phases are built.
 - DO include durable decisions: route paths, schema shapes, data model names.
+- Give every phase a `**Depends on**` line — the phase numbers that must land
+  first, or "none". [implement-plan](../implement-plan/SKILL.md) reads it to
+  decide what may run concurrently; a plan without it is executed strictly
+  sequentially, since every phase is then assumed to depend on all earlier ones.
 
 For small tasks (refactors, config changes, single-module work), a **single
 phase** is perfectly valid.
@@ -154,6 +158,8 @@ Durable decisions that apply across all phases:
 
 **User stories**: <list from PRD, or omit if from task description>
 
+**Depends on**: <phase numbers that must land first, or "none">
+
 ### Context
 
 - `path/file.go — symbolName()` — <why relevant>
@@ -169,6 +175,6 @@ behavior, not layer-by-layer implementation.
 - [ ] Criterion 2
 - [ ] Criterion 3
 
-<!-- Repeat this Phase block (heading, User stories, Context, What to build,
-     Acceptance criteria) for each remaining phase -->
+<!-- Repeat this Phase block (heading, User stories, Depends on, Context,
+     What to build, Acceptance criteria) for each remaining phase -->
 ```

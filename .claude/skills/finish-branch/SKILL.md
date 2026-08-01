@@ -59,9 +59,19 @@ then present exactly four options and execute the one chosen.
      `git pull`, merge the feature branch, and re-run the test command on the
      merged result. Only after the merge and tests succeed, delete the feature
      branch (`git branch -d <feature-branch>`). In a linked worktree, run the
-     merge from the main checkout instead (`MAIN=$(dirname "$GIT_COMMON")`;
-     `git -C "$MAIN" checkout <base-branch> && git -C "$MAIN" pull && git -C
-     "$MAIN" merge <feature-branch>`), re-run tests there, then
+     merge from the main checkout instead. Derive it from the first
+     `git worktree list --porcelain` record, which is always the main
+     worktree — not from `dirname` of the git-common-dir, which resolves to a
+     non-working-tree when the repo is bare-hosted (verified at git 2.47.3):
+
+     ```bash
+     MAIN=$(git worktree list --porcelain | awk 'NR==1{print $2}')
+     ```
+
+     If that first record's block contains `bare`, there is no main checkout to
+     merge into — stop and ask. Otherwise `git -C "$MAIN" checkout
+     <base-branch> && git -C "$MAIN" pull && git -C "$MAIN" merge
+     <feature-branch>`, re-run tests there, then
      `git worktree remove <path>` before `git -C "$MAIN" branch -d
      <feature-branch>` (deleting a branch still checked out in a worktree
      fails).
@@ -81,6 +91,11 @@ then present exactly four options and execute the one chosen.
   offered, only the failure report.
 - Never merge, push, or delete anything the user didn't explicitly pick from
   the four options.
+- Exception, by design: a run of
+  [implement-plan](../implement-plan/SKILL.md) lands its own `plan/*` branches
+  and removes its own worktrees without this gate — the user approved that once,
+  up front, in its run contract. Push, PR, discard, and any branch that run did
+  not create still come here.
 - Never force-push. If a push is rejected, report it and ask how to proceed —
   don't add `--force` on your own.
 - Never delete a branch (`-d` or `-D`) without the user having chosen option 1

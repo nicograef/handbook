@@ -16,8 +16,17 @@ whatever is currently checked out, without stashing or branch-juggling.
 
 ## Workflow
 
-1. **Detect existing isolation first.** Compare git-dir against
-   git-common-dir:
+1. **Rule out a submodule first.**
+
+   ```bash
+   git rev-parse --show-superproject-working-tree
+   ```
+
+   If that returns a path, you're in a submodule. Treat it as a normal
+   checkout and continue to step 3 — do not run the test in step 2, which
+   cannot distinguish a submodule from a main checkout.
+
+2. **Detect existing isolation.** Compare git-dir against git-common-dir:
 
    ```bash
    GIT_DIR=$(cd "$(git rev-parse --git-dir)" && pwd -P)
@@ -25,18 +34,9 @@ whatever is currently checked out, without stashing or branch-juggling.
    ```
 
    If `GIT_DIR != GIT_COMMON`, you are already in a linked worktree — skip
-   creation and go straight to step 4.
-
-2. **Guard against submodules.** The git-dir/git-common-dir mismatch is also
-   true inside a submodule. Before treating a mismatch as "already isolated,"
-   check:
-
-   ```bash
-   git rev-parse --show-superproject-working-tree
-   ```
-
-   If that returns a path, you're in a submodule, not a worktree — treat it
-   as a normal checkout and continue to step 3.
+   creation and go straight to step 4. Inside a submodule these two *match*
+   (verified at git 2.47.3), which is why the submodule test has to run
+   first: on its own, this test reports a submodule as a normal checkout.
 
 3. **In a normal checkout, confirm before creating.** Ask whether an isolated
    worktree is wanted for this work. If the answer is no, work in place and
