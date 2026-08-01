@@ -140,7 +140,7 @@ Observations:
 - **Sparse code blocks** — SKILL.md files mostly avoid fenced code except where literally copy-pasteable (commands, template skeletons like create-plan's). implement-plan currently has zero code blocks.
 - **"When to stop / ask" pattern** appears as its own section in several skills (implement-plan already has "When to stop"; `receiving-feedback` and others use similar escalation sections) — a recurring structural idiom, not just Workflow/Constraints/Quality.
 - **Description frontmatter always ends with an explicit "Use when…" trigger clause** — every skill follows `<what it does>. Use when <trigger>.` verbatim pattern.
-- **Cross-links are terse markdown links inline in a sentence**, never a "See Also" bullet list section — e.g. `tdd/SKILL.md`: "See [anti-patterns.md](../test-quality/anti-patterns.md) for worked examples…".
+- **Cross-links are terse markdown links inline in a sentence**, never a "See Also" bullet list section — e.g. `tdd/SKILL.md`: `See [anti-patterns.md](../test-quality/anti-patterns.md) for worked examples…`. (Quoted verbatim from `.claude/skills/tdd/SKILL.md`; that path is relative to `.claude/skills/tdd/`, not to this file.)
 
 ---
 
