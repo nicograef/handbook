@@ -8,54 +8,21 @@ description: >-
 
 # Test Quality Review
 
-## Philosophy
-
-**Goal**: a lean suite where every test earns its place by verifying observable
-behavior through the public API. Tests that break on internal refactors without
-any behavior change are liabilities — they slow down development and erode trust
-in the suite.
-
-**Scope**: this skill improves existing tests. It does not add new tests — that
-is the TDD skill's job.
-
-**The only question that matters per test**: _"Does this test break when
-behavior changes, or when implementation changes?"_ Only the former is worth
-keeping.
-
-See [anti-patterns.md](anti-patterns.md) for a catalog of bad tests and
-[evaluation-criteria.md](evaluation-criteria.md) for the tagging rubric.
-
----
-
 ## Workflow
 
 ### Step 1 — Discover
 
-Identify everything that needs to be evaluated:
+List the test files in a compact inventory table (file → test count → framework), and note
+any test helpers, fixtures, or shared setup files.
 
-- [ ] Find all test files in the project (`**/*.test.ts`, `*_test.go`,
-      `**/*.spec.ts`, `test_*.py`, etc.)
-- [ ] Identify the language and test framework in use (Jest, Vitest, Go
-      testing, pytest, JUnit, …)
-- [ ] Count total test cases and test files
-- [ ] Note any test helpers, fixtures, or shared setup files
-- [ ] List the files in a compact inventory table (file → test count → framework)
-
-Ask the user if the scope should be limited to specific packages or files before
-proceeding.
+Ask the user if the scope should be limited to specific packages or files before proceeding.
 
 ### Step 2 — Audit
 
-Evaluate every test file. For each test, assign one tag:
-
-| Tag | Meaning |
-|-----|---------|
-| **Keep** | Tests observable behavior through the public API — no changes needed |
-| **Refactor** | Correct intent but coupled to internals or poorly written — rewrite |
-| **Delete** | Tests implementation details, is redundant, or tests nothing meaningful |
-| **Merge** | Overlaps with another test — combine into one assertion-rich test |
-
-Apply the decision rules from [evaluation-criteria.md](evaluation-criteria.md).
+Evaluate every test file. For each test, assign one tag — **Keep**, **Refactor**, **Delete**,
+or **Merge** — using the decision rules in
+[evaluation-criteria.md](evaluation-criteria.md); [anti-patterns.md](anti-patterns.md)
+catalogs the patterns to recognise.
 
 Group findings by file. Do not make changes yet.
 
@@ -97,14 +64,7 @@ Work through changes one file at a time:
 - [ ] Apply **Delete** last (already confirmed in the Step 3 report)
 - [ ] Remove dead test helpers and fixtures that are no longer referenced
 - [ ] Clean up imports left orphaned by deleted tests
-
-Rules during refactoring:
-- Rewrite tests to assert on return values and public state, not on internal calls
-- Replace mocks of internal collaborators with real implementations or
-  in-memory fakes (see [anti-patterns.md](anti-patterns.md) — Mocking Internals)
-- Preserve mocks at true system boundaries (HTTP, DB, email, time, randomness)
-- Keep test names as behavior descriptions: "user can checkout with valid cart",
-  not "calls processPayment"
+- [ ] Preserve mocks at true system boundaries (HTTP, DB, email, time, randomness)
 
 ### Step 5 — Verify
 
@@ -113,8 +73,6 @@ Rules during refactoring:
       behavior was removed) or a false signal (test was wrong before too)
 - [ ] For genuine regressions: restore the deleted test and re-evaluate
 - [ ] Report the final before/after count and any regressions found
-
----
 
 ## Constraints
 

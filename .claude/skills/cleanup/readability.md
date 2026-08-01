@@ -4,7 +4,7 @@
 - [Prose and Documentation Slop](#prose-and-documentation-slop)
 
 Patterns that affect how quickly a reader can understand code, documentation,
-and config files. Split into two sections: code readability and prose/doc slop.
+and config files.
 
 ---
 
@@ -17,8 +17,6 @@ implemented?
 
 **Flag when:**
 
-- A variable is named after its type (`strName`, `userList`, `resultMap`)
-  instead of its role (`email`, `activeUsers`, `pricesByProduct`)
 - A function name describes the mechanism (`processData`, `handleStuff`)
   instead of the intent (`calculateDiscount`, `sendWelcomeEmail`)
 - Abbreviations are used that are not universally understood in the project
@@ -35,18 +33,13 @@ need for comments.
 
 **Ask:** Would a team member understand this without the author explaining it?
 
-**Flag when:**
+**Flag when:** bitwise operations carry non-bitwise logic, short-circuit
+evaluation is used for control flow (`condition && doThing()`), operator
+overloading or implicit conversions create surprising behavior, or a language
+trick requires looking up documentation.
 
-- Bitwise operations are used for non-bitwise logic
-- Regex one-liners replace readable string processing
-- Short-circuit evaluation is used for control flow (`condition && doThing()`)
-- Reduce is used where a loop with clear variable names would be more readable
-- Operator overloading or implicit conversions create surprising behavior
-- A function uses language tricks that require looking up documentation
-
-**Suggest:** Replace with the obvious version. Clever code optimises for
-writing speed; clear code optimises for reading speed. Only justify cleverness
-with a measured performance requirement and a comment explaining why.
+**Suggest:** Replace with the obvious version. Only justify cleverness with a
+measured performance requirement and a comment explaining why.
 
 ### Deep Nesting
 
@@ -54,51 +47,12 @@ with a measured performance requirement and a comment explaining why.
 
 **Flag when:**
 
-- A function has 4+ levels of indentation
 - The "happy path" is nested inside multiple conditions
 - An else branch is as long as or longer than the if branch
 - Nested callbacks create a pyramid shape
 
 **Suggest:** Invert conditions and return early. Put the exceptional case first
 (`if invalid, return error`) so the happy path runs at the top level.
-
-### Long Functions
-
-**Ask:** Is this function doing more than one thing? Can a reader hold the
-entire function in their head?
-
-**Flag when:**
-
-- A function exceeds the point where you lose track of what it does while
-  reading (typically 40–60 lines, context-dependent)
-- Blank lines are used to separate "phases" within a function — each phase is
-  a candidate for extraction
-- Local variables from the first half are not used in the second half
-
-**Do NOT flag when:**
-
-- A long function is a straightforward sequence of steps with no branching
-  (e.g. a build/configuration function)
-- Splitting would create shallow fragments with interfaces as complex as the
-  implementation
-
-**Suggest:** Extract only if the pieces are genuinely independent. The goal is
-deep modules, not maximum fragmentation.
-
-### Consistent Style
-
-**Ask:** Does this code match the conventions established in the rest of the
-file and project?
-
-**Flag when:**
-
-- Indentation, brace style, or spacing differs from the surrounding code
-- Import grouping or ordering breaks the file's pattern
-- Error handling follows a different convention than the rest of the codebase
-- String formatting mixes styles (template literals and concatenation in the
-  same file)
-
-**Suggest:** Match the existing style. Do not impose a new one.
 
 ---
 
@@ -115,7 +69,7 @@ may be coincidental; clusters are a signal.
 | Remove or replace | Typically means |
 |---|---|
 | `additionally` (sentence-initial) | "also", or just start the sentence |
-| `crucial` / `vital` / `pivotal` / `key` (adj.) | "important", or often nothing |
+| `crucial` / `vital` / `pivotal` / `significant` / `key` (adj.) | "important", or often nothing |
 | `delve` / `delve into` | "explore", "examine", or nothing |
 | `enhance` / `enhancing` | "improve", or rewrite without it |
 | `foster` / `fostering` | "encourage", "support", or nothing |
@@ -133,7 +87,6 @@ may be coincidental; clusters are a signal.
 | `streamline` | "simplify" |
 | `tapestry` (figurative) | remove — always filler |
 | `testament` | remove the whole phrase |
-| `vibrant` | remove or use a concrete adjective |
 
 Not every occurrence is slop. "Crucial" in a sentence about load-bearing
 structures is fine. "Crucial" in "plays a crucial role in the ecosystem" is
@@ -146,7 +99,6 @@ Sentences that assert importance without evidence.
 **Flag sentences containing:**
 
 - "stands as / serves as a testament to"
-- "plays a vital/significant/crucial/pivotal role"
 - "underscores/highlights its importance/significance"
 - "reflects broader trends"
 - "setting the stage for"
@@ -175,7 +127,6 @@ Trailing participial phrases tacked onto sentence ends that add no information.
 - "...reflecting a commitment to Y"
 - "...ensuring that Z"
 - "...contributing to the overall success of"
-- "...fostering a sense of community"
 - "...emphasizing the need for"
 
 **Suggest:** Delete the trailing phrase. The sentence before it usually stands

@@ -62,7 +62,6 @@ temp_file="$BACKUP_DIR/.backup-$timestamp.dump.tmp"
 cleanup() { rm -f "$temp_file"; }
 trap cleanup EXIT
 
-# ── 1. Dump to a TEMP file ──
 # Single-quote the inner command so POSTGRES_* expand inside the container, not on
 # the host. -T disables the pseudo-TTY so the binary dump is not CR/LF-corrupted.
 log "Dumping database to temporary file…"
@@ -70,7 +69,6 @@ docker compose exec -T postgres sh -c \
   'pg_dump -U "$POSTGRES_USER" -d "$POSTGRES_DB" -Fc' \
   > "$temp_file"
 
-# ── 2. Verify the fresh dump structurally ──
 # pg_restore --list parses the archive's table of contents; a truncated or corrupt
 # dump fails here. Run it in the container so the host needs no postgresql-client.
 log "Verifying dump with pg_restore --list…"
@@ -82,11 +80,9 @@ fi
 mv "$temp_file" "$final_file"
 log "Verified backup written: $final_file"
 
-# ── 4. Prune old backups ──
 log "Pruning backups older than $RETENTION_DAYS days…"
 find "$BACKUP_DIR" -maxdepth 1 -name 'backup-*.dump' -mtime +"$RETENTION_DAYS" -delete
 
-# ── 5. Ping the dead-man's switch (only after everything above succeeded) ──
 if [[ -z "$BACKUP_PING_URL" ]]; then
   warn "BACKUP_PING_URL unset — skipping success ping."
 else

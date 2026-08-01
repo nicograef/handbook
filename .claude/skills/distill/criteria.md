@@ -5,7 +5,6 @@
 - [What survives](#what-survives)
 - [Judgment calls](#judgment-calls)
 - [Code and config comments](#code-and-config-comments)
-- [Quick reference](#quick-reference)
 
 ## The bar
 
@@ -191,17 +190,3 @@ What this skill adds at corpus scale:
 - **Comments duplicating a doc file.** When a comment and a Markdown file explain
   the same mechanism, the comment wins — it is nearest the code and rots slower.
   Delete the doc section, not the comment.
-
-## Quick reference
-
-| Prompt | Verdict |
-| --- | --- |
-| Would I write this from scratch today? | No → delete |
-| Can a reader get it from the source in 30 seconds? | Yes → delete, link instead |
-| Who breaks, and how, if this vanishes? | No answer → delete |
-| Is it about how things used to be? | Yes → delete, unless still operative |
-| Does it describe something that does not exist yet? | Yes → delete |
-| Does the same claim appear elsewhere? | Yes → keep one home; conflicts → report |
-| Does it explain a *why* recoverable nowhere else? | Yes → keep |
-| Is it an exact command for an irreversible operation? | Yes → keep verbatim |
-| Am I unsure whether it is still true? | Yes → FLAG, never delete |

@@ -21,7 +21,6 @@
 - Tailwind CSS 4, shadcn/ui, Radix UI, Lucide React
 - React Hook Form + Zod, Vitest + Testing Library
 - ESLint (flat config), Prettier (semi: false, singleQuote: true)
-- pnpm 10+ as package manager
 
 ### Backend
 
@@ -30,10 +29,11 @@
 
 ### Infrastructure & DevOps
 
-- Docker + Docker Compose (multi-stage builds, Alpine images)
+- Docker + Docker Compose (multi-stage builds, Alpine images) — both local dev and production
 - Nginx reverse proxy, Let's Encrypt TLS (certbot)
 - GitHub Actions for CI/CD
-- AWS CDK (TypeScript) for cloud infra
+- AWS CDK (TypeScript) for cloud infra, OIDC for auth — no static credentials
+- No Terraform yet (lexiban v2 branch is migrating to it)
 - Hosting: VPS on Hetzner/netcup (Germany), AWS for some projects
 
 ## Code Conventions
@@ -58,14 +58,6 @@
 - **msh-sportpferde** — static German marketing site, plain HTML/CSS, rsync-deployed
 - **escpresso** — Rust ESC/POS thermal-printer emulator with egui GUI preview; published on crates.io
 - **behoerden-lotse** — idea stage, docs/PRD only: chat app answering questions about German public administration
-
-## Preferences
-
-- VPS preference: Hetzner or netcup (Germany)
-- AWS when cloud needed (CDK for IaC, OIDC for auth — no static credentials)
-- Docker Compose for both local dev and production
-- GitHub Actions for CI/CD
-- No Terraform yet (lexiban v2 branch is migrating to it)
 
 ## Communication Style
 

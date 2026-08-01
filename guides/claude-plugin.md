@@ -35,12 +35,6 @@ claude plugin marketplace add nicograef/handbook
 claude plugin install handbook@nicograef
 ```
 
-Confirm the component inventory:
-
-```bash
-claude plugin details handbook   # one skill per .claude/skills/ dir, 1 agent, 0 hooks, 0 MCP servers
-```
-
 Then invoke a namespaced skill in any session, e.g. `/handbook:distill`.
 
 ## Adopt the plugin in a project
@@ -93,72 +87,18 @@ Neither alone is enough. `marketplace update` advances the clone under
 `plugin update` moves the pin and prints `Restart to apply changes`; a running
 session keeps the old copy.
 
-Verify with `claude plugin list`, which prints the installed SHA:
-
-```
-❯ handbook@nicograef
-  Version: 6b62e37b333f
-```
+Verify with `claude plugin list`, which prints the installed SHA.
 
 **`claude plugin details handbook` does not verify an update.** It reports what
 the marketplace currently offers, not what is installed — after `marketplace
 update` alone it lists a newly pushed skill while the installed copy still lacks
 it.
 
-Verified 2026-08-01: a pre-`distill` commit installed from the GitHub
-marketplace into a throwaway `HOME`, then each command run in turn —
-`marketplace update` left the install at 21 skills, `plugin update` moved it
-to 22.
-
 ## Verify
 
-Smoke-test records — fill in date and result once each is run.
-
-### Smoke test 2 — clean remote install (run 2026-07-10)
-
-Install from GitHub into a throwaway `HOME` with no handbook symlinks, then
-confirm the plugin loads:
-
 ```bash
-export HOME=$(mktemp -d)
-claude                                     # authenticate once in this clean HOME
-claude plugin marketplace add nicograef/handbook
-claude plugin install handbook@nicograef
-claude plugin details handbook             # full skill set + web-researcher agent, 0 hooks, 0 MCP
-# in a live session from this HOME, invoke one namespaced skill, e.g. /handbook:distill
-rm -rf "$HOME"                             # delete the temporary HOME afterwards
+claude plugin details handbook   # one skill per .claude/skills/ dir, 1 agent, 0 hooks, 0 MCP servers
 ```
-
-- Date: 2026-07-10
-- Environment: temporary `HOME` (`mktemp -d`) on the dev machine, CLI v2.1.197,
-  no dotfile symlinks, **unauthenticated**.
-- Result: **Passed** for the install path — marketplace add from GitHub and
-  plugin install need no authentication; `claude plugin details handbook`
-  listed all 18 skills, the `web-researcher` agent, 0 hooks, 0 MCP servers;
-  the repo's `agents` symlink traveled through the GitHub clone. The live
-  in-session invocation was not run here (needs one-time interactive auth in
-  the clean `HOME` — operator step); the same invocation is proven on an
-  authenticated machine with the symlink tier hidden: a namespaced skill
-  executed and `handbook:web-researcher` appeared as a subagent type
-  (2026-07-10). Temporary `HOME` deleted afterwards.
-
-### Smoke test 3 — Claude web session on an adopted repo (PENDING)
-
-On an adopted project repo (its committed `.claude/settings.json` carries the
-snippet), start a Claude web session and confirm zero manual steps are needed:
-
-1. Open a Claude web session on the adopted repo.
-2. Confirm the `/handbook:` skills are listed.
-3. Confirm the `handbook:web-researcher` agent is available.
-4. Invoke one namespaced skill and confirm it runs.
-
-- Date: pending — needs an interactive Claude web session (operator step).
-- Environment: Claude web session on an adopted repo (record which repo).
-- Result: prerequisite completed 2026-07-10 — jotti (`eeddd6b`), lexiban
-  (`42c45e4`), and website (`3b101e7`) all carry the adoption snippet on
-  `main`; the dev-machine opt-out is in place in all three and verified in
-  jotti (a local session lists no `handbook:` skills, only the symlink tier).
-  The web-session check itself has not run yet.
 
 ---
 

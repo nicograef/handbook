@@ -6,7 +6,6 @@ without asking.
 - [Memory review](#memory-review)
 - [Instructions-surface review](#instructions-surface-review)
 - [Repo-leftover review](#repo-leftover-review)
-- [Gating rules](#gating-rules)
 
 ## Memory review
 
@@ -54,10 +53,6 @@ Every memory finding — inline or from a subagent — carries exactly:
 - **evidence** — the concrete citation: contradicting file/commit, missing
   path, or the duplicate's name
 - **action** — delete, or update with the proposed new text
-
-Applying a deletion removes the file **and** its `MEMORY.md` index line
-together; an update edits the file in place and keeps the index line
-consistent.
 
 ### `all` scope fan-out
 
@@ -111,19 +106,5 @@ Propose:
 
 Never propose uncommitted work for deletion. Anything ambiguous — a plan
 that might still be referenced, a branch whose merge state is unclear — is
-presented as a finding with the ambiguity named, never auto-deleted.
-
-## Gating rules
-
-- **Ungated** — only the mechanical classes in
-  [state-map.md](state-map.md), and only via the bundled script.
-- **Always gated** — every semantic finding (memory, rule, leftover): one
-  evidence-citing multi-select; only picked items are applied; selecting
-  nothing changes nothing. In dry-run the findings are reported and the
-  apply step is skipped entirely.
-- **Never proposed** — uncommitted work, memory files as mechanical
-  deletions, configuration or credentials, anything outside the three
-  review classes above.
-- **Age threshold** — governs the mechanical classes and the stale-scratch
-  criterion only; memory, rule, and other leftover findings are judged by
-  evidence, not mtime.
+presented as a finding with the ambiguity named, never auto-deleted. In
+dry-run, findings are reported and the apply step is skipped entirely.

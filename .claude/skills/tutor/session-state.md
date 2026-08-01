@@ -18,16 +18,11 @@ kebab-case topic — prefix codebase topics with the project name
 
 ```json
 {
-  "topic": "go-concurrency",
-  "created": "2026-07-23",
-  "source": "model",
+  "topic": "go-concurrency", "created": "2026-07-23", "source": "model",
   "items": [
     {
-      "id": "q1",
-      "concept": "channel-directions",
-      "difficulty": 2,
-      "format": "single",
-      "question": "…",
+      "id": "q1", "concept": "channel-directions", "difficulty": 2,
+      "format": "single", "question": "…",
       "options": [{ "label": "…", "description": "…" }],
       "scaffold": ["easier sub-question 1", "easier sub-question 2"]
     }
@@ -59,9 +54,7 @@ kebab-case topic — prefix codebase topics with the project name
 
 ```json
 {
-  "topic": "go-concurrency",
-  "sessions": 3,
-  "last_session": "2026-07-23",
+  "topic": "go-concurrency", "sessions": 3, "last_session": "2026-07-23",
   "asked": ["q1", "q2", "q7"],
   "concepts": {
     "channel-directions": { "asked": 4, "correct": 3, "status": "fragile" }
@@ -73,33 +66,29 @@ kebab-case topic — prefix codebase topics with the project name
 }
 ```
 
-`asked` lists every item id ever served, so returning sessions never repeat a
-graded item. `status`: `new` → `fragile` (guessed or corrected) → `learned`
-(correct twice, spaced). Queue admission: every item that was revealed, answered
-wrong on the first attempt (even if scaffolding recovered it), or answered
-correctly while guessing — with the matching `reason`.
+`asked` lists every item id ever served. `status`: `new` → `fragile` (guessed or
+corrected) → `learned` (correct twice, spaced). Every queue entry carries the
+matching `reason`: `revealed`, `wrong`, or `guessed`.
 
 Review scheduling uses expanding intervals of 0, 3, 7, 21 days —
 `interval_days: 0` means due in **any later session**, same day included. A due
 entry is satisfied by whichever same-concept item served it; the entry itself
 advances one rung on success, resets to 0 on failure, and is removed after a
-success at 21 days (concept stats keep the history). Errata are **answer-free**
-one-liners (never the corrected answer — `progress.json` is read at session
-start, before items are re-asked); the fix itself is applied by the next
-session's setup subagent.
+success at 21 days (concept stats keep the history). Errata stay answer-free
+one-liners — naming the problem, not the fix, since `progress.json` is read at
+session start, before items are re-asked — and are applied by the next session's
+setup subagent.
 
 ## Setup subagent brief
 
-Spawn one general-purpose subagent with: topic, scope, learner level, **session
-length (item count)**, source paths/URLs, the state directory, and instructions
-to first read this file and `question-design.md` from the skill directory. It
-must:
+Pass the subagent: topic, scope, learner level, **session length (item count)**,
+source paths/URLs, and the state directory. It must:
 
 1. Digest the material — read the given files, fetch web sources for niche or
    recent topics, or draw on model knowledge for established ones.
 2. Generate about **2× the session's item count**, following
    `question-design.md`, with **at least two items per concept** — the spares
-   are what re-asks and rephrased variants are served from.
+   serve re-asks and rephrased variants.
 3. For an existing topic: read `progress.json` first; generate a keyed rephrased
    variant (same concept, new surface) for every queue entry, weight extra items
    toward `fragile` concepts, and apply pending errata to `key.json`/`bank.json`
@@ -108,4 +97,4 @@ must:
    `asked`, `concepts`, `queue`, and `errata`, appending new items with fresh
    ids.
 5. Return as its summary only the item count and concept list — **never answers
-   or rationales**, which would render in the main conversation.
+   or rationales**.

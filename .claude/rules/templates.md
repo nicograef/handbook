@@ -11,6 +11,7 @@ paths: "templates/**"
   immediately (after filling in clearly marked placeholders).
 - **Optional sections commented out** with a short explanation above each block.
 - **Placeholder values** use `<angle-bracket>` notation: `<your-domain>`, `<db-password>`.
+- **Cross-referenced** — link the template from, or link to, the guide that consumes it.
 
 ## Style
 
@@ -21,8 +22,3 @@ paths: "templates/**"
 ## File naming
 
 Use the real filename the template represents: `docker-compose.yml`, `Makefile`, `nginx-tls.conf`.
-
-## After creating or renaming a template
-
-1. Add or update the entry in `README.md` (Templates table).
-2. If a guide references this template, verify the link still works.

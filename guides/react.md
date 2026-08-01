@@ -6,24 +6,6 @@ Stack-convention guide for React + TypeScript frontend projects — heading-grou
 
 Use **Vite** as the build tool and **pnpm** as the package manager.
 
-```bash
-pnpm create vite my-app -- --template react-ts
-cd my-app && pnpm install
-```
-
-Key tools in the stack:
-
-| Tool | Purpose |
-| ---- | ------- |
-| Vite | Build tool and dev server |
-| React 19 | UI framework |
-| TypeScript | Static typing |
-| Tailwind CSS | Utility-first styling |
-| shadcn/ui | Accessible component primitives (Radix UI) |
-| Zod | Runtime schema validation |
-| ESLint + Prettier | Linting and formatting |
-| Vitest + Testing Library | Unit and component tests |
-
 Enforce engine versions in `package.json`:
 
 ```json
@@ -54,15 +36,6 @@ Enable strict mode in `tsconfig.json`. No `any` — use `unknown` and narrow exp
 
 Prefer explicit return types on non-trivial functions. Use `zod` to define and validate data schemas at API boundaries — this gives you runtime safety and inferred TypeScript types from a single source.
 
-## Formatting
-
-Use **Prettier**. Commit a `.prettierrc` so everyone uses the same settings.
-
-```bash
-pnpm format        # write
-pnpm format:check  # CI check (exit 1 if not formatted)
-```
-
 ## Linting
 
 Use **ESLint** with:
@@ -83,10 +56,6 @@ pnpm lint
 
 Combine lint + format checks before running tests in CI.
 
-## Forms
-
-Use **react-hook-form** + **zod** for forms. Define the schema with zod, resolve it with `@hookform/resolvers/zod`. This gives validation, type inference, and error messages from one schema.
-
 ## Component Design
 
 - Prefer small, focused components. If a component is hard to name, it probably does too much.
@@ -99,30 +68,7 @@ Use **react-hook-form** + **zod** for forms. Define the schema with zod, resolve
 
 Keep all API calls in a dedicated `api.ts` file per feature or in `service/`. No `fetch` calls inside components or hooks — components receive data, hooks orchestrate calls.
 
-Always validate API responses with **Zod** — never trust raw JSON:
-
-```ts
-export async function validateIban(iban: string): Promise<ValidationResult> {
-  const res = await fetch(`${API_BASE}/api/ibans`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ iban }),
-  });
-  if (!res.ok) throw new Error("Request failed");
-  return ValidationResultSchema.parse(await res.json());
-}
-```
-
-## State Management
-
-- Start with local `useState` / `useReducer`.
-- Lift state up only when needed.
-- Use custom hooks to encapsulate related state logic and keep components thin.
-- For server state (API data), use a data-fetching hook or library rather than manual `useEffect` + `useState`.
-
-## Routing
-
-Use **React Router**. Define routes in a central `routes.ts` file to keep `App.tsx` clean.
+Always validate API responses with **Zod** — never trust raw JSON.
 
 ## Testing
 
@@ -130,19 +76,6 @@ Use **Vitest** + **@testing-library/react**.
 
 Test behaviour, not implementation. Query elements the way a user would (by role, label, text). Avoid testing internal state or implementation details.
 
-```bash
-pnpm test        # single run
-pnpm test:watch  # watch mode during development
-```
-
 Test utility setup (global mocks, render wrappers) goes in `src/test/`.
 
 See [guides/github-actions-cicd.md](github-actions-cicd.md) for the frontend CI job with lint, build, and test steps.
-
-## Code Quality
-
-- **Hooks for logic** — keep components as thin as possible; push logic into custom hooks.
-- **No logic in JSX** — extract conditionals and transformations to variables before the return.
-- **Consistent naming** — components in PascalCase, hooks with `use` prefix, utils in camelCase.
-- **Types at boundaries** — define types for API responses and route params; let TypeScript infer the rest.
-- **No unused dependencies** — regularly audit `package.json`. Every dependency is a maintenance cost.

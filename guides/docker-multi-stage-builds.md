@@ -55,45 +55,8 @@ CMD ["nginx", "-g", "daemon off;"]
 ```
 
 Key points:
-- `--frozen-lockfile` ensures reproducible installs
 - Only `dist/` and nginx config are copied to the runtime image
 - Use a `.dockerignore` to exclude `node_modules/`, `.git/`, etc.
-
-## .dockerignore
-
-Always add a `.dockerignore` to keep build context small:
-
-```
-node_modules
-dist
-.git
-.env
-*.log
-.idea
-.vscode
-```
-
-## Layer Caching Tips
-
-```
-# Good: dependency files first, then source (dependencies cached on unchanged lockfile)
-COPY package.json pnpm-lock.yaml ./
-RUN pnpm install
-COPY . .
-
-# Bad: COPY . . first (invalidates cache on every source change)
-COPY . .
-RUN pnpm install
-```
-
-## Image Size Comparison
-
-| Approach | Typical Size |
-| -------- | ------------ |
-| `node:24` (full) | ~1 GB |
-| `node:24-alpine` build + `nginx:alpine` runtime | ~50 MB |
-| `temurin:21-jdk-alpine` (full) | ~350 MB |
-| `temurin:21-jre-alpine` (runtime only) | ~180 MB |
 
 ## Troubleshooting
 

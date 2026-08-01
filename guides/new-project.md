@@ -52,9 +52,6 @@ mkdir -p .vscode && cp "$HANDBOOK/templates/vscode-settings.json" .vscode/settin
 cp "$HANDBOOK/templates/Makefile" .
 ```
 
-- [templates/.editorconfig](../templates/.editorconfig) — formatting (Go tabs, JS/TS 2-space).
-- [templates/.gitignore](../templates/.gitignore) — OS, IDE, env, build artifacts, logs.
-- [templates/vscode-settings.json](../templates/vscode-settings.json) → `.vscode/settings.json`.
 - [templates/Makefile](../templates/Makefile) → trim targets to the stack (drop `prod-*`
   for a service you do not self-host, `fe`/`be` for a single-tier repo). See
   [cheatsheets/makefile.md](../cheatsheets/makefile.md).
@@ -79,11 +76,6 @@ mkdir -p .devcontainer && cp "$HANDBOOK/templates/devcontainer.json" .devcontain
 mkdir -p scripts && cp "$HANDBOOK/templates/setup-dev-tools.sh" scripts/setup-dev-tools.sh
 ```
 
-- [templates/docker-compose.yml](../templates/docker-compose.yml) and
-  [templates/.env.example](../templates/.env.example) — adapt services; keep `.env` out of git.
-- [templates/devcontainer.json](../templates/devcontainer.json) — rename `name`, uncomment the
-  stack's feature blocks (inline comments mark each); `postCreateCommand` runs
-  [templates/setup-dev-tools.sh](../templates/setup-dev-tools.sh).
 - [templates/setup-dev-tools.sh](../templates/setup-dev-tools.sh) — fill the
   `<project-go-version>` placeholder (Go stacks) and uncomment the frontend-deps block (repos
   with a `frontend/`); otherwise the devcontainer `postCreateCommand` fails.
@@ -136,44 +128,7 @@ mkdir -p .claude && cp "$HANDBOOK/templates/claude-settings.json" .claude/settin
 - On a dev machine that already loads the skills via the symlink tier, add the gitignored
   opt-out per [claude-plugin.md](claude-plugin.md#dev-machine-opt-out).
 
-## 7. First commit
-
-Stage everything and commit — no approval step:
-
-```bash
-git add -A
-git commit -m 'chore: scaffold <project-name> from handbook templates'
-```
-
-## 8. Production deploy, when it ships
-
-When the project needs a live server, follow the **Fresh VPS** scenario in
-[bootstrap.md](bootstrap.md).
-
 ## Verify
-
-Expected layout for a full-stack Go + React repo:
-
-```
-<project-name>/
-├── .claude/settings.json
-├── .devcontainer/devcontainer.json
-├── .github/
-│   ├── copilot-instructions.md
-│   ├── dependabot.yml
-│   └── workflows/ci.yml
-├── .vscode/settings.json
-├── backend/Dockerfile
-├── frontend/Dockerfile
-├── scripts/setup-dev-tools.sh
-├── .editorconfig
-├── .env.example
-├── .gitignore
-├── AGENTS.md
-├── CLAUDE.md
-├── Makefile
-└── docker-compose.yml
-```
 
 ```bash
 make help                                        # lists the stack's make targets

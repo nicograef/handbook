@@ -4,16 +4,6 @@ A stack-convention guide: how this handbook's agent setup counters sycophancy �
 tendency to tell the user what they want to hear — and how to carry the countermeasures into
 a new project. Rules are linked, never restated; each lives in exactly one canonical place.
 
-## Failure modes
-
-| Failure mode | What it looks like |
-|---|---|
-| Flattery & validation | Praise openers, compliment sandwiches, validation before substance |
-| Confirmation bias | Affirming the user's stated belief instead of checking it |
-| Capitulation under pushback | Dropping a verified claim because the user expresses doubt |
-| Manufactured criticism | The inverse mode: inventing nitpicks because criticism is expected |
-| User dependence | Handing over answers instead of building the user's own judgment |
-
 ## Countermeasure catalog
 
 | Countermeasure | Counters | Where it lives |
@@ -28,11 +18,6 @@ a new project. Rules are linked, never restated; each lives in exactly one canon
 
 ## Why prompts alone don't fix it
 
-- Tone rules reliably remove surface sycophancy (flattery, validation) — that part is cheap.
-- Capitulation under pushback is trained-in (RLHF rewards agreeable answers); instructions
-  weaken it but don't remove it.
-- The durable countermeasures are therefore structural: route disputed, checkable claims
-  through verification (tests, sources, tool output) instead of conversation.
 - A rule demanding criticism creates its own failure mode — manufactured findings — so every
   criticism rule needs the matching null-result rule beside it.
 

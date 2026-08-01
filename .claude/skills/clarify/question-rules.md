@@ -17,8 +17,7 @@ write-prd skills all follow these — link here instead of restating them.
   than one option can legitimately apply, allow selecting multiple.
 - **Max 5 questions per round.** Prioritise — ask the most impactful questions
   first.
-- **Stop when resolved.** As soon as no unresolved branches remain, stop — even
-  after a single round. Continue only while ambiguities persist.
+- **Stop when resolved.** As soon as no unresolved branches remain, stop — even after a single round.
 
 If the user declines to answer or says "just do it": proceed with the recommended
 default for each unanswered question, and document every assumption in the plan or

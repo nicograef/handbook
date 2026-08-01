@@ -42,12 +42,6 @@ then present exactly four options and execute the one chosen.
    GIT_COMMON=$(cd "$(git rev-parse --git-common-dir)" && pwd -P)
    ```
 
-   If they differ, the feature branch is checked out in a linked worktree — the
-   base branch cannot be checked out in the same directory, so merge/delete has
-   to run against the main checkout (git-common-dir's parent) with `git -C`, and
-   the worktree has to be removed before the branch can be deleted. Keep that in
-   mind for the Merge and Discard paths below.
-
 4. **Present exactly these four options** — no open-ended "what next?":
 
    ```

@@ -15,32 +15,6 @@ tmux attach -t myproject          # re-attach explicitly
 tmux kill-session -t myproject    # terminate session and everything in it
 ```
 
-| Prefix + key | Action                              |
-| ------------ | ----------------------------------- |
-| `d`          | Detach (session keeps running)      |
-| `$`          | Rename session                      |
-| `s`          | Pick session interactively          |
-
-## Windows
-
-| Prefix + key | Action                     |
-| ------------ | -------------------------- |
-| `c`          | New window                 |
-| `1`…`9`      | Jump to window             |
-| `n` / `p`    | Next / previous window     |
-| `,`          | Rename window              |
-| `&`          | Kill window (confirms)     |
-
-## Panes
-
-| Prefix + key | Action                                |
-| ------------ | ------------------------------------- |
-| `%`          | Split left/right                      |
-| `"`          | Split top/bottom                      |
-| arrow keys   | Move between panes                    |
-| `z`          | Zoom pane to full window (toggle)     |
-| `x`          | Kill pane (confirms)                  |
-
 ## Scrollback / copy mode
 
 Mouse wheel scrolls directly (`mouse on` in the config). Keyboard:

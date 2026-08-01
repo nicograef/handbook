@@ -5,13 +5,11 @@ deploy with real TLS → monitor → back up → restore → patch → tear down
 step runs the owning guide's own **Verify** block against a live server, so a
 drift between the docs and reality shows up here instead of in production.
 
-This is a runbook you **execute against a real, disposable VPS** — not a
-thought experiment. It is the acceptance test for the ops lifecycle: the drill
-ends only when every linked Verify block has passed on the throwaway box.
-
 > **Operator-performed, not automatable.** Every step that creates an external
 > resource (Hetzner server, DNS record, Better Stack monitor, real Let's Encrypt
 > cert) is done by a human with the relevant account — it cannot run in CI.
+
+**No drill has been executed yet.**
 
 ## Prerequisites
 
@@ -24,11 +22,9 @@ ends only when every linked Verify block has passed on the throwaway box.
 - `docker` + `docker compose`, `curl`, and `ssh` locally.
 - **Duration:** a few hours end-to-end (most of it waiting on cert issuance,
   cron windows, and heartbeat grace periods).
-- **Cost:** a Hetzner **CX23** (2 shared vCPU, 4 GB RAM) is **EUR 0.0088/h**
-  plus **EUR 0.0008/h** for the IPv4 address ≈ **EUR 0.01/h all-in** (verified
-  2026-07-09 from Hetzner Cloud pricing) — **well under one euro** for the whole
-  drill, provided you complete the [teardown](#step-10--teardown) so nothing
-  keeps billing.
+- **Cost:** a Hetzner **CX23** (2 shared vCPU, 4 GB RAM) plus its IPv4 address is
+  **well under one euro** for the whole drill, provided you complete the
+  [teardown](#step-10--teardown) so nothing keeps billing.
 
 ## Step 1 — Provision a CX23
 
@@ -55,14 +51,7 @@ Operator: create the server in Hetzner Cloud.
 ## Step 2 — Verify provisioning
 
 Run the [provision-server.md → Verify](provision-server.md#verify) block against
-the box. It **must** include, explicitly:
-
-- **SSH in as the new user succeeds** (`ssh <username>@<host>`), and
-- **root login is denied** (`ssh root@<host>` is refused).
-
-Also confirm UFW is active and rate-limiting SSH, fail2ban is `active`, Docker
-runs without sudo, unattended-upgrades lists a `-security` allowed origin, and
-`/etc/cron.d/report-health` is installed.
+the box.
 
 ## Step 3 — Point DNS at the box
 
@@ -190,12 +179,7 @@ hand, or confirm the restore completes cleanly with the expected schema.)
 ## Step 9 — Verify patching and the withheld health ping
 
 1. **Unattended-upgrades dry run** — already covered in the provision Verify
-   block; re-run it if needed:
-
-   ```bash
-   sudo unattended-upgrade --dry-run --debug 2>&1 | grep -i 'allowed origins'
-   ```
-
+   block; re-run it if needed.
 2. **Simulate a pending reboot** and confirm `report-health` **withholds** the
    ping (an unhealthy box must not report healthy):
 
@@ -269,16 +253,6 @@ sudo report-health
 For deeper failure modes, see each owning guide's own Troubleshooting section
 ([provision-server.md](provision-server.md), [letsencrypt-docker.md](letsencrypt-docker.md),
 [postgresql-operations.md](postgresql-operations.md), [monitoring.md](monitoring.md)).
-
-## Execution record
-
-Log each drill run here. **No drill has been executed yet** — the row below is a
-pending placeholder; replace it (and add a row per run) once the drill is run
-against a real throwaway box.
-
-| Date       | Server type | Duration | Cost | Findings → fixes                    |
-| ---------- | ----------- | -------- | ---- | ----------------------------------- |
-| _pending_  | CX23        | _—_      | _—_  | _not yet executed — no drill has been run_ |
 
 ---
 

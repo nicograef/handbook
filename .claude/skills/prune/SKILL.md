@@ -41,11 +41,9 @@ Argument: $ARGUMENTS — the parts combine freely:
 
 ### 2. Resolve context
 
-- **Project slug** — the absolute working directory with `/` replaced by `-`
-  (e.g. `/home/nico/r/handbook` → `-home-nico-r-handbook`).
-- **Live session id** — `$CLAUDE_CODE_SESSION_ID` from the session
-  environment. If unset, proceed without it: the script always keeps the
-  newest-mtime transcript per project as the no-id fallback.
+**Live session id** — `$CLAUDE_CODE_SESSION_ID` from the session
+environment. If unset, proceed without it: the script always keeps the
+newest-mtime transcript per project as the no-id fallback.
 
 ### 3. Mechanical sweep (ungated)
 
@@ -58,8 +56,7 @@ bash <skill-base-dir>/prune-state.sh --days <N> --scope <slug-or-all> \
   --exclude-session "$CLAUDE_CODE_SESSION_ID" --delete
 ```
 
-- With `dry-run`: omit `--delete` (the script's default is a dry run).
-- Without `dry-run`: pass `--delete` directly — do not ask first; the
+- Pass `--delete` unless `dry-run` was given — do not ask first; the
   mechanical classes are age-rule-decidable by design.
 - What the script may touch, and everything it never touches, is documented
   in [state-map.md](state-map.md). If the machine's layout stops matching the
@@ -70,21 +67,9 @@ Parse the `MODE` / per-class / `total` lines for the report (step 7).
 
 ### 4. Semantic review — collect findings
 
-Review three classes per [criteria.md](criteria.md), every finding carrying
-its class, target, cited evidence, and proposed action (delete or update):
-
-- **Memories** — mechanical checks everywhere; semantic verification against
-  the project's repo where it exists locally. Current project inline; in
-  `all` scope, one `opus` subagent per other project with a local repo
-  (mechanical checks only where the repo is absent).
-- **Instructions surfaces** — current repo only, in every scope. In the
-  handbook: `AGENTS.md` and `.claude/rules/*.md`; elsewhere: surfaces
-  discovered per [../reflect/targets.md](../reflect/targets.md), never
-  assumed.
-- **Repo leftovers** — current repo only, in every scope: completed plan
-  files, merged worktrees and branches, stale scratch artifacts.
-
-In **dry-run**, report the findings (step 7) and skip steps 5–6 entirely.
+Review the three classes per [criteria.md](criteria.md); every finding
+carries its class, target, cited evidence, and proposed action (delete or
+update).
 
 ### 5. Gate — multi-select
 
@@ -122,11 +107,6 @@ One chat report, in this order:
 
 - Pruning is a deliberate, destructive user ritual — never auto-triggered
   (`disable-model-invocation`), never suggested mid-task.
-- Deletion is hard: no archive, trash, or backup step; the chat report is the
-  only record.
-- Memory directories, configuration, credentials, plugins, and harness
-  backups are never touched — enforced by the script's allowlist; do not work
-  around it.
 - Every semantic change is gated: nothing judgment-based is deleted or
   updated without being picked in the multi-select. Uncommitted work is never
   proposed for deletion.

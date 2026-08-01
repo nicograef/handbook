@@ -22,7 +22,6 @@ UNATTENDED_UPGRADES_LOG="${UNATTENDED_UPGRADES_LOG:-/var/log/unattended-upgrades
 
 log() { printf '\n\033[1;34m▸ %s\033[0m\n' "$1"; }
 
-# Load HEALTH_PING_URL from the defaults file when present; env is the fallback.
 HEALTH_PING_URL="${HEALTH_PING_URL:-}"
 if [[ -f "$DEFAULTS_FILE" ]]; then
   # shellcheck source=/dev/null

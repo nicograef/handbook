@@ -15,18 +15,7 @@ The user wants to build or extend their mental model of a specific part of the
 codebase. Your job is to explore thoroughly, then explain comprehensively —
 structured, layered, and easy to follow.
 
-**Do not make changes to the code.** This is a read-only, explanation-only
-skill.
-
 ## Invocation
-
-The user provides one or more references:
-
-- File paths (`src/orders/checkout.ts`)
-- Function / method names (`calculateDiscount`)
-- Module or package names (`payments`)
-- Database tables (`orders`, `line_items`)
-- Concepts or features ("the checkout flow", "authentication")
 
 If the reference is ambiguous, ask one clarifying question before exploring.
 
@@ -104,16 +93,6 @@ focus area, but generally follow this outline:
 Use code snippets to anchor explanations — show the actual code, don't just
 describe it. Use Mermaid diagrams when a visual would clarify relationships
 (call graphs, data flow, entity relationships).
-
-### 7. Offer to go deeper
-
-After the explanation, offer specific follow-up directions:
-
-- "Want me to trace the `X` dependency further?"
-- "I can explain the `Y` module that this connects to."
-- "Want to see how this changed over the last N commits?"
-
-Let the user steer where to expand their mental model next.
 
 ## Constraints
 

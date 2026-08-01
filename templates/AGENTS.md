@@ -100,14 +100,6 @@
 - **Scope guard.** If a change would go outside the task scope, stop, name the out-of-scope change, and ask before proceeding.
 - **Verify before claiming done.** Before reporting work complete, run the relevant test/lint/build command this turn and cite its result; re-read any document artifact and confirm its links and paths exist.
 
-## Areas
-
-<!-- Optional — describe the main areas/modules of the project.
-
-- **Admin**: routes `/admin/*`, directory `src/admin/`
-- **API**: routes `/api/*`, directory `src/api/`
--->
-
 <!-- ── Learning Mode (optional) ──
 Uncomment this section for onboarding or when learning a new codebase.
 It enforces stricter granularity and requires explicit confirmation between steps.

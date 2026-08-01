@@ -18,25 +18,19 @@ over social comfort.
 
 ## Workflow
 
-1. **Read all feedback first.** Take in the complete set of comments before
-   reacting to any single one. Do not reply or start fixing item by item —
+1. **Read all feedback first.** Do not reply or start fixing item by item —
    items are often related and a partial read leads to a wrong fix.
-2. **Restate each item as a concrete technical requirement.** For every
-   comment, write down in your own words exactly what change it implies. If
-   an item is genuinely ambiguous, mark it unclear instead of guessing.
+2. **Restate each item as a concrete technical requirement** in your own words.
+   If an item is genuinely ambiguous, mark it unclear instead of guessing.
 3. **If any item is unclear, ask about all unclear items before implementing
-   anything.** Do not implement the clear items first and ask about the rest
-   later — resolving the unclear ones can change how the clear ones should
-   be done.
-4. **Verify each clear item against the actual codebase.** For every item,
-   check:
-   - Does it match current behavior, or is the reviewer assuming something
-     that isn't true?
+   anything.** Do not implement the clear items first and ask later — resolving
+   the unclear ones can change how the clear ones should be done.
+4. **Verify each clear item against the actual codebase:**
+   - Does it match current behavior, or is the reviewer assuming something false?
    - Would the change break existing tests or other callers?
-   - Is there a reason the code is the way it is (compatibility, a prior
-     decision, a constraint the reviewer may not see)?
-   - Is the suggestion actually used, or does it add something nothing
-     calls (YAGNI)?
+   - Is there a reason the code is the way it is (compatibility, a prior decision,
+     a constraint the reviewer may not see)?
+   - Is the suggestion actually used, or does it add something nothing calls (YAGNI)?
 5. **Evaluate technical soundness for this stack.** A suggestion can be
    generically reasonable and still wrong for Nico's stack (Go stdlib
    patterns, React/TS conventions, sqlc-generated code, etc.). Judge it in
@@ -44,23 +38,21 @@ over social comfort.
 6. **Push back with reasoning when a suggestion is wrong.** State the
    specific technical reason — a failing assumption, a broken test, a
    compatibility constraint — and propose an alternative or ask which
-   tradeoff to take. Do not rubber-stamp a suggestion just because it came
-   from a reviewer.
+   tradeoff to take.
 7. **Implement one item at a time, in this order:** blocking issues (bugs,
    security) first, then simple fixes, then complex/structural fixes. Verify
    each one (tests, build, manual check) before moving to the next.
-8. **Report back factually.** State what changed and where, or state why an
-   item was not implemented. If you pushed back and turned out to be wrong,
-   say so plainly and fix it — no lengthy apology, no over-explaining.
+8. **Report back factually.** State what changed and where, or why an item was
+   not implemented. If you pushed back and turned out to be wrong, say so
+   plainly and fix it.
 
 ## Constraints
 
 - Acknowledge with the fix itself or a one-line factual note — skip the social
   filler ("you're right", "great point", "thanks for catching that").
 - Architectural pushback goes to Nico, not into a unilateral decision — if a
-  suggestion conflicts with an existing architectural choice, flag it and
-  ask rather than silently overriding either the reviewer or the prior
-  decision.
+  suggestion conflicts with an existing architectural choice, flag it and ask
+  rather than silently overriding either the reviewer or the prior decision.
 - When replying to inline PR comments on GitHub, reply in the comment thread
   (`gh api repos/{owner}/{repo}/pulls/{pr}/comments/{id}/replies`), not as a
   new top-level PR comment.

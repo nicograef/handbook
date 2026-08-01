@@ -49,17 +49,9 @@ for two small related fixes, just do them yourself.
 
 ## Constraints
 
-- Verify independence before dispatching — no shared files/state and no
-  "fixing one might fix the other" relationship. If you're not sure, default
-  to investigating together first; a wrong parallel split costs more than it
-  saves.
-- Give each prompt a concrete scope, error text, and constraint — a subagent
-  with none of those will wander. One subagent, one problem domain.
 - Isolate writes when agents change code in the same repo: give each a
   disjoint file-ownership partition, or run them in separate worktrees
   (`isolation: worktree`) so concurrent edits can't clobber each other.
-- Run the collision check even when problems looked independent — they can
-  still land edits in the same file.
 - When a returning agent's work needs a correction or follow-up, resume it
   with more context (`SendMessage`) instead of dispatching a fresh agent to
   redo the whole task.

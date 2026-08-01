@@ -1,12 +1,5 @@
 # Makefile template — Full-Stack Project
 # Usage: copy to project root and adapt targets
-#
-# Features:
-#   - .env auto-loading for all targets
-#   - Local dev (one terminal per service)
-#   - Docker Compose targets (local + production)
-#   - Code quality checks (backend + frontend)
-#   - Tag-based production releases
 
 # Load .env variables (DB credentials etc.) for all targets.
 # include .env

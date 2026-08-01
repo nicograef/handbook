@@ -5,13 +5,6 @@ Each scenario below routes to an **ordered** sequence of existing guides plus th
 inputs to gather **before** you start, so nothing is discovered mid-run. This
 file is routing only — every command lives in the linked guide.
 
-| Scenario | Go to |
-| -------- | ----- |
-| Provision & harden a fresh VPS | [Fresh VPS](#fresh-vps) |
-| Bootstrap a new GitHub Codespace | [New Codespace](#new-codespace) |
-| Set up a new dev machine | [New dev machine](#new-dev-machine) |
-| Scaffold a new project repository | [New project](#new-project) |
-
 ## Fresh VPS
 
 Provision a Debian/Ubuntu box, then layer on TLS, monitoring, and backups as the
@@ -23,9 +16,8 @@ workload needs.
 - [letsencrypt-docker.md#inputs](letsencrypt-docker.md#inputs) (web app only)
 - [monitoring.md#inputs](monitoring.md#inputs)
 
-1. **Provision & harden** — [provision-server.md](provision-server.md) via the
-   cloud-init primary path. Creates the non-root user, SSH hardening, UFW,
-   fail2ban, Docker + Compose, and unattended-upgrades. Always.
+1. **Provision & harden** (always) — [provision-server.md](provision-server.md)
+   via the cloud-init primary path.
 2. **IPv6-only box only** — [ipv6-only-vps.md](ipv6-only-vps.md): DNS64
    resolvers for IPv4-only services (GitHub!) and Docker IPv6 networking. Skip
    on dual-stack servers.
@@ -104,12 +96,3 @@ Follow [new-project.md](new-project.md) — it scaffolds the repo (templates, CI
 agent instructions, plugin adoption) end-to-end in one ordered sequence.
 
 **Done when** [new-project.md](new-project.md)'s Verify section passes.
-
----
-
-See also:
-- [README.md](../README.md) — full handbook file index
-- [guides/provision-server.md](provision-server.md) — Fresh VPS entry point
-- [guides/dotfiles-codespaces.md](dotfiles-codespaces.md) — Codespace and dev-machine dotfiles
-- [guides/claude-plugin.md](claude-plugin.md) — plugin (remote) tier
-- [guides/new-project.md](new-project.md) — new project scaffold

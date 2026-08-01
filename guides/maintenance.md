@@ -1,35 +1,12 @@
 # Server Maintenance
 
-Standing upkeep for a single-VPS Docker Compose stack: what to check, how
-often, and what "healthy" looks like. Most of the day-to-day signal is already
-external — the dead-man heartbeats in [monitoring.md](monitoring.md) page you
-when a reboot is pending, a backup fails, or a cert stops renewing. This runbook
-is the **scheduled hands-on** layer that sits on top of that alerting.
-
-Single-source rule: this guide holds only the maintenance-specific commands and
-their expected output. For command reference and deeper procedures it links out
-— the [Docker Compose cheatsheet](../cheatsheets/docker-compose.md),
-[postgresql-operations.md](postgresql-operations.md),
-[letsencrypt-docker.md](letsencrypt-docker.md), and
-[docker-setup.md](docker-setup.md).
-
-## Cadence
-
-| Cadence        | What                                                    | Section                                       |
-| -------------- | ------------------------------------------------------- | --------------------------------------------- |
-| Every deploy   | Bump image tags, pull/build explicitly, prune old images | [Image updates](#image-updates-every-deploy) |
-| Monthly        | Apply pending kernel patches with a reboot              | [Reboot routine](#reboot-routine-monthly)     |
-| Monthly        | Disk, containers, and security services                 | [Disk and service checks](#disk-and-service-checks-monthly) |
-| Quarterly      | Restore drill (prove a backup replays)                  | [Restore drill](#restore-drill-quarterly)     |
-
 ## Image updates (every deploy)
 
 **Rule: no auto-pull in production.** Image tags in
 [docker-compose.prod.yml](../templates/docker-compose.prod.yml) are **pinned**
-(e.g. `postgres:17`, `nginx:1.30-alpine`, `certbot/certbot:v5.6.0`) and bumped
-**deliberately** at deploy time — never floating on `latest`, never pulled on a
-schedule. A deploy is the only moment images change, so it is also where you
-prune the images the bump superseded.
+and bumped **deliberately** at deploy time — never floating on `latest`, never
+pulled on a schedule. A deploy is the only moment images change, so it is also
+where you prune the images the bump superseded.
 
 ### Prerequisites
 
@@ -87,12 +64,8 @@ prune the images the bump superseded.
 Unattended-upgrades installs security patches but **never auto-reboots** (see
 [provision-server.md](provision-server.md)), so kernel and libc updates only take
 effect on the next reboot. The health-ping heartbeat alerts when a reboot is
-pending; this routine is how you clear it.
-
-### Prerequisites
-
-- SSH access to the server.
-- A low-traffic maintenance window (a reboot drops all connections for ~1 min).
+pending; this routine is how you clear it. Run it in a low-traffic maintenance
+window — a reboot drops all connections for ~1 min.
 
 ### Steps
 
@@ -138,9 +111,6 @@ pending; this routine is how you clear it.
    reverse-proxy`.
 
 ## Disk and service checks (monthly)
-
-A quick sweep that the box has headroom and its security services are still up.
-Run all five; each states what "fine" looks like.
 
 1. **Disk headroom.** Threshold: **act when the stack's filesystem is ≥ 80 %
    used** — prune images (see [image updates](#image-updates-every-deploy)) or
@@ -195,11 +165,7 @@ Run all five; each states what "fine" looks like.
 
 ## Restore drill (quarterly)
 
-A backup you have never restored is a guess. **Quarterly**, prove the newest
-dump replays end-to-end into a throwaway database with row counts intact. This
-is the same checklist you'd follow under real data-loss stress.
-
-Do not duplicate it here — follow the
+Follow the
 [Restore drill in postgresql-operations.md](postgresql-operations.md#4-restore-drill).
 For an actual disaster (restore into the live DB, not a throwaway), use the
 [full-restore commands](postgresql-operations.md#2-restore) instead.

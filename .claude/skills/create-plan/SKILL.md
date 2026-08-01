@@ -115,10 +115,6 @@ to re-review after fixing.
 - Once the plan file is written, run the shared
   [self-review checklist](../quality.md) on it. Surface issues in the chat only
   if found.
-- Placeholder scan (step 7): no TBD/TODO/vague instructions, and no acceptance
-  criteria referencing undefined files, functions, or models.
-- Cross-phase consistency check (step 7): names from "Architectural decisions"
-  stay identical in every phase that reuses them.
 
 ## Plan Template
 
@@ -173,23 +169,6 @@ behavior, not layer-by-layer implementation.
 - [ ] Criterion 2
 - [ ] Criterion 3
 
----
-
-## Phase 2: <Title>
-
-**User stories**: <list from PRD>
-
-### Context
-
-- `path/file.go — otherSymbol()` — <why relevant>
-
-### What to build
-
-...
-
-### Acceptance criteria
-
-- [ ] ...
-
-<!-- Repeat for each phase -->
+<!-- Repeat this Phase block (heading, User stories, Context, What to build,
+     Acceptance criteria) for each remaining phase -->
 ```

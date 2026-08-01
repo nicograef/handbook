@@ -11,11 +11,6 @@
 #      non-allowlisted files.
 #   2. Points prune-state.sh at it via PRUNE_CLAUDE_DIR / PRUNE_SCRATCH_DIR —
 #      real ~/.claude state is never touched.
-#   3. Asserts: --days 0 is refused; dry-run reports the expected set exactly
-#      and deletes nothing; --delete removes exactly the reported set; the live
-#      session (by id and by newest-mtime fallback), memory/, symlink targets,
-#      and non-allowlisted paths survive; project scope leaves other slugs and
-#      the global classes untouched.
 
 set -euo pipefail
 
@@ -181,9 +176,6 @@ survivors_intact() {
     "$SCRATCH_DIR/$SLUG1/$LIVE/scratchpad/tmp.txt"
 }
 
-# ---------------------------------------------------------------------------
-# 1. Threshold under 1 day is refused
-# ---------------------------------------------------------------------------
 log "test: --days 0 is refused"
 build_fixture
 if out="$(run_prune --days 0 --scope "$SLUG1" 2>&1)"; then
@@ -192,9 +184,6 @@ else
   [[ -n "$out" ]] || fail "--days 0 refused without an error message"
 fi
 
-# ---------------------------------------------------------------------------
-# 2. Project scope: dry-run reports the expected set and deletes nothing
-# ---------------------------------------------------------------------------
 log "test: project-scope dry-run"
 read -r TF TB <<<"$(measure_paths "$P1/$OLD_A.jsonl" "$P1/$OLD_A" "$P1/$OLD_B.jsonl" "$P1/$ORPHAN")"
 read -r SF SB <<<"$(measure_paths "$SCRATCH_DIR/$SLUG1/$OLD_A")"
@@ -215,9 +204,6 @@ fi
 after="$(find "$FIX" | sort)"
 [[ "$after" == "$before" ]] || fail "dry-run modified the fixture tree"
 
-# ---------------------------------------------------------------------------
-# 3. Project scope: --delete removes exactly the reported set
-# ---------------------------------------------------------------------------
 log "test: project-scope delete"
 pre_files="$(find "$FIX" -type f | wc -l)"
 report="$(run_prune --days 7 --scope "$SLUG1" --exclude-session "$LIVE" --delete)"
@@ -240,9 +226,6 @@ assert_exists "$P2/$OLD_C.jsonl" \
   "$CLAUDE_DIR/debug/$OLD_A.txt" \
   "$SCRATCH_DIR/$SLUG2/$OLD_C/scratchpad/tmp.txt"
 
-# ---------------------------------------------------------------------------
-# 4. All scope: dry-run reports every class and deletes nothing
-# ---------------------------------------------------------------------------
 log "test: all-scope dry-run"
 build_fixture
 read -r TF TB <<<"$(measure_paths "$P1/$OLD_A.jsonl" "$P1/$OLD_A" "$P1/$OLD_B.jsonl" \
@@ -279,9 +262,6 @@ fi
 after="$(find "$FIX" | sort)"
 [[ "$after" == "$before" ]] || fail "all-scope dry-run modified the fixture tree"
 
-# ---------------------------------------------------------------------------
-# 5. All scope: --delete removes exactly the reported set, survivors intact
-# ---------------------------------------------------------------------------
 log "test: all-scope delete"
 pre_files="$(find "$FIX" -type f | wc -l)"
 report="$(run_prune --days 7 --scope all --exclude-session "$LIVE" --delete)"
@@ -302,7 +282,6 @@ assert_gone "$P1/$OLD_A.jsonl" "$P1/$OLD_A" "$P1/$OLD_B.jsonl" "$P1/$ORPHAN" \
             "$SCRATCH_DIR/$SLUG1/$OLD_A" "$SCRATCH_DIR/$SLUG2/$OLD_C"
 survivors_intact
 
-# ---------------------------------------------------------------------------
 if [[ "$FAILED" -ne 0 ]]; then
   fail "prune fixture tests failed"
   exit 2

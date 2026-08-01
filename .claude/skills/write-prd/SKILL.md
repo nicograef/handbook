@@ -44,12 +44,11 @@ user to pick one — or steer a hybrid — before moving on to module design.
 ### 5. Design modules
 
 Sketch out the major modules you will need to build or modify to complete
-the implementation. Actively look for opportunities to extract deep modules
-that can be tested in isolation.
-
-A deep module hides substantial functionality behind a small, testable
-interface that rarely changes — see
-[interface design](../tdd/interface-design.md).
+the implementation. Actively look for opportunities to extract deep
+modules that can be tested in isolation: inject dependencies instead of
+constructing them, return values instead of mutating inputs, and keep the
+interface surface small — a deep module hides substantial functionality
+behind a small, stable interface.
 
 Present the module design as part of the flow — do not block on a separate
 confirmation. Decide the test scope yourself based on the design; raise it
@@ -125,10 +124,6 @@ Any further notes about the feature.
 
 ## Constraints
 
-- Do not skip exploration to save time: read the codebase to answer a
-  question before asking the user.
-- Clarify per the [question rules](../clarify/question-rules.md), capped at
-  1–3 rounds total; stop as soon as ambiguities are resolved.
 - Do not include specific file paths or code snippets in Implementation
   Decisions; they go stale quickly.
 - Only test external behavior in Testing Decisions, never implementation

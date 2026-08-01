@@ -7,11 +7,8 @@
 #   DOMAIN=example.com make prod-init
 #   DOMAIN=example.com EMAIL=you@example.com make prod-init
 #
-# Prerequisites:
-#   1. DNS A record pointing to this server's IP
-#   2. .env file with POSTGRES_USER, POSTGRES_PASSWORD, POSTGRES_DB
-#   3. nginx configs staged in reverse-proxy/ (see guides/letsencrypt-docker.md)
-#   4. Docker + Compose installed
+# Not checked below: a DNS A record for DOMAIN must already point at this server's IP,
+# or the ACME challenge in step 2 fails (see guides/letsencrypt-docker.md).
 set -euo pipefail
 
 # ── Configuration ──
@@ -21,7 +18,6 @@ PROJECT="${PROJECT:-myapp}"   # Docker Compose project name (for volume prefixes
 COMPOSE_CERT="docker compose -p $PROJECT -f docker-compose.initial-cert.yml"
 COMPOSE_PROD="docker compose -p $PROJECT -f docker-compose.prod.yml"
 
-# ── Colors ──
 RED='\033[0;31m'
 GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
@@ -80,7 +76,6 @@ if docker volume inspect "$CERT_VOLUME" >/dev/null 2>&1; then
   fi
 fi
 
-# ── Step 1: Start minimal nginx for ACME challenges ──
 info "Step 1/3 — Starting nginx for ACME challenge…"
 $COMPOSE_CERT up -d reverse-proxy
 sleep 2
@@ -97,7 +92,6 @@ for i in {1..15}; do
 done
 info "Nginx is ready."
 
-# ── Step 2: Request certificate via certbot ──
 info "Step 2/3 — Requesting Let's Encrypt certificate…"
 if ! docker run --rm \
   -v "${PROJECT}_certbot-challenges:/var/www/certbot" \
@@ -114,7 +108,6 @@ if ! docker run --rm \
 fi
 info "Certificate obtained successfully."
 
-# ── Step 3: Tear down cert stack, start full production stack ──
 info "Step 3/3 — Starting full production stack…"
 $COMPOSE_CERT down
 $COMPOSE_PROD up --build -d

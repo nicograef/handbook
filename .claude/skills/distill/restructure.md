@@ -12,7 +12,6 @@ can load one small file instead of a large one.
 - [Deduplicate while splitting](#deduplicate-while-splitting)
 - [Merging](#merging)
 - [Naming](#naming)
-- [Anti-patterns](#anti-patterns)
 
 ## Why size is a correctness problem
 
@@ -23,6 +22,10 @@ wants to reorganize it, so contradictions accumulate inside one file.
 
 Split for retrieval, not for tidiness. The unit of value is **the smallest file
 that fully answers one question a reader arrives with**.
+
+Restructuring is not a substitute for deletion: run the deletion pass first,
+then split what survives. A 900-line file that should have been a 200-line
+file produces six files nobody needed.
 
 ## When to split
 
@@ -41,7 +44,6 @@ Do **not** split when:
 - Every reader needs all of it (a 200-line runbook executed top to bottom is one
   file, always).
 - The parts only make sense together and would need constant cross-referencing.
-- The result would be files under ~30 lines with no independent purpose.
 
 ## Where to cut
 
@@ -86,9 +88,6 @@ Each one must therefore stand alone:
   from the previous file".
 - **A link back to the index**, and forward links only where a reader genuinely
   continues elsewhere.
-- **Any file over 100 lines opens with a bullet TOC of its `##` headings**,
-  directly under the H1 (a repo rule for skill reference files; apply it to long
-  docs generally).
 
 ## The index file
 
@@ -131,31 +130,3 @@ After merging, delete the source files and fix every inbound link.
 - Name the **subject**, not the document type: `postgres-backup.md`, not
   `postgres-backup-guide.md` or `how-to-backup-postgres.md`.
 - Keep sibling names parallel so the directory listing reads as a menu.
-- Renaming an existing file costs every inbound link — `grep -r '<filename>' .`
-  and fix them all, or keep the name.
-
-## Anti-patterns
-
-**Over-splitting.** Thirty 15-line files. Each hop costs the reader more than the
-lines saved, and an agent now loads six files where one would have done. If the
-average leaf is under 30 lines, merge.
-
-**Index-only value.** A hub linking to leaves that are themselves stubs. The
-structure looks organized and holds nothing.
-
-**Deep nesting.** `docs/guides/backend/database/postgres/backup.md`. Two levels
-under the docs root is almost always enough; flatten and let names carry the
-hierarchy.
-
-**Orphans.** A file no index links to and nothing points at. Either link it or
-delete it — an unreachable doc is an unmaintained doc.
-
-**Circular routing.** Files that mutually point at each other for the same fact,
-so no file holds it. Every claim has exactly one home.
-
-**Split without dedup.** Covered above; the most common failure and the one that
-does lasting damage.
-
-**Restructuring instead of deleting.** Splitting a 900-line file that should have
-been a 200-line file produces six files nobody needed. Run the deletion pass
-first, then split what survives.

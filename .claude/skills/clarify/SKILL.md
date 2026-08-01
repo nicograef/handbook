@@ -9,41 +9,23 @@ description: >-
 
 # Clarify
 
-Never assume — always ask. Before acting on any task, identify ambiguities and
-unknowns, then resolve them through structured questions. Walk down each
-branch of the decision tree, resolving dependencies between decisions
-one-by-one. Use this skill when clarification is the task itself or when
-thorough spec-gathering is needed — create-plan and write-prd embed a lighter
-clarification pass scoped to their own work.
+Never assume — always ask. Identify ambiguities and unknowns before acting, then
+resolve them through structured questions, walking each branch of the decision
+tree and resolving dependencies between decisions one-by-one. Use this skill when
+clarification is the task itself or thorough spec-gathering is needed; create-plan
+and write-prd embed a lighter clarification pass scoped to their own work.
 
 ## Workflow
 
-Ask questions in rounds, each round drilling deeper based on prior answers.
-Stop as soon as the decision tree is resolved, even after a single round — do
-not pad with extra rounds. Continue only while unresolved branches remain.
-
-### Round 1 — Scope & Intent
-
-Identify what is ambiguous or underspecified in the user's request. Ask the
-biggest unknowns first.
-
-### Round 2+ — Drill deeper
-
-Based on prior answers, ask follow-up questions on remaining gaps, edge cases,
-or conflicting constraints. Confirm critical decisions before proceeding. Once
-no unresolved branches remain, stop.
-
-### After questions
-
-Update the current plan or document with every decision made, then proceed with
-the task.
-
-## Question rules
-
-Follow the canonical [clarification question rules](question-rules.md): explore
-before asking, always recommend, context before question, structured over
-free-text, max 5 questions per round, stop when resolved, and the
-declined-answer fallback.
+1. Ask in rounds, biggest unknowns first — whatever is ambiguous or
+   underspecified in the request — following the canonical
+   [clarification question rules](question-rules.md).
+2. Drill deeper on prior answers: remaining gaps, edge cases, conflicting
+   constraints. Confirm critical decisions before proceeding. Stop as soon as the
+   decision tree is resolved, even after a single round; do not pad with extra
+   rounds.
+3. Update the current plan or document with every decision made, then proceed
+   with the task.
 
 ## Constraints
 

@@ -14,12 +14,6 @@
 #   5. fail2ban
 #   6. Docker + Compose, container-log rotation (IPv6 networking auto-enabled on IPv6-only hosts)
 #   7. Unattended security upgrades + daily health ping
-#
-# Before running:
-#   - Generate an SSH key pair locally:   ssh-keygen -t ed25519
-#   - Set SSH_PUBLIC_KEY below (or pass it as env var)
-#   - Set USER_PASSWORD unless PASSWORDLESS_SUDO=true (needed for sudo prompts)
-#   - Optionally set HEALTH_PING_URL for the daily dead-man health ping
 
 set -euo pipefail
 
@@ -286,7 +280,6 @@ Unattended-Upgrade::Allowed-Origins {
 EOF
 
 log "Installing daily health ping"
-# Fetch the health-ping script from the handbook and install it as a command.
 if [[ "$DRY_RUN" == "true" ]]; then
   printf '  \033[0;33m[DRY-RUN]\033[0m fetch report-health.sh and write /usr/local/bin/report-health (executable)\n'
 else
@@ -304,7 +297,6 @@ else
   echo "  HEALTH_PING_URL not set — installing script + cron, but no URL persisted; set /etc/default/report-health later to enable pings."
 fi
 
-# Daily cron entry that runs the health ping.
 write_file /etc/cron.d/report-health <<'EOF'
 # Daily dead-man health ping (see /usr/local/bin/report-health).
 0 8 * * * root /usr/local/bin/report-health

@@ -103,6 +103,4 @@ user-defined network — the same shape Compose creates).
 
 See also:
 
-- [guides/provision-server.md](provision-server.md) — server provisioning (runs step 2 automatically)
 - [guides/docker-setup.md](docker-setup.md) — Docker install & dual-stack post-install config
-- [scripts/setup-server.sh](../scripts/setup-server.sh) — step 6b is the automated form of step 2

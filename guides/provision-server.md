@@ -2,34 +2,16 @@
 
 Automated setup using [`scripts/setup-server.sh`](../scripts/setup-server.sh).
 
-## What it does
-
-1. System update & base packages (curl, git, make, vim, …)
-2. Create non-root user with sudo (password-prompted by default; NOPASSWD opt-in)
-3. SSH hardening via `/etc/ssh/sshd_config.d/00-hardening.conf` – pubkey auth only, root login disabled
-4. UFW firewall – deny all, allow & rate-limit SSH
-5. fail2ban for SSH brute-force protection
-6. Docker + Compose plugin, container-log rotation via `/etc/docker/daemon.json`
-   (IPv6 networking auto-enabled on IPv6-only hosts — see
-   [ipv6-only-vps.md](ipv6-only-vps.md))
-7. Unattended upgrades (security origin; on Debian the stock config also
-   auto-applies stable point-release updates; **no** auto-reboot) + a daily
-   dead-man health ping via [`scripts/report-health.sh`](../scripts/report-health.sh)
-
 ## Prerequisites
 
 - A fresh VPS with root SSH access
 - An SSH key pair on your local machine
 
-```bash
-# generate key if needed
-ssh-keygen -t ed25519 -C "you@machine"
-```
-
 ### Inputs
 
-Collect a value for every variable in [Configuration](#configuration) before running.
-The steps also use placeholders not in that table:
+Collect a value for every variable in the Configuration block at the top of
+[`scripts/setup-server.sh`](../scripts/setup-server.sh) before running. The steps
+also use placeholders not in that block:
 
 - `<host>` — server IP or hostname (SSH target)
 - Hetzner cloud-init path only: `<name>`, `<type>`, `<key-name>` — server name, server
@@ -135,35 +117,10 @@ also carries `label=Debian` stable origins from the stock `50unattended-upgrades
 `/etc/cron.d/report-health` prints the `0 8 * * * root /usr/local/bin/report-health`
 line.
 
-## Configuration
+## SSH hardening (drop-in)
 
-Edit the variables at the top of `setup-server.sh`:
-
-| Variable | Default | Description |
-| -------- | ------- | ----------- |
-| `USERNAME` | `nico` | Non-root user to create |
-| `SSH_PUBLIC_KEY` | *(required)* | Your public SSH key |
-| `PASSWORDLESS_SUDO` | `false` | `true` grants NOPASSWD sudo; otherwise sudo prompts for a password |
-| `USER_PASSWORD` | *(required unless `PASSWORDLESS_SUDO=true`)* | Account password so sudo prompts work |
-| `EXTRA_UFW_PORTS` | `80/tcp 443/tcp` | Additional ports to open (space-separated) |
-| `HEALTH_PING_URL` | *(optional)* | Daily dead-man health-ping URL (e.g. a Better Stack heartbeat, see [monitoring guide](monitoring.md)). Persisted to `/etc/default/report-health`; the script + cron install even when unset |
-
-> **Sudo trade-off:** `PASSWORDLESS_SUDO=true` is convenient (sudo never prompts)
-> but any process running as the user can escalate to root without a secret. The
-> default prompts for a password, so the account **must** have one — `adduser
-> --disabled-password` leaves it unset, which would lock the user out of sudo.
-> The script sets `USER_PASSWORD` via `chpasswd` for exactly this reason.
-
-## Manual Reference
-
-The script automates everything below. Use these commands when debugging or
-tightening an existing server by hand.
-
-### SSH hardening (drop-in)
-
-Write a drop-in instead of editing `/etc/ssh/sshd_config`. sshd uses
-first-obtained-value semantics and cloud images ship `50-cloud-init.conf`, so the
-`00-` prefix guarantees these settings win:
+The script automates this (step 3). Run it by hand when debugging or tightening
+an existing server.
 
 ```bash
 # ensure the main config includes the drop-in dir (some minimal images omit this)
@@ -179,20 +136,6 @@ EOF
 
 sudo systemctl restart ssh   # 'ssh' is the canonical unit on Debian/Ubuntu
 ```
-
-### UFW firewall
-
-See step 4 (`── 4. UFW firewall`) in
-[`scripts/setup-server.sh`](../scripts/setup-server.sh) for the exact `ufw`
-commands (default deny incoming, rate-limited SSH, extra ports from
-`EXTRA_UFW_PORTS`).
-
-### fail2ban
-
-See step 5 (`── 5. fail2ban`) in
-[`scripts/setup-server.sh`](../scripts/setup-server.sh) for the
-`/etc/fail2ban/jail.local` contents and the enable/restart commands (uses the
-`systemd` backend, which fixes fail2ban errors on systemd-based distros).
 
 ## After provisioning
 

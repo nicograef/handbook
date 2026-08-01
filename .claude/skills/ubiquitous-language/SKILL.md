@@ -10,9 +10,6 @@ description: >-
 
 # Ubiquitous Language
 
-Extract and formalize domain terminology from the current conversation into a
-consistent glossary, saved to a local file.
-
 ## Workflow
 
 1. **Scan the conversation** for domain-relevant nouns, verbs, and concepts
@@ -74,28 +71,6 @@ Write a `docs/UBIQUITOUS_LANGUAGE.md` file with this structure:
   or classes unless they have meaning in the domain language.
 - **Keep definitions tight.** One sentence max. Define what it IS, not what it
   does.
-- **Show relationships.** Use bold term names and express cardinality where
-  obvious.
-- **Only include domain terms.** Skip generic programming concepts (array,
-  function, endpoint) unless they have domain-specific meaning.
-- **Group terms into multiple tables** when natural clusters emerge (e.g. by
-  subdomain, lifecycle, or actor). Each group gets its own heading and table. If
-  all terms belong to a single cohesive domain, one table is fine — don't force
-  groupings.
-- **Write an example dialogue.** A short conversation (3–5 exchanges) between a
-  dev and a domain expert that demonstrates how the terms interact naturally.
-  The dialogue should clarify boundaries between related concepts and show terms
-  being used precisely.
-
-## Re-running
-
-When invoked again in the same conversation:
-
-1. Read the existing `docs/UBIQUITOUS_LANGUAGE.md`
-2. Incorporate any new terms from subsequent discussion
-3. Update definitions if understanding has evolved
-4. Re-flag any new ambiguities
-5. Rewrite the example dialogue to incorporate new terms
 
 ## Quality
 

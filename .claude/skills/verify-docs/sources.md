@@ -10,7 +10,6 @@ all.
 - [Which lane wins](#which-lane-wins)
 - [Claims with no lane](#claims-with-no-lane)
 - [Routing table](#routing-table)
-- [Anti-patterns](#anti-patterns)
 
 ## The evidence rule
 
@@ -24,6 +23,10 @@ one of three things, produced **in this session**:
 Training data is not a source. "nginx does X" from recollection is not a verdict,
 and neither is "this looks right". The failure mode this rule exists to stop is
 not missing a wrong line — it is confidently correcting a right one.
+
+A corpus that comes back with zero findings still needs every evidence field
+filled in. An all-TRUE report with empty evidence fields means the checks did
+not happen, not that the docs are perfect — re-read before reporting.
 
 ## Lane 1 — the repo
 
@@ -128,22 +131,3 @@ they are unfinished work, not unfalsifiable statements.
 | "Restore takes about 20 minutes" | none | operational experience — leave it |
 | "We deploy from `main` only" | none | policy; check only against other policy statements |
 | "The staging box is reachable at …" | none | tribal knowledge — the doc *is* the source |
-
-## Anti-patterns
-
-**Verifying from memory.** The one that matters. It produces confident, wrong
-corrections to correct documentation, and nothing downstream catches it.
-
-**Circular verification.** Doc A cited to confirm doc B. Two files agreeing is
-the normal state of a copied claim, including a copied wrong one.
-
-**Checking the heading, not the definition.** The word exists; the target may not.
-
-**Running it to be sure.** The forbidden lane-2 commands are forbidden on an
-infrastructure corpus specifically because they work.
-
-**Everything TRUE.** A large corpus with zero findings means the evidence fields
-are empty, not that the docs are perfect. Re-read them before reporting.
-
-**Correcting a pin to the latest release.** Covered above; the most common way a
-well-meaning sweep breaks a reproducible setup.

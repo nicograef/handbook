@@ -75,7 +75,6 @@ CUTOFF=$(( $(date +%s) - DAYS * 86400 ))
 mtime() { stat -c %Y -- "$1"; }
 
 # is_session_id <name> – true when <name> has the UUID shape session ids use.
-# The gate keeps memory/ and any other non-session entry out of every walk.
 is_session_id() {
   [[ "$1" =~ ^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$ ]]
 }
@@ -107,7 +106,6 @@ prune_project_transcripts() {
   local dir="$1"
   [[ -d "$dir" ]] || return 0
 
-  # The newest-mtime transcript always survives — the no-id live-session fallback.
   local f id m newest_id="" newest_m=-1
   for f in "$dir"/*.jsonl; do
     [[ -f "$f" && ! -L "$f" ]] || continue
@@ -120,7 +118,6 @@ prune_project_transcripts() {
     fi
   done
 
-  # Transcript + same-id session dir, deleted as a unit judged by the newer mtime.
   local d dm unit
   for f in "$dir"/*.jsonl; do
     [[ -f "$f" && ! -L "$f" ]] || continue
@@ -139,7 +136,6 @@ prune_project_transcripts() {
     if (( m < CUTOFF )); then add_candidate transcripts "${unit[@]}"; fi
   done
 
-  # Orphaned session directories (no matching transcript), judged by own mtime.
   local name
   for d in "$dir"/*/; do
     d="${d%/}"

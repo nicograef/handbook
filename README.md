@@ -1,20 +1,10 @@
 # handbook
 
-Personal knowledge base by **Nico** — senior software engineer from Freiburg, Germany.
-10+ years of experience across freelance web development, fullstack engineering, and startup team leadership.
-Current stack: **Go**, **React**, **TypeScript**, **PostgreSQL**, **Docker**.
-
-Focused on **Debian / Ubuntu**. Covers infrastructure, backend, frontend, and DevOps workflows.
-
 Following the handbook to set something up? Start at [guides/bootstrap.md](guides/bootstrap.md).
-
----
 
 ## Guides
 
 ### Runbooks
-
-Step-by-step procedures to follow start to finish.
 
 | Topic                             | File                                                                       |
 | --------------------------------- | -------------------------------------------------------------------------- |
@@ -48,21 +38,15 @@ Heading-grouped rules and idioms for a stack — reference material, not runbook
 
 ## Cheatsheets
 
-Quick-reference commands (no context needed).
-
 | Topic                 | File                                                           |
 | --------------------- | -------------------------------------------------------------- |
 | Unix / shell commands | [cheatsheets/unix-commands.md](cheatsheets/unix-commands.md)   |
 | tmux                  | [cheatsheets/tmux.md](cheatsheets/tmux.md)                     |
 | Docker Compose        | [cheatsheets/docker-compose.md](cheatsheets/docker-compose.md) |
-| Vim                   | [cheatsheets/vim.md](cheatsheets/vim.md)                       |
-| Git                   | [cheatsheets/git.md](cheatsheets/git.md)                       |
 | PostgreSQL            | [cheatsheets/postgresql.md](cheatsheets/postgresql.md)         |
 | Makefile              | [cheatsheets/makefile.md](cheatsheets/makefile.md)             |
 
 ## Templates
-
-Copy-paste-ready config files for new projects.
 
 | File                                                                   | Description                                                       |
 | ---------------------------------------------------------------------- | ----------------------------------------------------------------- |
@@ -89,8 +73,6 @@ Copy-paste-ready config files for new projects.
 
 ## Scripts
 
-Reusable bash scripts.
-
 | Script                                                     | Description                                                            |
 | ---------------------------------------------------------- | ---------------------------------------------------------------------- |
 | [scripts/setup-server.sh](scripts/setup-server.sh)         | Provision a fresh Debian/Ubuntu VPS (user, SSH, UFW, fail2ban, Docker) |
@@ -100,13 +82,6 @@ Reusable bash scripts.
 | [scripts/install-dotfiles.sh](scripts/install-dotfiles.sh) | Bootstrap shell config in a new Codespace or VM                        |
 | [scripts/check-repo.sh](scripts/check-repo.sh)             | Repo self-check (links, shellcheck, README index, language, skills, compose, plugin); `make check` |
 | [scripts/test-prune.sh](scripts/test-prune.sh)             | Fixture test for the prune skill's `prune-state.sh`; `make test-prune`  |
-
-## Skills
-
-Reusable agent skills for Claude Code and GitHub Copilot, living under `.claude/skills/`.
-
-See **[.claude/skills/README.md](.claude/skills/README.md)** for the full skills index, when to use
-each one, and the skill-consumption matrix (which surface loads them and from where).
 
 ## Agent Setup
 

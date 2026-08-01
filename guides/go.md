@@ -2,18 +2,6 @@
 
 Stack-convention guide for Go backend projects — heading-grouped rules, not a runbook.
 
-## Project Setup
-
-Use Go modules. Keep `go.mod` and `go.sum` in version control.
-
-```bash
-go mod init github.com/you/project
-go mod tidy      # add missing, remove unused
-go mod verify    # verify checksums
-```
-
-Minimum required tooling: `goimports` (formatting) + `golangci-lint` (linting).
-
 ## Project Structure
 
 Organise code by domain, not by layer. Avoid flat package layouts.
@@ -33,23 +21,9 @@ backend/
 
 Keep the `domain/` packages free of framework or infrastructure imports. Business rules live here and are tested in isolation.
 
-## Formatting
-
-Use `goimports` — it runs `gofmt` and also manages import grouping (stdlib → third-party → local).
-
-```bash
-goimports -w .
-```
-
-CI check:
-
-```bash
-if [ "$(goimports -l . | wc -l)" -gt 0 ]; then exit 1; fi
-```
-
-No manual formatting debates. The tool decides.
-
 ## Linting
+
+Minimum required tooling: `goimports` (formatting) + `golangci-lint` (linting).
 
 Use `golangci-lint`. Key linters to enable:
 
@@ -70,22 +44,6 @@ golangci-lint run
 
 See [`.golangci.yml`](https://golangci-lint.run/usage/configuration/) for the full config format. Check format and lint in CI before running tests.
 
-## Error Handling
-
-Always return errors explicitly. Wrap with context using `%w`:
-
-```go
-return fmt.Errorf("create order: %w", err)
-```
-
-Use `errors.Is` / `errors.As` for error inspection — never compare error strings.
-
-Sentinel errors for known domain errors:
-
-```go
-var ErrNotFound = errors.New("not found")
-```
-
 ## SQL with sqlc
 
 Use `sqlc` to generate type-safe Go code from raw SQL queries. Write SQL, get Go — no ORM magic.
@@ -102,13 +60,6 @@ sqlc generate
 ```
 
 Advantages: queries are plain SQL (reviewable, optimisable), generated code is type-safe, no runtime surprises.
-
-Use `golang-migrate` for managing migrations:
-
-```bash
-migrate -path ./database/migrations -database "$DATABASE_URL" up
-migrate -path ./database/migrations -database "$DATABASE_URL" down -all
-```
 
 ## Testing
 
@@ -134,12 +85,3 @@ Always run with `-race`. Test only exported functions — internals are implemen
 Use the standard `testing` package. `t.Fatalf` for setup failures, `t.Errorf` for assertions. Extract helpers with `t.Helper()` for accurate failure output.
 
 See [guides/github-actions-cicd.md](github-actions-cicd.md) for the full CI setup including Postgres service containers.
-
-## Code Quality
-
-- **Small, focused functions** — if a function needs a comment to explain what it does, consider splitting it.
-- **Explicit over implicit** — Go favours verbose but clear code over magic.
-- **No global state** — pass dependencies via constructor or function arguments.
-- **Interfaces at the consumer** — define interfaces where they are used, not where they are implemented. Keep them small (1–3 methods).
-- **Errors are values** — handle every error at the point it occurs; don't ignore with `_`.
-- **Avoid premature abstraction** — start concrete, extract interfaces when you need to swap implementations or test.

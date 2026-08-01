@@ -2,8 +2,7 @@
 
 Shared verification contract for the handbook skills. Skills that produce code or
 documents link here from their **Quality** section instead of restating it. Run it
-once per result, before presenting work — surface issues in the chat only if you
-find them.
+once per result — surface issues in the chat only if you find them.
 
 ## Scope guard
 
@@ -13,7 +12,6 @@ stop, name the out-of-scope changes, and ask the user before proceeding.
 ## Verify before claiming done
 
 Before reporting work as complete, audit each claim against a tool result from
-this session; only report work you can point to evidence for. For code changes:
-name the exact test/build/lint command, run it fresh this turn, and cite its
-output. For document artifacts: re-read the final file and confirm every link and
-path it references exists.
+this session. For code changes: name the exact test/build/lint command, run it
+fresh this turn, and cite its output. For document artifacts: re-read the final
+file and confirm every link and path it references exists.

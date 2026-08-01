@@ -74,13 +74,8 @@ whatever is currently checked out, without stashing or branch-juggling.
 
 ## Constraints
 
-- Check for existing isolation before creating a worktree — nesting a worktree
-  inside a worktree is a mess to unwind.
-- Confirm the worktree directory is ignored before creating it — an untracked
-  worktree's contents should not end up staged.
-- Run the clean-baseline check (dependency install + test run) after creating a
-  worktree — it's the only way to tell new breakage from pre-existing breakage
-  later.
+- Run the clean-baseline check after creating a worktree — it's the only way
+  to tell new breakage from pre-existing breakage later.
 - Prefer `.worktrees/` over ad hoc locations so worktrees stay predictable and
   easy to clean up in bulk (`git worktree list`, `git worktree prune`).
 - Remove worktrees once their branch is merged or abandoned — stale worktrees

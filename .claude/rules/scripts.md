@@ -25,22 +25,12 @@ set -euo pipefail
 
 ## Style
 
-- Use a `log()` helper for status output (coloured prefix).
-- Quote all variables: `"$var"`, not `$var`.
-- Use `[[ ]]` for conditionals.
-- Make scripts **idempotent** — safe to run multiple times.
-- Provide configurable values at the top as env-var defaults: `VAR="${VAR:-default}"`.
-
-## Error handling
-
+- Use a `log()` helper for status output (coloured prefix); quote all variables: `"$var"`, not `$var`; use `[[ ]]` for conditionals.
+- Make scripts **idempotent** — safe to run multiple times; provide configurable values at the top as env-var defaults: `VAR="${VAR:-default}"`.
 - `set -euo pipefail` is mandatory.
 - Guard destructive operations with pre-flight checks (e.g. root check, required env vars).
-
-## File naming
-
-`<verb>-<noun>.sh` — lowercase, hyphens. Example: `setup-server.sh`.
+- Name files `<verb>-<noun>.sh` — lowercase, hyphens. Example: `setup-server.sh`.
 
 ## After creating or renaming a script
 
-1. Add or update the entry in `README.md` (Scripts table).
-2. Ensure the script is executable: `chmod +x scripts/<name>.sh`.
+Ensure the script is executable: `chmod +x scripts/<name>.sh`.

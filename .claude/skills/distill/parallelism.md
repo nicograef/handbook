@@ -4,13 +4,11 @@ How to fan out a distillation run, which model gets which stage, and what worker
 must return.
 
 - [Execution modes](#execution-modes)
-- [What parallelizes and what does not](#what-parallelizes-and-what-does-not)
 - [Model routing](#model-routing)
 - [The worker contract](#the-worker-contract)
 - [Grouping files](#grouping-files)
 - [Workflow mode](#workflow-mode)
 - [Apply-stage partitioning](#apply-stage-partitioning)
-- [Anti-patterns](#anti-patterns)
 
 The delegation contract itself — scope, self-contained context, constraints,
 return format, collision checks — is in
@@ -26,26 +24,6 @@ Pick once, from the file count in step 2:
 | ≤ 10 files | **Inline.** Read them yourself. Fan-out overhead exceeds the work. |
 | 11–40 files | **Parallel agents.** One `Agent` per group, all dispatched in a single response. |
 | > 40 files, or the user asked for a workflow / ultracode | **Workflow.** A pipeline over groups. |
-
-Corpus size, not enthusiasm, selects the mode. Parallel agents cost roughly 15×
-the tokens of a linear pass — on a twelve-file docs directory that buys nothing.
-
-## What parallelizes and what does not
-
-| Step | Parallel? | Why |
-| --- | --- | --- |
-| 2 Inventory | No | Shell commands. `git ls-files`, `wc -l`. |
-| 3 Blank-slate pass | **Yes** | Files are independent; this is the expensive step. |
-| 4 Cross-file dedup | **No — barrier** | Needs every claim at once. A worker seeing one directory cannot detect duplication across two. |
-| 5 The three questions | No | One conversation with the user. |
-| 6 Plan (incl. restructure design) | Design fans out with ≥ 3 monoliths; finalizing does not | Each target file set is independent; merging is the lead's job. |
-| 7 Approval | No | One conversation with the user. |
-| 8 Apply | Yes, stages 1–3 only | Needs a disjoint partition; stage 4 touches shared indexes. |
-| 9 Verify | Partly | Link sweep delegates; "did the split go too far" does not. |
-| 10 Commit and hand off | No | One commit, one message. |
-
-Step 4 is the one genuine barrier in the skill. Do not try to remove it — the
-whole value of the dedup pass is global visibility.
 
 ## Model routing
 
@@ -142,23 +120,3 @@ Concurrent edits to one file clobber each other. Partition strictly:
 Worktree isolation (`isolation: 'worktree'`) is the wrong tool here: the actions
 are already disjoint by file, and merging worktrees back costs more than the
 partition saves.
-
-## Anti-patterns
-
-**Fanning out a small corpus.** Twelve files read inline is faster end to end than
-three workers plus prompt-writing plus merging.
-
-**A worker per file.** Forty single-file agents means forty prompts, forty
-returns, and no worker with enough context to spot a duplicate. Group.
-
-**Delegating step 4.** A dedup worker with partial visibility reports no
-duplicates and is confidently wrong.
-
-**Skipping the claim list** to keep step-3 returns small, then re-reading the
-corpus in step 4. That doubles the run's cost and is the most likely way this
-design gets quietly broken.
-
-**Letting an analysis worker edit.** A worker that "helpfully" deletes a section
-bypasses the approval gate, which is the one thing this skill must not do.
-
-**Applying inside the analysis workflow.** Same failure, structural version.

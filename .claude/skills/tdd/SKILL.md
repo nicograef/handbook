@@ -8,40 +8,14 @@ description: >-
 
 # Test-Driven Development
 
-## Philosophy
-
-**Core principle**: Tests should verify behavior through public interfaces, not
-implementation details. Code can change entirely; tests shouldn't.
-
-**Good tests** are integration-style: they exercise real code paths through
-public APIs. They describe _what_ the system does, not _how_ it does it. A good
-test reads like a specification — "user can checkout with valid cart" tells you
-exactly what capability exists. These tests survive refactors because they don't
-care about internal structure.
-
-**Bad tests** are coupled to implementation. They mock internal collaborators,
-test private methods, or verify through external means (like querying a database
-directly instead of using the interface). The warning sign: your test breaks
-when you refactor, but behavior hasn't changed. If you rename an internal
-function and tests fail, those tests were testing implementation, not behavior.
-
-See [tests.md](tests.md) for examples and [mocking.md](mocking.md) for mocking
-guidelines.
+See [anti-patterns.md](../test-quality/anti-patterns.md) for worked examples of
+implementation-coupled tests and [mocking.md](mocking.md) for mocking guidelines.
 
 ## Anti-Pattern: Horizontal Slices
 
 Avoid writing all tests first, then all implementation. That is "horizontal
-slicing" — treating RED as "write all tests" and GREEN as "write all code."
-
-This produces **crap tests**:
-
-- Tests written in bulk test _imagined_ behavior, not _actual_ behavior
-- You end up testing the _shape_ of things (data structures, function
-  signatures) rather than user-facing behavior
-- Tests become insensitive to real changes — they pass when behavior breaks,
-  fail when behavior is fine
-- You outrun your headlights, committing to test structure before understanding
-  the implementation
+slicing" — treating RED as "write all tests" and GREEN as "write all code." It
+produces crap tests.
 
 **Correct approach**: Vertical slices via tracer bullets. One test → one
 implementation → repeat. Each test responds to what you learned from the
@@ -68,31 +42,13 @@ Before writing any code:
 - [ ] Confirm with user what interface changes are needed
 - [ ] Confirm with user which behaviors to test (prioritize)
 - [ ] Identify opportunities for deep modules (small interface, deep implementation)
-- [ ] Design interfaces for [testability](interface-design.md)
+- [ ] Design interfaces for testability: inject dependencies instead of constructing them, return values instead of mutating inputs, keep the surface small
 - [ ] List the behaviors to test (not implementation steps)
 - [ ] Get user approval on the plan
 
-Ask: "What should the public interface look like? Which behaviors are most
-important to test?"
-
-**You can't test everything.** Confirm with the user exactly which behaviors
-matter most. Focus testing effort on critical paths and complex logic, not every
-possible edge case.
-
-**Deep modules** (from *A Philosophy of Software Design*): prefer a small
-interface hiding substantial implementation over a shallow module whose
-interface is nearly as complex as what it wraps.
-
-```
-┌─────────────────────┐
-│   Small Interface   │  ← few methods, simple params
-├─────────────────────┤
-│  Deep Implementation│  ← complex logic hidden inside
-└─────────────────────┘
-```
-
-When designing an interface, ask: can I reduce the number of methods, simplify
-the parameters, or hide more complexity inside?
+**You can't test everything.** Ask: "What should the public interface look like?
+Which behaviors are most important to test?" Focus testing effort on critical
+paths and complex logic, not every possible edge case.
 
 ### 2. Tracer Bullet
 
@@ -106,21 +62,10 @@ GREEN:  Write minimal code to pass → test passes
 VERIFY: Confirm it passes AND all other tests still pass, with clean output
 ```
 
-This is your tracer bullet — proves the path works end-to-end.
+This is your tracer bullet — proves the path works end-to-end. Repeat the same
+loop for each remaining behavior.
 
-### 3. Incremental Loop
-
-For each remaining behavior:
-
-```
-RED:    Write next test → fails
-VERIFY: Confirm it fails for the EXPECTED reason (missing feature, not a
-        typo or syntax error)
-GREEN:  Minimal code to pass → passes
-VERIFY: Confirm it passes AND all other tests still pass, with clean output
-```
-
-### 4. Refactor
+### 3. Refactor
 
 After all tests pass, look for refactor candidates:
 

@@ -13,29 +13,6 @@ description: >-
 
 # Cleanup
 
-Review code for clean code principles, design patterns, and anti-patterns.
-Produce a structured report with concrete, minimal suggestions. Apply fixes
-only after user confirmation.
-
-By default this is a focused, incremental review — recent changes or a
-user-specified area — not a full codebase audit or an architectural RFC.
-For a repo-wide audit, use the repo-wide scope mode in step 1.
-
-Reference files for each review pass:
-
-- [principles.md](principles.md) — SOLID, DRY, KISS, YAGNI, separation of
-  concerns, composition over inheritance
-- [code-smells.md](code-smells.md) — structural anti-patterns + AI slop
-  patterns for code and config files
-- [architecture.md](architecture.md) — dependency direction, IoC, deep modules,
-  domain model, repository pattern, boundaries
-- [readability.md](readability.md) — naming, clarity, clever code, nesting,
-  prose/doc slop
-- [readability-de.md](readability-de.md) — German prose/doc slop patterns
-  (use instead of the prose section in readability.md when text is German)
-- [cross-layer.md](cross-layer.md) — cross-layer consistency trace for the
-  repo-wide scope mode
-
 ## Workflow
 
 ### 1. Determine scope
@@ -63,16 +40,6 @@ files to understand context.
 ### 2. Understand conventions
 
 Before flagging anything, read surrounding code that is NOT part of the changes.
-Learn the codebase's native voice:
-
-- Naming conventions (casing, prefixes, abbreviations)
-- Error handling patterns (early returns, try/catch, result types)
-- Comment style and density
-- Architecture style (layered, hexagonal, flat, etc.)
-- Test patterns (naming, structure, assertion style)
-- Import organization
-- Config annotation style
-
 The codebase's existing conventions are the baseline. Flag deviations from
 clean code principles, not deviations from personal preferences.
 
@@ -84,7 +51,7 @@ skip passes that are irrelevant.
 | Pass | Reference | Applies to |
 |---|---|---|
 | Readability & clarity | [readability.md](readability.md) | All files (code, docs, configs) |
-| Readability — German prose | [readability-de.md](readability-de.md) | German-language docs, comments, READMEs |
+| Readability — German prose | [readability-de.md](readability-de.md) | German-language docs, comments, READMEs — use instead of the prose section in readability.md |
 | Principles | [principles.md](principles.md) | Code files |
 | Code smells | [code-smells.md](code-smells.md) | Code files + config files |
 | Architecture & boundaries | [architecture.md](architecture.md) | Service, domain, handler, repository layers |
@@ -152,15 +119,6 @@ Work through confirmed findings one at a time:
   passes lint.
 - Verify no functionality changed — the output, return values, side effects,
   and behavior must remain identical.
-
-### 6. Verify
-
-After all confirmed changes are applied:
-
-- Run the project's build, lint, and test commands if available.
-- Re-read each changed file — it should read more naturally than before.
-- End with a 1–3 sentence summary of what changed and why the result is
-  cleaner.
 
 ## Constraints
 

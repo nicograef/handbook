@@ -20,9 +20,6 @@ content, apply both to the respective sections.
 
 ### KI-Vokabular
 
-Certain words are statistically overrepresented in German LLM output. One in
-isolation may be coincidental; clusters are a signal.
-
 | Remove or replace                 | Typically means                         |
 | --------------------------------- | --------------------------------------- |
 | `grundlegend` / `grundsätzlich`   | "wichtig" or often nothing              |
@@ -69,8 +66,6 @@ alternatives ("auch", "und") when the sentence flows without the connector.
 
 ### Puffery and Significance Claims
 
-Sentences that assert importance without evidence.
-
 **Flag sentences containing:**
 
 - "steht als / dient als Zeugnis"
@@ -85,9 +80,6 @@ Sentences that assert importance without evidence.
 - "festigt seinen/ihren Platz"
 - "symbolisiert" (without concrete referent)
 - "prägt die [Landschaft/Zukunft/Entwicklung]"
-
-**Suggest:** Delete the sentence. If the fact it asserts is important, state it
-concretely with evidence.
 
 ### Superficial Analysis
 
@@ -110,8 +102,6 @@ on its own.
 
 ### Promotional Tone
 
-Marketing language in technical documentation.
-
 **Flag:**
 
 - "reiches kulturelles Erbe" / "reiche Geschichte"
@@ -125,8 +115,6 @@ Marketing language in technical documentation.
 - "reicher kultureller Teppich"
 - "renommiert"
 - "kuratiert"
-
-**Suggest:** Replace with neutral, specific language.
 
 ### Copula Avoidance
 
@@ -145,9 +133,6 @@ Inflated alternatives to "ist/sind" or "hat/haben."
 
 ### Collaborative Residue
 
-Traces of the AI conversation left in German output. Often direct translations
-of English ChatGPT phrases that sound unnatural in German.
-
 **Flag:**
 
 - "Wie gewünscht, hier ist..."
@@ -159,12 +144,7 @@ of English ChatGPT phrases that sound unnatural in German.
 - "Hier ist eine detailliertere Aufschlüsselung..."
 - Any sentence addressing "Sie/du" when the document should not
 
-**Suggest:** Delete the sentence entirely.
-
 ### Generic Filler
-
-Sentences that say nothing. Test: delete the sentence — if the paragraph's
-meaning is unchanged, it was filler.
 
 **Common patterns:**
 
@@ -206,11 +186,8 @@ neutral prose.
 
 ### Elegant Variation
 
-Same as in English: cycling through synonyms for the same concept.
 "Das System", "die Plattform", "die Lösung", "das Werkzeug" — all meaning the
 same thing.
-
-**Suggest:** Pick one term and use it consistently.
 
 ### Knowledge Cutoff Hints
 
@@ -237,9 +214,6 @@ three coordinated adjectives.
 - "sowohl kulturell als auch wirtschaftlich und sozial"
 - "Fachleute, Experten und Stakeholder"
 
-**Suggest:** Keep only terms that carry distinct meaning. Often one or two
-suffice.
-
 ### False Extension
 
 "Von... bis" constructions that enumerate examples without conveying information.
@@ -253,8 +227,6 @@ suffice.
 
 ### Vague Attributions
 
-Claims attributed to unnamed authorities.
-
 **Flag:**
 
 - "Experten zufolge"
@@ -263,8 +235,6 @@ Claims attributed to unnamed authorities.
 - "Kritiker argumentieren"
 - "laut verschiedenen Quellen"
 - "nach Einschätzung von Fachleuten"
-
-**Suggest:** Cite a specific source or remove the attribution.
 
 ### Formatting Tells
 

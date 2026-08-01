@@ -3,8 +3,7 @@
 Stand up the full external monitoring surface for a single-VPS stack on
 [Better Stack](https://betterstack.com/)'s free plan: one HTTPS uptime monitor
 (with a TLS/SSL-expiry alert) plus three cron heartbeats (backup, cert renewal,
-health ping). Better Stack is external to the server, so it still alerts when
-the box itself is down.
+health ping).
 
 ## The dead-man model
 
@@ -14,14 +13,13 @@ then trips the alert after the grace period. This is service-portable — it
 needs no `/fail` endpoint, just a plain `GET` on success — and it means a job
 that never runs at all (dead cron, dead box) alerts by itself.
 
-Division of labor for certs (two independent signals):
-
-- The **cert-renewal heartbeat** proves `certbot renew` ran and succeeded.
-- The **external TLS-expiry monitor** is the safety net for the *reload* half:
-  after PRD 1, `certbot renew` and `nginx -s reload` are decoupled loops (see
-  [letsencrypt-docker.md](letsencrypt-docker.md)), so a renew can succeed while
-  a stuck reload keeps nginx serving the old cert. The heartbeat can't see that;
-  the external SSL-expiry check on the live `:443` endpoint can.
+Certs need two independent signals: the **cert-renewal heartbeat** proves
+`certbot renew` ran and succeeded, and the **external TLS-expiry monitor** is
+the safety net for the *reload* half. `certbot renew` and `nginx -s reload` are
+decoupled loops (see [letsencrypt-docker.md](letsencrypt-docker.md)), so a renew
+can succeed while a stuck reload keeps nginx serving the old cert — the
+heartbeat can't see that; the external SSL-expiry check on the live `:443`
+endpoint can.
 
 ## Ping URLs are configuration, never git
 
@@ -33,12 +31,6 @@ enter the repository**:
 | `BACKUP_PING_URL` | server's Compose `.env` | [scripts/backup-postgres.sh](../scripts/backup-postgres.sh) |
 | `CERT_PING_URL` | server's Compose `.env` | `certbot` service in [docker-compose.prod.yml](../templates/docker-compose.prod.yml) |
 | `HEALTH_PING_URL` | `/etc/default/report-health` | `report-health` cron, persisted by provisioning |
-
-`templates/.env.example` carries the two Compose-side URLs as commented
-placeholders — copy them into the server's real `.env` and fill in the values.
-`HEALTH_PING_URL` is persisted by provisioning (see the `report-health` step in
-[provision-server.md](provision-server.md)); it is a host-side cron, not part of
-the Compose stack.
 
 ## Prerequisites
 
@@ -55,19 +47,15 @@ the Compose stack.
 
 ### Inputs
 
-The three URLs in [Ping URLs are configuration, never git](#ping-urls-are-configuration-never-git)
-are generated in Steps 3–5 (copy each into the location that table names). Before
-starting you only need:
-
-- `<your-domain>` — public HTTPS endpoint the uptime monitor checks (Step 2)
+Only `<your-domain>` — the public HTTPS endpoint the uptime monitor checks
+(Step 2); the three ping URLs are generated in Steps 3–5.
 
 ## Step 1 — Create the account
 
-1. Sign up at [betterstack.com](https://betterstack.com/) and confirm the email.
-2. In **Uptime**, note that monitors and heartbeats draw from the same pool of
-   10. Configure alerts once under the team's on-call/notification settings:
-   add your email and, optionally, a Slack integration — every monitor and
-   heartbeat below reuses it.
+Sign up at [betterstack.com](https://betterstack.com/) and confirm the email. In
+**Uptime**, monitors and heartbeats draw from the same pool of 10. Configure
+alerts once under the team's on-call/notification settings: add your email and,
+optionally, a Slack integration — every monitor and heartbeat below reuses it.
 
 ## Step 2 — HTTPS uptime monitor with SSL-expiry alert
 
@@ -191,6 +179,6 @@ sudo report-health   # runs the checks; prints why it withheld the ping
 See also:
 - [scripts/backup-postgres.sh](../scripts/backup-postgres.sh) — backup script that pings `BACKUP_PING_URL`
 - [templates/docker-compose.prod.yml](../templates/docker-compose.prod.yml) — certbot service that pings `CERT_PING_URL`
-- [guides/letsencrypt-docker.md](letsencrypt-docker.md) — renewal loop and the heartbeat-vs-TLS-expiry division of labor
+- [guides/letsencrypt-docker.md](letsencrypt-docker.md) — the decoupled renew and reload loops
 - [guides/postgresql-operations.md](postgresql-operations.md) — backup cron that consumes `BACKUP_PING_URL`
 - [guides/provision-server.md](provision-server.md) — provisioning that persists `HEALTH_PING_URL`

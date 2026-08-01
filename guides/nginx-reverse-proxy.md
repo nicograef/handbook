@@ -1,19 +1,5 @@
 # Nginx Reverse Proxy (HTTPS + SPA)
 
-Production nginx config for TLS termination, API proxying, and SPA hosting.
-
-## Prerequisites
-
-- Docker + Compose installed, with a reverse-proxy service (see
-  [templates/docker-compose.prod.yml](../templates/docker-compose.prod.yml)).
-- A TLS certificate already issued (see [guides/letsencrypt-docker.md](letsencrypt-docker.md)).
-
-## Full Config
-
-See [templates/nginx-tls.conf](../templates/nginx-tls.conf) for the copy-paste-ready config. It
-already covers the HTTP→HTTPS redirect + ACME challenge, the www→non-www redirect, TLS session
-settings, security headers, and API rate limiting — adapt those there, not here.
-
 ## Key Patterns
 
 These two patterns are not in the reverse-proxy template because they belong in the **frontend**
@@ -76,10 +62,3 @@ curl -I https://example.com
 # → HTTP→HTTPS redirect loop. Check that the backend isn't also redirecting.
 # → Verify listen 80 block only handles ACME + redirect, nothing else.
 ```
-
----
-
-See also:
-- [templates/nginx-tls.conf](../templates/nginx-tls.conf) — full nginx TLS config template
-- [guides/letsencrypt-docker.md](letsencrypt-docker.md) — TLS certificate setup
-- [templates/docker-compose.prod.yml](../templates/docker-compose.prod.yml) — production Compose with nginx

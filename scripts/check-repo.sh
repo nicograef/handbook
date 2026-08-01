@@ -1,22 +1,9 @@
 #!/usr/bin/env bash
 # check-repo.sh – repo self-check for the handbook knowledge base.
 #
-# Usage:
-#   scripts/check-repo.sh            # run every stage
-#   make check                       # same, via the Makefile
-#   make links | make lint | make readme   # a single stage (see Makefile)
+# Every stage is documented as a target in the Makefile.
 #
-# What it does (silent on success, exit 0; focused errors + exit 2 on failure):
-#   1. Link check    — every relative Markdown link resolves to a file on disk.
-#   2. Shellcheck    — scripts/*.sh, install.sh, and .claude/skills/*/*.sh pass shellcheck.
-#   3. README index  — every content-dir file is indexed in README.md and vice-versa.
-#   4. Language      — no German prose (umlauts / eszett) outside the allow-listed files.
-#   5. Skills index  — every SKILL.md directory is listed in .claude/skills/README.md and vice-versa.
-#   6. Compose       — every templates/docker-compose*.yml passes `docker compose config -q`.
-#   7. Plugin        — the plugin manifests pass `claude plugin validate .`.
-#
-# Idempotent: reads only, never writes. Run any subset via the STAGE argument:
-#   scripts/check-repo.sh links | lint | readme | language | skills | compose | plugin | all   (default: all)
+# Idempotent: reads only, never writes.
 
 set -euo pipefail
 
@@ -58,9 +45,7 @@ strip_code() {
   '
 }
 
-# ---------------------------------------------------------------------------
 # 1. Link check
-# ---------------------------------------------------------------------------
 check_links() {
   local file dir target path resolved
   while IFS= read -r file; do
@@ -84,9 +69,7 @@ check_links() {
   done < <(tracked_md)
 }
 
-# ---------------------------------------------------------------------------
 # 2. Shellcheck
-# ---------------------------------------------------------------------------
 check_shell() {
   if ! command -v shellcheck >/dev/null 2>&1; then
     log "shellcheck not installed"
@@ -102,9 +85,7 @@ check_shell() {
   done < <(git ls-files 'scripts/*.sh' 'install.sh' '.claude/skills/*/*.sh')
 }
 
-# ---------------------------------------------------------------------------
 # 3. README index diff
-# ---------------------------------------------------------------------------
 check_readme() {
   local readme="README.md" links file target path
   # All relative links the README points at (anchors stripped).
@@ -138,9 +119,7 @@ check_readme() {
   done <<< "$links"
 }
 
-# ---------------------------------------------------------------------------
 # 4. Language check
-# ---------------------------------------------------------------------------
 check_language() {
   local file allow
   while IFS= read -r file; do
@@ -153,9 +132,7 @@ check_language() {
   done < <(tracked_md)
 }
 
-# ---------------------------------------------------------------------------
 # 5. Skills index diff
-# ---------------------------------------------------------------------------
 check_skills() {
   local readme=".claude/skills/README.md" links skill dir
   # Skill directories the index links (form `](name/)`, trailing slash stripped).
@@ -180,9 +157,7 @@ check_skills() {
   done <<< "$links"
 }
 
-# ---------------------------------------------------------------------------
 # 6. Compose templates
-# ---------------------------------------------------------------------------
 check_compose() {
   if ! command -v docker >/dev/null 2>&1; then
     log "docker not installed"
@@ -198,9 +173,7 @@ check_compose() {
   done < <(git ls-files 'templates/docker-compose*.yml')
 }
 
-# ---------------------------------------------------------------------------
 # 7. Plugin manifests
-# ---------------------------------------------------------------------------
 check_plugin() {
   if ! command -v claude >/dev/null 2>&1; then
     log "claude not installed"

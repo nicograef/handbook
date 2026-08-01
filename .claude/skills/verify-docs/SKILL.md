@@ -27,24 +27,16 @@ allowed-tools:
 
 Decide whether each documented claim is **true**, and fix the ones that are not.
 
-**Scope boundary.** This skill judges truth, never value. A sentence that is
-verbose, duplicated, badly placed, or inconsistently named is not its business —
-corpus value and structure belong to `/distill`, sentence-level quality and
-naming to `/cleanup`. A sentence that is elegant, well-placed, and *wrong* is the
-only thing this skill targets. It never re-runs a distillation and never deletes
-something for being unnecessary.
-
 ## Why this runs in its own session
 
-The session that just rewrote the docs is the worst possible auditor of them. It
+The session that just rewrote the docs is the worst possible auditor of them: it
 is anchored on its own dispositions, it spent its context deciding what to remove
-rather than what is true, and it will read a surviving line as verified simply
+rather than what is true, and it reads a surviving line as verified simply
 because it chose to keep it.
 
-So this skill starts from a commit, not from a conversation. Its inputs are the
-files on disk, the sources they describe, and the handoff commit message —
-nothing else. Anything it cannot re-derive from those does not exist for it,
-which is the point.
+So this skill starts from a commit, not a conversation. Its inputs are the files
+on disk, the sources they describe, and the handoff commit message — nothing
+else; anything it cannot re-derive from those does not exist for it.
 
 Ground-truth classes, the evidence rule, lane precedence, and the anti-patterns
 are in [sources.md](sources.md). Read it before step 2 — the lane taxonomy is
@@ -57,9 +49,9 @@ needed to extract claims, not just to verify them.
 Arguments: `$ARGUMENTS`. Paths narrow the corpus; `since <ref>` limits it to docs
 touched since that ref; `report-only` skips step 6 and the commit in step 7.
 
-- Require a clean working tree — `git status --porcelain` must be empty. That
-  both guarantees the corpus is committed and leaves the fixes as a diff of
-  their own. If the tree is dirty, stop and say so.
+- Require a clean working tree — `git status --porcelain` must be empty; if the
+  tree is dirty, stop and say so. That both guarantees the corpus is committed
+  and leaves the fixes as a diff of their own.
 - Record the HEAD sha. The report cites the exact state that was audited.
 - **Run the repo's own checks now** — `make check`, a link linter, a docs build.
   They mechanize dead relative links and index-vs-disk comparison far better than
@@ -124,17 +116,15 @@ Work the lanes per [sources.md](sources.md). One verdict per claim:
 | **STALE** | Was true, has been superseded. Record what superseded it, if reachable. |
 | **UNREACHED** | The claim has a lane, but the source could not be reached. Record why. |
 
-Lane-`none` claims get no verdict here; nothing could refute them, so step 3
-skips them.
+Lane-`none` claims get no verdict here; nothing could refute them.
 
 Two outcomes fall outside the table and go straight to step 5: the lane shows the
 **code is broken and the doc describes the intent correctly**, and **two lanes
 disagree with each other**. Both are findings about the repo, not about the doc.
 
 **Every verdict carries evidence from this session** — see *The evidence rule* in
-[sources.md](sources.md). A verdict without an artifact is a guess wearing a
-verdict's clothes, and it is the single way this skill does damage: it "corrects"
-a right doc into a wrong one.
+[sources.md](sources.md). A verdict without an artifact is a guess, and it is the
+single way this skill does damage: it "corrects" a right doc into a wrong one.
 
 Verification routes to `opus` — deciding what an artifact actually proves is
 judgment, and a cheap pass moves the cost to a wrong fix.
@@ -217,27 +207,13 @@ committed.
 
 ## Constraints
 
-- **Never assert a verdict without an artifact from this session.** Not a
-  recollection, not a plausible inference, not "this is standard".
-- **Never fabricate a replacement value.** If the lane did not yield the correct
-  value, the claim gets deleted or reported — never rewritten into a guess.
 - **Never run anything that changes state**, and **never treat the local machine
   as the target host** — the allowed and forbidden commands, and the host caveat,
   are in *Lane 2* of [sources.md](sources.md).
-- **A doc never verifies a doc.** A second file repeating a claim is corroboration
-  of nothing; it is usually the copy that drifted.
-- **Never touch code to make a doc true.** Comments and docstrings are prose and
-  in scope; the statements around them are not.
-- **Never resolve an unverified contradiction.** Two docs disagreeing with no
-  reachable source is a finding for the user, not a coin flip.
-- **Unreached is not false.** Deleting what you failed to reach is how this skill
-  loses the tribal knowledge that has no source of truth to link to.
 - **Never re-open the distillation's decisions.** A deleted file stays deleted, a
   kept file is not re-argued, and content is never cut for being wordy. Only
   truth is on the table.
 - **Never edit generated documentation.** Fix the generator or report it.
-- **One commit, at the end.** Fixes are never committed incrementally — the whole
-  sweep is one reviewable diff against the state it audited.
 
 ## Quality
 

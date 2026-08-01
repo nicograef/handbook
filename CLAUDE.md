@@ -2,13 +2,6 @@
 
 <!-- Claude-only deltas. The canonical rules live in AGENTS.md (imported above). -->
 
-## Searching
-
-```bash
-grep -r '<term>' .          # search across all files
-find . -name '*.md'         # list all Markdown files
-```
-
 ## On `/compact`
 
 When compacting, preserve the list of files modified this session and the exact test or check

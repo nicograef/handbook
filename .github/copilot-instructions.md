@@ -4,5 +4,3 @@ The shared rules live in [`AGENTS.md`](../AGENTS.md); Copilot reads it alongside
 nothing is restated here.
 
 Copilot-only pointers:
-
-- Reusable prompts: `.github/prompts/`.

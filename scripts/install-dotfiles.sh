@@ -47,10 +47,6 @@ for src in "${!FILES[@]}"; do
 done
 
 # ── Claude Code config ──────────────────────────────────────────────────────
-# Shared global instructions, permissions, plugins, status line and the
-# agents/skills directories – one source of truth for every machine.
-# The skills directory is also mirrored to ~/.agents/skills for the Copilot CLI,
-# which reads that location instead of ~/.claude/skills.
 # settings.local.json stays machine-local and is intentionally NOT linked.
 mkdir -p "$HOME/.claude"
 declare -A CLAUDE_LINKS=(

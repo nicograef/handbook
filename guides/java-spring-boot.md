@@ -32,13 +32,6 @@ Controller  →  Service  →  Repository  →  Model
    (HTTP)     (business)    (persistence)   (domain)
 ```
 
-| Layer | Annotation | Responsibility |
-| ----- | ---------- | -------------- |
-| Controller | `@RestController` | Parse HTTP request, validate input, delegate to service, return response |
-| Service | `@Service` | Business logic, orchestration, caching |
-| Repository | `@Repository` | Data access (extend `JpaRepository`) |
-| Model | — | Domain entities and value objects |
-
 A controller never talks to a repository. A repository never contains business logic.
 
 ---
@@ -47,72 +40,11 @@ A controller never talks to a repository. A repository never contains business l
 
 Always use **constructor injection** — no `@Autowired` field injection.
 
-```java
-@Service
-public class IbanService {
-
-    private final IbanRepository ibanRepository;
-    private final IbanValidator ibanValidator;
-
-    public IbanService(IbanRepository ibanRepository, IbanValidator ibanValidator) {
-        this.ibanRepository = ibanRepository;
-        this.ibanValidator = ibanValidator;
-    }
-}
-```
-
-Constructor injection makes dependencies explicit, works without a Spring context in unit tests, and makes the class easy to instantiate manually (`new IbanService(repo, validator)`).
-
----
-
-## DTOs and Java Records
-
-Use **Java records** for request/response DTOs. Records are immutable, have built-in `equals`/`hashCode`/`toString`, and require no boilerplate.
-
-```java
-// Request DTO
-public record IbanRequest(@NotBlank String iban) {}
-
-// Response DTO
-public record ValidationResult(boolean valid, String iban, String bankName, String error) {}
-```
-
-Keep domain entities (`@Entity`) separate from DTOs. The controller converts between them.
-
----
-
-## Key Annotations
-
-| Annotation | Layer | Purpose |
-| ---------- | ----- | ------- |
-| `@SpringBootApplication` | Root | Enables auto-configuration and component scan |
-| `@RestController` | Controller | Combines `@Controller` + `@ResponseBody` |
-| `@RequestMapping` / `@PostMapping` | Controller | Maps HTTP routes |
-| `@Valid` | Controller | Triggers Bean Validation on request body |
-| `@Service` | Service | Marks as Spring-managed service bean |
-| `@Repository` | Repository | Marks as Spring-managed repository bean |
-| `@Entity` | Model | Maps class to database table |
-| `@NotBlank`, `@Size`, `@Pattern` | DTO | Bean Validation constraints |
-| `@ExceptionHandler` | Controller | Handles exceptions and returns error responses |
-| `@Configuration` / `@Bean` | Config | Defines infrastructure beans (RestClient, etc.) |
-
 ---
 
 ## SQL, ORM and Flyway Migrations
 
 Use **Spring Data JPA** for persistence. Define entities with `@Entity`, extend `JpaRepository`.
-
-```java
-@Entity
-public class Iban {
-    @Id
-    private String iban;
-    private String bankName;   // nullable — may be absent for unknown banks
-    private boolean valid;
-}
-
-public interface IbanRepository extends JpaRepository<Iban, String> {}
-```
 
 Manage schema with **Flyway**. Never modify existing migrations — only add new ones.
 
@@ -152,17 +84,6 @@ Fix formatting locally:
 ./mvnw spotless:apply    # auto-format all Java files
 ./mvnw verify            # verify format + lint + tests
 ```
-
----
-
-## Clean Code and DDD Principles
-
-- **Single Responsibility** — one class, one reason to change. Split large services.
-- **Value Objects** — model domain concepts as immutable classes (e.g., `IbanNumber`). Validate on construction, throw on invalid input.
-- **Interfaces for dependencies** — depend on `IbanValidator` interface, not a concrete class. Enables swapping implementations and easy mocking.
-- **Meaningful names** — `validateOrLookup()` over `process()`, `IbanFormatException` over `Exception`.
-- **No magic primitives** — wrap domain concepts in types (`IbanNumber` instead of `String`).
-- **Exception hierarchy** — domain exceptions extend `RuntimeException`; let `@ExceptionHandler` translate them to HTTP responses.
 
 ---
 

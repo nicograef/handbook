@@ -7,11 +7,6 @@ in a Docker Compose stack.
 
 - Docker Compose stack with a `postgres` service (see [templates/docker-compose.prod.yml](../templates/docker-compose.prod.yml))
 - `.env` file with `POSTGRES_USER`, `POSTGRES_PASSWORD`, `POSTGRES_DB`
-- `pg_dump` / `pg_restore` available (installed with `postgresql-client`)
-
-```bash
-sudo apt install -y postgresql-client
-```
 
 ## 1. Manual Backup
 
@@ -34,14 +29,6 @@ docker compose exec -T postgres sh -c \
 docker compose exec -T postgres sh -c \
   'pg_dump -U "$POSTGRES_USER" -d "$POSTGRES_DB"' \
   > "backup-$(date +%Y%m%d-%H%M).sql"
-```
-
-### Single table
-
-```bash
-docker compose exec -T postgres sh -c \
-  'pg_dump -U "$POSTGRES_USER" -d "$POSTGRES_DB" -t users -Fc' \
-  > "users-$(date +%Y%m%d-%H%M).dump"
 ```
 
 ## 2. Restore
@@ -73,12 +60,9 @@ docker compose exec -T postgres sh -c \
 
 ## 3. Automated Backup (cron)
 
-Use [scripts/backup-postgres.sh](../scripts/backup-postgres.sh). It dumps the
-database (custom format) via the container, **verifies** the fresh dump with
-`pg_restore --list` before keeping it (so the backup dir never holds an
-unverified file), prunes old dumps, and — only after everything succeeds —
-pings a dead-man's-switch URL. Any failure exits non-zero and skips the ping.
-Set up the `BACKUP_PING_URL` heartbeat in [monitoring.md](monitoring.md).
+Use [scripts/backup-postgres.sh](../scripts/backup-postgres.sh); its header
+documents each step. Set up the `BACKUP_PING_URL` heartbeat in
+[monitoring.md](monitoring.md).
 
 ### Install on the server
 
@@ -96,15 +80,9 @@ sudo mkdir -p /opt/backups/postgres
 
 ### Configuration
 
-Set via env vars (defaults shown). The script loads the Compose `.env` from
-`COMPOSE_DIR`, so `POSTGRES_USER` / `POSTGRES_DB` come from there.
-
-| Variable          | Default                 | Purpose                                                    |
-| ----------------- | ----------------------- | ---------------------------------------------------------- |
-| `BACKUP_DIR`      | `/opt/backups/postgres` | Where verified dumps are written.                          |
-| `RETENTION_DAYS`  | `14`                    | Delete `backup-*.dump` older than this.                    |
-| `COMPOSE_DIR`     | `/opt/myapp`            | Compose project dir; its `.env` is loaded and used as cwd. |
-| `BACKUP_PING_URL` | *(unset)*               | Dead-man's-switch URL pinged on success; skipped if unset. |
+Set via env vars — names and defaults are at the top of the script. It loads the
+Compose `.env` from `COMPOSE_DIR`, so `POSTGRES_USER` / `POSTGRES_DB` come from
+there.
 
 > **Accepted risk — backups are on the same disk they protect.** `BACKUP_DIR`
 > lives on the server being backed up, so losing the server (disk failure,
@@ -159,19 +137,7 @@ cd "$COMPOSE_DIR"
    ```
 
    Each `-c` prints its own one-row result block; expect a plausible,
-   non-zero count per table:
-
-   ```
-    count
-   -------
-       42
-   (1 row)
-
-    count
-   -------
-      100
-   (1 row)
-   ```
+   non-zero count per table.
 
 4. **Record the outcome** — one line is enough (e.g. append to a
    `restore-drills.log` next to the backups, or note it in your ops journal):
@@ -256,36 +222,6 @@ DROP TABLE IF EXISTS users;
 
 ## 6. Monitoring Queries
 
-### Active connections
-
-```sql
-SELECT pid, usename, application_name, state, query_start, query
-FROM pg_stat_activity WHERE datname = current_database();
-```
-
-### Long-running queries (> 5 min)
-
-```sql
-SELECT pid, now() - query_start AS duration, query
-FROM pg_stat_activity
-WHERE state = 'active' AND now() - query_start > interval '5 minutes';
-```
-
-### Table sizes
-
-```sql
-SELECT relname, pg_size_pretty(pg_total_relation_size(relid))
-FROM pg_catalog.pg_statio_user_tables
-ORDER BY pg_total_relation_size(relid) DESC;
-```
-
-### Unused indexes
-
-```sql
-SELECT indexrelname, idx_scan
-FROM pg_stat_user_indexes WHERE idx_scan = 0;
-```
-
 ### Cache hit ratio (should be > 99%)
 
 ```sql
@@ -299,12 +235,6 @@ FROM pg_statio_user_tables;
 ```bash
 # confirm backup file was created
 ls -lh backup-*.dump
-
-# test restore into a throwaway database
-docker compose exec postgres sh -c 'createdb -U "$POSTGRES_USER" test_restore'
-docker compose exec -T postgres sh -c \
-  'pg_restore -U "$POSTGRES_USER" -d test_restore' < backup-*.dump
-docker compose exec postgres sh -c 'dropdb -U "$POSTGRES_USER" test_restore'
 
 # check migration version (uses the migrate wrapper from section 5)
 migrate version

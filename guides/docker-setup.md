@@ -1,67 +1,10 @@
 # Docker Setup (Debian / Ubuntu)
 
-## Prerequisites
-
-- Debian 12+ or Ubuntu 22.04+
-- Root or sudo access
-- Internet access
-
-## Install Docker on Debian / Ubuntu
-
-Source: https://docs.docker.com/engine/install/debian/
-
-```bash
-# install prerequisites
-sudo apt update
-sudo apt install -y ca-certificates curl gnupg
-
-# resolve the distro once — works for both Debian and Ubuntu
-. /etc/os-release
-REPO_URL="https://download.docker.com/linux/${ID}"
-
-# add Docker GPG key
-sudo install -m 0755 -d /etc/apt/keyrings
-curl -fsSL "$REPO_URL/gpg" | sudo gpg --dearmor -o /etc/apt/keyrings/docker.gpg
-sudo chmod a+r /etc/apt/keyrings/docker.gpg
-
-# add Docker repo (uses $ID and $VERSION_CODENAME from /etc/os-release)
-echo \
-  "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] $REPO_URL \
-  $VERSION_CODENAME stable" | \
-  sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
-
-# install Docker
-sudo apt update
-sudo apt install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
-
-# run without sudo
-sudo usermod -aG docker $USER
-newgrp docker
-```
-
 ## Post-Install Configuration
 
 > **IPv6-only host?** Use the merged `daemon.json` from
-> [ipv6-only-vps.md](ipv6-only-vps.md) instead — the block below would overwrite
-> its IPv6 keys.
-
-### Log rotation (prevent disk fill)
-
-> Provisioned with [`scripts/setup-server.sh`](../scripts/setup-server.sh)?
-> This is already applied — skip this block.
-
-```bash
-sudo tee /etc/docker/daemon.json > /dev/null <<'EOF'
-{
-  "log-driver": "json-file",
-  "log-opts": {
-    "max-size": "10m",
-    "max-file": "3"
-  }
-}
-EOF
-sudo systemctl restart docker
-```
+> [ipv6-only-vps.md](ipv6-only-vps.md) instead — a plain log-rotation
+> `daemon.json` would overwrite its IPv6 keys.
 
 ### Prune unused resources
 
@@ -76,7 +19,6 @@ docker system df                     # check disk usage
 docker --version               # Docker version 28.x+
 docker compose version         # Docker Compose v2.x+
 docker run hello-world         # pull + run test container
-docker info | grep 'Logging Driver'  # confirm json-file
 ```
 
 ## Troubleshooting
