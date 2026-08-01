@@ -34,6 +34,7 @@ Which surfaces load these personal skills, and from where:
 | Mobile UX, UI consistency, workflow friction                  | **UX Review**                   | [ux-review/](ux-review/)                                     |
 | Extracting DDD glossary terms                                 | **Ubiquitous Language**         | [ubiquitous-language/](ubiquitous-language/)                 |
 | Incremental code review, readability, slop removal, or a repo-wide cross-layer audit | **Cleanup** | [cleanup/](cleanup/)                             |
+| Radically minimizing and restructuring a repo's docs, prose, and comments | **Distill** | [distill/](distill/)                                 |
 | Understanding a part of the codebase holistically             | **Understand**                  | [understand/](understand/)                                   |
 | Learning a subject through quizzes with scaffolded hints      | **Tutor**                       | [tutor/](tutor/)                                             |
 | Researching companies, jobs, or tools from live sources       | **Research**                    | [research/](research/)                                       |
