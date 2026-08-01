@@ -93,8 +93,8 @@ contradicting evidence. Never propose rewriting a whole surface.
 
 ## Repo-leftover review
 
-Always current-repo-only, in every scope. Deletions land in the working tree
-only — committing stays a separate, user-approved `/commit` step.
+Always current-repo-only, in every scope. Deletions land in the working tree and
+are committed once the user has picked them.
 
 Propose:
 

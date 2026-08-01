@@ -130,8 +130,8 @@ One chat report, in this order:
 - Every semantic change is gated: nothing judgment-based is deleted or
   updated without being picked in the multi-select. Uncommitted work is never
   proposed for deletion.
-- **Never commit.** Committing stays a separate, user-approved step
-  (`/commit`).
+- **Commit the repo-leftover deletions** once applied — one commit, only the picked
+  items. Agent-state deletions live outside version control and leave nothing to commit.
 
 ## Quality
 

@@ -94,8 +94,8 @@ valid outcome.
 - A tooling/process item beyond a trivial edit (new CI job, refactor, test
   suite) is never implemented inline — recommend running write-prd /
   create-plan for it and leave it at that.
-- **Never commit.** Committing stays a separate, user-approved step
-  (`/commit`).
+- **Commit what you applied** once every picked item is written — one commit, and
+  nothing in it the user did not pick.
 
 ## Constraints
 

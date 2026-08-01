@@ -24,7 +24,7 @@ a new project. Rules are linked, never restated; each lives in exactly one canon
 | Evidence before agreement — verify feedback against the codebase before implementing it | Confirmation bias | [receiving-feedback](../.claude/skills/receiving-feedback/SKILL.md) |
 | Verification contracts — claims need tool evidence from this session | Confirmation bias | [.claude/skills/quality.md](../.claude/skills/quality.md); [web-researcher](../.claude/agents/web-researcher.md) → Hard rules |
 | Structured recommendations — every clarifying question names a recommended option | Confirmation bias | [clarify question rules](../.claude/skills/clarify/question-rules.md) |
-| Gated decisions — the human keeps the wheel | User dependence | No-auto-commit in [AGENTS.md](../AGENTS.md) → Git; confirm-before-apply in [cleanup](../.claude/skills/cleanup/SKILL.md) and [reflect](../.claude/skills/reflect/SKILL.md); scaffolded hints instead of answers in [tutor](../.claude/skills/tutor/SKILL.md) |
+| Gated decisions — the human keeps the wheel | User dependence | Confirm-before-apply in [cleanup](../.claude/skills/cleanup/SKILL.md), [reflect](../.claude/skills/reflect/SKILL.md) and [distill](../.claude/skills/distill/SKILL.md); pick-what-dies multi-select in [prune](../.claude/skills/prune/SKILL.md); scaffolded hints instead of answers in [tutor](../.claude/skills/tutor/SKILL.md) |
 
 ## Why prompts alone don't fix it
 

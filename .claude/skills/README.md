@@ -2,7 +2,7 @@
 
 Agent skills for Claude Code and GitHub Copilot. They live in this handbook repo and reach the agents through **two tiers** from this single source: local symlinks on the dev machine, and the public **`handbook@nicograef` Claude Code plugin** served from this repo (its own marketplace) for every other machine and Claude web session — see [guides/claude-plugin.md](../../guides/claude-plugin.md). Nothing is copied into project repos; adopted repos commit only enablement keys.
 
-Namespacing differs per tier: symlink-tier skills invoke plain (`/commit`), plugin-tier skills namespaced (`/handbook:commit`, agent `handbook:web-researcher`). On the dev machine the plugin is disabled per repo via a gitignored `.claude/settings.local.json` so skills never load twice.
+Namespacing differs per tier: symlink-tier skills invoke plain (`/distill`), plugin-tier skills namespaced (`/handbook:distill`, agent `handbook:web-researcher`). On the dev machine the plugin is disabled per repo via a gitignored `.claude/settings.local.json` so skills never load twice.
 
 ## Skill Consumption Matrix
 
@@ -35,6 +35,7 @@ Which surfaces load these personal skills, and from where:
 | Extracting DDD glossary terms                                 | **Ubiquitous Language**         | [ubiquitous-language/](ubiquitous-language/)                 |
 | Incremental code review, readability, slop removal, or a repo-wide cross-layer audit | **Cleanup** | [cleanup/](cleanup/)                             |
 | Radically minimizing and restructuring a repo's docs, prose, and comments | **Distill** | [distill/](distill/)                                 |
+| Fact-checking committed docs against code, commands, and upstream sources | **Verify Docs** | [verify-docs/](verify-docs/)                     |
 | Understanding a part of the codebase holistically             | **Understand**                  | [understand/](understand/)                                   |
 | Learning a subject through quizzes with scaffolded hints      | **Tutor**                       | [tutor/](tutor/)                                             |
 | Researching companies, jobs, or tools from live sources       | **Research**                    | [research/](research/)                                       |
@@ -42,7 +43,6 @@ Which surfaces load these personal skills, and from where:
 | Acting on code-review feedback                                | **Receiving Feedback**          | [receiving-feedback/](receiving-feedback/)                   |
 | Isolating work in a git worktree                              | **Using Git Worktrees**         | [using-git-worktrees/](using-git-worktrees/)                 |
 | Integrating a finished branch (merge/PR/keep/discard)         | **Finish Branch**               | [finish-branch/](finish-branch/)                             |
-| Proposing a Conventional Commit message for staged changes    | **Commit**                      | [commit/](commit/)                                          |
 | End-of-session retrospective; harvest learnings into memory, rules, skills, docs, tooling | **Reflect** | [reflect/](reflect/)                             |
 | Deleting stale agent state: old sessions, stale memories, outdated rules, repo leftovers | **Prune** | [prune/](prune/)                                 |
 | Running independent subagents in parallel                     | **Dispatching Parallel Agents** | [dispatching-parallel-agents/](dispatching-parallel-agents/) |

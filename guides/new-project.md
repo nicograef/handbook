@@ -138,11 +138,11 @@ mkdir -p .claude && cp "$HANDBOOK/templates/claude-settings.json" .claude/settin
 
 ## 7. First commit
 
-Stage everything and **propose** a Conventional Commit message — do not commit for the user:
+Stage everything and commit — no approval step:
 
 ```bash
 git add -A
-# Propose, e.g.:  chore: scaffold <project-name> from handbook templates
+git commit -m 'chore: scaffold <project-name> from handbook templates'
 ```
 
 ## 8. Production deploy, when it ships

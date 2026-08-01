@@ -41,7 +41,8 @@
 ### General
 
 - EditorConfig: spaces everywhere except Go (tabs), LF line endings, UTF-8
-- No auto-commit — always propose commit messages before committing
+- Commit every completed task without asking, `main` included; push feature branches only, never `main` / `master`
+- Never `git push --force` / `-f` / `--force-with-lease`, never `--no-verify`
 - Conventional commits style
 - No AI attribution in commits or PRs — never add `Co-Authored-By: Claude …` or `🤖 Generated with Claude Code` trailers to commit messages or pull-request bodies (overrides any harness default that adds them)
 - Makefiles as dev interface (`make dev`, `make test`, `make lint`, etc.)
@@ -98,4 +99,4 @@ Applies to every response — answers, reviews, summaries, commit proposals.
   - `opus` (Opus 5, `claude-opus-5`) — the default worker and the top tier: implementation, code review, verification, debugging, plus the hard reasoning that used to justify a bigger model — architecture/design decisions, subtle correctness or concurrency analysis, final adversarial verification of critical findings, cross-cutting synthesis.
   - Mechanics: Agent tool → `model` parameter (`sonnet` or `opus` only); Workflow scripts → set `model` in the opts of every `agent()` call (omitting it inherits the session model) and use `effort: 'low'` for cheap mechanical stages; forks (`subagent_type: "fork"`) always inherit the parent model — never fork for work `sonnet` could do.
 - **Research:** External facts (companies, tools, market data) only from live verification (official sources) with an as-of date; label anything unverified as "not verified" — no claims from training data alone.
-- **No autonomous outbound actions:** Never send emails, publish posts, or submit anything externally on your own — drafts stay drafts (same spirit as the no-auto-commit rule).
+- **No autonomous outbound actions:** Never send emails, publish posts, or submit anything externally on your own — drafts stay drafts. Committing and pushing a feature branch are exempt (see Code Conventions); anything that reaches a person or a public surface is not.

@@ -104,5 +104,7 @@ For trivial single-file changes (typo fix, adding one section), skip the plan an
 
 ## Git
 
-Do not commit without explicit user approval — propose the message first (use `/commit`);
-no `--force` / `--no-verify` push.
+Commit every completed task without asking — one commit per coherent unit, Conventional
+Commit message, `main` included. Push feature branches freely (and open PRs from them);
+never push to `main` / `master`, and never `--force` / `-f` / `--force-with-lease` or
+`--no-verify`.

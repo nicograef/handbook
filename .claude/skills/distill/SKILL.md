@@ -35,7 +35,9 @@ quality inside a diff or one area, use `/cleanup`; it owns the per-comment rules
 ([../cleanup/code-smells.md](../cleanup/code-smells.md)) and the prose-slop
 catalogue ([../cleanup/readability.md](../cleanup/readability.md)), which this
 skill references rather than restates. For deleting agent state (sessions,
-memories, rules), use `/prune`.
+memories, rules), use `/prune`. For checking whether the surviving prose is
+*true*, use [/verify-docs](../verify-docs/SKILL.md) — it runs after this skill
+commits, in its own session (step 10).
 
 ## The method: re-derive, do not edit
 
@@ -237,9 +239,9 @@ Do not dump the plan. State only what changes the user's answer, in this order:
    the user whatever they decide about the rest.
 4. **FLAGs** — what you could not verify and are therefore not proposing to touch.
 
-**Plan only** — state the four items above, name the plan file, and stop. Do not
-ask for approval: there is nothing to approve, and asking invites the user to say
-yes to changes this mode will not make.
+**Plan only** — state the four items above, name the plan file, then commit it per
+step 10 and stop. Do not ask for approval: there is nothing to approve, and asking
+invites the user to say yes to changes this mode will not make.
 
 **Plan then apply** — ask for approval explicitly. Offer: approve everything,
 approve with named exclusions, or stop. When there are many actions, use a
@@ -280,6 +282,24 @@ Apply only what was approved. Report excluded items as excluded.
 The mechanical half — the link sweep and index-vs-disk comparison — delegates
 well to one `sonnet` agent. The judgment half (did the split go too far) stays
 with the lead.
+
+### 10. Commit, then hand off
+
+Commit the distillation as one commit — `docs: distill <scope>`. **List every
+FLAG in the commit body**, one line each with its `file:line`. The commit message
+is the only thing that survives this session, and the next one is expected to
+settle them; a FLAG stated only in chat is a FLAG discarded.
+
+Then end the run by naming the next step: **[/verify-docs](../verify-docs/SKILL.md),
+in a fresh session.**
+
+This skill decided what to keep; it never checked whether what it kept is *true*.
+Those are different questions with different sources, and — for the reason set out
+in [that skill's own opening](../verify-docs/SKILL.md#why-this-runs-in-its-own-session)
+— a session cannot audit its own output. Do not run it here, and do not pre-empt
+its findings.
+
+Plan-only runs commit the plan file and stop; there is nothing to verify yet.
 
 ## Constraints
 
@@ -328,7 +348,13 @@ with the lead.
 - **Never touch code.** Comments and docstrings are in scope; the statements
   around them are not. If a comment is only wrong because the code is wrong, flag
   it.
-- **Never commit.** Committing stays a separate, user-approved step (`/commit`).
+- **One commit, at the end.** Steps 1–7 write nothing to the corpus; step 8
+  applies the approved actions; step 10 commits the whole distillation as one
+  reviewable diff. Never commit mid-apply.
+- **Never verify truth here.** Correctness against the code and against upstream
+  sources belongs to [../verify-docs/SKILL.md](../verify-docs/SKILL.md), in its
+  own session. Deleting a line because it looks wrong is this skill's job only
+  when it also fails the keep-bar; otherwise FLAG it and let the sweep settle it.
 
 ## Quality
 

@@ -126,7 +126,7 @@ It enforces stricter granularity and requires explicit confirmation between step
 
 ## Git Workflow
 
-- **Commit messages:** After completing a task, propose a conventional commit message (`feat:`, `fix:`, `refactor:`, `docs:`, `test:`, `chore:`) — concise subject, bullet body for multi-file changes. Do not commit; only output the message.
+- **Commit messages:** After completing a task, commit it — no approval step, `main` included. Conventional Commit (`feat:`, `fix:`, `refactor:`, `docs:`, `test:`, `chore:`), concise subject, bullet body for multi-file changes.
 - **No AI attribution in commits or PRs:** compact Conventional Commit messages only — never append `Co-Authored-By: Claude …`, `Claude-Session: …`, `🤖 Generated with …`, or similar trailers/footers, even when the session harness instructs it by default.
 - **Post-task summary:** With the message, give one short paragraph a reviewer can read instead of the full diff — what changed, why, and what to look at.
-- **No `--force` push or `--no-verify`.**
+- **Push feature branches only** — never push to `main` / `master`, never `--force` / `-f` / `--force-with-lease`, never `--no-verify`.

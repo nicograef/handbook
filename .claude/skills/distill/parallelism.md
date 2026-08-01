@@ -42,6 +42,7 @@ the tokens of a linear pass — on a twelve-file docs directory that buys nothin
 | 7 Approval | No | One conversation with the user. |
 | 8 Apply | Yes, stages 1–3 only | Needs a disjoint partition; stage 4 touches shared indexes. |
 | 9 Verify | Partly | Link sweep delegates; "did the split go too far" does not. |
+| 10 Commit and hand off | No | One commit, one message. |
 
 Step 4 is the one genuine barrier in the skill. Do not try to remove it — the
 whole value of the dedup pass is global visibility.

@@ -18,7 +18,7 @@ Personal config is deliberately **excluded**: no hooks, no `settings.json`, no
 statusline, no MCP servers. Those stay on the dev machine only.
 
 Because the plugin namespaces its components, skills invoke as
-`/handbook:<skill>` (e.g. `/handbook:commit`, not `/commit`) and the agent is
+`/handbook:<skill>` (e.g. `/handbook:distill`, not `/distill`) and the agent is
 `handbook:web-researcher`.
 
 ## Prerequisites
@@ -41,7 +41,7 @@ Confirm the component inventory:
 claude plugin details handbook   # one skill per .claude/skills/ dir, 1 agent, 0 hooks, 0 MCP servers
 ```
 
-Then invoke a namespaced skill in any session, e.g. `/handbook:commit`.
+Then invoke a namespaced skill in any session, e.g. `/handbook:distill`.
 
 ## Adopt the plugin in a project
 
@@ -125,7 +125,7 @@ claude                                     # authenticate once in this clean HOM
 claude plugin marketplace add nicograef/handbook
 claude plugin install handbook@nicograef
 claude plugin details handbook             # full skill set + web-researcher agent, 0 hooks, 0 MCP
-# in a live session from this HOME, invoke one namespaced skill, e.g. /handbook:commit
+# in a live session from this HOME, invoke one namespaced skill, e.g. /handbook:distill
 rm -rf "$HOME"                             # delete the temporary HOME afterwards
 ```
 
@@ -138,7 +138,7 @@ rm -rf "$HOME"                             # delete the temporary HOME afterward
   the repo's `agents` symlink traveled through the GitHub clone. The live
   in-session invocation was not run here (needs one-time interactive auth in
   the clean `HOME` — operator step); the same invocation is proven on an
-  authenticated machine with the symlink tier hidden: `/handbook:commit`
+  authenticated machine with the symlink tier hidden: a namespaced skill
   executed and `handbook:web-researcher` appeared as a subagent type
   (2026-07-10). Temporary `HOME` deleted afterwards.
 
