@@ -7,8 +7,8 @@ local symlink tier, see [dotfiles-codespaces.md](dotfiles-codespaces.md).
 
 ## What the plugin contains
 
-- **Every skill** under `.claude/skills/` (18 at the time of writing) — the
-  same source the symlink tier exposes.
+- **Every skill** under `.claude/skills/` — the same source the symlink tier
+  exposes.
 - **The `web-researcher` agent** (`.claude/agents/web-researcher.md`), exposed
   through the root `agents` symlink — the manifest `agents` field validates but
   does not load agents in Claude Code v2.1.197, so the plugin relies on the
@@ -77,14 +77,38 @@ the dotfiles install.
 
 There is no `version` field in the manifests — the git commit SHA is the
 version, so every push to `main` is an update (including doc-only commits;
-re-copy is idempotent and harmless). Refresh the marketplace to pick up the
-latest commit:
+re-copy is idempotent and harmless).
+
+Updating an installed plugin takes **two commands and a restart**:
 
 ```bash
-claude plugin marketplace update nicograef
+claude plugin marketplace update nicograef    # git-pull the marketplace clone
+claude plugin update handbook@nicograef       # repoint the install at the new SHA
 ```
 
-Or, inside a session: `/plugin marketplace update nicograef`.
+Neither alone is enough. `marketplace update` advances the clone under
+`~/.claude/plugins/marketplaces/nicograef` and stages a new SHA-named copy in
+`~/.claude/plugins/cache/nicograef/handbook/`, but leaves the install pinned —
+`installed_plugins.json` keeps the old `installPath` and `gitCommitSha`.
+`plugin update` moves the pin and prints `Restart to apply changes`; a running
+session keeps the old copy.
+
+Verify with `claude plugin list`, which prints the installed SHA:
+
+```
+❯ handbook@nicograef
+  Version: 6b62e37b333f
+```
+
+**`claude plugin details handbook` does not verify an update.** It reports what
+the marketplace currently offers, not what is installed — after `marketplace
+update` alone it lists a newly pushed skill while the installed copy still lacks
+it.
+
+Verified 2026-08-01: a pre-`distill` commit installed from the GitHub
+marketplace into a throwaway `HOME`, then each command run in turn —
+`marketplace update` left the install at 21 skills, `plugin update` moved it
+to 22.
 
 ## Verify
 

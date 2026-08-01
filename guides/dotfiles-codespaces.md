@@ -74,6 +74,23 @@ bash /workspaces/.codespaces/.persistedshare/dotfiles/scripts/install-dotfiles.s
 source ~/.bashrc
 ```
 
+## Staying up to date
+
+`~/.claude/skills`, `~/.agents/skills`, and `~/.claude/agents` are **directory**
+symlinks into the repo clone, so pulling the clone is the whole update — new
+skills and agents appear immediately, with no re-link and no restart:
+
+```bash
+git -C ~/handbook pull
+```
+
+Re-run `install.sh` only when [`scripts/install-dotfiles.sh`](../scripts/install-dotfiles.sh)
+itself changes (a new symlink target, a new git-config default). It is
+idempotent, so re-running when unsure is harmless.
+
+For the plugin tier on machines without a clone, see
+[claude-plugin.md](claude-plugin.md) → *Update behavior*.
+
 ## Verify
 
 ```bash
