@@ -5,7 +5,6 @@ description: >-
   each-substantial failures or investigation targets that share no state or
   sequential dependency. Use when the work splits cleanly and each part is big
   enough to justify a separate agent.
-user-invocable: false
 ---
 
 # Dispatching Parallel Agents
