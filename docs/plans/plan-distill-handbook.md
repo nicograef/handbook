@@ -927,18 +927,23 @@ being misled today. **Never resolve one silently.**
 7. **`.claude/skills/cleanup/` is five overlapping taxonomies.** Phases 4 cuts the duplication but
    keeps the shape. The cheaper structural fix — one defect catalogue plus one routing table
    instead of five files that each restate the others — is a redesign, not a distillation.
-8. **`distill/SKILL.md`'s "Never rewrite in your own voice. Subtract." is ambiguous enough to
-   misfire.** It reads as an absolute ban on producing any text, but the skill plainly licenses
-   GUT, SPLIT and MERGE, and `restructure.md` describes re-homing claims into new files. The
-   constraint means *do not restyle surviving prose*; it does **not** mean *do not delete an
-   illustration and keep the explanation beside it*. This plan's first draft misread it and
-   under-cut `test-quality/anti-patterns.md` by ~55 lines as a result.
-   Proposed wording, to be applied outside this plan-only run:
-   *"**Never restyle surviving prose.** Subtract. Deleting a section, an example, or a whole
-   file is the core move; reordering and re-homing during SPLIT/MERGE is allowed. Rewriting a
-   surviving sentence, or reformatting existing prose into a new shape, is not."*
-   `distill/SKILL.md` is inside the corpus this plan covers, and plan-only touches nothing but
-   the plan file — so the fix is recorded here, not applied.
+8. **RESOLVED — the no-rewrite constraint was changed after this plan was written.**
+   `distill/SKILL.md`'s *"Never rewrite in your own voice. Subtract."* read as an absolute ban
+   on producing text, while step 6 and `restructure.md` mandate authoring leaf scope headers,
+   index rows and TOCs. It has been replaced by *"Rewrite freely; never invent or alter a
+   claim."* — restyling, condensing and restructuring are allowed; every fact, command, flag,
+   path, version and constraint must survive exactly as stated.
+   **Three projections in this plan are now conservative** because they were written under the
+   old rule and deliberately held back:
+   - `test-quality/anti-patterns.md` (Phase 5, ~115) — the ~40-line signal→why→fix table form
+     is now permitted.
+   - `tdd/interface-design.md` (Phase 5, 40) — held at TRIM only because deleting it would
+     require inlining a sentence into each of its three referrers. That is now allowed, so
+     DELETE is viable.
+   - `test-quality/SKILL.md` step 1 Discover (Phase 5, ~88) — can collapse further.
+   Re-derive these three before applying Phase 5. Do **not** assume the change licenses deeper
+   cuts anywhere else: every other projection in this plan was already limited by the keep-bar
+   or by an inbound link, not by the rewrite rule.
 9. **`readability-de.md` is the more complete catalogue.** It carries four slop categories with no
    English counterpart, three of which are not German-specific: knowledge-cutoff hints, false
    extension ("from X to Y"), and formatting tells (bold overuse, emoji headings).

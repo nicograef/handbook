@@ -339,8 +339,16 @@ Plan-only runs commit the plan file and stop; there is nothing to verify yet.
   the user.
 - **Never fabricate replacement content.** If a section is wrong, delete it or
   flag it — do not invent the corrected version.
-- **Never rewrite in your own voice.** Subtract. Merging sections may reorder
-  and cut, never restyle surviving prose.
+- **Rewrite freely; never invent or alter a claim.** Restyling, condensing,
+  merging and restructuring surviving prose is allowed and usually the point — a
+  distilled file should read as one voice, not as the seams of what was cut.
+  What you may not do is change what a sentence asserts, or add an assertion that
+  was not there. Every fact, command, flag, path, version, name and constraint
+  survives exactly as stated; the prose around it is yours.
+  Truth is not settled at this point in the pipeline —
+  [/verify-docs](../verify-docs/SKILL.md) runs *after* this skill commits, over
+  the corpus you produce, so everything you reword is still unverified. Preserving
+  claims verbatim is what keeps that sweep able to do its job.
 - **Never trade precision for brevity.** A short doc that lost the exact command,
   flag, path, or version is worse than the long one it replaced. Compression that
   produces vagueness is a failed distillation.
