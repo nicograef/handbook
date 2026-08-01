@@ -9,7 +9,8 @@ This file governs maintaining the repo; to consume the handbook (set up a VPS, C
 machine, or project), start at [guides/bootstrap.md](guides/bootstrap.md).
 
 The root `agents` symlink exposes `.claude/agents/` (subagent definitions) to the plugin's
-default agent scan — the manifest `agents` field does not load agents in Claude Code v2.1.197.
+default agent scan — the manifest `agents` field did not load agents in Claude Code v2.1.197
+(not re-verified since).
 `.devcontainer/` is the repo's own dev container: a proven instance of `templates/devcontainer.json`.
 
 ## Working rules

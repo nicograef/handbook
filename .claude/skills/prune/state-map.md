@@ -3,7 +3,7 @@
 What accumulates where, which classes `prune-state.sh` may delete, and what it
 must never touch.
 
-**As of 2026-07-20, Claude Code CLI 2.1.205 (dev machine).** The harness layout
+**As of 2026-08-01, Claude Code CLI 2.1.212 (dev machine).** The harness layout
 is internal and drifts between CLI versions. **Drift rule:** when the layout on
 a machine stops matching this map (locations missing, renamed, or differently
 keyed), re-verify the layout by listing the directories, update this file and

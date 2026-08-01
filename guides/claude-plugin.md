@@ -10,9 +10,9 @@ local symlink tier, see [dotfiles-codespaces.md](dotfiles-codespaces.md).
 - **Every skill** under `.claude/skills/` — the same source the symlink tier
   exposes.
 - **The `web-researcher` agent** (`.claude/agents/web-researcher.md`), exposed
-  through the root `agents` symlink — the manifest `agents` field validates but
-  does not load agents in Claude Code v2.1.197, so the plugin relies on the
-  default `agents/` directory scan instead.
+  through the root `agents` symlink — the manifest `agents` field validated but
+  did not load agents in Claude Code v2.1.197 (not re-verified since), so the
+  plugin relies on the default `agents/` directory scan instead.
 
 Personal config is deliberately **excluded**: no hooks, no `settings.json`, no
 statusline, no MCP servers. Those stay on the dev machine only.
