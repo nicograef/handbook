@@ -54,16 +54,33 @@ Run log:
 
 - [x] Research phase completes (4 agents) — captured to
       `docs/plans/plan-implement-plan-rework-research.md`, committed, replayable from cache
-- [ ] Design phase completes (3 proposals + judge); capture the judge's outline into this
-      file under "Design outcome" so the design survives without the workflow
-- [ ] Write `.claude/skills/implement-plan/SKILL.md`
-- [ ] Write the reference files the design calls for (names TBD by the design)
-- [ ] Update the `.claude/skills/README.md` index row
-- [ ] `grep -rn "implement-plan" --include='*.md' .` — no dead or stale references
-- [ ] Reconcile the `finish-branch` contradiction in whichever file the design assigns it to
-- [ ] Run the shared self-review checklist (`.claude/skills/quality.md`) on the result
-- [ ] Commit (Conventional Commit, no AI attribution trailers)
-- [ ] Delete this `plan.md`
+- [x] Design phase completes (3 proposals + judge) — captured to
+      `docs/plans/plan-implement-plan-rework-design.md`, committed
+- [x] Write `.claude/skills/implement-plan/SKILL.md` (127 lines)
+- [x] Write the reference files: `orchestration.md`, `integration.md`, `recovery.md`
+      (each >100 lines, so each carries the mandated bullet TOC)
+- [x] Update the `.claude/skills/README.md` index row
+- [x] `grep -rn "implement-plan"` — no dead or stale references outside these plan docs
+- [x] Run the shared self-review checklist (`.claude/skills/quality.md`) — `check-repo.sh`
+      exits 0; all 11 relative link targets in the new skill verified to resolve
+- [x] Commit the skill rework (Conventional Commit, no AI attribution trailers)
+
+Out of scope for the rework commit — **awaiting a decision from Nico**, do not apply
+unilaterally:
+
+- [ ] `finish-branch/SKILL.md`: one Constraints line scoping its four-option gate out of
+      implement-plan's own `plan/*` branches. Without it the two skills contradict each
+      other; the new SKILL.md currently defers to finish-branch for push/PR/discard only.
+- [ ] `finish-branch/SKILL.md:62`: `MAIN=$(dirname "$GIT_COMMON")` is wrong for a
+      bare-hosted worktree (judge's claim, NOT independently re-verified).
+- [ ] `using-git-worktrees/SKILL.md` step 2: the claim "the git-dir/git-common-dir mismatch
+      is also true inside a submodule" is **false** — independently verified in a scratch
+      repo at git 2.47.3, they *match*. Step 1 therefore misreports a submodule as a normal
+      checkout. implement-plan links to this file, so it is a defect at a link target.
+- [ ] `create-plan/SKILL.md` template: add `**Depends on**: Phase <N>, or "none"` to the
+      phase block. Converts implement-plan's riskiest inference into a declared fact.
+
+- [ ] Delete this `plan.md` and both `docs/plans/plan-implement-plan-rework-*.md` files
 
 ## Design outcome
 

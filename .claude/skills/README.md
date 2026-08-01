@@ -26,7 +26,7 @@ Namespacing differs per tier: symlink-tier skills invoke plain (`/distill`), plu
 | Planning a feature from PRD or task description                                          | [Create Plan](create-plan/)                                  |
 | Writing a product requirements document                                                  | [Write a PRD](write-prd/)                                    |
 | Developer-driven implementation with coaching                                            | [Guided Implementation](guided-implementation/)              |
-| Executing an existing plan step by step                                                  | [Implement Plan](implement-plan/)                            |
+| Executing an entire existing plan autonomously, or resuming a stopped plan run           | [Implement Plan](implement-plan/)                            |
 | Building features test-first (red-green-refactor)                                        | [TDD](tdd/)                                                  |
 | Reviewing, reducing and refactoring an existing test suite                               | [Test Quality](test-quality/)                                |
 | Mobile UX, UI consistency, workflow friction                                             | [UX Review](ux-review/)                                      |
