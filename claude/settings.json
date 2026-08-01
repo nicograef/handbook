@@ -122,9 +122,14 @@
     "gopls-lsp@claude-plugins-official": true
   },
   "effortLevel": "xhigh",
+  "promptSuggestionEnabled": false,
+  "awaySummaryEnabled": false,
   "autoUpdatesChannel": "stable",
   "tui": "fullscreen",
   "skipWorkflowUsageWarning": true,
   "theme": "auto",
-  "showTurnDuration": true
+  "fileCheckpointingEnabled": false,
+  "showTurnDuration": true,
+  "inputNeededNotifEnabled": true,
+  "agentPushNotifEnabled": true
 }
