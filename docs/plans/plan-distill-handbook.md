@@ -6,7 +6,8 @@
 
 Reduce the handbook's prose to what a reader cannot get anywhere else.
 
-Projected: **11,651 → ~7,575 Markdown lines (−35%)** across 88 files, plus ~120 lines of
+Projected: **11,651 → ~7,490 Markdown lines (−36%)** with Phase 4 option (a), or
+**~7,240 (−38%)** with option (b) across 88 files, plus ~120 lines of
 comment blocks in 33 shell/config files.
 
 Analysis basis: 13 read-only `opus` workers, 121 files read in full, 1,710 claims extracted,
@@ -33,6 +34,17 @@ Answered by the user before this plan was written. A later session must not re-d
 - **Nothing is off-limits.** Including `claude/CLAUDE.md` (the live global instruction file)
   and the `distill`/`verify-docs`/`prune` skills that produced this plan.
 - **Mode: plan-only.** This file is the sole artifact. No file in the corpus was modified.
+- **Rewriting is permitted** (amended after the first draft; `distill/SKILL.md` changed in
+  `9c36b86`). The old constraint — *"Never rewrite in your own voice. Subtract."* — read as an
+  absolute ban on producing text, while step 6 and `restructure.md` mandate authoring leaf
+  scope headers, index rows and TOCs. It now reads *"Rewrite freely; never invent or alter a
+  claim."* Four items in this plan were written under the old rule and have been re-derived:
+  `test-quality/anti-patterns.md` (~115 → ~55), `tdd/interface-design.md` (TRIM → DELETE),
+  `test-quality/SKILL.md` step 1 (~88 → ~80), and the `cleanup/` restructure, which moved from
+  a rejected open question into Phase 4 as option (b).
+  Everything else in this plan is bounded by the keep-bar, by an inbound link, or by the
+  precision rule — **not** by the rewrite constraint. Do not read the amendment as blanket
+  licence to cut deeper elsewhere.
 
 ## Architectural decisions
 
@@ -67,17 +79,18 @@ Durable constraints that apply to every phase.
   on every reference file over 100 lines. Files dropping below 100 lines in this plan should
   lose their TOC with the same edit: `tdd/mocking.md`, `cleanup/cross-layer.md`,
   `distill/restructure.md`.
-- **Subtract, never restyle.** The line is between deleting content and re-authoring it:
-  - Deleting a code block, a section, or a whole file, and **keeping the surrounding prose
-    verbatim** — subtraction. This is the skill's core move and includes aggressive GUT.
-  - Reordering and re-homing sections during a SPLIT or MERGE — allowed.
-  - Rewriting surviving sentences, or reformatting existing prose into a new shape (e.g.
-    collapsing eight explained patterns into a summary table) — **restyling, forbidden.**
-  Where a worker's projection depended on the third, the projection is not taken. Where it
-  depended on the first, it is — even when the cut is large.
-  Concretely: `test-quality/anti-patterns.md` goes to ~115 lines by deleting code blocks and
-  keeping every existing `**Why it's bad**` / `**Fix**` paragraph untouched. It does **not**
-  go to the ~40 a table form would reach, because that requires authoring new cells.
+- **Rewrite freely; never invent or alter a claim.** Per `distill/SKILL.md` as amended in
+  `9c36b86`: restyling, condensing, merging and restructuring surviving prose is allowed and
+  usually the point. What must not change is what a sentence *asserts* — every fact, command,
+  flag, path, version, name and constraint survives exactly as stated; the prose around it is
+  the applier's to rewrite.
+  This matters because `/verify-docs` runs **after** this plan is applied, over the corpus it
+  produces. Nothing here is verified at rewrite time. Preserving claims verbatim is the only
+  thing that keeps that sweep able to judge them — a reworded assertion reads as plausible and
+  slips through.
+  Practical consequence for the applier: collapsing an explained pattern into a denser form is
+  permitted, provided every "why" and every "fix" it stated survives in the new form. Dropping
+  a nuance to make a table row fit is a failed distillation, not a tighter one.
 - **Irreversible operations are never compressed.** Every exact command sequence for deploy,
   restore, migration, provisioning, cert issuance, and teardown survives verbatim. Where a
   worker declined a cut on these grounds it is recorded in the phase.
@@ -86,7 +99,7 @@ Durable constraints that apply to every phase.
 
 | Area | Files | Before | Projected |
 | --- | ---: | ---: | ---: |
-| `.claude/skills/` | 46 | 6,467 | ~3,645 |
+| `.claude/skills/` | 46 | 6,467 | ~3,560 |
 | `guides/` | 20 | 3,674 | 2,294 |
 | `cheatsheets/` | 7 | 681 | 129 |
 | root (`README`, `AGENTS`, `CLAUDE`) | 3 | 266 | 224 |
@@ -380,7 +393,7 @@ belongs in `.claude/rules/guides.md`, which currently does not mention See-also 
 
 ---
 
-## Phase 4: `.claude/skills/cleanup/` — 1,655 → ~700
+## Phase 4: `.claude/skills/cleanup/` — 1,655 → ~700 (a) or ~400-500 (b)
 
 ### Context
 
@@ -389,6 +402,31 @@ overlapping taxonomies (principle / smell / architecture / readability / cross-l
 same defect from three or four entry points — so much so that `SKILL.md:107-108` needs a rule
 telling the agent to suppress its own duplicate findings. That rule is evidence the split is
 wrong, not evidence it works.
+
+**Decide the shape before executing this phase.** Two options, and the rewrite permission
+added in `9c36b86` is what puts the second one on the table:
+
+- **(a) Dedup in place — 1,655 → ~700.** Keep the five files; cut the duplication between and
+  inside them. This is what the per-file actions below describe. Lower risk: every inbound
+  link and anchor keeps working, and the change is reviewable file by file.
+- **(b) Restructure to one catalogue plus a routing table — est. ~400-500.** Collapse
+  `principles.md`, `architecture.md`, `code-smells.md` and `cross-layer.md` into a single
+  defect catalogue keyed by defect, with `SKILL.md` carrying a routing table that says which
+  pass surfaces which defect class. `readability.md` and `readability-de.md` stay separate —
+  they are a prose-slop catalogue, a different axis. This deletes the need for the
+  suppress-duplicates rule at `SKILL.md:107-108` entirely, because a defect would have one home.
+  Higher cost: it invalidates `#redundant-abstractions` and `#deep-nesting` (linked from four
+  files), and needs its own design pass to pick the catalogue's axis before any content moves.
+
+**Recommendation: (b), but not blind.** The worker's finding — one catalogue reachable from
+five taxonomies — is a design defect, and (a) leaves it in place while making the files
+smaller. Run the design step first (name the axis, map every existing section to exactly one
+target entry, list the anchor fixes), then execute. The estimate above is a range, not a
+projection; it will not firm up until that mapping exists.
+
+The per-file actions below describe **(a)**. Under (b) they still apply as the deletion pass —
+`restructure.md` is explicit that deletion runs before restructuring, so nothing here is wasted
+work either way.
 
 ### What to build
 
@@ -448,7 +486,7 @@ restatement, keep the link.
 
 ---
 
-## Phase 5: `.claude/skills/tdd/` + `test-quality/` — 1,067 → ~375
+## Phase 5: `.claude/skills/tdd/` + `test-quality/` — 1,067 → ~290
 
 ### Context
 
@@ -468,23 +506,30 @@ irrelevant to their bar.
   languages (19-55), and the second-language repeats (42-55, 78-92, 127-139). Keep the boundary
   list (6-18) and the two anti-patterns — the only content carrying an opinion a model would not
   default to. Drops below 100 lines, so its TOC goes with it.
-- **`tdd/interface-design.md` 73 → 40.** Delete "3. Small surface area" (70-73) and the
-  TypeScript repeats of the Go blocks (34-44, 59-68). **Not deleted outright** — three referrers
-  link it (`tdd/SKILL.md:71`, `guided-implementation/SKILL.md:115`, `write-prd/SKILL.md:52`) and
-  removing it would mean inlining a sentence into each, which is authoring.
-  `.claude/rules/skills.md:66` also names this file in prose as a canonical naming example.
-- **`test-quality/anti-patterns.md` 280 → ~115.** Delete the preamble (3-5), the eight bare
-  `---` separators, and **both** the Go and TypeScript BAD code blocks in all eight patterns.
-  Every pattern already carries a one-line prose description under its H2 plus a
-  `**Why it's bad**:` and a `**Fix**:` paragraph — all of which survive **verbatim**, so this
-  is subtraction, not a rewrite. Under the private/agent keep-bar a model recognises
-  `assert.True(t, mock.chargeCalled)` and `expect(gateway.charge).toHaveBeenCalledWith(…)`
-  from the prose alone; the paired blocks demonstrate the same point twice for a human reader.
-  **Held at ~115, not the ~40 a table form would reach** — reformatting the surviving prose
-  into signal→why→fix table cells is authoring, which this skill does not do.
-  **Reverse this cut first if the audience ever flips to public/human** — the worked examples
-  are the product for that reader, and this is the single largest audience-dependent cut in
-  the plan.
+- **`tdd/interface-design.md` 73 → 0 (DELETE).** "Inject dependencies, return values instead of
+  mutating, keep interfaces small" is textbook advice the file itself attributes to *A Philosophy
+  of Software Design* — pretrained, and applied by default under the private/agent keep-bar.
+  Deletion was previously blocked only because its three referrers would each need a sentence
+  inlined, which the old constraint forbade. That is now permitted.
+  **Four files must change in the same commit**, or `make check` fails on dead links:
+  `tdd/SKILL.md:71`, `guided-implementation/SKILL.md:115`, `write-prd/SKILL.md:52` each get the
+  one-line rule inlined in place of the link; `.claude/rules/skills.md:66` names this file in
+  **prose** as a canonical reference-file-naming example — not a link, so `check-repo.sh` will
+  not catch it. Repoint it at `mocking.md`, which it already names alongside.
+- **`test-quality/anti-patterns.md` 280 → ~55.** Restructure into one row per pattern:
+  **signal → why it's bad → fix**. Delete the preamble (3-5), the eight bare `---` separators,
+  and both the Go and TypeScript BAD code blocks in all eight patterns.
+  The signal column takes the recognisable token from the deleted code —
+  `assert.True(t, mock.chargeCalled)`, `expect(gateway.charge).toHaveBeenCalledWith(…)`,
+  `jest.mock("../userService")` — so the pattern stays greppable without the surrounding
+  fixture. Under the private/agent keep-bar a model recognises these from the token alone.
+  **Every "why it's bad" and every "fix" must survive into the new form.** They may be
+  reworded; they may not lose a clause to make a row fit. If a pattern's rationale does not
+  compress without loss, that row keeps its prose paragraph — a mixed file is correct here and
+  a lossy table is not.
+  **Reverse this first if the audience ever flips to public/human** — the worked examples are
+  the product for that reader, and this is the single largest audience-dependent change in the
+  plan.
 - **`test-quality/evaluation-criteria.md` 148 → 55** (GUT). The same eight-pattern catalog is
   stated three times inside this one file — as questions (13-43), as tag prose (52-93), as
   signals (136-148) — plus a fourth time with worked examples in `anti-patterns.md`. Keep the
@@ -495,19 +540,19 @@ irrelevant to their bar.
   `guided-implementation/SKILL.md:122` links this file; the Decision Tree is what it wants.
   At 55 lines it drops under the TOC threshold — it has no TOC today, which was already a
   pre-existing violation of `.claude/rules/skills.md:57`, now moot.
-- **`test-quality/SKILL.md` 136 → ~88.** Delete Philosophy (9-27), the Keep/Refactor/Delete/Merge
+- **`test-quality/SKILL.md` 136 → ~80.** Delete Philosophy (9-27), the Keep/Refactor/Delete/Merge
   tag table (52-57, duplicating `evaluation-criteria.md`), "Rules during refactoring" (101-107),
-  and the two bare `---` rules. Trim step 1 Discover (34-46) — a five-item checklist with glob
-  patterns an agent already knows.
+  and the two bare `---` rules. Collapse step 1 Discover (34-46) to two lines — a five-item
+  checklist with glob patterns an agent already knows.
   **Keep 79-81** ("a mostly-Keep suite is a successful audit — do not manufacture Delete or
   Merge tags") despite being the third home of that rule. Operative at the moment of temptation.
 
 ### Acceptance criteria
 
-- [ ] `tdd/` + `test-quality/` total ~375 lines across 6 files (was 7).
-- [ ] Every `**Why it's bad**` and `**Fix**` paragraph in `anti-patterns.md` is byte-identical to its pre-plan text.
+- [ ] `tdd/` + `test-quality/` total ~290 lines across 5 files (was 7).
+- [ ] Every pre-plan "why it's bad" and "fix" in `anti-patterns.md` is present in the new form — reworded is fine, dropped is not.
 - [ ] `tdd/mocking.md` is under 100 lines and has no TOC.
-- [ ] All three links to `interface-design.md` resolve.
+- [ ] `interface-design.md` is deleted and all four referrers updated — the three links plus the prose mention at `.claude/rules/skills.md:66`.
 - [ ] `guided-implementation/SKILL.md:122` still reaches a Decision Tree.
 - [ ] `.claude/rules/skills.md:66`'s prose reference to `interface-design.md` and `mocking.md` is still accurate.
 - [ ] All three `SKILL.md` files retain Workflow + Constraints sections.
@@ -760,7 +805,7 @@ on shared files.
 - [ ] `make check` passes.
 - [ ] Zero hits for deleted filenames outside this plan file.
 - [ ] Every anchor in *Architectural decisions* resolves to an existing heading.
-- [ ] `git diff --stat` totals are reported and compared against the ~7,575-line projection.
+- [ ] `git diff --stat` totals are reported and compared against the applicable projection (~7,490 for Phase 4 option (a), ~7,240 for option (b)).
 - [ ] The commit body lists every FLAG below with its `file:line`.
 
 ---
@@ -924,27 +969,12 @@ being misled today. **Never resolve one silently.**
 6. **Should the corpus-wide "See also" convention be settled?** Every guide has one; every one
    relists links already inline. Either sweep them all or write the decision into
    `.claude/rules/guides.md`, which currently does not mention them.
-7. **`.claude/skills/cleanup/` is five overlapping taxonomies.** Phases 4 cuts the duplication but
-   keeps the shape. The cheaper structural fix — one defect catalogue plus one routing table
-   instead of five files that each restate the others — is a redesign, not a distillation.
-8. **RESOLVED — the no-rewrite constraint was changed after this plan was written.**
-   `distill/SKILL.md`'s *"Never rewrite in your own voice. Subtract."* read as an absolute ban
-   on producing text, while step 6 and `restructure.md` mandate authoring leaf scope headers,
-   index rows and TOCs. It has been replaced by *"Rewrite freely; never invent or alter a
-   claim."* — restyling, condensing and restructuring are allowed; every fact, command, flag,
-   path, version and constraint must survive exactly as stated.
-   **Three projections in this plan are now conservative** because they were written under the
-   old rule and deliberately held back:
-   - `test-quality/anti-patterns.md` (Phase 5, ~115) — the ~40-line signal→why→fix table form
-     is now permitted.
-   - `tdd/interface-design.md` (Phase 5, 40) — held at TRIM only because deleting it would
-     require inlining a sentence into each of its three referrers. That is now allowed, so
-     DELETE is viable.
-   - `test-quality/SKILL.md` step 1 Discover (Phase 5, ~88) — can collapse further.
-   Re-derive these three before applying Phase 5. Do **not** assume the change licenses deeper
-   cuts anywhere else: every other projection in this plan was already limited by the keep-bar
-   or by an inbound link, not by the rewrite rule.
-9. **`readability-de.md` is the more complete catalogue.** It carries four slop categories with no
+7. **`.claude/skills/cleanup/` — dedup in place, or restructure to one catalogue?**
+   Moved into Phase 4 as an explicit option (a)/(b) with a recommendation. It was filed here as
+   "a redesign, not a distillation" under the old no-rewrite constraint; `9c36b86` removed that
+   objection. Still needs a decision, and option (b) needs a design pass before it can be
+   costed.
+8. **`readability-de.md` is the more complete catalogue.** It carries four slop categories with no
    English counterpart, three of which are not German-specific: knowledge-cutoff hints, false
    extension ("from X to Y"), and formatting tells (bold overuse, emoji headings).
    `distill/criteria.md:110` names the *English* `readability.md` as canonical — so the canonical
