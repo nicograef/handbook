@@ -2,8 +2,8 @@
 
 ## Key Patterns
 
-These two patterns are not in the reverse-proxy template because they belong in the **frontend**
-nginx that serves the SPA directly.
+These two patterns are not in the reverse-proxy template. They belong in the **frontend** nginx
+that serves the SPA directly.
 
 ### SPA Client-Side Routing
 

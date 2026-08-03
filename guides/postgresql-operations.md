@@ -10,10 +10,11 @@ in a Docker Compose stack.
 
 ## 1. Manual Backup
 
-The `postgres` container already holds `POSTGRES_USER` / `POSTGRES_DB` in its
-environment, so run `pg_dump` through `sh -c` with those vars **single-quoted**
-(expanded inside the container, not by your host shell). `-T` disables the
-pseudo-TTY so binary dumps are not corrupted by CR/LF translation.
+- The `postgres` container already holds `POSTGRES_USER` / `POSTGRES_DB` in its
+  environment.
+- Run `pg_dump` through `sh -c` with those vars **single-quoted**.
+- Single quotes expand them inside the container, not by your host shell.
+- `-T` disables the pseudo-TTY, so CR/LF translation cannot corrupt binary dumps.
 
 ### Compressed dump (recommended)
 
@@ -80,31 +81,35 @@ sudo mkdir -p /opt/backups/postgres
 
 ### Configuration
 
-Set via env vars — names and defaults are at the top of the script. It loads the
-Compose `.env` from `COMPOSE_DIR`, so `POSTGRES_USER` / `POSTGRES_DB` come from
-there.
+- Set via env vars — names and defaults are at the top of the script.
+- It loads the Compose `.env` from `COMPOSE_DIR`, so `POSTGRES_USER` / `POSTGRES_DB` come
+  from there.
 
-> **Accepted risk — backups are on the same disk they protect.** `BACKUP_DIR`
-> lives on the server being backed up, so losing the server (disk failure,
-> provider incident, accidental deletion) loses the backups with it. This is a
-> deliberate, documented trade-off at the current scale — the daily verified
-> dump plus the quarterly restore drill covers the failure modes that actually
-> happen (bad migration, dropped table, corruption). **Upgrade path when this
-> stops being acceptable:** push the verified dumps offsite with
-> [restic](https://restic.net/) to object storage (e.g. a Hetzner Storage Box),
-> so backup survival no longer depends on the server surviving.
+> **Accepted risk — backups are on the same disk they protect.**
+> `BACKUP_DIR` lives on the server being backed up.
+> Losing the server loses the backups with it: disk failure, provider incident,
+> accidental deletion.
+> This is a deliberate, documented trade-off at the current scale.
+> The daily verified dump plus the quarterly restore drill covers the failure modes that
+> actually happen.
+> Those are bad migration, dropped table, and corruption.
+> **Upgrade path when this stops being acceptable:** push the verified dumps offsite with
+> [restic](https://restic.net/).
+> Target object storage, e.g. a Hetzner Storage Box.
+> Backup survival then no longer depends on the server surviving.
 
 ## 4. Restore drill
 
-Restore is only real once you have replayed a backup end-to-end. Run this drill
-**quarterly**: it proves the newest dump restores cleanly and that your row
-counts survive the round-trip. It is also the exact checklist to follow under
-real data-loss stress — for the live disaster case, restore into the production
-database with the [full-restore commands](#2-restore) instead of the throwaway
-one below.
+- Restore is only real once you have replayed a backup end-to-end.
+- Run this drill **quarterly**.
+- It proves the newest dump restores cleanly and that your row counts survive the
+  round-trip.
+- It is also the exact checklist to follow under real data-loss stress.
+- For the live disaster case, restore into the production database instead.
+- Use the [full-restore commands](#2-restore), not the throwaway one below.
+- The drill restores into a **throwaway database** and never touches the live one.
 
-It restores into a **throwaway database** and never touches the live one. Set
-the two env vars to your server's values (same as the backup script):
+Set the two env vars to your server's values (same as the backup script):
 
 ```bash
 export BACKUP_DIR=/opt/backups/postgres    # where scripts/backup-postgres.sh writes
@@ -139,8 +144,8 @@ cd "$COMPOSE_DIR"
    Each `-c` prints its own one-row result block; expect a plausible,
    non-zero count per table.
 
-4. **Record the outcome** — one line is enough (e.g. append to a
-   `restore-drills.log` next to the backups, or note it in your ops journal):
+4. **Record the outcome** — one line is enough. Append to a `restore-drills.log` next
+   to the backups, or note it in your ops journal:
 
    ```bash
    echo "$(date +%F)  restore drill OK — users=42 orders=100 from $(basename "$DUMP")" \
@@ -177,10 +182,11 @@ database/migrations/000001_add_users_table.down.sql
 
 ### Run migrations
 
-Run `migrate` as a throwaway container **on the compose network** so it reaches
-the database by its service name (`postgres`), no published port required.
-Replace `<project>` with your Compose project name (the volume/network prefix);
-the network is `<project>_db-network`.
+- Run `migrate` as a throwaway container **on the compose network**.
+- It then reaches the database by its service name (`postgres`), no published port
+  required.
+- Replace `<project>` with your Compose project name (the volume/network prefix).
+- The network is `<project>_db-network`.
 
 ```bash
 DB_URL="postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}?sslmode=disable"
@@ -201,10 +207,10 @@ migrate version            # check current version
 migrate force <version>    # force version (after fixing a dirty migration)
 ```
 
-> **Published-port form.** If the `postgres` service publishes `5432` to the
-> host, you can instead point a locally installed `migrate` binary at
-> `@localhost:5432` — replace `@postgres:5432` with `@localhost:5432` in
-> `DB_URL` and drop the `docker run` wrapper.
+> **Published-port form.** If the `postgres` service publishes `5432` to the host, you
+> can instead point a locally installed `migrate` binary at `@localhost:5432`.
+> Replace `@postgres:5432` with `@localhost:5432` in `DB_URL`, and drop the
+> `docker run` wrapper.
 
 ### Migration file template
 

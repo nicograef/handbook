@@ -9,23 +9,25 @@ description: >-
 
 # Clarify
 
-Never assume — always ask. Identify ambiguities and unknowns before acting, then
-resolve them through structured questions, walking each branch of the decision
-tree and resolving dependencies between decisions one-by-one. Use this skill when
-clarification is the task itself or thorough spec-gathering is needed; create-plan
-and write-prd embed a lighter clarification pass scoped to their own work.
+Never assume — always ask, before acting on ambiguity.
+
+- Resolve unknowns through structured questions: walk each decision-tree
+  branch, resolve dependencies between decisions one by one.
+- Use when clarification is the task itself, or thorough spec-gathering is
+  needed.
+- create-plan and write-prd embed a lighter clarification pass scoped to
+  their own work.
 
 ## Workflow
 
-1. Ask in rounds, biggest unknowns first — whatever is ambiguous or
-   underspecified in the request — following the canonical
-   [clarification question rules](question-rules.md).
+1. Ask in rounds, biggest unknowns first — ambiguous or underspecified parts
+   of the request — per the [clarification question rules](question-rules.md).
 2. Drill deeper on prior answers: remaining gaps, edge cases, conflicting
-   constraints. Confirm critical decisions before proceeding. Stop as soon as the
-   decision tree is resolved, even after a single round; do not pad with extra
-   rounds.
-3. Update the current plan or document with every decision made, then proceed
-   with the task.
+   constraints. Confirm critical decisions before proceeding.
+3. Stop once the decision tree resolves, even after one round — don't pad
+   with extra rounds.
+4. Update the current plan or document with every decision made, then
+   proceed with the task.
 
 ## Constraints
 

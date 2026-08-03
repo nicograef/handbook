@@ -19,10 +19,11 @@ awk '/^## Phase /{p=$0} /^- \[ \]/{print p" -> "$0; exit}' <plan>  # 3. first un
 git log --oneline --all --grep='Plan: <slug> phase'               # 4. what was actually committed
 ```
 
-Read the plan **inside the run worktree**, including its `## Run state` block —
-the copy on the base branch is stale by design during a run. If the run worktree
-is gone, fall back to `git branch --list 'plan/*'` plus the same
-`git log --grep`: branches, not worktrees, are the durable artifact.
+- Read the plan **inside the run worktree**, including its `## Run state` block.
+- The copy on the base branch is stale by design during a run.
+- If the run worktree is gone, fall back to `git branch --list 'plan/*'` plus
+  the same `git log --grep`.
+- Branches, not worktrees, are the durable artifact.
 
 ## The worktree state scan
 
@@ -44,41 +45,48 @@ done
 
 ## The log outranks the checkbox
 
-A `- [x]` with no matching commit is wrong: untick it. A commit with no tick
-gets its criterion re-verified, then ticked. Never trust a tick you did not
-place this session ([quality.md](../quality.md)).
+- A `- [x]` with no matching commit is wrong: untick it.
+- A commit with no tick gets its criterion re-verified, then ticked.
+- Never trust a tick you did not place this session
+  ([quality.md](../quality.md)).
 
-Two limits on this. The log is authoritative **only where the trailer is
-present** — a worker that skipped it produces durable but unattributable work,
-and the fallback is reading the commit range on that phase's branch. And
-re-verifying a committed-but-unticked criterion means re-running the very
-verification the checkpoint existed to avoid; reconciliation is cheaper than
-redoing the work, not free.
+Two limits on this:
+
+- The log is authoritative **only where the trailer is present**.
+- A worker that skipped the trailer produces durable but unattributable work.
+- The fallback is reading the commit range on that phase's branch.
+- Re-verifying a committed-but-unticked criterion re-runs the very verification
+  the checkpoint existed to avoid.
+- Reconciliation is cheaper than redoing the work, not free.
 
 ## Half-finished operations
 
-Before deciding anything, read `$GD/rebase-merge/head-name` (mid-rebase the
-branch name is *not* in HEAD; status reports detached), `onto`, `orig-head` (the
-undo point) and `msgnum`/`end`. Continue or abort only from the owning worktree.
-
-Stale or moved worktrees: `git worktree prune --dry-run --verbose` before
-`prune`; `git worktree repair <path>` when the directory moved. Pruning does not
-delete the branch. For ref or object damage: `git fsck --no-progress`.
+- Before deciding anything, read `$GD/rebase-merge/head-name`, `onto`,
+  `orig-head` (the undo point) and `msgnum`/`end`.
+- Mid-rebase the branch name is *not* in HEAD; status reports detached.
+- Continue or abort only from the owning worktree.
+- Stale or moved worktrees: `git worktree prune --dry-run --verbose` before
+  `prune`.
+- `git worktree repair <path>` when the directory moved.
+- Pruning does not delete the branch.
+- For ref or object damage: `git fsck --no-progress`.
 
 ## The Run state block
 
-What a stop must leave behind as a `## Run state` section in the plan file,
-committed to `plan/<slug>` and deleted in its own commit before landing:
+A stop leaves a `## Run state` section in the plan file. Commit it to
+`plan/<slug>`; delete it in its own commit before landing.
 
-- base branch and pinned sha
-- run branch
-- a worktree → branch → phase table
-- the next unticked criterion
-- the verify command
-- the workflow `scriptPath` and `runId`
-- the verbatim failure string, if the run died
+| Field | Value shape |
+| --- | --- |
+| `Base` | `<base-branch> <40-hex pinned sha>` |
+| `Run branch` | `plan/<slug>` |
+| `Worktrees` | one row per member: `<absolute worktree path> -> <branch> -> phase <N>` |
+| `Next criterion` | `phase <N> criterion <M>` — the next unticked one |
+| `Verify` | the verify command, verbatim |
+| `Workflow` | `scriptPath=<absolute path>` and `runId=<id>` |
+| `Failure` | the verbatim failure string; omit the field unless the run died |
 
-No wall-clock call is needed — `git log -1 --format=%cI` gives the time.
+- No wall-clock call is needed — `git log -1 --format=%cI` gives the time.
 
 ## Failure taxonomy
 
@@ -90,10 +98,12 @@ No wall-clock call is needed — `git log -1 --format=%cI` gives the time.
 | `API Error: Server is temporarily limiting requests (not your usage limit)` / 529 overloaded | The harness already retried with backoff before you saw this. Check `https://status.claude.com`, stop, hand off. |
 | `API Error: Server error mid-response. The response above may be incomplete.` | Never retried by design. Re-run that phase from its last commit. |
 
-A user action, not skill behaviour: setting `CLAUDE_CODE_RETRY_WATCHDOG=1` in
-the environment before an unattended run retries capacity 429s and 529s
-indefinitely. It is documented for capacity errors only — whether it waits out a
-plan usage-limit window is unverified, so do not run a plan assuming it does.
+- A user action, not skill behaviour: setting `CLAUDE_CODE_RETRY_WATCHDOG=1` in
+  the environment before an unattended run.
+- It retries capacity 429s and 529s indefinitely.
+- It is documented for capacity errors only.
+- Whether it waits out a plan usage-limit window is unverified.
+- Do not run a plan assuming it does.
 
 ## What does not exist
 

@@ -1,8 +1,8 @@
 # GitHub Copilot Agent Mode — Project Setup
 
-How to configure a repository so GitHub Copilot (Agent Mode, Chat, Inline) understands the project, follows conventions, and produces consistent code.
-
-Based in part on lessons from [How to write a great agents.md](https://github.blog/ai-and-ml/github-copilot/how-to-write-a-great-agents-md-lessons-from-over-2500-repositories/) — an analysis of 2,500+ repositories.
+Configure a repository so GitHub Copilot understands the project, follows conventions, and
+produces consistent code. Covered surfaces: Agent Mode, Chat, Inline.
+Based in part on [How to write a great agents.md](https://github.blog/ai-and-ml/github-copilot/how-to-write-a-great-agents-md-lessons-from-over-2500-repositories/) — an analysis of 2,500+ repositories.
 
 ## Overview
 
@@ -17,9 +17,16 @@ Six layers of context, loaded at different times:
 | **Custom agents**           | `.github/agents/*.agent.md`              | When invoked by name (agent picker / `@name`)        | Zero until used |
 | **Reusable prompts**        | `.github/prompts/*.prompt.md`            | On demand (`/prompt-name` in chat)                   | Zero until used |
 
-`AGENTS.md` is read by every Copilot surface (Chat, Inline, Agent Mode, code review, cloud agent, and Copilot CLI). One agent file at the repo root is the norm; nested `AGENTS.md` files apply to their subtree and the nearest file wins. A root `CLAUDE.md` is only a fallback when no `AGENTS.md` is present — do not maintain both with different content.
-
-Design principle: **layer context from always → contextual → on-demand** so the agent gets the right information at the right time without wasting token budget.
+- **Every Copilot surface reads `AGENTS.md`** — Chat, Inline, Agent Mode, code review, cloud
+  agent, and Copilot CLI.
+- **One agent file at the repo root** is the norm.
+- **Nested `AGENTS.md`** files apply to their subtree.
+- **The nearest file wins.**
+- **A root `CLAUDE.md`** is only a fallback when no `AGENTS.md` is present.
+- **Never maintain both** with different content.
+- **Design principle** — layer context always → contextual → on-demand.
+- **Payoff** — the agent gets the right information at the right time, without wasting token
+  budget.
 
 ### When to add each layer
 
@@ -35,9 +42,19 @@ Not every project needs all six layers. Add them incrementally:
 
 ### Cross-tool compatibility
 
-If the repo also uses Cursor (`.cursor/rules/`, `.cursor/commands/`), keep the conventions aligned. `AGENTS.md` is the single source of truth — Cursor rules should point to it, not duplicate it.
-
-**Path-scoped conventions: pick one surface.** Copilot's `.github/instructions/*.instructions.md` and Claude Code's `.claude/rules/*.md` are two different mechanisms for the same idea — per-directory rules loaded on a glob. Maintaining both with the same content is a duplication anti-pattern: the two copies drift (one says "expected" where the other says "mandatory", one grows a section the other lacks). Keep exactly one path-scoped surface and let the other tool read `AGENTS.md`. This repo canonicalises on `.claude/rules/` and routes Copilot through `AGENTS.md`.
+- **Cursor** — if the repo also uses `.cursor/rules/` and `.cursor/commands/`, keep the
+  conventions aligned.
+- **Single source of truth** — `AGENTS.md`.
+- **Cursor rules** should point to it, not duplicate it.
+- **Path-scoped conventions: pick one surface.**
+- **Two mechanisms, one idea** — Copilot's `.github/instructions/*.instructions.md` and Claude
+  Code's `.claude/rules/*.md`.
+- **Both are** per-directory rules loaded on a glob.
+- **Maintaining both** with the same content is a duplication anti-pattern.
+- **The two copies drift** — one says "expected", the other "mandatory".
+- **They also diverge** — one grows a section the other lacks.
+- **Keep exactly one** path-scoped surface, and let the other tool read `AGENTS.md`.
+- **This repo** canonicalises on `.claude/rules/` and routes Copilot through `AGENTS.md`.
 
 ---
 
@@ -45,8 +62,12 @@ If the repo also uses Cursor (`.cursor/rules/`, `.cursor/commands/`), keep the c
 
 Contextual instructions loaded automatically when the agent edits files matching the `applyTo` glob pattern. Each file covers one area of the codebase.
 
-Use this surface only if Copilot is the repo's single path-scoped mechanism. If the repo already carries `.claude/rules/*.md`, do **not** add a parallel `.github/instructions/` copy — that dual surface drifts (see [Cross-tool compatibility](#cross-tool-compatibility)). This repo dropped its `.github/instructions/` copies for exactly that reason and now routes Copilot through `AGENTS.md`.
-
+- **Use this surface only if** Copilot is the repo's single path-scoped mechanism.
+- **If the repo already carries `.claude/rules/*.md`**, do **not** add a parallel
+  `.github/instructions/` copy.
+- **Why** — that dual surface drifts (see [Cross-tool compatibility](#cross-tool-compatibility)).
+- **This repo** dropped its `.github/instructions/` copies for exactly that reason.
+- **It now routes** Copilot through `AGENTS.md`.
 - **`applyTo` is required** — every instructions file needs an `applyTo` glob (e.g. `backend/**`, `frontend/**`, `scripts/**`) that scopes where it loads. Use `applyTo: "**"` for repo-wide instructions.
 - Use `excludeAgent: "code-review"` or `excludeAgent: "cloud-agent"` to hide a file from a specific Copilot agent; without it, every agent loads the file.
 
@@ -54,7 +75,11 @@ Use this surface only if Copilot is the repo's single path-scoped mechanism. If 
 
 ## .github/skills/<name>/SKILL.md
 
-Skills are reusable, self-contained workflows defined as a `SKILL.md` file in a per-skill directory, with optional bundled reference files (`REFERENCE.md`, `<topic>.md`) that load only when the skill runs. They follow the cross-tool [Agent Skills](https://agentskills.io) open standard, so the same skill works in Claude Code, Cursor, Codex CLI, and GitHub Copilot.
+- **Shape** — reusable, self-contained workflows.
+- **Location** — each is a `SKILL.md` file in a per-skill directory.
+- **Bundled files** — optional `REFERENCE.md` and `<topic>.md`, loaded only when the skill runs.
+- **Standard** — the cross-tool [Agent Skills](https://agentskills.io) open standard.
+- **Portability** — the same skill works in Claude Code, Cursor, Codex CLI, and GitHub Copilot.
 
 ### Locations Copilot reads
 
@@ -64,9 +89,17 @@ Skills are reusable, self-contained workflows defined as a `SKILL.md` file in a 
 | `.claude/skills/`   | Personal + project skills (also read by VS Code Copilot) |
 | `.agents/skills/`   | Personal skills for Copilot CLI (`~/.agents/skills`)   |
 
-Agent Skills are generally available across the Copilot cloud agent, Copilot code review, Copilot CLI, and agent mode in VS Code and JetBrains.
+Agent Skills are generally available across these surfaces:
 
-For **personal** skills (in `$HOME`, not committed) the read paths differ per surface: VS Code reads `~/.copilot/skills`, `~/.claude/skills`, and `~/.agents/skills`; Copilot CLI reads only `~/.copilot/skills` and `~/.agents/skills` — not `~/.claude/skills`. A `~/.claude/skills` symlink covers Claude Code and VS Code but is invisible to Copilot CLI, so add a second `~/.agents/skills` symlink to cover the CLI too.
+- Copilot cloud agent, Copilot code review, and Copilot CLI.
+- Agent mode in VS Code and JetBrains.
+
+Personal skill paths (in `$HOME`, not committed) differ per surface:
+
+- **VS Code** reads `~/.copilot/skills`, `~/.claude/skills`, and `~/.agents/skills`.
+- **Copilot CLI** reads only `~/.copilot/skills` and `~/.agents/skills` — not `~/.claude/skills`.
+- **A `~/.claude/skills` symlink** covers Claude Code and VS Code, but not Copilot CLI.
+- **Add a second `~/.agents/skills` symlink** to cover the CLI too.
 
 ### When to use a skill vs a custom agent
 
@@ -77,7 +110,11 @@ For **personal** skills (in `$HOME`, not committed) the read paths differ per su
 
 ## .github/agents/*.agent.md
 
-Custom agent personas selected from the agent picker (or invoked by name) in Copilot. Each file defines a specialist with a specific role, constraints, and tools. Unlike `AGENTS.md` (which instructs the general agent), these create **focused specialists** that excel at one job. The same `.agent.md` file works for the Copilot cloud agent and Copilot CLI.
+- **What** — custom Copilot agent personas, selected from the agent picker or by name.
+- **Content** — each file defines a specialist with a specific role, constraints, and tools.
+- **Unlike `AGENTS.md`**, which instructs the general agent, these create **focused specialists**.
+- **Each specialist** excels at one job.
+- **Reach** — the same `.agent.md` file works for the Copilot cloud agent and Copilot CLI.
 
 > **Rename note:** the earlier `.chatmode.md` (custom chat mode) format is superseded by `.agent.md`. Rename existing `.chatmode.md` files to `.agent.md` and place them in `.github/agents/`; legacy files in `.github/chatmodes/` still load but should be migrated.
 
@@ -89,7 +126,12 @@ Custom agent personas selected from the agent picker (or invoked by name) in Cop
 
 ## .github/prompts/*.prompt.md
 
-Reusable prompts invoked via `/prompt-name` in Copilot Chat. Useful for recurring multi-step tasks. These are an **IDE-only preview** feature (VS Code / JetBrains) — they are not loaded by the cloud agent or Copilot CLI. The optional `agent:` frontmatter field (formerly `mode:`) selects which agent runs the prompt: `ask`, `agent`, `plan`, or a custom agent name.
+- **What** — reusable prompts invoked via `/prompt-name` in Copilot Chat.
+- **Use for** recurring multi-step tasks.
+- **Availability** — an **IDE-only preview** feature (VS Code / JetBrains).
+- **Not loaded** by the cloud agent or Copilot CLI.
+- **`agent:` frontmatter** (optional, formerly `mode:`) selects which agent runs the prompt.
+- **Values** — `ask`, `agent`, `plan`, or a custom agent name.
 
 ---
 

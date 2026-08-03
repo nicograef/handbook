@@ -43,12 +43,12 @@ All NO → KEEP
 
 ## Coverage Loss Protocol
 
-When a Delete tag removes the only test for a behavior:
+**Trigger**: a Delete tag removes the only test for a behavior.
 
-1. Note it explicitly in the Step 3 report:
+1. **Note** it explicitly in the Step 3 report, in this shape:
    ```
    ⚠ Delete "test name" removes the only coverage for [behavior X].
      Suggest: add a proper test via TDD skill after this review.
    ```
-2. Do not add the replacement test during this skill — that is out of scope.
-3. Confirm with the user before deleting.
+2. **Skip** the replacement test — adding it is out of scope for this skill.
+3. **Confirm** with the user before deleting.

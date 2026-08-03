@@ -1,15 +1,17 @@
 # Dotfiles for GitHub Codespaces
 
-Automatically apply your shell config (prompt, aliases, git settings) to every
-new Codespace. Uses [`scripts/install-dotfiles.sh`](../scripts/install-dotfiles.sh)
-to symlink config files into `$HOME`. `~/.claude/settings.local.json` stays
-machine-local and is intentionally not linked.
+Automatically apply your shell config to every new Codespace.
+
+- Covers prompt, aliases, and git settings.
+- [`scripts/install-dotfiles.sh`](../scripts/install-dotfiles.sh) symlinks the config files
+  into `$HOME`.
+- `~/.claude/settings.local.json` stays machine-local, intentionally not linked.
 
 > **Why no `.bashrc`?** Every stock `.bashrc` (Debian, Ubuntu, Codespaces)
-> already sources `~/.bash_aliases` *after* setting its own history defaults
-> and PS1, so all portable config — aliases, history tuning, the git prompt —
-> lives there and wins by sourcing order. Replacing `.bashrc` would only lose
-> distro-specific defaults.
+> already sources `~/.bash_aliases` *after* setting its own history defaults and PS1.
+> All portable config — aliases, history tuning, the git prompt — therefore lives
+> there and wins by sourcing order.
+> Replacing `.bashrc` would only lose distro-specific defaults.
 
 ## Prerequisites
 
@@ -27,11 +29,11 @@ Every new Codespace will now clone this repo and run `scripts/install-dotfiles.s
 
 ## How it works
 
-Codespaces looks for an install script in the dotfiles repo root or common
-locations (`install.sh`, `install`, `bootstrap.sh`, `setup.sh`, `script/setup`).
-Our script lives at `scripts/install-dotfiles.sh`, so the wrapper Codespaces
-looks for already exists in the repo root: [install.sh](../install.sh). It just
-execs the real script — nothing to create.
+- Codespaces looks for an install script in the dotfiles repo root or common locations.
+- Those locations: `install.sh`, `install`, `bootstrap.sh`, `setup.sh`, `script/setup`.
+- Our script lives at `scripts/install-dotfiles.sh`.
+- The wrapper Codespaces looks for already exists in the repo root: [install.sh](../install.sh).
+- It just execs the real script — nothing to create.
 
 ## Manual run
 
@@ -45,20 +47,20 @@ source ~/.bashrc
 
 ## Staying up to date
 
-`~/.claude/skills`, `~/.agents/skills`, and `~/.claude/agents` are **directory**
-symlinks into the repo clone, so pulling the clone is the whole update — new
-skills and agents appear immediately, with no re-link and no restart:
+- `~/.claude/skills`, `~/.agents/skills`, and `~/.claude/agents` are **directory** symlinks
+  into the repo clone.
+- New skills and agents appear immediately, with no re-link and no restart.
+- Pulling the clone is the whole update:
 
 ```bash
 git -C ~/handbook pull
 ```
 
-Re-run `install.sh` only when [`scripts/install-dotfiles.sh`](../scripts/install-dotfiles.sh)
-itself changes (a new symlink target, a new git-config default). It is
-idempotent, so re-running when unsure is harmless.
-
-For the plugin tier on machines without a clone, see
-[claude-plugin.md](claude-plugin.md) → *Update behavior*.
+- Re-run `install.sh` only when [`scripts/install-dotfiles.sh`](../scripts/install-dotfiles.sh)
+  itself changes: a new symlink target, a new git-config default.
+- It is idempotent, so re-running when unsure is harmless.
+- Plugin tier on machines without a clone: [claude-plugin.md](claude-plugin.md) →
+  *Update behavior*.
 
 ## Verify
 

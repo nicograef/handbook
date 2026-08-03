@@ -11,15 +11,13 @@
 
 ## 4. Verifying Through External Means
 
-**Signal**: `db.QueryRow("SELECT COUNT(*) FROM users WHERE name = 'Alice'")` after
-`createUser`, `fs.readFileSync("/tmp/report.json", "utf8")` after `saveReport` — after calling
-the public interface, side effects are checked by reaching outside that interface (raw SQL
-queries, reading files directly, inspecting internal state).
-
-**Why it's bad**: Breaks if the storage mechanism changes (different DB schema, different file
-format) even though behavior is identical.
-
-**Fix**: Verify through the same interface the caller would use.
+- **Signal**: `db.QueryRow("SELECT COUNT(*) FROM users WHERE name = 'Alice'")` after `createUser`.
+- **Signal**: `fs.readFileSync("/tmp/report.json", "utf8")` after `saveReport`.
+- **Pattern**: after calling the public interface, side effects are checked outside it.
+- **Outside** covers raw SQL queries, reading files directly, and inspecting internal state.
+- **Why it's bad**: breaks if the storage mechanism changes, even though behavior is identical.
+- **Storage change** covers a different DB schema or a different file format.
+- **Fix**: verify through the same interface the caller would use.
 
 ```go
 // GOOD
@@ -34,13 +32,11 @@ func TestCreateUser_IsRetrievable(t *testing.T) {
 
 ## 7. Over-specified Error Messages
 
-**Signal**: `require.EqualError(t, err, "payment failed: card declined: insufficient funds on
-card ending 4242")`, `expect(err.message).toBe("Payment failed: card declined: …")` — asserting
-on the exact wording of an error string.
-
-**Why it's bad**: Error messages are UI concerns. Rephrasing for better UX breaks the test.
-
-**Fix**: Assert on error type, code, or a stable sentinel — not the full message string.
+- **Signal**: `require.EqualError(t, err, "payment failed: card declined: insufficient funds on card ending 4242")`.
+- **Signal**: `expect(err.message).toBe("Payment failed: card declined: …")`.
+- **Pattern**: asserting on the exact wording of an error string.
+- **Why it's bad**: error messages are UI concerns. Rephrasing for better UX breaks the test.
+- **Fix**: assert on error type, code, or a stable sentinel — not the full message string.
 
 ```go
 // GOOD

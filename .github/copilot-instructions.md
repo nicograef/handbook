@@ -1,6 +1,18 @@
 # handbook — Copilot Instructions
 
-The shared rules live in [`AGENTS.md`](../AGENTS.md); Copilot reads it alongside this file, so
-nothing is restated here.
+Copilot-only pointers. Shared rules live in [`AGENTS.md`](../AGENTS.md), read alongside this
+file; nothing is restated here. The hard caps below apply to every response.
 
-Copilot-only pointers:
+| Rule | Cap |
+| --- | --- |
+| Sentence | ≤ 20 words, one claim |
+| Paragraph | ≤ 3 lines, ≤ 1 per section |
+| Bullet | ≤ 2 lines |
+| Table trigger | ≥ 3 items sharing ≥ 2 attributes |
+| List trigger | any enumerable set of ≥ 2 items |
+| Format order | table → list → paragraph |
+
+- Banned: preamble, restating the task, closing recap, transition sentences.
+- Banned: hedges that do not change the next action.
+- Compression removes words, never a rule, condition, exception or caveat.
+- Full contract: [`.claude/skills/output-style.md`](../.claude/skills/output-style.md).

@@ -112,8 +112,10 @@ back when a second or third use case makes it earn its keep (Rule of Three).
 
 ### Over-Engineered Error Messages
 
-Error messages written like documentation — multi-sentence, with suggestions
-for how to fix the problem.
+Error messages written like documentation. **Flag when:**
+
+- The message runs to multiple sentences
+- The message suggests how to fix the problem
 
 **Suggest:** Match the project's existing error message style. Usually a short,
 specific description suffices.

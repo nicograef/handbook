@@ -12,22 +12,28 @@ Taxonomy and per-repo target resolution for reflect plan items.
 | **documentation** | human-facing knowledge someone will look up: how-tos, commands, background |
 | **tooling/process** | preventable by automation: a CI check, test, lint rule, Make target, script, or command |
 
-**Most automatable wins.** A learning that fits several categories gets the most
-automatable one: a CI check beats a rule, a rule beats a memory. Automation
-changes future behavior without anyone having to remember anything.
+- **Most automatable wins** — a learning fitting several categories gets the most automatable one.
+- **Precedence** — a CI check beats a rule; a rule beats a memory.
+- **Why** — automation changes future behavior without anyone having to remember anything.
 
 ## Memory directory resolution
 
-The harness memory directory is `~/.claude/projects/<slug>/memory/`, where
-`<slug>` is the absolute working directory with `/` replaced by `-`
-(e.g. `/home/nico/r/handbook` → `-home-nico-r-handbook`). It exists only where
-harness memory is enabled — if the directory is absent, the memory category has
-no valid target (present such items as a handoff note, do not create the
-directory).
+- **Path** — the harness memory directory `~/.claude/projects/<slug>/memory/`.
+- **Slug** — the absolute working directory with `/` replaced by `-`
+  (e.g. `/home/nico/r/handbook` → `-home-nico-r-handbook`).
+- **Exists** only where harness memory is enabled.
+- **Directory absent** — the memory category has no valid target.
+- **Then** — present such items as a handoff note; never create the directory.
 
 ### Memory file format
 
-One file per fact, `<short-kebab-slug>.md`:
+- **File** — one per fact, named `<short-kebab-slug>.md`.
+- **`name`** — the same short kebab slug.
+- **`description`** — one line; it decides relevance during recall.
+- **`metadata.type`** — one of `user`, `feedback`, `project`, `reference`.
+- **Body** — the fact itself.
+- **Body, `feedback` and `project` types** — follow the fact with **Why:** and
+  **How to apply:** lines.
 
 ```markdown
 ---
@@ -40,9 +46,10 @@ metadata:
 <the fact; for feedback/project, follow with **Why:** and **How to apply:** lines>
 ```
 
-After writing the file, add one line to the directory's `MEMORY.md` index:
-`- [Title](<file>.md) — <hook>`. `MEMORY.md` holds index lines only — never
-memory content. Update an existing file instead of creating a near-duplicate.
+- **Index line** — after writing the file, add `- [Title](<file>.md) — <hook>` to the
+  directory's `MEMORY.md`.
+- **`MEMORY.md`** — index lines only, never memory content.
+- **Near-duplicate** — update the existing file instead of creating one.
 
 ## Handbook target map
 
@@ -58,27 +65,27 @@ The richest target set — applies when reflecting inside the handbook repo:
 
 ## Generic repo resolution (plugin use outside the handbook)
 
-Targets are **discovered, never assumed** — read what the repo actually has
-before proposing any write. Discover:
+Targets are **discovered, never assumed** — read what the repo actually has before proposing any
+write. Discover:
 
-- **Instructions surface** (rule items) — the first of `AGENTS.md`,
-  `CLAUDE.md`, `.github/copilot-instructions.md` that exists in the repo root.
-- **Docs layout** (documentation items) — `docs/` or another existing doc
-  directory; `README.md` for small additions. Follow the repo's own structure
-  and index conventions.
-- **Skills location** (skill items) — `.claude/skills/` only if it already
-  exists.
-- **Memory directory** (memory items) — resolved via the working-directory
-  slug (above); valid only if the directory exists.
-- **Tooling surface** (tooling/process items) — the repo's own Makefile, CI
-  workflows, or scripts; trivial edits inline, larger work → write-prd /
-  create-plan handoff, same as in the handbook.
-
-A category with **no valid target** in the current repo becomes a **handoff
-note** inside the plan multi-select — the item is still presented with its
-cited observation, but selecting it yields a recommendation of where such a
-target could live, never a write to a guessed path.
-
-**Dedup adapts too:** in a generic repo, check the discovered instructions
-file, the discovered docs, and the memory directory (if present) instead of
-the handbook-specific artifact list.
+- **Instructions surface** (rule items) — the first of `AGENTS.md`, `CLAUDE.md`,
+  `.github/copilot-instructions.md` that exists in the repo root.
+- **Docs layout** (documentation items) — `docs/` or another existing doc directory;
+  `README.md` for small additions.
+- **Docs conventions** — follow the repo's own structure and index conventions.
+- **Skills location** (skill items) — `.claude/skills/` only if it already exists.
+- **Memory directory** (memory items) — resolved via the working-directory slug (above); valid
+  only if the directory exists.
+- **Tooling surface** (tooling/process items) — the repo's own Makefile, CI workflows, or
+  scripts.
+- **Tooling size** — trivial edits inline; larger work → write-prd / create-plan handoff, same
+  as in the handbook.
+- **No valid target** in the current repo — that category becomes a handoff note inside the
+  plan multi-select.
+- **Handoff note** — the item is still presented with its cited observation.
+- **Selecting it** yields a recommendation of where such a target could live.
+- **Never** write to a guessed path.
+- **Dedup adapts too** — in a generic repo, check the discovered instructions file and the
+  discovered docs.
+- **Memory dedup** — include the memory directory if it is present.
+- **Skip** the handbook-specific artifact list.

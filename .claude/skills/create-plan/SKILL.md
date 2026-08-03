@@ -17,32 +17,29 @@ description. Output is a Markdown file in `docs/plans/`.
 
 ### 1. Determine the entry point
 
-- **PRD provided** (file or in conversation context) → read it fully, then
-  continue to step 2 to check for ambiguities before planning.
+- **PRD provided** (file or in conversation context) → read it fully.
+- Then continue to step 2, checking for ambiguities before planning.
 - **Task description only** → continue to step 2.
-
-If a PRD exists but is not yet in context, ask the user to paste it or point
-you to the file.
+- PRD exists but is not yet in context → ask the user to paste it or point you
+  to the file.
 
 ### 2. Clarify ambiguities
 
-**Always run this step** — whether a PRD was provided or not. A PRD may
-contain gaps, conflicting requirements, or underspecified decisions that must
-be resolved before planning begins.
-
-Resolve unknowns through **1–3 rounds** of structured questions before
-planning, following the canonical
-[clarification question rules](../clarify/question-rules.md).
+- **Always run this step** — whether a PRD was provided or not.
+- A PRD may contain gaps, conflicting requirements, or underspecified decisions.
+- Resolve those before planning begins.
+- Resolve unknowns through **1–3 rounds** of structured questions before planning.
+- Follow the canonical [clarification question rules](../clarify/question-rules.md).
 
 ### 3. Research the codebase
 
-Read affected files, understand existing patterns, integration layers, and
-the current architecture.
+- Read affected files.
+- Understand existing patterns, integration layers, and the current architecture.
 
 ### 4. Identify architectural decisions
 
-Before slicing, identify high-level decisions that are unlikely to change
-throughout implementation:
+Before slicing, identify high-level decisions unlikely to change throughout
+implementation. They go in the plan header, so every phase can reference them.
 
 - Route structures / URL patterns
 - Database schema shape
@@ -50,12 +47,10 @@ throughout implementation:
 - Authentication / authorization approach
 - Third-party service boundaries
 
-These go in the plan header so every phase can reference them.
-
 ### 5. Draft vertical slices
 
 Break the work into **tracer bullet** phases. Each phase is a thin vertical
-slice that cuts through ALL integration layers end-to-end.
+slice cutting through ALL integration layers end-to-end.
 
 **Slice rules:**
 
@@ -63,62 +58,68 @@ slice that cuts through ALL integration layers end-to-end.
   API, UI, tests).
 - A completed slice is demoable or verifiable on its own.
 - Prefer many thin slices over few thick ones.
-- Do NOT include specific file names, function names, or implementation
-  details that are likely to change as later phases are built.
+- Do NOT include specific file names, function names, or implementation details
+  likely to change as later phases are built.
 - DO include durable decisions: route paths, schema shapes, data model names.
 - Give every phase a `**Depends on**` line — the phase numbers that must land
-  first, or "none". [implement-plan](../implement-plan/SKILL.md) reads it to
-  decide what may run concurrently; a plan without it is executed strictly
-  sequentially, since every phase is then assumed to depend on all earlier ones.
+  first, or "none".
+- [implement-plan](../implement-plan/SKILL.md) reads that line to decide what may
+  run concurrently.
+- A plan without that line is executed strictly sequentially.
+- Every phase is then assumed to depend on all earlier ones.
 
-For small tasks (refactors, config changes, single-module work), a **single
-phase** is perfectly valid.
+**Granularity:**
 
-Decide the granularity yourself — do not ask the user to approve the phase
-breakdown. The finished plan file is the review surface; the user can merge
-or split phases there. Only raise a phasing question if two breakdowns
-imply genuinely different scope or risk (then it belongs in step 2's
-clarification rounds).
+- Small tasks (refactors, config changes, single-module work) may use a **single
+  phase**.
+- Decide the granularity yourself — do not ask the user to approve the phase
+  breakdown.
+- The finished plan file is the review surface.
+- The user can merge or split phases there.
+- Raise a phasing question only if two breakdowns imply genuinely different scope
+  or risk.
+- Such a phasing question belongs in step 2's clarification rounds.
 
 ### 6. Write the plan file
 
-Derive a slug from the task (e.g. `admin-dashboard`, `order-cancel`).
-Create the file `docs/plans/plan-<slug>.md` (create the directory if it
-doesn't exist).
+- Derive a slug from the task (e.g. `admin-dashboard`, `order-cancel`).
+- Create the file `docs/plans/plan-<slug>.md` (create the directory if it
+  doesn't exist).
 
 ### 7. Self-review the plan
 
 Read the written plan with fresh eyes before presenting it.
 
-- **Placeholder scan.** Search for vagueness that would block an implementer:
-  "TBD", "TODO", "implement later", "fill in details"; instructions like "add
-  appropriate error handling" or "add validation" that don't say how; "similar
-  to Phase N" without restating the content; acceptance criteria or phase
-  descriptions that reference a file, function, or model not defined anywhere
-  else in the plan. Fix inline.
-- **Cross-phase consistency check.** Confirm names introduced in
-  "Architectural decisions" (route paths, schema/table names, key model or
-  function names) are used identically everywhere they recur in later phases.
-  Drift — e.g. `Order` in one phase and `PurchaseOrder` in another — is a plan
-  bug. Fix inline.
-
-Fix issues directly in the plan file before presenting it to the user. No need
-to re-review after fixing.
+- **Placeholder scan.** Search for vagueness that would block an implementer;
+  fix inline.
+- Markers: "TBD", "TODO", "implement later", "fill in details".
+- Instructions like "add appropriate error handling" or "add validation" that
+  don't say how.
+- "similar to Phase N" without restating the content.
+- Acceptance criteria or phase descriptions that reference a file, function, or
+  model not defined anywhere else in the plan.
+- **Cross-phase consistency check.** Confirm names introduced in "Architectural
+  decisions" recur identically everywhere in later phases; fix inline.
+- Names covered: route paths, schema/table names, key model or function names.
+- Drift — e.g. `Order` in one phase and `PurchaseOrder` in another — is a plan bug.
+- Fix issues directly in the plan file before presenting it to the user.
+- No need to re-review after fixing.
 
 ## Constraints
 
 - **No code changes.** Only create the plan file.
 - **Precise references.** In the plan file, anchor references to file path plus
-  symbol name (e.g. `backend/api/product/http/handler.go — handleCheckout()`),
-  not line numbers — lines drift as later phases land. Use line numbers only for
-  in-conversation citations while researching.
+  symbol name, e.g. `backend/api/product/http/handler.go — handleCheckout()`.
+- Not line numbers — lines drift as later phases land.
+- Use line numbers only for in-conversation citations while researching.
 - **Readability-first.** Prefer simple, clear, idiomatic solutions.
 
 ## Quality
 
 - Once the plan file is written, run the shared
-  [self-review checklist](../quality.md) on it. Surface issues in the chat only
-  if found.
+  [self-review checklist](../quality.md) on it.
+- Surface issues in the chat only if found.
+- Chat and plan text follow the [output style contract](../output-style.md).
 
 ## Plan Template
 

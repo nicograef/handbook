@@ -6,9 +6,9 @@ write-prd skills all follow these — link here instead of restating them.
 - **Explore before asking.** If a question can be answered by reading the
   codebase, read the codebase instead of asking the user. Only ask when the
   answer requires a human judgment call.
-- **Always recommend.** Every question includes a recommended answer, labelled
-  clearly (e.g. "(recommended)" in the option label, or a note in the prompt),
-  with brief reasoning.
+- **Always recommend.** Every question names a recommended answer, labelled
+  clearly (e.g. "(recommended)" in the option, or noted in the prompt).
+  Include brief reasoning.
 - **Context before question.** The prompt explains *why* the question matters so
   the user can make an informed choice.
 - **Structured over free-text.** Present concrete options (multiple-choice with an
@@ -18,8 +18,7 @@ write-prd skills all follow these — link here instead of restating them.
 - **Max 5 questions per round.** Prioritise — ask the most impactful questions
   first.
 - **Stop when resolved.** As soon as no unresolved branches remain, stop — even after a single round.
-
-If the user declines to answer or says "just do it": proceed with the recommended
-default for each unanswered question, and document every assumption in the plan or
-output as a clearly marked callout (e.g. a blockquote prefixed with
-**Assumption:**).
+- **On decline.** If the user says "just do it": use the recommended default
+  for every unanswered question.
+- **Document assumptions.** Record each one in the plan or output as a
+  clearly marked callout (e.g. a blockquote prefixed with **Assumption:**).

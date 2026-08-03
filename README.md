@@ -1,6 +1,6 @@
 # handbook
 
-Following the handbook to set something up? Start at [guides/bootstrap.md](guides/bootstrap.md).
+Setting something up? Start at [guides/bootstrap.md](guides/bootstrap.md).
 
 ## Guides
 
@@ -27,7 +27,7 @@ Following the handbook to set something up? Start at [guides/bootstrap.md](guide
 
 ### Stack conventions
 
-Heading-grouped rules and idioms for a stack — reference material, not runbooks.
+Heading-grouped rules and idioms per stack — reference material, not runbooks.
 
 | Topic                             | File                                                                       |
 | --------------------------------- | -------------------------------------------------------------------------- |
@@ -85,8 +85,8 @@ Heading-grouped rules and idioms for a stack — reference material, not runbook
 
 ## Agent Setup
 
-Configuration for Claude Code and GitHub Copilot — the instruction surface, skills, agents,
-path-scoped rules, and dotfiles.
+Claude Code and GitHub Copilot config: instruction surface, skills, agents, path-scoped rules,
+dotfiles.
 
 | Item                       | File / Directory                                                       |
 | -------------------------- | ---------------------------------------------------------------------- |

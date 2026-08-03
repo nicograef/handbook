@@ -1,25 +1,26 @@
 # External Monitoring with Better Stack
 
-Stand up the full external monitoring surface for a single-VPS stack on
-[Better Stack](https://betterstack.com/)'s free plan: one HTTPS uptime monitor
-(with a TLS/SSL-expiry alert) plus three cron heartbeats (backup, cert renewal,
-health ping).
+Stand up external monitoring for a single-VPS stack on
+[Better Stack](https://betterstack.com/)'s free plan.
+
+- One HTTPS uptime monitor, with a TLS/SSL-expiry alert.
+- Three cron heartbeats: backup, cert renewal, health ping.
 
 ## The dead-man model
 
-Every heartbeat is a **dead-man's switch**: a cron or service pings its URL
-**only after full success**. Any failure withholds the ping; the missed window
-then trips the alert after the grace period. This is service-portable — it
-needs no `/fail` endpoint, just a plain `GET` on success — and it means a job
-that never runs at all (dead cron, dead box) alerts by itself.
-
-Certs need two independent signals: the **cert-renewal heartbeat** proves
-`certbot renew` ran and succeeded, and the **external TLS-expiry monitor** is
-the safety net for the *reload* half. `certbot renew` and `nginx -s reload` are
-decoupled loops (see [letsencrypt-docker.md](letsencrypt-docker.md)), so a renew
-can succeed while a stuck reload keeps nginx serving the old cert — the
-heartbeat can't see that; the external SSL-expiry check on the live `:443`
-endpoint can.
+- Every heartbeat is a **dead-man's switch**: a cron or service pings its URL
+  **only after full success**.
+- Any failure withholds the ping; the missed window then trips the alert after
+  the grace period.
+- Service-portable — no `/fail` endpoint, just a plain `GET` on success.
+- A job that never runs at all (dead cron, dead box) alerts by itself.
+- Certs need two independent signals, because `certbot renew` and
+  `nginx -s reload` are decoupled loops (see [letsencrypt-docker.md](letsencrypt-docker.md)).
+  - **cert-renewal heartbeat** — proves `certbot renew` ran and succeeded.
+  - **external TLS-expiry monitor** — the safety net for the *reload* half.
+  - A renew can succeed while a stuck reload keeps nginx serving the old cert.
+  - The heartbeat can't see that; the external SSL-expiry check on the live
+    `:443` endpoint can.
 
 ## Ping URLs are configuration, never git
 
@@ -52,10 +53,12 @@ Only `<your-domain>` — the public HTTPS endpoint the uptime monitor checks
 
 ## Step 1 — Create the account
 
-Sign up at [betterstack.com](https://betterstack.com/) and confirm the email. In
-**Uptime**, monitors and heartbeats draw from the same pool of 10. Configure
-alerts once under the team's on-call/notification settings: add your email and,
-optionally, a Slack integration — every monitor and heartbeat below reuses it.
+In **Uptime**, monitors and heartbeats draw from the same pool of 10 slots.
+
+1. Sign up at [betterstack.com](https://betterstack.com/) and confirm the email.
+2. Configure alerts once under the team's on-call/notification settings.
+   - Add your email and, optionally, a Slack integration.
+   - Every monitor and heartbeat below reuses it.
 
 ## Step 2 — HTTPS uptime monitor with SSL-expiry alert
 
@@ -63,20 +66,21 @@ This monitor watches the public endpoint *and* the certificate.
 
 1. **Uptime → Monitors → Create monitor.**
 2. Type: **HTTPS**. URL: `https://<your-domain>`. Check frequency: 3 minutes.
-3. Enable the **SSL / TLS certificate expiration** alert (alert while there are
-   still days of validity left — the reload loop and a 30-day renewal window
-   give ample runway).
+3. Enable the **SSL / TLS certificate expiration** alert.
+   - Alert while there are still days of validity left.
+   - The reload loop and a 30-day renewal window give ample runway.
 4. Point the alert at the notification channel from Step 1. Save.
 
 > **Verification point — free-plan SSL-expiry caveat.** The SSL-expiry toggle
 > being free is **docs-verified but not account-verified** (as of 2026-07-09).
 > **This step is where you confirm it.** If the toggle is paywalled on your
 > account:
-> - Re-pick the TLS-expiry source from live-verified free candidates (e.g. an
->   external cron that runs `openssl s_client -connect <domain>:443 | openssl
->   x509 -checkend` and pings a fourth heartbeat on success), and
-> - **Record the decision here** (replace this callout with what you chose and
->   the as-of date), so the runbook reflects reality.
+> - Re-pick the TLS-expiry source from live-verified free candidates.
+> - Example: an external cron that runs `openssl s_client -connect <domain>:443 | openssl
+>   x509 -checkend` and pings a fourth heartbeat on success.
+> - **Record the decision here** — replace this callout with what you chose and
+>   the as-of date.
+> - The runbook must reflect reality.
 
 ## Step 3 — Backup heartbeat
 
@@ -85,8 +89,8 @@ pings only after a dump is verified and retention applied).
 
 1. **Uptime → Heartbeats → Create heartbeat.** Name: `backup`.
 2. Expected period: **1 day** (the cron runs daily at 03:00).
-3. **Grace period: a few hours** (e.g. 2–3 h) — enough to cover a slow dump or
-   a delayed cron start without false alarms.
+3. **Grace period: a few hours** (e.g. 2–3 h).
+   - Enough to cover a slow dump or a delayed cron start without false alarms.
 4. Copy the heartbeat URL into the server's Compose `.env`:
 
    ```bash
@@ -103,12 +107,14 @@ Proves `certbot renew` ran successfully in the `certbot` service loop.
 1. **Create heartbeat.** Name: `cert-renewal`.
 2. Expected period: **1 day** (the loop's cadence is `sleep 24h`).
 3. **Grace period: generous — at least a full day, 24–36 h.** Why so wide:
-   - The loop sleeps 24 h between passes and Let's Encrypt only renews within
-     30 days of expiry, so **most passes are no-ops** — `certbot renew` succeeds
-     without issuing anything and still pings. A tight grace would false-alarm
-     on a single skipped or slow pass.
-   - The renew is the only gated signal here; a failed *reload* is caught by the
-     Step 2 TLS-expiry monitor, not this heartbeat.
+   - The loop sleeps 24 h between passes.
+   - Let's Encrypt only renews within 30 days of expiry, so **most passes are
+     no-ops**.
+   - `certbot renew` succeeds without issuing anything and still pings.
+   - A tight grace would false-alarm on a single skipped or slow pass.
+   - The renew is the only gated signal here.
+   - A failed *reload* is caught by the Step 2 TLS-expiry monitor, not this
+     heartbeat.
 4. Copy the URL into the server's Compose `.env`:
 
    ```bash
@@ -122,10 +128,11 @@ Proves `certbot renew` ran successfully in the `certbot` service loop.
 
 ## Step 5 — Health-ping heartbeat
 
-Proves the host is patched and not pending a reboot (the `report-health` cron,
-installed by provisioning, pings only when healthy — no `reboot-required`, no
-unattended-upgrades error). See the `report-health` step in
-[provision-server.md](provision-server.md).
+Proves the host is patched and not pending a reboot.
+
+- The `report-health` cron is installed by provisioning.
+- It pings only when healthy — no `reboot-required`, no unattended-upgrades error.
+- See the `report-health` step in [provision-server.md](provision-server.md).
 
 1. **Create heartbeat.** Name: `health`.
 2. Expected period: **1 day** (the cron runs daily).
@@ -153,9 +160,10 @@ docker compose -f docker-compose.prod.yml exec certbot \
   sh -c 'certbot renew --webroot -w /var/www/certbot && wget -qO- "$CERT_PING_URL"'
 ```
 
-Expected: all four monitors show **up** in the dashboard. To prove the alerting
-path end-to-end, deliberately skip one backup or health ping and confirm the
-alert fires after the grace period.
+Expected: all four monitors show **up** in the dashboard.
+
+- To prove the alerting path end-to-end, deliberately skip one backup or health ping.
+- Confirm the alert fires after the grace period.
 
 ## Troubleshooting
 

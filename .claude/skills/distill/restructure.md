@@ -1,7 +1,7 @@
 # Restructuring
 
-Splitting monoliths, merging fragments, and shaping an index so humans and agents
-can load one small file instead of a large one.
+Splitting monoliths, merging fragments, and shaping an index. Humans and agents
+then load one small file instead of a large one.
 
 - [Why size is a correctness problem](#why-size-is-a-correctness-problem)
 - [When to split](#when-to-split)
@@ -15,25 +15,22 @@ can load one small file instead of a large one.
 
 ## Why size is a correctness problem
 
-A 900-line document is not just tiring. It is read partially, so its later
-sections drift unchallenged; it is loaded whole into an agent's context, so it
-crowds out the code the agent actually needs; and it accretes, because nobody
-wants to reorganize it, so contradictions accumulate inside one file.
+A 900-line document is not just tiring. Split for retrieval, not for tidiness.
 
-Split for retrieval, not for tidiness. The unit of value is **the smallest file
-that fully answers one question a reader arrives with**.
-
-Restructuring is not a substitute for deletion: run the deletion pass first,
-then split what survives. A 900-line file that should have been a 200-line
-file produces six files nobody needed.
+- **Read partially** — its later sections drift unchallenged.
+- **Loaded whole into an agent's context** — it crowds out the code the agent needs.
+- **It accretes**, because nobody reorganizes it, so contradictions accumulate inside one file.
+- **The unit of value** — the smallest file that fully answers one question a reader arrives with.
+- **Restructuring is not a substitute for deletion** — run the deletion pass first, then split what survives.
+- **A 900-line file that should have been 200 lines** produces six files nobody needed.
 
 ## When to split
 
 Split when any of these hold:
 
 - The file exceeds the size targets below.
-- Readers arrive with clearly different questions and each needs a different
-  part — the deploy question and the local-setup question share nothing.
+- **Readers arrive with clearly different questions**, each needing a different part.
+- **Example** — the deploy question and the local-setup question share nothing.
 - Sections have different lifetimes: a stable conventions section next to a
   volatile host list.
 - Sections have different audiences: contributor-facing next to operator-facing.
@@ -56,12 +53,11 @@ a decision. Boundaries that fail name a document part.
 | `local-setup.md`, `ci.md`, `production.md` | `overview.md`, `details.md`, `appendix.md` |
 | `postgres-backup.md`, `postgres-tuning.md` | `postgres-1.md`, `postgres-misc.md` |
 
-Test each proposed boundary: *what question does a reader open this file with,
-and does the file answer it without opening another?* A file whose answer always
-requires a second file is cut in the wrong place.
-
-A `misc.md` or `other.md` in your plan means the boundary is wrong. Its contents
-belong to real files or belong nowhere.
+- **Test each proposed boundary** — what question does a reader open this file with?
+- **And** — does the file answer it without opening another?
+- **A file whose answer always requires a second file** is cut in the wrong place.
+- **A `misc.md` or `other.md` in your plan** means the boundary is wrong.
+- **Its contents** belong to real files or belong nowhere.
 
 ## Sizing targets
 
@@ -72,46 +68,41 @@ Guidance, not a linter rule:
 - **Floor: ~30 lines.** Below it, the file costs more in link-chasing and index
   entries than it saves — merge it into a sibling.
 - **Index: as short as possible.** Rarely over 100 lines.
-
-Precision beats the target. A 600-line runbook of exact commands that must run in
-order stays one file.
+- **Precision beats the target.** A 600-line runbook of exact commands that must run in
+  order stays one file.
 
 ## The leaf-file contract
 
 A leaf will be reached by grep, by link, and by an agent that never saw the index.
 Each one must therefore stand alone:
 
-- **One line of scope directly under the H1** — what this file covers and, when
-  the boundary is not obvious, what it does not. This is the only prose in the
-  file allowed to be about the file.
-- **No dependence on reading order.** No "as described above", no "continuing
-  from the previous file".
-- **A link back to the index**, and forward links only where a reader genuinely
-  continues elsewhere.
+- **One line of scope directly under the H1** — what this file covers.
+- **When the boundary is not obvious** — also what it does not cover.
+- **That line is the only prose** in the file allowed to be about the file.
+- **No dependence on reading order.** No "as described above", no "continuing from the previous file".
+- **A link back to the index**, and forward links only where a reader genuinely continues elsewhere.
 
 ## The index file
 
 The entry point earns its place by routing, not by summarizing.
 
-- One row or bullet per file: the file, and **the question it answers** — not a
-  précis of its contents. A summary in the index is a duplicate that will drift.
-- Keep only the facts that are true across every leaf and needed before choosing
-  one (prerequisites, the one-line "start here").
-- Every leaf reachable from it. No orphans.
-- One level of nesting. If the index needs subsections of subsections, the corpus
-  is over-split.
+- **One row or bullet per file** — the file, and **the question it answers**.
+- **Not a précis** of its contents; a summary in the index is a duplicate that will drift.
+- **Keep only the facts** true across every leaf and needed before choosing one.
+- **Those facts** — prerequisites, the one-line "start here".
+- **Every leaf reachable from it.** No orphans.
+- **One level of nesting.** If the index needs subsections of subsections, the corpus is over-split.
 
 ## Deduplicate while splitting
 
-Splitting a monolith reliably exposes the same claim stated in three sections —
-the sections were written months apart and nobody read the whole file since.
+Splitting a monolith reliably exposes the same claim stated in three sections.
 
-Deduplicate **during** the split, never after. A split that copies duplicates into
-separate files converts one inconsistency into three files that will disagree.
-
-Order of operations: extract claims → cluster → assign each cluster one home →
-then place the claims into the new files. Never open a new file and paste a
-section into it.
+- **Why** — the sections were written months apart and nobody read the whole file since.
+- **Deduplicate *during* the split**, never after.
+- **A split that copies duplicates** into separate files turns one inconsistency into three that disagree.
+- **Order of operations** — extract claims → cluster → assign each cluster one home.
+- **Then** — place the claims into the new files.
+- **Never open a new file** and paste a section into it.
 
 ## Merging
 

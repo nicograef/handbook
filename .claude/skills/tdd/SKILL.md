@@ -42,13 +42,14 @@ Before writing any code:
 - [ ] Confirm with user what interface changes are needed
 - [ ] Confirm with user which behaviors to test (prioritize)
 - [ ] Identify opportunities for deep modules (small interface, deep implementation)
-- [ ] Design interfaces for testability: inject dependencies instead of constructing them, return values instead of mutating inputs, keep the surface small
+- [ ] Design for testability: inject dependencies instead of constructing them, return values instead of mutating inputs
+- [ ] Keep the interface surface small
 - [ ] List the behaviors to test (not implementation steps)
 - [ ] Get user approval on the plan
 
-**You can't test everything.** Ask: "What should the public interface look like?
-Which behaviors are most important to test?" Focus testing effort on critical
-paths and complex logic, not every possible edge case.
+**You can't test everything.** Ask what the interface should look like, and
+which behaviors matter most. Focus effort on critical paths and complex
+logic, not every edge case.
 
 ### 2. Tracer Bullet
 
@@ -69,13 +70,16 @@ loop for each remaining behavior.
 
 After all tests pass, look for refactor candidates:
 
-- **Duplication** → extract a function or class
-- **Long methods** → break into private helpers (keep tests on the public interface)
-- **Shallow modules** → combine or deepen them
-- **Feature envy** → move logic to where the data lives
-- **Primitive obsession** → introduce value objects
-- **Existing code** the new code reveals as problematic
-- Apply SOLID principles where natural
+| Smell | Fix |
+| --- | --- |
+| Duplication | Extract a function or class |
+| Long methods | Break into private helpers (keep tests on the public interface) |
+| Shallow modules | Combine or deepen them |
+| Feature envy | Move logic to where the data lives |
+| Primitive obsession | Introduce value objects |
+
+- Also refactor existing code the new work reveals as problematic.
+- Apply SOLID principles where natural.
 
 Run tests after each refactor step. Never refactor while RED — get to GREEN
 first.

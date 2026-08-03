@@ -6,13 +6,15 @@ German-specific patterns that affect how quickly a reader can understand
 documentation, comments, commit messages, and README files. Supplements
 [readability.md](readability.md) for German-language content.
 
-The Code Readability section in [readability.md](readability.md) is
-language-neutral and applies to all code regardless of prose language. This
-file covers only the Prose and Documentation Slop section.
+- The Code Readability section in [readability.md](readability.md) is
+  language-neutral and applies to all code regardless of prose language.
+- This file covers only the Prose and Documentation Slop section.
 
-**Scope:** Apply this file when the prose is in German. For English text, use
-the prose section in [readability.md](readability.md). For mixed-language
-content, apply both to the respective sections.
+**Scope:**
+
+- Apply this file when the prose is in German.
+- For English text, use the prose section in [readability.md](readability.md).
+- For mixed-language content, apply both to the respective sections.
 
 ---
 
@@ -43,8 +45,10 @@ content, apply both to the respective sections.
 | `diesbezüglich`                   | remove or restructure                   |
 | `im Rahmen von`                   | "bei", "in", or remove                  |
 
-Not every occurrence is slop. "Grundlegend" in a sentence about foundations is
-literal. "Grundlegend" in "spielt eine grundlegende Rolle" is slop.
+Not every occurrence is slop.
+
+- "Grundlegend" in a sentence about foundations is literal.
+- "Grundlegend" in "spielt eine grundlegende Rolle" is slop.
 
 ### Overused Conjunctions
 
@@ -60,9 +64,10 @@ formulaic rhythm.
 - "andererseits"
 - "dementsprechend"
 
-Natural German prose varies sentence openings. LLM prose chains these
-connectors paragraph after paragraph. Remove or replace with simpler
-alternatives ("auch", "und") when the sentence flows without the connector.
+- Natural German prose varies sentence openings.
+- LLM prose chains these connectors paragraph after paragraph.
+- Remove or replace with simpler alternatives ("auch", "und") when the sentence
+  flows without the connector.
 
 ### Puffery and Significance Claims
 

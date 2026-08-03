@@ -4,8 +4,10 @@
 
 ## On `/compact`
 
-When compacting, preserve the list of files modified this session and the exact test or check
-commands run (e.g. `make check`), so verification can resume without re-deriving them.
+Preserve so verification resumes without re-deriving:
+
+- The list of files modified this session.
+- The exact test or check commands run (e.g. `make check`).
 
 ## Non-negotiables (survive compaction)
 

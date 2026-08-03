@@ -20,12 +20,13 @@ git rev-parse --path-format=absolute --git-common-dir           # equal => main 
 MAIN=$(git worktree list --porcelain | awk 'NR==1{print $2}')   # first record is always the main worktree
 ```
 
-Run the submodule test **first**: inside a submodule, git-dir and
-git-common-dir *match* (verified at git 2.47.3), so the linked-worktree test
-alone misreports a submodule as a main checkout. Never derive `MAIN` from
-`dirname` of the git-common-dir — that is wrong for a bare-hosted worktree. If
-the first porcelain record's block contains `bare`, there is no main checkout;
-stop.
+- Run the submodule test **first**: inside a submodule, git-dir and
+  git-common-dir *match* (verified at git 2.47.3).
+- The linked-worktree test alone then misreports a submodule as a main checkout.
+- Never derive `MAIN` from `dirname` of the git-common-dir — that is wrong for a
+  bare-hosted worktree.
+- If the first porcelain record's block contains `bare`, there is no main
+  checkout; stop.
 
 ## Fold a phase branch into the run branch
 
@@ -53,44 +54,55 @@ git -C "$MAIN" -c rerere.enabled=false merge --ff-only plan/<slug>
 git update-ref -d "$LOCK"
 ```
 
-`--ff-only` is the race detector: when a human commits to the base branch
-mid-sequence it fails cleanly (exit 128,
-`fatal: Not possible to fast-forward, aborting.`, refs and working tree
-untouched). `--no-ff` succeeds on a diverged, unverified branch and therefore
-detects nothing. Landing must run in the main worktree —
-`git push . HEAD:<base>` is rejected by `receive.denyCurrentBranch`, and
-`git update-ref` desyncs the main worktree silently.
+- `--ff-only` is the race detector: a human commit to the base branch
+  mid-sequence makes it fail cleanly.
+- Clean failure: exit 128, `fatal: Not possible to fast-forward, aborting.`, refs
+  and working tree untouched.
+- `--no-ff` succeeds on a diverged, unverified branch and therefore detects
+  nothing.
+- Landing must run in the main worktree.
+- `git push . HEAD:<base>` is rejected by `receive.denyCurrentBranch`.
+- `git update-ref` desyncs the main worktree silently.
 
 ## When the base moves under you
 
-Re-pin `$BEFORE`, redo the `rebase --onto`, retry `--ff-only` once. A second
-failure is a stop, not a third attempt. Release the lock on every exit path,
-including the stop.
+- Re-pin `$BEFORE`, redo the `rebase --onto`, retry `--ff-only` once.
+- A second failure is a stop, not a third attempt.
+- Release the lock on every exit path, including the stop.
 
 ## rerere may be enabled
 
-`git config --show-origin --get rerere.enabled` returns `true` from
-`~/.gitconfig` on this dev machine. With it on, a repeat merge hands back a
-fully resolved working file with **no conflict markers** while `git status`
-still reports `UU`. An agent that reads "no markers" as "nothing to do" commits
-a resolution nobody reviewed. Every merge and rebase this skill runs therefore
-carries `-c rerere.enabled=false`.
+- `git config --show-origin --get rerere.enabled` returns `true` from
+  `~/.gitconfig` on this dev machine.
+- With it on, a repeat merge hands back a fully resolved working file with **no
+  conflict markers**.
+- `git status` still reports `UU`.
+- An agent that reads "no markers" as "nothing to do" commits a resolution
+  nobody reviewed.
+- Every merge and rebase this skill runs therefore carries
+  `-c rerere.enabled=false`.
 
 ## Conflicts
 
 Enumerate with `git diff --name-only --diff-filter=U`; classify from the
-porcelain v1 two-letter code: `AA` add/add, `UU` content, `UD`/`DU`
-modify-delete, `DD` both-deleted.
+porcelain v1 two-letter code:
 
-**Sides flip between rebase and merge**: under `rebase <base>`, stage 2 /
-`--ours` is the *base* side; under `merge <base>` it is *your branch*. Never
-hardcode "ours = my work".
+| Code | Class |
+| --- | --- |
+| `AA` | add/add |
+| `UU` | content |
+| `UD` / `DU` | modify-delete |
+| `DD` | both-deleted |
 
-Rule: abort in the owning worktree (`git -C <wt> rebase --abort` — aborting
-from elsewhere exits 128), report paths and classes, hand back. Nothing is
-auto-resolved by content. A declared `.gitattributes merge=` driver is the sole
-exception, because that is a human decision already recorded. After an abort,
-`git reflog show <branch>` is the undo ledger.
+- **Sides flip between rebase and merge**: under `rebase <base>`, stage 2 /
+  `--ours` is the *base* side; under `merge <base>` it is *your branch*.
+- Never hardcode "ours = my work".
+- Rule: abort in the owning worktree, report paths and classes, hand back.
+- Abort with `git -C <wt> rebase --abort` — aborting from elsewhere exits 128.
+- Nothing is auto-resolved by content.
+- A declared `.gitattributes merge=` driver is the sole exception, because that
+  is a human decision already recorded.
+- After an abort, `git reflog show <branch>` is the undo ledger.
 
 ## Hazards
 

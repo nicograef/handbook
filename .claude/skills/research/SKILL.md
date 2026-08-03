@@ -8,10 +8,15 @@ Research task: **$ARGUMENTS**
 
 ## Workflow
 
-1. Delegate the task to the **web-researcher** subagent (`../../agents/web-researcher.md`), which
-   owns the verification policy (live-only sourcing, cross-checking, as-of dates, uncertainty
-   labels, no outbound actions). Pass the full task, including any `→ target file` from the
-   argument so it can read and match the existing schema.
-2. Return the subagent's findings: a skimmable summary with per-claim source links, an as-of date,
-   and a "not verified / open questions" section. If a target file was named, the subagent writes
-   the structured data there.
+1. Delegate the task to the **web-researcher** subagent (`../../agents/web-researcher.md`).
+   - It owns the verification policy: live-only sourcing, cross-checking, as-of dates,
+     uncertainty labels, no outbound actions.
+   - Pass the full task, including any `→ target file` from the argument.
+   - The target file lets the subagent read and match the existing schema.
+2. Return the subagent's findings in the report shape of the
+   [output style contract](../output-style.md).
+   - Counts line first, e.g. `6 findings — 4 verified, 2 not verified`.
+   - Findings as a table, or one bullet each: bold keyword first, then the fact.
+   - Keep the summary skimmable, with per-claim source links and an as-of date.
+   - Close with a "not verified / open questions" section; zero entries is one line.
+   - If a target file was named, the subagent writes the structured data there.

@@ -2,11 +2,17 @@
 
 File layout, formats, and the setup-subagent brief for tutor sessions.
 
+- [Layout](#layout)
+- [bank.json](#bankjson)
+- [key.json](#keyjson)
+- [progress.json](#progressjson)
+- [Setup subagent brief](#setup-subagent-brief)
+
 ## Layout
 
-State lives outside any repo in `~/.claude/tutor/<slug>/`, where `<slug>` is the
-kebab-case topic — prefix codebase topics with the project name
-(e.g. `jotti-event-sourcing`).
+- State lives outside any repo in `~/.claude/tutor/<slug>/`.
+- `<slug>` is the kebab-case topic — prefix codebase topics with the project name
+  (e.g. `jotti-event-sourcing`).
 
 | File            | Content                              | Main-session access            |
 | --------------- | ------------------------------------ | ------------------------------ |
@@ -30,8 +36,8 @@ kebab-case topic — prefix codebase topics with the project name
 }
 ```
 
-`options` is pre-shuffled and omitted for `format: "free"`. `format` is one of
-`single`, `multi`, `free`.
+- `options` is pre-shuffled and omitted for `format: "free"`.
+- `format` is one of `single`, `multi`, `free`.
 
 ## key.json
 
@@ -66,35 +72,45 @@ kebab-case topic — prefix codebase topics with the project name
 }
 ```
 
-`asked` lists every item id ever served. `status`: `new` → `fragile` (guessed or
-corrected) → `learned` (correct twice, spaced). Every queue entry carries the
-matching `reason`: `revealed`, `wrong`, or `guessed`.
+`asked` lists every item id ever served. `status` runs `new` → `fragile` (guessed or
+corrected) → `learned` (correct twice, spaced).
 
-Review scheduling uses expanding intervals of 0, 3, 7, 21 days —
-`interval_days: 0` means due in **any later session**, same day included. A due
-entry is satisfied by whichever same-concept item served it; the entry itself
-advances one rung on success, resets to 0 on failure, and is removed after a
-success at 21 days (concept stats keep the history). Errata stay answer-free
-one-liners — naming the problem, not the fix, since `progress.json` is read at
-session start, before items are re-asked — and are applied by the next session's
-setup subagent.
+- Every queue entry carries the matching `reason`: `revealed`, `wrong`, or `guessed`.
+- Review scheduling uses expanding intervals of 0, 3, 7, 21 days.
+- `interval_days: 0` means due in **any later session**, same day included.
+- A due entry is satisfied by whichever same-concept item served it.
+- The entry itself advances one rung on success and resets to 0 on failure.
+- It is removed after a success at 21 days; concept stats keep the history.
+- Errata stay answer-free one-liners — they name the problem, not the fix.
+- That matters because `progress.json` is read at session start, before items are re-asked.
+- The next session's setup subagent applies pending errata.
 
 ## Setup subagent brief
 
-Pass the subagent: topic, scope, learner level, **session length (item count)**,
-source paths/URLs, and the state directory. It must:
+Inputs to pass:
 
-1. Digest the material — read the given files, fetch web sources for niche or
-   recent topics, or draw on model knowledge for established ones.
-2. Generate about **2× the session's item count**, following
-   `question-design.md`, with **at least two items per concept** — the spares
-   serve re-asks and rephrased variants.
-3. For an existing topic: read `progress.json` first; generate a keyed rephrased
-   variant (same concept, new surface) for every queue entry, weight extra items
-   toward `fragile` concepts, and apply pending errata to `key.json`/`bank.json`
-   (append "— applied <date>" to the erratum line).
-4. Write `bank.json` and `key.json`; create `progress.json` or preserve its
-   `asked`, `concepts`, `queue`, and `errata`, appending new items with fresh
-   ids.
-5. Return as its summary only the item count and concept list — **never answers
-   or rationales**.
+- Topic, scope, and learner level.
+- **Session length (item count)**.
+- Source paths/URLs.
+- The state directory.
+
+The subagent must:
+
+1. Digest the material:
+   - Read the given files.
+   - Fetch web sources for niche or recent topics.
+   - Draw on model knowledge for established ones.
+2. Generate about **2× the session's item count**, following `question-design.md`:
+   - **At least two items per concept**.
+   - The spares serve re-asks and rephrased variants.
+3. For an existing topic, read `progress.json` first, then:
+   - Generate a keyed rephrased variant (same concept, new surface) for every queue entry.
+   - Weight extra items toward `fragile` concepts.
+   - Apply pending errata to `key.json`/`bank.json`.
+   - Append "— applied <date>" to each applied erratum line.
+4. Write the files:
+   - Write `bank.json` and `key.json`.
+   - Create `progress.json`, or preserve its `asked`, `concepts`, `queue`, and `errata`.
+   - Append new items with fresh ids.
+5. Return as its summary only the item count and concept list — **never answers or
+   rationales**.

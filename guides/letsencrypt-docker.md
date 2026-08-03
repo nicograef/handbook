@@ -85,10 +85,11 @@ For a fully automated first-time deploy, see [`scripts/prod-init.sh`](../scripts
 
 ## Verify
 
-Run this **manually after the first deploy** — a real renewal can't be exercised in CI, so
-this staging dry-run is the check that the whole renewal path (challenge → issuance) works
-end-to-end. `renew --dry-run` uses the Let's Encrypt staging environment, so it never touches
-rate limits or your live cert.
+Run this **manually after the first deploy** — a real renewal can't be exercised in CI.
+
+- Staging dry-run checks the whole renewal path (challenge → issuance) end-to-end.
+- `renew --dry-run` uses the Let's Encrypt staging environment.
+- It never touches rate limits or your live cert.
 
 ```bash
 # cert was issued (expect a live/<domain>/ directory)

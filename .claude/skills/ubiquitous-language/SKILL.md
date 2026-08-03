@@ -24,7 +24,18 @@ description: >-
 
 ## Output Format
 
-Write a `docs/UBIQUITOUS_LANGUAGE.md` file with this structure:
+Write `docs/UBIQUITOUS_LANGUAGE.md` (create `docs/` if missing) in this shape:
+
+| Section | Shape |
+| --- | --- |
+| `# Ubiquitous Language` | H1 title, file-level |
+| `## <Category>` | One H2 per domain area, e.g. `Order lifecycle`, `People` |
+| Term table per category | Columns: `Term` (bold), `Definition` (one sentence, what it IS), `Aliases to avoid` |
+| `## Relationships` | Bullet list: `**A** <verb phrase> **B**` |
+| `## Example dialogue` | Blockquote, ≥ 2 exchanges, alternating `**Dev:**` / `**Domain expert:**` |
+| `## Flagged ambiguities` | Bullet list: the term, both meanings, the canonical pick |
+
+Example:
 
 ```md
 # Ubiquitous Language
@@ -62,18 +73,17 @@ Write a `docs/UBIQUITOUS_LANGUAGE.md` file with this structure:
 
 ## Constraints
 
-- **Be opinionated.** When multiple words exist for the same concept, pick the
-  best one and list the others as aliases to avoid.
-- **Flag conflicts explicitly.** If a term is used ambiguously in the
-  conversation, call it out in the "Flagged ambiguities" section with a clear
-  recommendation.
-- **Only include terms relevant for domain experts.** Skip the names of modules
-  or classes unless they have meaning in the domain language.
+- **Be opinionated.** Pick the best word per concept and list synonyms as
+  aliases to avoid.
+- **Flag conflicts explicitly.** Flag ambiguous conversation terms in
+  "Flagged ambiguities" with a clear recommendation.
+- **Only include terms relevant for domain experts.** Skip module or class
+  names unless they carry domain meaning.
 - **Keep definitions tight.** One sentence max. Define what it IS, not what it
   does.
 
 ## Quality
 
-- Once the glossary file is written, run the shared
-  [self-review checklist](../quality.md) on it. Surface issues in the chat only
-  if found.
+- Run the shared [self-review checklist](../quality.md) on the glossary file;
+  surface issues in chat only if found.
+- Format the chat summary per [output style](../output-style.md).

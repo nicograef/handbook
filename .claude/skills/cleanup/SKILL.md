@@ -17,36 +17,38 @@ description: >-
 
 ### 1. Determine scope
 
-Identify the files to review:
+Resolve the file set in this order:
 
-- If the user specifies files, a module, route, component, or page — use those.
-- If not specified, check staged changes: `git diff --cached --name-only`.
-- If nothing staged, check unstaged changes: `git diff --name-only`.
-- Fall back to last commit: `git diff HEAD~1 --name-only`.
-- If still empty, ask the user what to review.
+| Order | Source | Command |
+|---|---|---|
+| 1 | Files, module, route, component, or page named by the user | — |
+| 2 | Staged changes | `git diff --cached --name-only` |
+| 3 | Unstaged changes | `git diff --name-only` |
+| 4 | Last commit | `git diff HEAD~1 --name-only` |
+| 5 | Still empty | Ask the user what to review |
 
-Ask the user to confirm scope if ambiguous. In the incremental default, do not
-scan the entire codebase — stay within the determined scope.
-
-**Repo-wide scope mode.** When the user asks for a repo-wide quality audit or a
-cross-layer consistency check across the whole project, widen the scope to the
-codebase. In this mode, run the [cross-layer.md](cross-layer.md) trace across
-3–5 representative flows per feature area in addition to the per-file passes,
-and report findings without applying fixes.
-
-When reviewing a diff (staged/unstaged/commit), read both the diff and the full
-files to understand context.
+- Ask the user to confirm scope if ambiguous.
+- Incremental default: never scan the entire codebase — stay within the
+  determined scope.
+- Reviewing a diff (staged/unstaged/commit): read both the diff and the full
+  files to understand context.
+- **Repo-wide scope mode** — triggered by a request for a repo-wide quality
+  audit or a whole-project cross-layer consistency check.
+- Repo-wide mode widens the scope to the codebase and reports findings without
+  applying fixes.
+- It also adds the [cross-layer.md](cross-layer.md) trace across 3–5
+  representative flows per feature area, on top of the per-file passes.
 
 ### 2. Understand conventions
 
-Before flagging anything, read surrounding code that is NOT part of the changes.
-The codebase's existing conventions are the baseline. Flag deviations from
-clean code principles, not deviations from personal preferences.
+- Before flagging anything, read surrounding code that is NOT part of the changes.
+- The codebase's existing conventions are the baseline.
+- Flag deviations from clean code principles, not deviations from personal
+  preferences.
 
 ### 3. Multi-pass review
 
-Run these passes on each file in scope. Not every pass applies to every file —
-skip passes that are irrelevant.
+Run these passes on each file in scope; skip the irrelevant ones.
 
 | Pass | Reference | Applies to |
 |---|---|---|
@@ -58,44 +60,47 @@ skip passes that are irrelevant.
 | Cross-layer consistency | [cross-layer.md](cross-layer.md) | Repo-wide scope mode only |
 | Test readability | [readability.md](readability.md) + [code-smells.md](code-smells.md) | Test files only |
 
-Slop detection is folded into the Readability and Code smells passes — there
-is no separate slop pass. For a slop-focused trigger ("deslop", "remove
-slop"), run those two passes with extra attention to their AI-slop sections.
+- Slop detection is folded into the Readability and Code smells passes — there is
+  no separate slop pass.
+- For a slop-focused trigger ("deslop", "remove slop"), run those two passes with
+  extra attention to their AI-slop sections.
+- Report each issue once, under the most specific pass that catches it.
+- If two passes flag the same lines, keep the more precise one and drop the
+  duplicate.
+- Record every issue with these fields:
 
-For each issue found, record:
-
-- **What**: the principle violated or smell detected (reference the specific
-  rule from the reference file)
-- **Where**: file path + line range
-- **Why**: one sentence explaining the impact on readability or maintainability
-- **Suggestion**: a concrete, minimal change — not a rewrite
-- **Effort**: S (< 5 min) / M (5–30 min) / L (30+ min)
-
-Report each issue once, under the most specific pass that catches it. If two
-passes flag the same lines, keep the more precise one and drop the duplicate.
+| Field | Content |
+|---|---|
+| **What** | The principle violated or smell detected — reference the specific rule from the reference file |
+| **Where** | File path + line range |
+| **Why** | One sentence explaining the impact on readability or maintainability |
+| **Suggestion** | A concrete, minimal change — not a rewrite |
+| **Effort** | S (< 5 min) / M (5–30 min) / L (30+ min) |
 
 ### 4. Report
 
-Before reporting, run a verification pass: re-read each flagged location; drop
-any finding you cannot anchor to exact lines or that does not hold on re-read;
-mark remaining uncertainty as unverified.
+Severity order within each file:
 
-Zero findings is a valid outcome — if nothing survives the criteria, report that
-the code is clean and stop; do not manufacture findings.
+| Rank | Category | Covers |
+|---|---|---|
+| 1 | Boundary & consistency risks | Logic at system edges: missing validation on external input (HTTP handlers, CLI, external APIs), broken dependency direction, cross-layer shape/validation mismatches — see [architecture.md](architecture.md) and [cross-layer.md](cross-layer.md). For general bug-hunting inside a function, use `/code-review`. |
+| 2 | Readability wins | Naming, clarity, nesting, AI slop removal |
+| 3 | Principle violations | SOLID, DRY, KISS, YAGNI |
+| 4 | Structural suggestions | Deeper modules, better boundaries, domain model improvements |
 
-Present findings grouped by file, sorted by severity within each file:
-
-1. **Boundary & consistency risks** — logic at system edges: missing validation
-   on external input (HTTP handlers, CLI, external APIs), broken dependency
-   direction, cross-layer shape/validation mismatches (see
-   [architecture.md](architecture.md) and [cross-layer.md](cross-layer.md)).
-   For general bug-hunting inside a function, use `/code-review`.
-2. **Readability wins** — naming, clarity, nesting, AI slop removal
-3. **Principle violations** — SOLID, DRY, KISS, YAGNI
-4. **Structural suggestions** — deeper modules, better boundaries, domain model
-   improvements
-
-Format per finding:
+- **Verify first** — re-read each flagged location before reporting.
+- **Drop** any finding you cannot anchor to exact lines, or that does not hold on
+  re-read.
+- **Mark** remaining uncertainty as unverified.
+- **Zero findings** is a valid outcome — report one line that the code is clean,
+  then stop.
+- **Never manufacture findings** to fill a report.
+- **Counts line first** — `7 findings — 2 boundary, 3 readability, 2 structural`.
+- **Group** findings by file, sorted by the severity order above.
+- **Prioritized summary last** — up to 5 of the most impactful changes across all
+  files.
+- **Gate** — apply nothing yet. Ask: "Which of these should I apply?"
+- **Fields** — one entry per finding, in this shape:
 
 ```
 **[What]** ([principles.md](principles.md) → rule name)
@@ -105,43 +110,38 @@ Suggestion: <concrete change>
 Effort: S
 ```
 
-End with a **prioritized summary**: up to 5 of the most impactful changes across
-all files.
-
-Do not apply any changes yet. Ask: "Which of these should I apply?"
-
 ### 5. Apply
 
-Work through confirmed findings one at a time:
-
+- Work through confirmed findings one at a time.
 - Make the minimal change described in the suggestion.
 - After finishing all changes to a file, verify that file still compiles or
   passes lint.
-- Verify no functionality changed — the output, return values, side effects,
-  and behavior must remain identical.
+- Verify no functionality changed — output, return values, side effects, and
+  behavior stay identical.
 
 ## Constraints
 
-- **Never change functionality.** This is a readability and quality pass.
-  The code must do exactly the same thing before and after.
-- **Never suggest large refactors.** If an issue requires significant
-  restructuring, flag it as a large refactor for the user to schedule
-  separately and move on.
+- **Never change functionality.** This is a readability and quality pass — the
+  code must do exactly the same thing before and after.
+- **Never suggest large refactors.** Flag an issue requiring significant
+  restructuring as a large refactor for the user to schedule separately.
+- After flagging a large refactor, move on.
 - **Never rewrite.** Subtract or simplify. Do not impose a different style.
 - **Never impose foreign conventions.** The codebase's existing style is the
-  baseline. Flag only genuine principle violations, not style preferences.
+  baseline — flag genuine principle violations, not style preferences.
 - **Never add comments, abstractions, or error handling** as part of cleanup.
   The goal is less noise, not more.
-- **Never apply fixes without user confirmation.** Always present the report
-  first.
+- **Never apply fixes without user confirmation.** Always present the report first.
 - **Respect the native voice.** If a pattern looks like an AI smell but is
   genuinely idiomatic for the project, leave it.
 - **Test files: readability only.** Check naming, structure, and clarity of
-  test code. Do not retag, delete, or restructure tests — that is the
-  test-quality skill's job.
-- **Scope discipline.** Only touch files in the determined scope. Do not
-  expand to "while we're here" changes in unrelated files.
+  test code.
+- Do not retag, delete, or restructure tests — that is the test-quality skill's
+  job.
+- **Scope discipline.** Only touch files in the determined scope. No "while we're
+  here" changes in unrelated files.
 
 ## Quality
 
 - Before presenting results, run the shared [self-review checklist](../quality.md). Surface issues in the chat only if found.
+- Reports follow the shared [output style contract](../output-style.md).

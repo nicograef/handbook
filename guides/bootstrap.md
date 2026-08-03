@@ -1,9 +1,10 @@
 # Using This Handbook
 
 Start here when you (or an agent) are told "follow the handbook to set up X".
-Each scenario below routes to an **ordered** sequence of existing guides plus the
-inputs to gather **before** you start, so nothing is discovered mid-run. This
-file is routing only — every command lives in the linked guide.
+
+- Each scenario below routes to an **ordered** sequence of existing guides.
+- Gather the listed inputs **before** you start, so nothing is discovered mid-run.
+- This file is routing only — every command lives in the linked guide.
 
 ## Fresh VPS
 
@@ -24,25 +25,30 @@ workload needs.
 3. **Install dotfiles on the server** (optional) —
    [After provisioning](provision-server.md#after-provisioning); only if you SSH
    in to work on the box.
-4. **Deploy TLS + reverse proxy** (web app only) — point DNS at the VPS, then
-   [letsencrypt-docker.md](letsencrypt-docker.md) with
-   [nginx-reverse-proxy.md](nginx-reverse-proxy.md) for the config patterns,
-   using [templates/docker-compose.prod.yml](../templates/docker-compose.prod.yml)
-   and [scripts/prod-init.sh](../scripts/prod-init.sh) for the first deploy.
-5. **External monitoring** — [monitoring.md](monitoring.md): the health-ping
-   heartbeat applies to any box; add the HTTPS uptime monitor plus the cert and
-   backup heartbeats once it hosts a web app.
+4. **Deploy TLS + reverse proxy** (web app only). Point DNS at the VPS first.
+
+   - Follow [letsencrypt-docker.md](letsencrypt-docker.md).
+   - Config patterns: [nginx-reverse-proxy.md](nginx-reverse-proxy.md).
+   - First deploy: [templates/docker-compose.prod.yml](../templates/docker-compose.prod.yml)
+     and [scripts/prod-init.sh](../scripts/prod-init.sh).
+
+5. **External monitoring** — [monitoring.md](monitoring.md).
+
+   - Health-ping heartbeat: applies to any box.
+   - HTTPS uptime monitor, cert heartbeat, backup heartbeat: once it hosts a web app.
+
 6. **Backups** (app has a database) —
    [postgresql-operations.md](postgresql-operations.md) with
    [scripts/backup-postgres.sh](../scripts/backup-postgres.sh) on the daily cron.
 7. **Ongoing upkeep** — [maintenance.md](maintenance.md): image bumps, the
    monthly reboot routine, disk checks, and the quarterly restore drill.
 
-**Done when** the Verify sections pass:
-[provision](provision-server.md#verify),
-[TLS](letsencrypt-docker.md#verify),
-[monitoring](monitoring.md#verify), and
-[backups](postgresql-operations.md#verify).
+**Done when** these Verify sections pass:
+
+- [provision](provision-server.md#verify)
+- [TLS](letsencrypt-docker.md#verify)
+- [monitoring](monitoring.md#verify)
+- [backups](postgresql-operations.md#verify)
 
 ## New Codespace
 
@@ -54,9 +60,11 @@ your account ([prerequisites](dotfiles-codespaces.md#prerequisites)).
 
 1. **Enable account-level dotfiles** (one-time) —
    [dotfiles-codespaces.md → Setup](dotfiles-codespaces.md#setup-one-time).
-   Afterwards every new Codespace clones the repo and runs the installer
-   automatically, and the handbook-plugin opt-out is written for you in each
-   adopted repo.
+
+   - Afterwards every new Codespace clones the repo and runs the installer
+     automatically.
+   - The handbook-plugin opt-out is written for you in each adopted repo.
+
 2. **Verify in a fresh Codespace** — run the
    [Verify block](dotfiles-codespaces.md#verify) in a newly created Codespace.
 3. **Per-project tooling** — copy

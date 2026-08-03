@@ -38,9 +38,11 @@ Two zero-maintenance top-level keys in every workflow (see [templates/ci.yml](..
 ## Dependency Updates
 
 [templates/dependabot.yml](../templates/dependabot.yml) — monthly Dependabot updates, one grouped
-PR per ecosystem (github-actions, gomod, npm, docker). The `github-actions` updater keeps action
-refs current; in CI, `go mod tidy -diff` (backend) and `pnpm install --frozen-lockfile` (frontend)
-enforce that lockfiles stay in sync with their manifests.
+PR per ecosystem (github-actions, gomod, npm, docker).
+
+- `github-actions` updater keeps action refs current.
+- `go mod tidy -diff` (backend) enforces lockfile-manifest sync in CI.
+- `pnpm install --frozen-lockfile` (frontend) enforces lockfile-manifest sync in CI.
 
 ## Path Filtering
 

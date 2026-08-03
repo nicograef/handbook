@@ -21,36 +21,43 @@ Find UX problems that slow down users on smartphones during real-world usage.
 
 ### 2. Render at a mobile viewport
 
-- If the Playwright MCP tools are available and the app can run, open each key
-  screen at a 375×667 viewport (iPhone SE / small-phone baseline), navigate the
-  flows, and take snapshots.
-- If the app cannot run (no dev server, missing credentials, backend down),
-  fall back to a static review of the frontend source and label the report
-  **static-only** so the user knows screens were not rendered.
+- If Playwright MCP tools are available and the app can run, open each key
+  screen at 375×667.
+- That viewport is the iPhone SE / small-phone baseline.
+- Navigate the flows and take snapshots.
+- If the app can't run (no dev server, missing credentials, backend down),
+  fall back to a static review.
+- That fallback reviews the frontend source and labels the report
+  **static-only**, so the user knows screens weren't rendered.
 
 ### 3. Walk the top flows
 
-Step through each flow as a phone user would, watching for the review-area
-problems below. Capture the screen and the source location for each issue.
+- Step through each flow as a phone user would, watching for the review-area
+  problems below.
+- Capture the screen and the source location for each issue.
 
 ### 4. Map problems to source
 
-For every finding, locate the responsible component and record the file and line
-range. A finding without a `file:lines` anchor is not usable — drop it or keep
-digging until you can anchor it.
+- Locate the responsible component for every finding.
+- Record the file and line range.
+- A finding without a `file:lines` anchor is not usable.
+- Drop it, or keep digging until you can anchor it.
 
 ### 5. Report
 
-Before reporting, re-read each flagged location; drop any finding you cannot
-anchor to exact lines or that does not hold on re-read; mark remaining
-uncertainty as unverified. Zero findings is a valid outcome — if nothing
-survives the criteria, report that the UX is clean and stop; do not manufacture
-findings.
-
-Per finding: **Category** → **What** → **Where** (file:lines) →
-**User Impact** → **Suggestion** → **Effort** (S/M/L).
-
-End with quick wins first, then consistency fixes to batch.
+- Re-read each flagged location before reporting.
+- Drop findings that don't anchor to exact lines.
+- Drop findings that don't hold up on re-read.
+- Mark any remaining uncertainty as unverified.
+- Zero findings is valid.
+- Do not manufacture findings.
+- If none survive, write one line stating the UX is clean.
+- Keep the zero-findings line free of padding.
+- Open with a counts line, e.g. `4 findings — 1 S, 2 M, 1 L`.
+- One bullet per finding, bold keyword first.
+- Fields: **Category** → **What** → **Where** (file:lines) →
+  **User Impact** → **Suggestion** → **Effort** (S/M/L).
+- Order findings quick wins first, then consistency fixes to batch.
 
 ## Review Areas
 
@@ -76,14 +83,23 @@ End with quick wins first, then consistency fixes to batch.
 
 ### Domain Language
 
-- Terminology drift in UI labels vs. backend/domain terms. If
-  `docs/UBIQUITOUS_LANGUAGE.md` exists, treat it as the canonical term list and
-  flag labels that diverge from it.
+- Terminology drift in UI labels vs. backend/domain terms.
+- If `docs/UBIQUITOUS_LANGUAGE.md` exists, treat it as the canonical term list
+  and flag labels that diverge from it.
 - Labels that are technically correct but unclear to end users
 
 ## Constraints
 
-- Stay scoped to UX: do not audit code quality, architecture, performance, or security — flag those only in passing if they directly cause a UX symptom.
-- Judge mobile-first, not desktop-first — a layout that only works at desktop widths is a finding, not an acceptable baseline.
-- Do not flag inconsistency without naming both sides of the drift (e.g. which two screens or labels disagree).
-- Avoid subjective visual-taste feedback (colors, spacing preferences) that isn't tied to friction, consistency, or clarity.
+- Stay scoped to UX only.
+- Do not audit code quality, architecture, performance, or security.
+- Flag those only in passing, if they directly cause a UX symptom.
+- Judge mobile-first, not desktop-first.
+- A desktop-only layout is a finding, not an acceptable baseline.
+- Do not flag inconsistency without naming both sides of the drift (e.g.
+  which two screens or labels disagree).
+- Avoid subjective visual-taste feedback (colors, spacing preferences) that
+  isn't tied to friction, consistency, or clarity.
+
+## Quality
+
+- Reports follow the [output style contract](../output-style.md).

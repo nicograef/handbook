@@ -1,8 +1,10 @@
 # Set Up a New Project Repository
 
-Scaffold a new repo from the handbook's templates: pick a project shape, copy the
-matching template subset in the right order, then wire up agent config, CI, and the
-handbook plugin. This is the "New project" path of [bootstrap.md](bootstrap.md).
+Scaffold a new repo from the handbook's templates.
+
+- Pick a project shape, then copy the matching template subset in the right order.
+- Wire up agent config, CI, and the handbook plugin.
+- This is the "New project" path of [bootstrap.md](bootstrap.md).
 
 ## Prerequisites
 
@@ -80,9 +82,9 @@ mkdir -p scripts && cp "$HANDBOOK/templates/setup-dev-tools.sh" scripts/setup-de
   `<project-go-version>` placeholder (Go stacks) and uncomment the frontend-deps block (repos
   with a `frontend/`); otherwise the devcontainer `postCreateCommand` fails.
 - **Dockerfiles** — one per built tier, following
-  [docker-multi-stage-builds.md](docker-multi-stage-builds.md) (Java and Node examples there;
-  a Go backend uses the same two-stage pattern — compile a static binary into a minimal
-  runtime image).
+  [docker-multi-stage-builds.md](docker-multi-stage-builds.md); Java and Node examples there.
+- A Go backend uses the same two-stage pattern: compile a static binary into a minimal
+  runtime image.
 - Then follow the linked **stack guide(s)** for source layout and conventions.
 
 ## 4. CI and dependency updates
@@ -114,8 +116,8 @@ mkdir -p .github && cp "$HANDBOOK/templates/copilot-instructions.md" .github/cop
 - `CLAUDE.md` — sibling whose first line is `@AGENTS.md` so Claude Code loads the same rules.
 - [templates/copilot-instructions.md](../templates/copilot-instructions.md) →
   `.github/copilot-instructions.md` — Copilot-only deltas, or delete it if none.
-- Add deeper layers (contextual instructions, skills, agents, prompts) only when needed — see
-  [copilot-agent-setup.md](copilot-agent-setup.md) for the layer table and when to add each.
+- Add deeper layers only when needed: contextual instructions, skills, agents, prompts.
+- See [copilot-agent-setup.md](copilot-agent-setup.md) for the layer table and when to add each.
 
 ## 6. Handbook plugin adoption
 

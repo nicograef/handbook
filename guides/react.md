@@ -34,7 +34,9 @@ Feature-specific components live next to the page that owns them. Move to `compo
 
 Enable strict mode in `tsconfig.json`. No `any` — use `unknown` and narrow explicitly.
 
-Prefer explicit return types on non-trivial functions. Use `zod` to define and validate data schemas at API boundaries — this gives you runtime safety and inferred TypeScript types from a single source.
+Prefer explicit return types on non-trivial functions. Use `zod` to define and validate data
+schemas at API boundaries. This gives you runtime safety and inferred TypeScript types from a
+single source.
 
 ## Linting
 

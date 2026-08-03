@@ -33,10 +33,12 @@ need for comments.
 
 **Ask:** Would a team member understand this without the author explaining it?
 
-**Flag when:** bitwise operations carry non-bitwise logic, short-circuit
-evaluation is used for control flow (`condition && doThing()`), operator
-overloading or implicit conversions create surprising behavior, or a language
-trick requires looking up documentation.
+**Flag when:**
+
+- Bitwise operations carry non-bitwise logic
+- Short-circuit evaluation is used for control flow (`condition && doThing()`)
+- Operator overloading or implicit conversions create surprising behavior
+- A language trick requires looking up documentation
 
 **Suggest:** Replace with the obvious version. Only justify cleverness with a
 measured performance requirement and a comment explaining why.
@@ -88,9 +90,10 @@ may be coincidental; clusters are a signal.
 | `tapestry` (figurative) | remove — always filler |
 | `testament` | remove the whole phrase |
 
-Not every occurrence is slop. "Crucial" in a sentence about load-bearing
-structures is fine. "Crucial" in "plays a crucial role in the ecosystem" is
-slop.
+Not every occurrence is slop.
+
+- "Crucial" in a sentence about load-bearing structures is fine.
+- "Crucial" in "plays a crucial role in the ecosystem" is slop.
 
 ### Puffery and Significance Claims
 
@@ -110,8 +113,9 @@ Sentences that assert importance without evidence.
 - "indelible mark"
 - "deeply rooted"
 
-**Also watch for** hedging that precedes puffery — "While relatively unknown,
-[subject] plays a crucial role..." — the hedge does not excuse it.
+**Also watch for** hedging that precedes puffery — the hedge does not excuse it:
+
+- "While relatively unknown, [subject] plays a crucial role..."
 
 **Suggest:** Delete the sentence. If the fact it asserts is important, state it
 concretely with evidence.

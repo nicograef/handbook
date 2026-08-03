@@ -19,8 +19,10 @@ also use placeholders not in that block:
 
 ## Usage
 
-Two paths. Prefer **cloud-init** (the server provisions itself on first boot);
-fall back to the **manual SSH pipe** when the provider has no user-data field.
+Two paths:
+
+- **cloud-init** (preferred) — the server provisions itself on first boot.
+- **manual SSH pipe** — the fallback when the provider has no user-data field.
 
 > **Security:** user-data — including `USER_PASSWORD` — stays readable from the
 > instance metadata endpoint. Rotate the password at first login (`passwd`) or
@@ -55,12 +57,12 @@ Reference provider: Hetzner Cloud, which exposes a user-data field (verified
 
 ### Fallback: manual SSH pipe (netcup)
 
-Use this when the provider has no user-data field. netcup officially supports
-only SSH-key injection at image install — no user-data field (verified
-2026-07-09) — so netcup servers take this path.
-
-Pass configuration inline to the remote shell — the vars are consumed on the
-server, not your local machine:
+- Use this when the provider has no user-data field.
+- netcup officially supports only SSH-key injection at image install — no
+  user-data field (verified 2026-07-09).
+- So netcup servers take this path.
+- Pass configuration inline to the remote shell — the vars are consumed on the
+  server, not your local machine.
 
 ```bash
 # preview first (no changes made)
@@ -106,16 +108,20 @@ systemctl list-timers 'apt-daily*' --no-pager
 cat /etc/cron.d/report-health
 ```
 
-Expected: SSH login succeeds as `nico` but fails as `root`; `ufw status`
-shows `Status: active` with `22/tcp (LIMIT)`; `fail2ban` reports `active`;
-`hello-world` prints the Docker confirmation message; `daemon.json` contains
-`"max-size": "10m"` (plus the IPv6 keys on IPv6-only hosts); the `unattended-upgrade`
-dry run lists an `Allowed origins` line containing `-security` (on Debian it
-also carries `label=Debian` stable origins from the stock `50unattended-upgrades`
-`Origins-Pattern` — expected, our drop-in extends rather than replaces it);
-`apt-daily.timer` and `apt-daily-upgrade.timer` appear in the timer list; and
-`/etc/cron.d/report-health` prints the `0 8 * * * root /usr/local/bin/report-health`
-line.
+| Check | Expected |
+| --- | --- |
+| SSH login | Succeeds as `nico`, fails as `root` |
+| `ufw status verbose` | `Status: active` with `22/tcp (LIMIT)` |
+| `fail2ban` | Reports `active` |
+| `hello-world` | Prints the Docker confirmation message |
+| `daemon.json` | Contains `"max-size": "10m"`, plus the IPv6 keys on IPv6-only hosts |
+| `unattended-upgrade` dry run | Lists an `Allowed origins` line containing `-security` |
+| `systemctl list-timers` | `apt-daily.timer` and `apt-daily-upgrade.timer` appear |
+| `/etc/cron.d/report-health` | Prints the `0 8 * * * root /usr/local/bin/report-health` line |
+
+- **Debian only** — the dry run also carries `label=Debian` stable origins from
+  the stock `50unattended-upgrades` `Origins-Pattern`.
+- Expected: our drop-in extends that `Origins-Pattern` rather than replacing it.
 
 ## SSH hardening (drop-in)
 
@@ -143,27 +149,32 @@ sudo systemctl restart ssh   # 'ssh' is the canonical unit on Debian/Ubuntu
   see [ipv6-only-vps.md](ipv6-only-vps.md)
 - Open extra firewall ports as needed: `sudo ufw allow 443/tcp`
 - Deploy apps via Docker Compose – see [docker-setup.md](docker-setup.md)
-- Install tmux and the modern CLI tools the shell aliases expect (all in
-  Debian 13 `main`, verified 2026-07; without them the aliases in
-  [templates/.bash_aliases](../templates/.bash_aliases) silently stay inactive):
+- Install tmux and the modern CLI tools the shell aliases expect — all in
+  Debian 13 `main`, verified 2026-07:
 
   ```bash
   sudo apt install -y tmux bat eza fzf fd-find ripgrep git-delta
   ```
 
-- Install personal dotfiles (shell aliases, history + git prompt, tmux config,
-  git defaults, gh CLI; idempotent to re-run; the Claude config symlinks it
-  also creates are inert on servers without Claude Code – see
-  [dotfiles-codespaces.md](dotfiles-codespaces.md) for what the installer does
-  in detail):
+  Without them the aliases in
+  [templates/.bash_aliases](../templates/.bash_aliases) silently stay inactive.
+
+- Install personal dotfiles — shell aliases, history + git prompt, tmux config,
+  git defaults, gh CLI:
 
   ```bash
   git clone https://github.com/nicograef/handbook.git ~/handbook && ~/handbook/install.sh
   ```
 
-- Work in a named tmux session so an ssh disconnect only detaches instead of
-  killing running processes (Claude Code, builds):
-  `tmux new -A -s <project>` — see [cheatsheets/tmux.md](../cheatsheets/tmux.md).
+  Idempotent to re-run. The Claude config symlinks it also creates are inert on
+  servers without Claude Code. See
+  [dotfiles-codespaces.md](dotfiles-codespaces.md) for what the installer does in
+  detail.
+
+- Work in a named tmux session: `tmux new -A -s <project>` — see
+  [cheatsheets/tmux.md](../cheatsheets/tmux.md).
+- An ssh disconnect then only detaches instead of killing running processes
+  (Claude Code, builds).
 
 ---
 

@@ -18,8 +18,8 @@ Don't mock:
 **1. Test-only methods on production classes**
 
 Don't add a method to a production class just so a test can call it. If a
-method is only ever invoked from tests, it doesn't belong on the class —
-put it in test utilities/helpers instead.
+method is only invoked from tests, it doesn't belong on the class. Put it in
+test utilities or helpers instead.
 
 ```go
 // BAD: SetInternalState only exists for tests
@@ -37,12 +37,12 @@ func newServiceWithState(t *testing.T, state State) *Service {
 
 **2. Incomplete or partial mocks**
 
-Don't hand-roll a mock that implements only some of an interface's methods.
-A partial mock hides real integration gaps — code calling an unmocked
-method fails or silently no-ops instead of surfacing the missing
-integration. Mock at a true system boundary (fully), or use a real object
-(in-memory implementation, test DB, fake server) instead of a partial
-stand-in.
+Don't hand-roll a mock that implements only some of an interface's methods —
+partial mocks hide integration gaps.
+
+- An unmocked method fails or silently no-ops, hiding the real gap.
+- Mock the full boundary, or use a real fake (in-memory implementation, test
+  DB, fake server) — never a partial stand-in.
 
 ```go
 // BAD: only Charge is implemented; Refund panics/no-ops if ever called

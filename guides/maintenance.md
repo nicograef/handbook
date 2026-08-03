@@ -2,17 +2,19 @@
 
 ## Image updates (every deploy)
 
-**Rule: no auto-pull in production.** Image tags in
-[docker-compose.prod.yml](../templates/docker-compose.prod.yml) are **pinned**
-and bumped **deliberately** at deploy time — never floating on `latest`, never
-pulled on a schedule. A deploy is the only moment images change, so it is also
-where you prune the images the bump superseded.
+**Rule: no auto-pull in production.**
+
+- Image tags in [docker-compose.prod.yml](../templates/docker-compose.prod.yml)
+  are **pinned**, and bumped **deliberately** at deploy time.
+- Never float on `latest`; never pull on a schedule.
+- A deploy is the only moment images change.
+- So a deploy is also where you prune the images the bump superseded.
 
 ### Prerequisites
 
 - SSH access to the server, in the Compose project dir.
-- The tag change committed to the repo (edit the Compose file in git, not on the
-  box) so the running stack matches source.
+- The tag change committed to the repo, so the running stack matches source.
+- Edit the Compose file in git, not on the box.
 
 ### Steps
 
@@ -61,11 +63,12 @@ where you prune the images the bump superseded.
 
 ## Reboot routine (monthly)
 
-Unattended-upgrades installs security patches but **never auto-reboots** (see
-[provision-server.md](provision-server.md)), so kernel and libc updates only take
-effect on the next reboot. The health-ping heartbeat alerts when a reboot is
-pending; this routine is how you clear it. Run it in a low-traffic maintenance
-window — a reboot drops all connections for ~1 min.
+- Unattended-upgrades installs security patches but **never auto-reboots**
+  (see [provision-server.md](provision-server.md)).
+- Kernel and libc updates only take effect on the next reboot.
+- The health-ping heartbeat alerts when a reboot is pending; this routine clears it.
+- Run it in a low-traffic maintenance window — a reboot drops all connections
+  for ~1 min.
 
 ### Steps
 
@@ -113,9 +116,11 @@ window — a reboot drops all connections for ~1 min.
 ## Disk and service checks (monthly)
 
 1. **Disk headroom.** Threshold: **act when the stack's filesystem is ≥ 80 %
-   used** — prune images (see [image updates](#image-updates-every-deploy)) or
-   grow the volume before it fills. A full disk stops Postgres writes and breaks
-   `certbot renew`.
+   used**.
+
+   - Prune images (see [image updates](#image-updates-every-deploy)), or grow the
+     volume before it fills.
+   - A full disk stops Postgres writes and breaks `certbot renew`.
 
    ```bash
    df -h /
@@ -165,10 +170,10 @@ window — a reboot drops all connections for ~1 min.
 
 ## Restore drill (quarterly)
 
-Follow the
-[Restore drill in postgresql-operations.md](postgresql-operations.md#4-restore-drill).
-For an actual disaster (restore into the live DB, not a throwaway), use the
-[full-restore commands](postgresql-operations.md#2-restore) instead.
+- **Drill** — follow the
+  [Restore drill in postgresql-operations.md](postgresql-operations.md#4-restore-drill).
+- **Actual disaster** (restore into the live DB, not a throwaway) — use the
+  [full-restore commands](postgresql-operations.md#2-restore) instead.
 
 ---
 

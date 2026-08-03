@@ -21,9 +21,11 @@ allowed-tools:
 
 # Prune
 
-Retire agent state. The mechanical layer deletes aged session state without
-asking (an explicit design decision — dry-run is the escape hatch); the
-semantic layer proposes judgment-based deletions behind a multi-select gate.
+Retire agent state in two layers.
+
+- **Mechanical** — deletes aged session state without asking, by explicit design. `dry-run` is
+  the escape hatch.
+- **Semantic** — proposes judgment-based deletions behind a multi-select gate.
 
 ## Workflow
 
@@ -40,81 +42,83 @@ Argument: $ARGUMENTS — the parts combine freely:
 
 ### 2. Resolve context
 
-**Live session id** — `$CLAUDE_CODE_SESSION_ID` from the session
-environment. If unset, proceed without it: the script always keeps the
-newest-mtime transcript per project as the no-id fallback.
+- **Live session id** — `$CLAUDE_CODE_SESSION_ID` from the session environment.
+- **If unset** — proceed without it.
+- **No-id fallback** — the script always keeps the newest-mtime transcript per project.
 
 ### 3. Mechanical sweep (ungated)
 
-Run the bundled script via the skill's base directory with an explicit
-interpreter — never an absolute handbook path, never relying on the execute
-bit (the plugin cache may not preserve it):
+Run the bundled script via the skill's base directory with an explicit interpreter:
 
 ```bash
 bash <skill-base-dir>/prune-state.sh --days <N> --scope <slug-or-all> \
   --exclude-session "$CLAUDE_CODE_SESSION_ID" --delete
 ```
 
-- Pass `--delete` unless `dry-run` was given — do not ask first; the
-  mechanical classes are age-rule-decidable by design.
-- What the script may touch, and everything it never touches, is documented
-  in [state-map.md](state-map.md). If the machine's layout stops matching the
-  state map, stop and re-verify per its drift rule before trusting the sweep.
+- Never use an absolute handbook path.
+- Never rely on the execute bit — the plugin cache may not preserve it.
+- Pass `--delete` unless `dry-run` was given — do not ask first.
+- The mechanical classes are age-rule-decidable by design.
+- What the script may touch, and everything it never touches, is in [state-map.md](state-map.md).
+- If the machine's layout stops matching the state map, stop and re-verify per its drift rule
+  before trusting the sweep.
 - Never bypass the script with ad-hoc `rm` on harness state.
-
-Parse the `MODE` / per-class / `total` lines for the report (step 7).
+- Parse the `MODE` / per-class / `total` lines for the report (step 7).
 
 ### 4. Semantic review — collect findings
 
-Review the three classes per [criteria.md](criteria.md); every finding
-carries its class, target, cited evidence, and proposed action (delete or
-update).
+Review the three classes per [criteria.md](criteria.md). Every finding carries class, target,
+cited evidence, and proposed action: delete or update.
 
 ### 5. Gate — multi-select
 
-Present all findings in one multi-select: a structured question tool if the
-surface has one, otherwise the formatted-options fallback in
-[../clarify/question-rules.md](../clarify/question-rules.md). Each option
-shows class, target, evidence, and proposed action. When findings exceed the
-tool's capacity, batch across several rounds grouped by class — selecting
-nothing stays a valid outcome in every round.
+- Present all findings in one multi-select.
+- **Tool** — a structured question tool if the surface has one.
+- **Fallback** — the formatted options in
+  [../clarify/question-rules.md](../clarify/question-rules.md).
+- **Each option** shows class, target, evidence, and proposed action.
+- **Overflow** — batch across rounds grouped by class when findings exceed the tool's capacity.
+- **Zero picks** — selecting nothing stays a valid outcome in every round.
 
 ### 6. Apply picked items only
 
-- Memory deletion removes the file **and** its `MEMORY.md` index line
-  together; a memory update edits the file in place.
-- Rule updates/deletions edit the instructions surface; leftover deletions
-  land in the working tree only.
-- Unpicked findings are skipped and reported as such; picking nothing means
-  zero semantic writes.
+- **Memory deletion** — removes the file **and** its `MEMORY.md` index line together.
+- **Memory update** — edits the file in place.
+- **Rule updates/deletions** — edit the instructions surface.
+- **Leftover deletions** — land in the working tree only.
+- **Unpicked findings** — skipped and reported as such.
+- **Zero picks** — no semantic writes.
 
 ### 7. Report
 
 One chat report, in this order:
 
-- **Mechanical** — per class: files and bytes deleted (or would-be-deleted
-  in dry-run); what was kept and why: live session (id or newest-mtime
-  fallback), entries younger than the threshold, memory directories (never
-  touched).
-- **Semantic** — proposed findings, picked items (applied), skipped items
-  and why (declined, dry-run, or ambiguous).
-- Close with the reflect pairing reminder: **pruned transcripts are gone as
-  reflection evidence — run `/reflect` before the first prune of a busy
-  period.**
+1. **Counts** — e.g. `3 findings — 1 applied, 2 skipped`.
+2. **Mechanical** — a table, one row per class: files and bytes deleted, or would-be-deleted in
+   dry-run.
+3. **Kept and why** — live session (id or newest-mtime fallback), entries younger than the
+   threshold, memory directories (never touched).
+4. **Semantic** — one bullet per finding, bold keyword first: proposed, picked (applied), or
+   skipped.
+5. **Skip reason** — declined, dry-run, or ambiguous.
+6. **Zero findings** — one line, no padding.
+7. **Reflect pairing** — **pruned transcripts are gone as reflection evidence — run `/reflect`
+   before the first prune of a busy period.**
 
 ## Constraints
 
-- Pruning is a deliberate, destructive ritual — never suggested mid-task. The
-  model may invoke this skill, so when the user did not explicitly ask for a
-  prune, confirm intent before the mechanical sweep: that sweep deletes on its
-  own, and pruned transcripts cannot be recovered.
-- Every semantic change is gated: nothing judgment-based is deleted or
-  updated without being picked in the multi-select. Uncommitted work is never
-  proposed for deletion.
-- **Commit the repo-leftover deletions** once applied — one commit, only the picked
-  items. Agent-state deletions live outside version control and leave nothing to commit.
+- Pruning is a deliberate, destructive ritual — never suggested mid-task.
+- The model may invoke this skill.
+- **Confirm intent** before the mechanical sweep when the user did not explicitly ask to prune.
+- That sweep deletes on its own.
+- Pruned transcripts cannot be recovered.
+- **Gated** — nothing judgment-based is deleted or updated without a pick in the multi-select.
+- **Uncommitted work** — never proposed for deletion.
+- **Commit the repo-leftover deletions** once applied — one commit, only the picked items.
+- **Agent-state deletions** live outside version control and leave nothing to commit.
 
 ## Quality
 
-Run the shared [self-review checklist](../quality.md) on every applied item
-before presenting the result.
+- Run the shared [self-review checklist](../quality.md) on every applied item before presenting
+  the result.
+- Format the report per the [output style contract](../output-style.md).

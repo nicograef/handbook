@@ -10,10 +10,11 @@ must return.
 - [Workflow mode](#workflow-mode)
 - [Apply-stage partitioning](#apply-stage-partitioning)
 
-The delegation contract itself — scope, self-contained context, constraints,
-return format, collision checks — is in
+The delegation contract itself — scope, self-contained context, constraints, return
+format, collision checks — is in
 [../dispatching-parallel-agents/SKILL.md](../dispatching-parallel-agents/SKILL.md).
-Follow it; this file only covers what is specific to distilling.
+
+- **Follow it** — this file only covers what is specific to distilling.
 
 ## Execution modes
 
@@ -37,21 +38,23 @@ Per the global routing rules: `sonnet` for mechanical and fully-specified work,
 | Applying an approved, fully-specified action (step 8) | `sonnet` — the plan already names the file, sections, and reason |
 | Link sweep and index-vs-disk check (step 9) | `sonnet` — mechanical |
 
-Never route a step-3 worker to `sonnet` to save tokens. The plan it produces is
-what the user approves; a cheap disposition pass moves the cost to a bad deletion.
+- **Never route a step-3 worker to `sonnet`** to save tokens.
+- **The plan it produces is what the user approves** — a cheap pass moves the cost to a bad deletion.
 
 ## The worker contract
 
-Workers see none of this session. Every step-3 prompt must carry:
+Workers see none of this session. Every step-3 prompt must carry these fields.
 
-- **The file list it owns** — absolute or repo-relative paths, and nothing else.
-- **The criteria** — instruct it to read [criteria.md](criteria.md) by path; do
-  not paraphrase the categories into the prompt.
-- **The unsettled keep-bar**, stated as such: the audience is not decided yet, so
-  dispositions are provisional and every audience-dependent verdict must be
-  marked. A worker told nothing about this will silently assume an audience.
-- **Read-only constraint**, stated explicitly: propose dispositions, edit nothing.
-- **The return format**, exactly:
+| Field | Content |
+| --- | --- |
+| **File list it owns** | Absolute or repo-relative paths, and nothing else |
+| **Criteria** | Instruct it to read [criteria.md](criteria.md) by path; never paraphrase the categories into the prompt |
+| **Unsettled keep-bar** | Stated as such — the audience is not decided yet |
+| **Provisional dispositions** | Every audience-dependent verdict must be marked |
+| **Read-only constraint** | Stated explicitly — propose dispositions, edit nothing |
+| **Return format** | Exactly the block below |
+
+- **A worker told nothing about the keep-bar** will silently assume an audience.
 
 ```
 For each file:
@@ -66,57 +69,51 @@ Then, for the whole group:
   instruction, each with file and line
 ```
 
-Two of these fields carry the run. **`claims`** is what makes step 4 possible
-without a second read of every file — one read, two outputs, and the biggest
-single saving in the run. **`audience`** is what lets step 5 present a real map
-to confirm instead of an abstract question. A worker that omits either has to be
-re-run, which costs more than the fields ever save.
-
-Use a `schema` when the mode is a `Workflow`, so returns validate instead of
-needing to be parsed.
+- **Two of these fields carry the run** — `claims` and `audience`.
+- **`claims`** makes step 4 possible without a second read of every file.
+- **One read, two outputs** — the biggest single saving in the run.
+- **`audience`** lets step 5 present a real map to confirm, not an abstract question.
+- **A worker that omits either has to be re-run**, which costs more than the fields ever save.
+- **Use a `schema`** when the mode is a `Workflow`, so returns validate instead of being parsed.
 
 ## Grouping files
 
-- Group by directory — it keeps related docs with one worker, which is what makes
-  intra-group duplication visible early.
-- Roughly 5–10 files per worker. Aim for balanced line counts, not balanced file
-  counts: one 900-line monolith is a group of its own.
-- Never split one file across two workers.
-- Cap concurrency at what the run actually needs; more workers on a small corpus
-  adds coordination cost, not speed.
+- **Group by directory** — it keeps related docs with one worker.
+- **Why** — that is what makes intra-group duplication visible early.
+- **Roughly 5–10 files per worker.** Balance line counts, not file counts.
+- **One 900-line monolith** is a group of its own.
+- **Never split one file** across two workers.
+- **Cap concurrency** at what the run actually needs.
+- **More workers on a small corpus** adds coordination cost, not speed.
 
 ## Workflow mode
 
-For a corpus over ~40 files, a `Workflow` beats hand-dispatched agents: it holds
+For a corpus over ~40 files, a `Workflow` beats hand-dispatched agents. It holds
 the pipeline deterministically and survives a long run. The shape:
 
-1. `phase('Analyze')` — one `agent()` per group, `opus`, with the return schema
-   above. This is a `parallel()` **barrier** — step 4 needs all of it.
-2. Merge and cluster in plain script code. No agent: clustering a list you hold is
-   not a reasoning task worth delegating.
-3. Return the merged evidence — dispositions, the audience map, duplicate
-   clusters, conflicts. **The workflow ends here**, at step 4.
+1. **`phase('Analyze')`** — one `agent()` per group, `opus`, with the return schema above.
+2. **A `parallel()` barrier** — step 4 needs all of it.
+3. **Merge and cluster in plain script code.**
+4. **No agent** — clustering a list you hold is not a reasoning task worth delegating.
+5. **Return the merged evidence** — dispositions, the audience map, duplicate clusters, conflicts.
+6. **The workflow ends here**, at step 4.
 
-The run then has **two conversations a workflow cannot hold**: the three
-questions (step 5) and the approval (step 7). Both happen in the session, between
-workflows. After approval, a second `Workflow` — or plain parallel agents —
-applies the partitioned actions with `sonnet` and `effort: 'low'`.
-
-Never carry the analysis workflow past step 4. A workflow that plans through the
-questions has invented the answers, and one that applies has skipped the gate.
+- **Two conversations a workflow cannot hold** — the three questions (step 5), the approval (step 7).
+- **Both happen in the session**, between workflows.
+- **After approval** — a second `Workflow`, or plain parallel agents, applies the partitioned actions.
+- **With** `sonnet` and `effort: 'low'`.
+- **Never carry the analysis workflow past step 4.**
+- **A workflow that plans through the questions** has invented the answers; one that applies skipped the gate.
 
 ## Apply-stage partitioning
 
 Concurrent edits to one file clobber each other. Partition strictly:
 
-- One worker owns a file completely, for every action on that file.
-- Index files, entry points, and any file receiving merged content are owned by
-  the lead, never by a worker.
-- New files from a split are created by the worker that owns their source.
-- After the workers return, run the collision check from
-  [../dispatching-parallel-agents/SKILL.md](../dispatching-parallel-agents/SKILL.md)
-  — `git status` and `git diff --stat` must show only the expected files.
-
-Worktree isolation (`isolation: 'worktree'`) is the wrong tool here: the actions
-are already disjoint by file, and merging worktrees back costs more than the
-partition saves.
+- **One worker owns a file completely**, for every action on that file.
+- **The lead owns** index files, entry points, and any file receiving merged content — never a worker.
+- **New files from a split** are created by the worker that owns their source.
+- **After the workers return**, run the collision check from
+  [../dispatching-parallel-agents/SKILL.md](../dispatching-parallel-agents/SKILL.md).
+- **`git status` and `git diff --stat`** must show only the expected files.
+- **Worktree isolation (`isolation: 'worktree'`) is the wrong tool here.**
+- **Why** — the actions are already disjoint by file, and merging worktrees back costs more.

@@ -1,8 +1,9 @@
 # Cross-Layer Consistency
 
-The trace used by the cleanup skill's repo-wide scope mode. Follow each
-representative flow end-to-end and check that every layer still agrees on
-shapes, types, and validation rules.
+The trace used by the cleanup skill's repo-wide scope mode.
+
+- Follow each representative flow end-to-end.
+- Check that every layer still agrees on shapes, types, and validation rules.
 
 ---
 
@@ -22,11 +23,13 @@ shapes, types, and validation rules.
 
 ## How to trace
 
-Pick 3–5 representative flows per feature area and follow each one end-to-end:
+Pick 3–5 representative flows per feature area. Follow each one end-to-end:
 
 frontend call → API client → HTTP handler → application service → repository
 → SQL.
 
-At every hop, confirm the shape entering the next layer matches what that layer
-expects. When shapes diverge, identify which layer is the source of truth and
-align the others to it. For generated code, regenerate from the schema.
+- At every hop, confirm the shape entering the next layer matches what that
+  layer expects.
+- When shapes diverge, identify which layer is the source of truth.
+- Align the other layers to that source of truth.
+- For generated code, regenerate from the schema.

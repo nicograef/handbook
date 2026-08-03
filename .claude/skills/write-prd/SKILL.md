@@ -8,65 +8,66 @@ description: >-
 
 # Write a PRD
 
-Skip a step only when its output already exists (e.g. the clarification is done
-or the codebase is already understood). Never skip exploration.
+- Skip a step only when its output already exists — e.g. clarification done, codebase understood.
+- Never skip exploration.
+- **Named prose exception:** the PRD's Problem Statement and User Stories stay prose.
+- Reason: PRD readers are non-technical. Do not "fix" those two slots into bullets.
+- The ≤ 20-word sentence cap still applies to them.
+- Everything else follows the [output style contract](../output-style.md).
 
 ## Workflow
 
 ### 1. Gather the problem description
 
-Ask the user for a long, detailed description of the problem they want to
-solve and any potential ideas for solutions.
-
-**Scope triage:** If the request bundles multiple independent
-subsystems/features (each could ship and be useful on its own), stop before
-spending clarification rounds. Help the user split it into separate PRDs —
-each gets its own PRD and, later, its own plan. Only continue with this
-workflow once you're working a single, cohesive PRD's worth of scope.
+- Ask the user for a long, detailed description of the problem to solve.
+- Ask for any potential ideas for solutions.
+- **Scope triage:** stop before clarification rounds if the request bundles multiple independent subsystems or features.
+- Independent means each one could ship and be useful on its own.
+- Help the user split such a request into separate PRDs.
+- Each split gets its own PRD and, later, its own plan.
+- Continue this workflow only once the scope is a single, cohesive PRD.
 
 ### 2. Explore the codebase
 
-Explore the repo to verify their assertions and understand the current state
-of the codebase.
+- Explore the repo to verify the user's assertions.
+- Understand the current state of the codebase.
 
 ### 3. Clarify ambiguities
 
-Resolve unknowns through **1–3 rounds** of structured questions, following the
-canonical [clarification question rules](../clarify/question-rules.md).
+- Resolve unknowns through **1–3 rounds** of structured questions.
+- Follow the canonical [clarification question rules](../clarify/question-rules.md).
 
 ### 4. Propose approaches
 
-Once ambiguities are resolved, propose **2–3 candidate solution approaches**
-with their trade-offs (effort, risk, reversibility, fit with the existing
-codebase). Lead with a recommendation and your reasoning for it. Get the
-user to pick one — or steer a hybrid — before moving on to module design.
+- Propose **2–3 candidate solution approaches** once ambiguities are resolved.
+- Give each approach its trade-offs: effort, risk, reversibility, fit with the existing codebase.
+- Lead with a recommendation and your reasoning for it.
+- Get the user to pick one — or steer a hybrid — before module design.
 
 ### 5. Design modules
 
-Sketch out the major modules you will need to build or modify to complete
-the implementation. Actively look for opportunities to extract deep
-modules that can be tested in isolation: inject dependencies instead of
-constructing them, return values instead of mutating inputs, and keep the
-interface surface small — a deep module hides substantial functionality
-behind a small, stable interface.
-
-Present the module design as part of the flow — do not block on a separate
-confirmation. Decide the test scope yourself based on the design; raise it
-as a clarification question (within the rounds from step 3) only if it is a
-genuine judgment call the codebase cannot answer.
+- Sketch the major modules you will build or modify to complete the implementation.
+- Actively look for deep modules you can extract and test in isolation.
+- A deep module hides substantial functionality behind a small, stable interface.
+- Inject dependencies instead of constructing them.
+- Return values instead of mutating inputs.
+- Keep the interface surface small.
+- Present the module design as part of the flow; do not block on a separate confirmation.
+- Decide the test scope yourself, based on the design.
+- Raise test scope as a clarification question only if it is a genuine judgment call the codebase cannot answer.
+- Keep any such question inside the rounds from step 3.
 
 ### 6. Write the PRD
 
-Once you have a complete understanding of the problem and solution, write
-the full PRD in one pass — no section-by-section confirmation gates. The
-user reviews the finished document and requests changes there; that is
-cheaper and more informed than approving fragments. Scale the depth of each
-section to the complexity of the feature; a small feature doesn't need a
-long-winded Problem Statement.
-
-Use the template below and save it to `docs/prds/prd-<name>.md` (create the
-directory if it doesn't exist). Use a short kebab-case name derived from the
-feature (e.g. `prd-user-onboarding.md`).
+- Write the full PRD in one pass once you fully understand problem and solution.
+- No section-by-section confirmation gates.
+- The user reviews the finished document and requests changes there.
+- That is cheaper and more informed than approving fragments.
+- Scale each section's depth to the complexity of the feature.
+- A small feature doesn't need a long-winded Problem Statement.
+- Use the template below and save it to `docs/prds/prd-<name>.md`.
+- Create the directory if it doesn't exist.
+- Use a short kebab-case name derived from the feature, e.g. `prd-user-onboarding.md`.
 
 ## PRD Template
 
@@ -124,20 +125,17 @@ Any further notes about the feature.
 
 ## Constraints
 
-- Do not include specific file paths or code snippets in Implementation
-  Decisions; they go stale quickly.
-- Only test external behavior in Testing Decisions, never implementation
-  details.
+- Do not include specific file paths or code snippets in Implementation Decisions; they go stale quickly.
+- Only test external behavior in Testing Decisions, never implementation details.
 
 ## Quality
 
-- Once the PRD file is written, run the shared
-  [self-review checklist](../quality.md) on it. Surface issues in the chat only
-  if found.
+- Once the PRD file is written, run the shared [self-review checklist](../quality.md) on it.
+- Format it per the shared [output style contract](../output-style.md), minus the named prose exception.
+- Surface issues in the chat only if found.
 - Also run a PRD-specific self-review pass before presenting the final file:
   - Scan for placeholders, TBDs, or unresolved brackets left over from drafting.
-  - Check internal consistency — do the User Stories, Implementation Decisions,
-    and Out of Scope sections agree with each other and with the Solution?
-  - Confirm the scope is narrow enough to be covered by a single
-    implementation plan; if not, flag it and suggest splitting.
+  - Check internal consistency across User Stories, Implementation Decisions, Out of Scope, and Solution.
+  - Confirm the scope is narrow enough for a single implementation plan.
+  - If it is not, flag it and suggest splitting.
   - Flag any requirement that could reasonably be read two different ways.

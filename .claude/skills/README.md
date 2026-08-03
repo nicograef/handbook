@@ -1,8 +1,17 @@
 # Skills
 
-Agent skills for Claude Code and GitHub Copilot. They live in this handbook repo and reach the agents through **two tiers** from this single source: local symlinks on the dev machine, and the public **`handbook@nicograef` Claude Code plugin** served from this repo (its own marketplace) for every other machine and Claude web session — see [guides/claude-plugin.md](../../guides/claude-plugin.md). Nothing is copied into project repos; adopted repos commit only enablement keys.
-
-Namespacing differs per tier: symlink-tier skills invoke plain (`/distill`), plugin-tier skills namespaced (`/handbook:distill`, agent `handbook:web-researcher`). On the dev machine the plugin is disabled per repo via a gitignored `.claude/settings.local.json` so skills never load twice.
+- Agent skills for Claude Code and GitHub Copilot, reaching agents through two tiers from
+  this single source.
+- Tier 1 — local symlinks on the dev machine.
+- Tier 2 — the public **`handbook@nicograef` Claude Code plugin**, served from this repo
+  (its own marketplace).
+- Reaches every other machine and Claude web sessions. See
+  [guides/claude-plugin.md](../../guides/claude-plugin.md).
+- Nothing is copied into project repos; adopted repos commit only enablement keys.
+- Namespacing differs per tier: symlink-tier skills invoke plain (`/distill`); plugin-tier
+  skills are namespaced (`/handbook:distill`, agent `handbook:web-researcher`).
+- On the dev machine, the plugin is disabled per repo via a gitignored
+  `.claude/settings.local.json`, so skills never load twice.
 
 ## Skill Consumption Matrix
 
