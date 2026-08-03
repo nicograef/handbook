@@ -61,6 +61,7 @@
 - **handbook** — Personal knowledge base, runbooks, scripts, devcontainer templates (English)
 - **website** — Personal website (nicograef.com), PHP, rsync-deployed
 - **rag** — Python RAG learning project / public playbook; pgvector + Ollama, framework-free, CPU-only
+- **barista** — private Python prototype; RAG coffee & coffee-machine assistant, framework-free
 - **career** — private job-search workspace (German): applications, company research, interview prep
 - **msh-sportpferde** — static German marketing site, plain HTML/CSS, rsync-deployed
 - **escpresso** — Rust ESC/POS thermal-printer emulator with egui GUI preview; published on crates.io
