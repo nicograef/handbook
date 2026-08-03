@@ -30,9 +30,23 @@ LANG_ALLOW=(
   "claude/CLAUDE.md"
 )
 
+# Files exempt from the prose caps. Every entry needs a justification comment.
+PROSE_ALLOW=(
+)
+
+# Prose caps enforced by check_prose (see .claude/skills/output-style.md).
+PROSE_MAX_WORDS=20
+PROSE_MAX_PARA_LINES=3
+
 # tracked_md lists tracked Markdown files, excluding the transient overhaul plan.
 tracked_md() {
   git ls-files '*.md' | grep -vxF 'plan.md'
+}
+
+# prose_md lists the Markdown files subject to the prose caps: tracked_md minus the
+# transient plan artifacts under docs/plans/.
+prose_md() {
+  tracked_md | grep -v '^docs/plans/'
 }
 
 # strip_code removes fenced code blocks and inline backtick spans from stdin so the
@@ -185,6 +199,169 @@ check_plugin() {
   fi
 }
 
+# prose_scan prints one violation per line for a single Markdown file.
+#
+# It strips YAML frontmatter, fenced code, HTML comments, table rows, inline code spans and
+# link URLs, then flags paragraphs over PROSE_MAX_PARA_LINES and sentences over
+# PROSE_MAX_WORDS. Sentence splitting keeps `e.g.`, `i.e.`, `etc.`, `vs.`, `cf.` and any
+# digit-preceded period intact.
+prose_scan() {
+  LC_ALL=C awk -v file="$1" -v maxwords="$PROSE_MAX_WORDS" -v maxpara="$PROSE_MAX_PARA_LINES" '
+    # clean strips inline code, images, link URLs, autolinks and emphasis markers.
+    function clean(s,   pre, mid, post) {
+      gsub(/`[^`]*`/, " ", s)
+      gsub(/!\[[^]]*\]\([^)]*\)/, " ", s)
+      while (match(s, /\[[^]]*\]\([^)]*\)/)) {
+        pre = substr(s, 1, RSTART - 1)
+        mid = substr(s, RSTART, RLENGTH)
+        post = substr(s, RSTART + RLENGTH)
+        sub(/\]\([^)]*\)$/, "", mid)
+        sub(/^\[/, "", mid)
+        s = pre mid post
+      }
+      gsub(/<[^ <>]*>/, " ", s)
+      gsub(/[*_]/, "", s)
+      return s
+    }
+
+    # words counts whitespace-separated tokens holding at least one alphanumeric character.
+    function words(s,   n, i, a, c) {
+      n = split(s, a, /[ \t]+/)
+      c = 0
+      for (i = 1; i <= n; i++)
+        if (a[i] ~ /[A-Za-z0-9]/) c++
+      return c
+    }
+
+    # abbrev reports whether the sentence so far ends in a non-terminal abbreviation.
+    function abbrev(s) {
+      return (s ~ /(^|[ (])(e\.g|i\.e|etc|vs|cf|approx|resp|Dr|Mr|Ms|No)\.$/)
+    }
+
+    # sentences splits a joined block into a[1..n]; returns n.
+    function sentences(s, a,   i, c, cur, n, prev, nxt) {
+      n = 0
+      cur = ""
+      for (i = 1; i <= length(s); i++) {
+        c = substr(s, i, 1)
+        cur = cur c
+        if (c != "." && c != "!" && c != "?") continue
+        prev = (i > 1) ? substr(s, i - 1, 1) : " "
+        nxt = substr(s, i + 1, 1)
+        if (prev ~ /[0-9]/) continue
+        if (nxt != "" && nxt != " ") continue
+        if (abbrev(cur)) continue
+        a[++n] = cur
+        cur = ""
+      }
+      if (cur ~ /[A-Za-z0-9]/) a[++n] = cur
+      return n
+    }
+
+    # snippet returns the first few words of a sentence, for the violation message.
+    function snippet(s,   n, i, a, out) {
+      sub(/^[ \t]+/, "", s)
+      n = split(s, a, /[ \t]+/)
+      out = ""
+      for (i = 1; i <= n && i <= 8; i++) out = (out == "") ? a[i] : out " " a[i]
+      return (n > 8) ? out " ..." : out
+    }
+
+    # flushpara reports a finished run of column-0 paragraph lines.
+    function flushpara() {
+      if (para > maxpara)
+        printf "%s:%d: paragraph of %d lines (cap %d)\n", file, parastart, para, maxpara
+      para = 0
+    }
+
+    # checkblock reports every over-long sentence in the accumulated block.
+    function checkblock(   n, i, a, w) {
+      if (block ~ /[A-Za-z]/) {
+        n = sentences(block, a)
+        for (i = 1; i <= n; i++) {
+          w = words(a[i])
+          if (w > maxwords)
+            printf "%s:%d: sentence of %d words (cap %d): %s\n", file, blockline, w, maxwords, snippet(a[i])
+        }
+      }
+      block = ""
+    }
+
+    BEGIN { fm = 0; fence = 0; comment = 0; para = 0; parastart = 0; block = ""; blockline = 0; prevtype = "" }
+
+    { raw = $0 }
+
+    NR == 1 && raw ~ /^---[ \t]*$/ { fm = 1; next }
+    fm { if (raw ~ /^---[ \t]*$/) fm = 0; next }
+
+    raw ~ /^[ \t]*(```|~~~)/ { flushpara(); checkblock(); prevtype = ""; fence = !fence; next }
+    fence { next }
+
+    {
+      if (comment) {
+        if (raw ~ /-->/) { sub(/^.*-->/, "", raw); comment = 0 }
+        else next
+      }
+      gsub(/<!--.*-->/, " ", raw)
+      if (index(raw, "<!--") > 0) {
+        raw = substr(raw, 1, index(raw, "<!--") - 1)
+        comment = 1
+      }
+    }
+
+    raw ~ /^[ \t]*$/ { flushpara(); checkblock(); prevtype = ""; next }
+    raw ~ /^#{1,6} / { flushpara(); checkblock(); prevtype = ""; next }
+    raw ~ /^[ \t]*\|/ { flushpara(); checkblock(); prevtype = ""; next }
+    raw ~ /^[ \t]*(-{3,}|\*{3,}|_{3,})[ \t]*$/ { flushpara(); checkblock(); prevtype = ""; next }
+
+    {
+      body = raw
+      if (raw ~ /^[ \t]*>/) {
+        type = "quote"
+        sub(/^[ \t]*>[ \t]*/, "", body)
+      } else if (raw ~ /^[ \t]*([-*+]|[0-9]+[.)])[ \t]/) {
+        type = "bullet"
+        sub(/^[ \t]*([-*+]|[0-9]+[.)])[ \t]+/, "", body)
+      } else if (raw ~ /^[ \t]/) {
+        type = "cont"
+      } else {
+        type = "para"
+      }
+
+      text = clean(body)
+      if (text !~ /[A-Za-z]/) next
+
+      if (type == "para") {
+        if (prevtype != "para") { flushpara(); checkblock(); parastart = NR; blockline = NR }
+        para++
+        block = (block == "") ? text : block " " text
+      } else if (type == "cont") {
+        if (block == "") blockline = NR
+        block = (block == "") ? text : block " " text
+      } else {
+        flushpara(); checkblock(); blockline = NR; block = text
+      }
+      prevtype = type
+    }
+
+    END { flushpara(); checkblock() }
+  ' "$1"
+}
+
+# 8. Prose caps
+check_prose() {
+  local file allow violation
+  while IFS= read -r file; do
+    for allow in ${PROSE_ALLOW[@]+"${PROSE_ALLOW[@]}"}; do
+      [[ "$file" == "$allow" ]] && continue 2
+    done
+    while IFS= read -r violation; do
+      [[ -z "$violation" ]] && continue
+      log "prose: $violation"
+    done < <(prose_scan "$file")
+  done < <(prose_md)
+}
+
 case "$STAGE" in
   links)    check_links ;;
   lint)     check_shell ;;
@@ -193,8 +370,9 @@ case "$STAGE" in
   skills)   check_skills ;;
   compose)  check_compose ;;
   plugin)   check_plugin ;;
+  prose)    check_prose ;;
   all)      check_links; check_shell; check_readme; check_language; check_skills; check_compose; check_plugin ;;
-  *)        printf 'usage: %s [links|lint|readme|language|skills|compose|plugin|all]\n' "$0" >&2; exit 2 ;;
+  *)        printf 'usage: %s [links|lint|readme|language|skills|compose|plugin|prose|all]\n' "$0" >&2; exit 2 ;;
 esac
 
 if [[ "$FAILED" -ne 0 ]]; then

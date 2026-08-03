@@ -80,7 +80,7 @@ Heading-grouped rules and idioms for a stack — reference material, not runbook
 | [scripts/backup-postgres.sh](scripts/backup-postgres.sh)   | Verified, retained PostgreSQL backups for a Compose stack (cron)        |
 | [scripts/report-health.sh](scripts/report-health.sh)       | Daily dead-man health ping (reboot-required + unattended-upgrades check) |
 | [scripts/install-dotfiles.sh](scripts/install-dotfiles.sh) | Bootstrap shell config in a new Codespace or VM                        |
-| [scripts/check-repo.sh](scripts/check-repo.sh)             | Repo self-check (links, shellcheck, README index, language, skills, compose, plugin); `make check` |
+| [scripts/check-repo.sh](scripts/check-repo.sh)             | Repo self-check (links, shellcheck, README index, language, skills, compose, plugin, prose); `make check` |
 | [scripts/test-prune.sh](scripts/test-prune.sh)             | Fixture test for the prune skill's `prune-state.sh`; `make test-prune`  |
 
 ## Agent Setup
@@ -94,6 +94,8 @@ path-scoped rules, and dotfiles.
 | Claude Code entrypoint     | [CLAUDE.md](CLAUDE.md) (imports `AGENTS.md`)                            |
 | Copilot instructions       | [.github/copilot-instructions.md](.github/copilot-instructions.md)     |
 | Skills index               | [.claude/skills/README.md](.claude/skills/README.md)                   |
+| Output style contract      | [.claude/skills/output-style.md](.claude/skills/output-style.md)       |
+| Verification contract      | [.claude/skills/quality.md](.claude/skills/quality.md)                 |
 | Web research agent         | [.claude/agents/web-researcher.md](.claude/agents/web-researcher.md)   |
 | Plugin manifests           | [.claude-plugin/plugin.json](.claude-plugin/plugin.json), [.claude-plugin/marketplace.json](.claude-plugin/marketplace.json) |
 | Plugin install & adoption  | [guides/claude-plugin.md](guides/claude-plugin.md)                     |
