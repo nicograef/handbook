@@ -25,6 +25,8 @@ Every `SKILL.md` includes:
 3. **Constraints section** — guardrails, anti-patterns, or things to avoid.
 4. **Quality section** (only for skills that produce code or documents) — a `../quality.md`
    relative link to the shared verification contract. Process-only and review-only skills omit it.
+5. **Output-style link** (only for skills that emit a report or an artifact) — an
+   `../output-style.md` relative link beside `../quality.md`.
 
 ## Frontmatter fields
 
@@ -45,15 +47,22 @@ Every `SKILL.md` includes:
 - Include anti-pattern warnings where common mistakes exist.
 - Reference bundled files with relative links, not absolute paths.
 - Give reference files descriptive names. Example: `mocking.md`.
-- Keep reference files short and focused; push detail out of `SKILL.md` into them so the main
-  file stays scannable (progressive disclosure — load only what's needed).
+- Keep reference files short and focused.
+- Push detail out of `SKILL.md` into them so the main file stays scannable.
+- Progressive disclosure — load only what's needed.
 - Every reference file over 100 lines opens with a short bullet TOC of its `##` headings,
   directly under the H1.
+- Sentence: ≤ 20 words, one claim.
+- Paragraph: ≤ 3 lines, ≤ 1 per section.
+- Bullet: ≤ 2 lines.
+- Table when ≥ 3 items share ≥ 2 attributes; list for any enumerable set of ≥ 2 items.
+- Format order: table → list → paragraph.
+- Full contract: [`../skills/output-style.md`](../skills/output-style.md).
 
 ## Deployment
 
-- Copilot CLI pre-approves a skill's declared shell only for skills you trust; keep
-  `allowed-tools` minimal so an untrusted skill cannot silently run destructive commands.
+- Copilot CLI pre-approves a skill's declared shell only for skills you trust.
+- Keep `allowed-tools` minimal so an untrusted skill cannot silently run destructive commands.
 
 ## After Creating or Renaming a Skill
 

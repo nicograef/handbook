@@ -30,6 +30,8 @@ set -euo pipefail
 - `set -euo pipefail` is mandatory.
 - Guard destructive operations with pre-flight checks (e.g. root check, required env vars).
 - Name files `<verb>-<noun>.sh` — lowercase, hyphens. Example: `setup-server.sh`.
+- Hard caps: sentence ≤ 20 words, one claim; paragraph ≤ 3 lines; bullet ≤ 2 lines.
+- Use a table or list before a paragraph — full contract: [output-style.md](../skills/output-style.md).
 
 ## After creating or renaming a script
 

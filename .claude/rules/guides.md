@@ -25,7 +25,10 @@ Reference guides that state coding conventions for a stack (`go.md`, `java-sprin
 ## Content rules
 
 - No explanatory prose — keep it scannable; link to templates and scripts instead of inlining them: `[Makefile](../templates/Makefile)`.
-- Link to cheatsheets for quick-reference material instead of repeating it; include the source URL when the guide is based on an external resource.
+- Link to cheatsheets for quick-reference material instead of repeating it.
+- Include the source URL when the guide is based on an external resource.
+- Hard caps: sentence ≤ 20 words, one claim; paragraph ≤ 3 lines; bullet ≤ 2 lines.
+- Use a table or list before a paragraph — full contract: [output-style.md](../skills/output-style.md).
 
 ## File naming
 
