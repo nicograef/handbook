@@ -2,7 +2,7 @@
 
 .PHONY: check links lint readme language skills compose plugin prose test-prune help
 
-## check: run the full repo self-check (links, shellcheck, README index, language, skills, compose, plugin)
+## check: run the full repo self-check (links, shellcheck, README index, language, skills, compose, plugin, prose)
 check:
 	@scripts/check-repo.sh all
 

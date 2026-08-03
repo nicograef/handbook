@@ -371,7 +371,7 @@ case "$STAGE" in
   compose)  check_compose ;;
   plugin)   check_plugin ;;
   prose)    check_prose ;;
-  all)      check_links; check_shell; check_readme; check_language; check_skills; check_compose; check_plugin ;;
+  all)      check_links; check_shell; check_readme; check_language; check_skills; check_compose; check_plugin; check_prose ;;
   *)        printf 'usage: %s [links|lint|readme|language|skills|compose|plugin|prose|all]\n' "$0" >&2; exit 2 ;;
 esac
 
