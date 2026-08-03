@@ -56,10 +56,10 @@
    Expected: dangling images left untagged by the bump are removed; the summary
    ends with a `Total reclaimed space: <N>` line (`0B` if nothing was orphaned).
 
-> To reclaim more aggressively (all images with no running container, plus build
-> cache), use `docker system prune` from
-> [docker-setup.md](docker-setup.md#prune-unused-resources) instead — but never
-> `--volumes` on a stack with `postgres-data`.
+> To reclaim more aggressively, use `docker system prune` from
+> [docker-setup.md](docker-setup.md#prune-unused-resources) instead.
+> It removes all images with no running container, plus the build cache.
+> Never pass `--volumes` on a stack with `postgres-data`.
 
 ## Reboot routine (monthly)
 

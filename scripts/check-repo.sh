@@ -239,16 +239,19 @@ prose_scan() {
     }
 
     # sentences splits a joined block into a[1..n]; returns n.
-    function sentences(s, a,   i, c, cur, n, prev, nxt) {
+    #
+    # A period only ends a sentence when a space follows it, so version numbers and
+    # decimals (`1.26`, `v2.1.197`) never split. That space rule is why no extra
+    # digit-before-period guard is needed: such a guard would merge legitimate
+    # sentence ends like "on PostgreSQL 17." into the sentence that follows.
+    function sentences(s, a,   i, c, cur, n, nxt) {
       n = 0
       cur = ""
       for (i = 1; i <= length(s); i++) {
         c = substr(s, i, 1)
         cur = cur c
         if (c != "." && c != "!" && c != "?") continue
-        prev = (i > 1) ? substr(s, i - 1, 1) : " "
         nxt = substr(s, i + 1, 1)
-        if (prev ~ /[0-9]/) continue
         if (nxt != "" && nxt != " ") continue
         if (abbrev(cur)) continue
         a[++n] = cur
@@ -297,6 +300,12 @@ prose_scan() {
     raw ~ /^[ \t]*(```|~~~)/ { flushpara(); checkblock(); prevtype = ""; fence = !fence; next }
     fence { next }
 
+    # Inline code spans go first: a backticked `<!--` is prose, not a comment opener,
+    # and treating it as one would silently mute the rest of the file. The `@` keeps the
+    # line non-blank (a code-span-only line still occupies a rendered paragraph line)
+    # while contributing no word to any sentence count.
+    { gsub(/`[^`]*`/, "@", raw) }
+
     {
       if (comment) {
         if (raw ~ /-->/) { sub(/^.*-->/, "", raw); comment = 0 }
@@ -329,19 +338,20 @@ prose_scan() {
       }
 
       text = clean(body)
-      if (text !~ /[A-Za-z]/) next
 
+      # Paragraph runs count rendered lines, so a line left wordless by stripping still
+      # counts. Blockquotes and indented lines continue the block they wrap.
       if (type == "para") {
-        if (prevtype != "para") { flushpara(); checkblock(); parastart = NR; blockline = NR }
+        if (prevtype != "para") { flushpara(); checkblock(); parastart = NR }
         para++
-        block = (block == "") ? text : block " " text
-      } else if (type == "cont") {
-        if (block == "") blockline = NR
-        block = (block == "") ? text : block " " text
-      } else {
-        flushpara(); checkblock(); blockline = NR; block = text
+      } else if (type != "cont" && !(type == "quote" && prevtype == "quote")) {
+        flushpara(); checkblock()
       }
       prevtype = type
+
+      if (text !~ /[A-Za-z]/) next
+      if (block == "") blockline = NR
+      block = (block == "") ? text : block " " text
     }
 
     END { flushpara(); checkblock() }

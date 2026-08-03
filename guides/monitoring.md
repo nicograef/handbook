@@ -40,9 +40,9 @@ enter the repository**:
   [letsencrypt-docker.md](letsencrypt-docker.md)).
 - SSH access to the server to edit its `.env` and reach `/etc/default/report-health`.
 
-> **Free plan (verified 2026-07-09 from betterstack.com pricing and docs):**
-> 10 monitors from one shared pool covering both uptime monitors and heartbeats,
-> built-in TLS/SSL-expiry alerts on uptime monitors, email + Slack alerts, and
+> **Free plan.** Verified 2026-07-09 from betterstack.com pricing and docs.
+> 10 monitors come from one shared pool covering uptime monitors and heartbeats.
+> Built-in TLS/SSL-expiry alerts on uptime monitors, email + Slack alerts, and
 > 3-minute checks. This runbook uses **4 of the 10 slots**: one uptime monitor
 > and three heartbeats.
 
