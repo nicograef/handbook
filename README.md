@@ -24,6 +24,7 @@ Setting something up? Start at [guides/bootstrap.md](guides/bootstrap.md).
 | External monitoring (Better Stack)| [guides/monitoring.md](guides/monitoring.md)                               |
 | Server maintenance & upkeep       | [guides/maintenance.md](guides/maintenance.md)                             |
 | End-to-end verification drill     | [guides/verification-drill.md](guides/verification-drill.md)               |
+| Audiobooks for ElevenReader       | [guides/audiobook-pipeline.md](guides/audiobook-pipeline.md)               |
 
 ### Stack conventions
 
@@ -70,6 +71,7 @@ Heading-grouped rules and idioms per stack — reference material, not runbooks.
 | [templates/copilot-instructions.md](templates/copilot-instructions.md) | Copilot instructions template (`.github/copilot-instructions.md`) |
 | [templates/vscode-settings.json](templates/vscode-settings.json)       | VS Code workspace settings for consistent formatting              |
 | [templates/claude-settings.json](templates/claude-settings.json)       | Project `.claude/settings.json` to adopt the handbook plugin      |
+| [templates/strip-visuals.lua](templates/strip-visuals.lua)             | Pandoc filter that removes what a narrator cannot speak           |
 
 ## Scripts
 
@@ -82,6 +84,7 @@ Heading-grouped rules and idioms per stack — reference material, not runbooks.
 | [scripts/install-dotfiles.sh](scripts/install-dotfiles.sh) | Bootstrap shell config in a new Codespace or VM                        |
 | [scripts/check-repo.sh](scripts/check-repo.sh)             | Repo self-check (links, shellcheck, README index, language, skills, compose, plugin, prose); `make check` |
 | [scripts/test-prune.sh](scripts/test-prune.sh)             | Fixture test for the prune skill's `prune-state.sh`; `make test-prune`  |
+| [scripts/md-to-epub.sh](scripts/md-to-epub.sh)             | Lint and render audiobook chapters into an ElevenReader EPUB           |
 
 ## Agent Setup
 

@@ -86,8 +86,9 @@ Full contract: [.claude/skills/output-style.md](.claude/skills/output-style.md).
 ## Language
 
 - All content is written in English.
-- Exception: the German example phrases in `.claude/skills/cleanup/readability-de.md`.
-- That file's explanatory prose stays English.
+- Exception: the German example phrases in `.claude/skills/cleanup/readability-de.md` and
+  `.claude/skills/audiobook/german-narration.md`.
+- Their explanatory prose stays English.
 
 ## Plan-first workflow
 

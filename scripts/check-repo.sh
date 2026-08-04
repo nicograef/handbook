@@ -27,6 +27,7 @@ INDEX_DIRS=(guides cheatsheets templates scripts)
 # Files allowed to contain German prose.
 LANG_ALLOW=(
   ".claude/skills/cleanup/readability-de.md"
+  ".claude/skills/audiobook/german-narration.md"
   "claude/CLAUDE.md"
 )
 
