@@ -5,6 +5,9 @@
 #   scripts/md-to-epub.sh <chapter-dir> [output.epub]
 #   WPM=140 STRICT=1 scripts/md-to-epub.sh audiobook/ indexes.epub
 #
+# Chapters are the NN-slug.md files in <chapter-dir>, in filename order. Other
+# Markdown in that directory (PLAN.md, sources.md) is ignored.
+#
 # What it does:
 #   1. Lints every chapter for elements a narrator cannot speak (file:line).
 #   2. Renders the chapters with pandoc and templates/strip-visuals.lua.
@@ -42,12 +45,14 @@ if ! [[ "$PANDOC_MAJOR" =~ ^[0-9]+$ ]] || [[ "$PANDOC_MAJOR" -lt 3 ]]; then
   die "pandoc 3.0 or newer required, found: $(pandoc --version | head -1)"
 fi
 
+# Chapters are NN-slug.md. The prefix fixes reading order and keeps planning
+# artifacts (PLAN.md, sources.md) in the same directory out of the book.
 CHAPTERS=()
 while IFS= read -r file; do
   CHAPTERS+=("$file")
-done < <(find "$SRC_DIR" -maxdepth 1 -name '*.md' | sort)
+done < <(find "$SRC_DIR" -maxdepth 1 -name '[0-9][0-9]-*.md' | sort)
 
-[[ ${#CHAPTERS[@]} -gt 0 ]] || die "no *.md chapters in $SRC_DIR"
+[[ ${#CHAPTERS[@]} -gt 0 ]] || die "no NN-slug.md chapters in $SRC_DIR"
 
 # ── 1. Lint ──────────────────────────────────────────────────────────────────
 # Reports the source line, not the rendered output: the fix belongs in the

@@ -54,7 +54,8 @@ Sentences may run longer than the handbook prose cap. Spoken sentences of 25 to
 
 ## Chapter shape
 
-- 1200 to 2500 words per chapter, roughly 8 to 15 minutes at 150 words a minute.
+- No length target. A chapter runs as long as its concept needs.
+- Never trim, summarise, or merge chapters to hit a size.
 - Open with the question the chapter answers, in one sentence.
 - Close with what the listener should now be able to decide or do.
 - One concept per chapter. Two concepts means two chapters.

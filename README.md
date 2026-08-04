@@ -85,6 +85,7 @@ Heading-grouped rules and idioms per stack — reference material, not runbooks.
 | [scripts/check-repo.sh](scripts/check-repo.sh)             | Repo self-check (links, shellcheck, README index, language, skills, compose, plugin, prose); `make check` |
 | [scripts/test-prune.sh](scripts/test-prune.sh)             | Fixture test for the prune skill's `prune-state.sh`; `make test-prune`  |
 | [scripts/md-to-epub.sh](scripts/md-to-epub.sh)             | Lint and render audiobook chapters into an ElevenReader EPUB           |
+| [scripts/check-terms.sh](scripts/check-terms.sh)           | Verify no audiobook term is used before the chapter that explains it   |
 
 ## Agent Setup
 
