@@ -55,8 +55,7 @@ summarizing subagent to:
 
 ### Copilot sessions
 
-- GitHub Copilot keeps no locally readable session history on the dev machine
-  (verified 2026-07-20).
+- GitHub Copilot keeps no locally readable session history on the dev machine.
 - Transcript scope covers Claude Code sessions only.
 - For work done in Copilot, use the git-history scope instead.
 

@@ -116,7 +116,9 @@ Personal skill paths (in `$HOME`, not committed) differ per surface:
 - **Each specialist** excels at one job.
 - **Reach** — the same `.agent.md` file works for the Copilot cloud agent and Copilot CLI.
 
-> **Rename note:** the earlier `.chatmode.md` (custom chat mode) format is superseded by `.agent.md`. Rename existing `.chatmode.md` files to `.agent.md` and place them in `.github/agents/`; legacy files in `.github/chatmodes/` still load but should be migrated.
+> **`.chatmode.md` is not the format.** Copilot still loads `.chatmode.md` files from
+> `.github/chatmodes/`, but agents belong in `.github/agents/` as `<name>.agent.md`.
+> Move any `.chatmode.md` file you find.
 
 - Name the file `<name>.agent.md`; the `<name>` part becomes the agent's identifier and may only contain `.`, `-`, `_`, and alphanumerics.
 - `description` is **required**; `name` and the rest are optional.

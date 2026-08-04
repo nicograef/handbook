@@ -30,8 +30,7 @@ Two paths:
 
 ### Primary: cloud-init (Hetzner)
 
-Reference provider: Hetzner Cloud, which exposes a user-data field (verified
-2026-07-09).
+Reference provider: Hetzner Cloud, which exposes a user-data field.
 
 1. Copy [`templates/cloud-init.yml`](../templates/cloud-init.yml) and fill the
    `<angle-bracket>` placeholders (`<ssh-public-key>`, `<username>`,
@@ -59,7 +58,7 @@ Reference provider: Hetzner Cloud, which exposes a user-data field (verified
 
 - Use this when the provider has no user-data field.
 - netcup officially supports only SSH-key injection at image install — no
-  user-data field (verified 2026-07-09).
+  user-data field.
 - So netcup servers take this path.
 - Pass configuration inline to the remote shell — the vars are consumed on the
   server, not your local machine.
@@ -150,7 +149,7 @@ sudo systemctl restart ssh   # 'ssh' is the canonical unit on Debian/Ubuntu
 - Open extra firewall ports as needed: `sudo ufw allow 443/tcp`
 - Deploy apps via Docker Compose – see [docker-setup.md](docker-setup.md)
 - Install tmux and the modern CLI tools the shell aliases expect — all in
-  Debian 13 `main`, verified 2026-07:
+  Debian 13 `main`:
 
   ```bash
   sudo apt install -y tmux bat eza fzf fd-find ripgrep git-delta

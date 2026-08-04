@@ -7,7 +7,7 @@ Two gaps to close:
 - Docker's default bridge gives containers IPv4-only NAT.
   - No IPv4 route on the host means **no container egress at all**.
 
-Native IPv6 per host, verified 2026-07-22:
+Native IPv6 per host:
 
 | Host | Native IPv6 |
 | --- | --- |
@@ -44,8 +44,7 @@ printf 'nameserver 2a01:4f9:c010:3f02::1\nnameserver 2a00:1098:2c::1\nnameserver
   | sudo tee /etc/resolv.conf
 ```
 
-- The netcup Debian image does not regenerate `resolv.conf` at boot (verified
-  2026-07-22).
+- The netcup Debian image does not regenerate `resolv.conf` at boot.
 - Guard against future DNS managers with `sudo chattr +i /etc/resolv.conf` if wanted.
 - Trust trade-off: IPv4-bound traffic transits a best-effort third-party gateway.
 - TLS content stays protected.
