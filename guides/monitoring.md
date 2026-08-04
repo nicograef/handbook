@@ -40,7 +40,7 @@ enter the repository**:
   [letsencrypt-docker.md](letsencrypt-docker.md)).
 - SSH access to the server to edit its `.env` and reach `/etc/default/report-health`.
 
-> **Free plan.** Verified 2026-07-09 from betterstack.com pricing and docs.
+> **Free plan.** Verified from betterstack.com pricing and docs.
 > 10 monitors come from one shared pool covering uptime monitors and heartbeats.
 > Built-in TLS/SSL-expiry alerts on uptime monitors, email + Slack alerts, and
 > 3-minute checks. This runbook uses **4 of the 10 slots**: one uptime monitor
@@ -72,14 +72,13 @@ This monitor watches the public endpoint *and* the certificate.
 4. Point the alert at the notification channel from Step 1. Save.
 
 > **Verification point — free-plan SSL-expiry caveat.** The SSL-expiry toggle
-> being free is **docs-verified but not account-verified** (as of 2026-07-09).
+> being free is **docs-verified but not account-verified**.
 > **This step is where you confirm it.** If the toggle is paywalled on your
 > account:
 > - Re-pick the TLS-expiry source from live-verified free candidates.
 > - Example: an external cron that runs `openssl s_client -connect <domain>:443 | openssl
 >   x509 -checkend` and pings a fourth heartbeat on success.
-> - **Record the decision here** — replace this callout with what you chose and
->   the as-of date.
+> - **Record the decision here** — replace this callout with what you chose.
 > - The runbook must reflect reality.
 
 ## Step 3 — Backup heartbeat

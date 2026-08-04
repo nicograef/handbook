@@ -135,7 +135,9 @@ Applies to every response — answers, reviews, summaries, commit proposals.
   - A superseded memory is rewritten in place, or deleted with its `MEMORY.md` index line.
   - Dates appear only where the fact is itself a date.
 - **Research:** external facts (companies, tools, market data) need live verification.
-  - Use official sources and state an as-of date.
+  - Use official sources; state the as-of date in the research output, and nowhere else.
+  - Committed docs and code comments carry no as-of date; they pin the version instead.
+  - The pinned version is the staleness signal, per **Current state only**.
   - Label anything unverified as "not verified"; no claims from training data alone.
 - **No autonomous outbound actions:** never send emails, publish posts, or submit anything
   externally on your own.

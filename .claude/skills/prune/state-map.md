@@ -3,12 +3,11 @@
 What accumulates where, which classes `prune-state.sh` may delete, and what it
 must never touch.
 
-- **As of 2026-08-01, Claude Code CLI 2.1.212 (dev machine).**
+- **Verified against Claude Code CLI 2.1.212 (dev machine).**
 - **Internal layout** — it drifts between CLI versions.
-- **Drift rule** — when a machine's layout stops matching this map, re-verify by listing the
-  directories.
+- **Drift rule** — a machine on another CLI version re-verifies by listing the directories.
 - **Drift signs** — locations missing, renamed, or differently keyed.
-- **After re-verifying** — update this file and its as-of line, then trust the allowlist again.
+- **After re-verifying** — update this file's pinned CLI version, then trust the allowlist again.
 - **Absent locations** — skipped silently by the script.
 - **Failure mode** — drift degrades to "nothing deleted", never to "wrong thing deleted".
 
