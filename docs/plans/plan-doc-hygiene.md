@@ -266,13 +266,13 @@ This closes cause 6: the skill that harvests learnings now also retires them.
 
 ### Acceptance criteria
 
-- [ ] `reflect/SKILL.md` has a retirement step between dedup and the gate.
-- [ ] Every retirement carries a citation of the superseding evidence.
-- [ ] Retirements are separate multi-select options, individually pickable.
-- [ ] An item with no retirement states that in one line.
-- [ ] Step 7 commits picked retirements together with picked additions.
-- [ ] The step is named in the skill's own description or workflow list.
-- [ ] `make check` passes.
+- [x] `reflect/SKILL.md` has a retirement step between dedup and the gate.
+- [x] Every retirement carries a citation of the superseding evidence.
+- [x] Retirements are separate multi-select options, individually pickable.
+- [x] An item with no retirement states that in one line.
+- [x] Step 7 commits picked retirements together with picked additions.
+- [x] The step is named in the skill's own description or workflow list.
+- [x] `make check` passes.
 
 ---
 
@@ -303,12 +303,12 @@ leftovers. That is the barista case — records days old and already obsolete.
 
 ### Acceptance criteria
 
-- [ ] `criteria.md` defines the `expired-record` class with its event examples.
-- [ ] The class requires extracting live residue before proposing deletion.
-- [ ] The *Finding contract* class enum includes `expired-record`.
-- [ ] `criteria.md` and `prune/SKILL.md` both state that `--days` never governs the semantic layer.
-- [ ] The class cites git state or a later memory as its evidence.
-- [ ] `make check` passes.
+- [x] `criteria.md` defines the `expired-record` class with its event examples.
+- [x] The class requires extracting live residue before proposing deletion.
+- [x] The *Finding contract* class enum includes `expired-record`.
+- [x] `criteria.md` and `prune/SKILL.md` both state that `--days` never governs the semantic layer.
+- [x] The class cites git state or a later memory as its evidence.
+- [x] `make check` passes.
 
 ---
 
@@ -342,13 +342,13 @@ unchanged.
 
 ### Acceptance criteria
 
-- [ ] `claude/CLAUDE.md` requires the as-of date in research output only.
-- [ ] It forbids as-of dates in committed docs and code comments, and requires a version pin instead.
-- [ ] `guides/monitoring.md` states the verification status without a date.
-- [ ] `templates/nginx-tls.conf` cites `v6.0` and the URL without a date.
-- [ ] `prune/state-map.md` anchors its drift rule to the CLI version, with no date.
-- [ ] `web-researcher.md`, `research/SKILL.md` and `verify-docs/sources.md` are unchanged.
-- [ ] `make check` passes.
+- [x] `claude/CLAUDE.md` requires the as-of date in research output only.
+- [x] It forbids as-of dates in committed docs and code comments, and requires a version pin instead.
+- [x] `guides/monitoring.md` states the verification status without a date.
+- [x] `templates/nginx-tls.conf` cites `v6.0` and the URL without a date.
+- [x] `prune/state-map.md` anchors its drift rule to the CLI version, with no date.
+- [x] `web-researcher.md`, `research/SKILL.md` and `verify-docs/sources.md` are unchanged.
+- [x] `make check` passes.
 
 ---
 
