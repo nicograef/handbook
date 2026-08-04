@@ -45,6 +45,7 @@
 | Fact-checking committed docs against code, commands, and upstream sources                | [Verify Docs](verify-docs/)                                  |
 | Understanding a part of the codebase holistically                                        | [Understand](understand/)                                    |
 | Learning a subject through quizzes with scaffolded hints                                 | [Tutor](tutor/)                                              |
+| Learning a system by listening: audiobook chapters for ElevenReader                      | [Audiobook](audiobook/)                                      |
 | Researching companies, jobs, or tools from live sources                                  | [Research](research/)                                        |
 | Debugging a failure root-cause-first                                                     | [Systematic Debugging](systematic-debugging/)                |
 | Acting on code-review feedback                                                           | [Receiving Feedback](receiving-feedback/)                    |
