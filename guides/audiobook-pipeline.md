@@ -70,21 +70,29 @@ Run the skill in the project whose system you want to understand.
 /audiobook database indexes in this service
 ```
 
-It plans, researches, structures, writes, reviews, and renders in one autonomous run.
-No approval gates, no clarifying questions.
+It plans, researches, structures, writes, reviews, and renders in one run, with a single
+checkpoint near the start.
 Full contract: [.claude/skills/audiobook/SKILL.md](../.claude/skills/audiobook/SKILL.md).
 
 | Phase | Steps | Produces |
 | --- | --- | --- |
 | Understand | 1-3 | Concept list, named gaps |
-| Research | 4-5 | `research-plan.md`, `sources.md` |
-| Structure | 6 | `PLAN.md`, `terms.yml`, `meta.yml` |
-| Write | 7 | `NN-slug.md` per chapter |
-| Review | 8-11 | Correctness, then structure, then language, then a diff re-check |
-| Render | 12 | `book.epub` |
+| Confirm | 4 | `BRIEF.md` — **the only interaction** |
+| Research | 5-6 | `research-plan.md`, `sources.md` |
+| Structure | 7 | `PLAN.md`, `terms.yml`, `meta.yml` |
+| Write | 8 | `NN-slug.md` per chapter |
+| Review | 9-12 | Correctness, then structure, then language, then a diff re-check |
+| Render | 13 | `book.epub` |
 
-Every decision a question would have settled is written into `PLAN.md` under
-"Assumptions" and repeated in the closing report. Read those two before you listen.
+Step 4 asks three things: scope boundary, guiding questions, prior-knowledge level.
+Each comes with a proposed default, so "ja" is a complete answer. Everything else —
+chapter count, order, theory depth, terminology, length — is derived, never asked.
+
+It sits before the research because research is the first expensive step. A wrong scope
+caught here costs minutes; caught after writing it costs the whole run.
+
+Everything the checkpoint did not cover lands in `PLAN.md` under "Assumptions" and in the
+closing report. Read those two before you listen.
 
 There is no length target at any step. A book runs as long as its subject needs.
 
@@ -112,7 +120,7 @@ STRICT=1 FILTER=tools/strip-visuals.lua \
 ```
 
 `STRICT=1` is the default for skill-written books. The skill resolves every table,
-diagram, and code block into prose itself. A lint finding here means step 7 has a bug.
+diagram, and code block into prose itself. A lint finding here means step 8 has a bug.
 Fix the chapter, do not let the filter strip it.
 
 Drop `STRICT=1` only for hand-written chapters, where warnings are a to-do list.
@@ -180,6 +188,7 @@ See also:
 - [.claude/skills/audiobook/SKILL.md](../.claude/skills/audiobook/SKILL.md) — writes the chapters
 - [.claude/skills/audiobook/listenability.md](../.claude/skills/audiobook/listenability.md) — prose rules for the ear
 - [.claude/skills/audiobook/german-narration.md](../.claude/skills/audiobook/german-narration.md) — German prose, English terms
+- [.claude/skills/audiobook/the-checkpoint.md](../.claude/skills/audiobook/the-checkpoint.md) — what step 4 asks, and what it never asks
 - [.claude/skills/audiobook/review-rounds.md](../.claude/skills/audiobook/review-rounds.md) — the three review dimensions
 - [templates/strip-visuals.lua](../templates/strip-visuals.lua) — pandoc filter
 - [scripts/md-to-epub.sh](../scripts/md-to-epub.sh) — lint and render

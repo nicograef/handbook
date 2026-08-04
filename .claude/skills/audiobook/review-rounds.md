@@ -4,7 +4,7 @@
 - [Round A — correctness](#round-a--correctness)
 - [Round B — structure and terms](#round-b--structure-and-terms)
 - [Round C — language and flow](#round-c--language-and-flow)
-- [Step 11 — re-check the C diff](#step-11--re-check-the-c-diff)
+- [Step 12 — re-check the C diff](#step-12--re-check-the-c-diff)
 - [Drift guards](#drift-guards)
 
 Three rounds, one dimension each. A round that edits outside its dimension is a
@@ -14,7 +14,7 @@ defect, not initiative.
 
 Correctness first, because there is no point polishing a false sentence.
 Language last, because it is the only round that may rewrite wording freely.
-Step 11 exists because that freedom is exactly what breaks facts.
+Step 12 exists because that freedom is exactly what breaks facts.
 
 ## Round A — correctness
 
@@ -37,6 +37,7 @@ Runs per chapter, chapters in parallel.
 Runs once, over the whole book, after every chapter passed Round A.
 
 - Verify the dependency order in `PLAN.md` still holds after Round A edits.
+- Check every guiding question in `BRIEF.md` is answered by some chapter.
 - Run `scripts/check-terms.sh <dir>`; every use-before-explained hit gets fixed.
 - Two fixes are legitimate: move the explanation earlier, or move the chapter.
 - Adding a second explanation of the same term is not a fix. It is drift.
@@ -59,7 +60,7 @@ Runs per chapter, chapters in parallel, after Round B settled the order.
 - Compression is the default failure here. Resist it.
 - Leave the terminology alone. Round B owns it.
 
-## Step 11 — re-check the C diff
+## Step 12 — re-check the C diff
 
 A verification pass, not a fourth round. It may revert, never rewrite.
 
