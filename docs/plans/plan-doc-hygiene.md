@@ -133,12 +133,12 @@ sibling — one rule, not two. Fix the plan-first workflow's stale path while he
 
 ### Acceptance criteria
 
-- [ ] `claude/CLAUDE.md` carries the **Current state only** rule under *Code Conventions*.
-- [ ] The rule names the exception list: `CHANGELOG.md`, ADR files, git history.
-- [ ] `AGENTS.md` states the same rule, with "Delete, don't deprecate" nested under it.
-- [ ] `AGENTS.md` *Plan-first workflow* names `docs/plans/plan-<slug>.md`, not `plan.md`.
-- [ ] No surface states the rule twice.
-- [ ] `make check` passes.
+- [x] `claude/CLAUDE.md` carries the **Current state only** rule under *Code Conventions*.
+- [x] The rule names the exception list: `CHANGELOG.md`, ADR files, git history.
+- [x] `AGENTS.md` states the same rule, with "Delete, don't deprecate" nested under it.
+- [x] `AGENTS.md` *Plan-first workflow* names `docs/plans/plan-<slug>.md`, not `plan.md`.
+- [x] No surface states the rule twice.
+- [x] `make check` passes.
 
 ---
 
