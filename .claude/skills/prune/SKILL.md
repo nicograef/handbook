@@ -70,6 +70,10 @@ bash <skill-base-dir>/prune-state.sh --days <N> --scope <slug-or-all> \
 Review the three classes per [criteria.md](criteria.md). Every finding carries class, target,
 cited evidence, and proposed action: delete or update.
 
+- **`--days` governs the mechanical sweep only** — it never reaches memories, rules, or repo
+  leftovers.
+- **This layer judges content, not age** — a memory can be obsolete the day it is written.
+
 ### 5. Gate — multi-select
 
 - Present all findings in one multi-select.

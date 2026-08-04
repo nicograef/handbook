@@ -7,6 +7,9 @@ without asking.
 - [Instructions-surface review](#instructions-surface-review)
 - [Repo-leftover review](#repo-leftover-review)
 
+The `--days` threshold governs the mechanical sweep only. It never reaches memories, rules, or
+repo leftovers. This layer judges content, not age.
+
 ## Memory review
 
 - **Target** — the harness memory directories `~/.claude/projects/<slug>/memory/`.
@@ -46,6 +49,20 @@ only where the project's repo exists locally:
 - **Partially stale memories become update proposals, never deletions** —
   propose the corrected text, keep the file.
 
+### Expired records
+
+A memory holding an event instead of a state. The class is `expired-record`.
+
+- **Rule** — **Memory holds current state, not events**, in
+  [../reflect/targets.md](../reflect/targets.md).
+- **Events** — a landed plan, a completed milestone, a run report, an incident log.
+- **Never deletable on sight** — extract the live residue first, per that file's
+  event-to-residue table.
+- **Residue found** — the proposal folds it into the keeper memory, then deletes the record.
+- **No residue** — the proposal is a plain deletion.
+- **Evidence** — the git state that overtook the event, or the later memory holding its residue.
+- **Age proves nothing** — a record written today can already be expired.
+
 ### Finding contract
 
 Every memory finding — inline or from a subagent — carries exactly these fields:
@@ -53,7 +70,7 @@ Every memory finding — inline or from a subagent — carries exactly these fie
 | Field | Value |
 | --- | --- |
 | **target** | the memory file (and its `MEMORY.md` index line) |
-| **class** | orphaned-index \| unindexed \| duplicate \| dead-reference \| stale-claim |
+| **class** | orphaned-index \| unindexed \| duplicate \| dead-reference \| stale-claim \| expired-record |
 | **evidence** | the concrete citation: contradicting file/commit, missing path, or the duplicate's name |
 | **action** | delete, or update with the proposed new text |
 
@@ -100,13 +117,16 @@ Propose:
 
 - **Completed plan files** — plan documents (`docs/plans/*.md`) with every
   checklist item ticked; one unticked box disqualifies the file.
+- **Shipped PRDs** — `docs/prds/prd-*.md` whose feature is built, per *Lifecycle* in
+  [../write-prd/SKILL.md](../write-prd/SKILL.md).
+- **PRD trigger** — the shipped feature and the docs describing it; a PRD has no checkboxes.
 - **Merged worktrees** — `git worktree list` entries that are clean (no
   uncommitted changes) **and** whose branch is merged into the default
   branch.
 - **Merged branches** — local branches merged into the default branch
   (`git branch --merged`), excluding the default and current branches.
-- **Stale scratch artifacts** — throwaway files past the run's age
-  threshold (the only semantic criterion the threshold governs).
+- **Stale scratch artifacts** — throwaway files left in the working tree, judged by what they
+  are.
 
 Guards:
 
