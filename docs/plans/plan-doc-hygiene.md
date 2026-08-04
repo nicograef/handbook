@@ -378,13 +378,13 @@ whole verify-trained-knowledge requirement that precedes it.
 
 ### Acceptance criteria
 
-- [ ] `rag/AGENTS.md` carries the canonical **Current state only** rule.
-- [ ] The "dated verification stamps" clause is gone.
-- [ ] The definition of done requires an updated README status with no date.
-- [ ] The boundary bullet keeps live verification and drops the dating requirement.
-- [ ] No rule in the file contradicts another about dates.
-- [ ] `make check` passes in `~/r/rag`.
-- [ ] Committed on a feature branch in `~/r/rag`.
+- [x] `rag/AGENTS.md` carries the canonical **Current state only** rule.
+- [x] The "dated verification stamps" clause is gone.
+- [x] The definition of done requires an updated README status with no date.
+- [x] The boundary bullet keeps live verification and drops the dating requirement.
+- [x] No rule in the file contradicts another about dates.
+- [x] `make check` passes in `~/r/rag`.
+- [x] Committed on a feature branch in `~/r/rag`.
 
 ---
 
@@ -406,10 +406,10 @@ has no ADRs today — the wording is canon, not inventory.
 
 ### Acceptance criteria
 
-- [ ] `barista/AGENTS.md` carries the canonical rule with the nested delete sentence.
-- [ ] No second rule in the file covers the same ground.
-- [ ] `make check` passes in `~/r/barista`.
-- [ ] Committed on a feature branch in `~/r/barista`.
+- [x] `barista/AGENTS.md` carries the canonical rule with the nested delete sentence.
+- [x] No second rule in the file covers the same ground.
+- [x] `make check` passes in `~/r/barista`.
+- [x] Committed on a feature branch in `~/r/barista`.
 
 ---
 
@@ -441,12 +441,12 @@ Respect "Kein auto-commit": post the Conventional Commit message and stop.
 
 ### Acceptance criteria
 
-- [ ] `jotti/AGENTS.md` carries the German **Current state only** rule.
-- [ ] Its exception list names `CHANGELOG.md`, `docs/adrs/` and the git history.
-- [ ] The ADR rule states that an ADR is a deliberate record in time and is never rewritten.
-- [ ] The completed-plan deletion rule is unchanged.
-- [ ] `make check` passes in `~/r/jotti`.
-- [ ] Nothing is committed; a copy-paste Conventional Commit message is posted in the chat.
+- [x] `jotti/AGENTS.md` carries the German **Current state only** rule.
+- [x] Its exception list names `CHANGELOG.md`, `docs/adrs/` and the git history.
+- [x] The ADR rule states that an ADR is a deliberate record in time and is never rewritten.
+- [x] The completed-plan deletion rule is unchanged.
+- [x] `make check` passes in `~/r/jotti`.
+- [x] Nothing is committed; a copy-paste Conventional Commit message is posted in the chat.
 
 ---
 
@@ -483,12 +483,12 @@ against the directory listing.
 
 ### Acceptance criteria
 
-- [ ] Every residue in the table above survives in a keeper memory, in German.
-- [ ] The seven event records are deleted.
-- [ ] `MEMORY.md` has no line pointing at a deleted file.
-- [ ] `MEMORY.md` has a line for every file in the directory.
-- [ ] No surviving memory is titled or framed as an event.
-- [ ] No `[[name]]` link in the directory points at a deleted memory.
+- [x] Every residue in the table above survives in a keeper memory, in German.
+- [x] The seven event records are deleted.
+- [x] `MEMORY.md` has no line pointing at a deleted file.
+- [x] `MEMORY.md` has a line for every file in the directory.
+- [x] No surviving memory is titled or framed as an event.
+- [x] No `[[name]]` link in the directory points at a deleted memory.
 
 ---
 
