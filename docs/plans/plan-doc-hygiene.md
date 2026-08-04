@@ -522,3 +522,19 @@ Apply only what the user picks, and post a commit message rather than committing
 - [ ] Nothing is deleted without an explicit pick.
 - [ ] Any deletion is preceded by a repo-wide grep for references to the file.
 - [ ] Nothing is committed; a copy-paste Conventional Commit message is posted in the chat.
+
+---
+
+## Run state
+
+| Field | Value |
+| --- | --- |
+| `Base` | `main e5737f73f8e3afce77e93d04a4ad03dbeb9b0b85` |
+| `Run branch` | `plan/doc-hygiene` |
+| `Worktrees` | `/home/nico/r/handbook/.worktrees/plan-doc-hygiene` -> `plan/doc-hygiene` -> lead |
+| | `/home/nico/r/handbook/.worktrees/plan-doc-hygiene-p2` -> `plan/doc-hygiene-p2` -> phase 2 |
+| | `/home/nico/r/handbook/.worktrees/plan-doc-hygiene-p3` -> `plan/doc-hygiene-p3` -> phase 3 |
+| | `/home/nico/r/handbook/.worktrees/plan-doc-hygiene-p4` -> `plan/doc-hygiene-p4` -> phase 4 |
+| `Next criterion` | phase 2 criterion 1 |
+| `Verify` | `make check` |
+| `Workflow` | scriptPath=`/home/nico/.claude/projects/-home-nico-r-handbook/42a275ea-3adf-461c-8cd8-774cd89ed50e/workflows/scripts/doc-hygiene-u2-wf_a7c3e114-bd4.js` runId=`wf_a7c3e114-bd4` |
