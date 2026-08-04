@@ -163,12 +163,12 @@ This is the fix for cause 3 and the default-loop half of cause 4.
 
 ### Acceptance criteria
 
-- [ ] `.claude/skills/quality.md` has a *Supersede check* section.
-- [ ] It requires a cited hit before any deletion.
-- [ ] It requires reporting retirements alongside additions.
-- [ ] It states that "nothing to retire" is a valid one-line result.
-- [ ] The section references the **Current state only** rule by name.
-- [ ] `make check` passes.
+- [x] `.claude/skills/quality.md` has a *Supersede check* section.
+- [x] It requires a cited hit before any deletion.
+- [x] It requires reporting retirements alongside additions.
+- [x] It states that "nothing to retire" is a valid one-line result.
+- [x] The section references the **Current state only** rule by name.
+- [x] `make check` passes.
 
 ---
 
@@ -200,13 +200,13 @@ describe the built thing, and `prune` proposes it — no skill deletes a PRD aut
 
 ### Acceptance criteria
 
-- [ ] `create-plan` states that the plan file is transient and names what ends its life.
-- [ ] `implement-plan` step 10 deletes a fully-ticked plan file after landing and commits it.
-- [ ] `implement-plan` keeps a plan with any unticked criterion and reports it as surviving.
-- [ ] `finish-branch` deletes the plan on option 1 only, and names it as a follow-up on option 2.
-- [ ] `write-prd` states that a shipped PRD is superseded and is prune's proposal, not a skill's.
-- [ ] No skill deletes a PRD automatically.
-- [ ] `make check` passes.
+- [x] `create-plan` states that the plan file is transient and names what ends its life.
+- [x] `implement-plan` step 10 deletes a fully-ticked plan file after landing and commits it.
+- [x] `implement-plan` keeps a plan with any unticked criterion and reports it as surviving.
+- [x] `finish-branch` deletes the plan on option 1 only, and names it as a follow-up on option 2.
+- [x] `write-prd` states that a shipped PRD is superseded and is prune's proposal, not a skill's.
+- [x] No skill deletes a PRD automatically.
+- [x] `make check` passes.
 
 ---
 
@@ -235,12 +235,12 @@ its residue — the lesson, the open item, or the constraint that still binds.
 
 ### Acceptance criteria
 
-- [ ] `claude/CLAUDE.md` carries the memory rule under *Agent Working Rules*.
-- [ ] It bans landed-plan records, milestone records, run reports and completion logs by name.
-- [ ] It requires deleting the `MEMORY.md` index line with the file.
-- [ ] `reflect/targets.md` states the same contract in its *Memory file format* section.
-- [ ] `reflect/targets.md` shows the event-to-residue rewrite pattern.
-- [ ] `make check` passes.
+- [x] `claude/CLAUDE.md` carries the memory rule under *Agent Working Rules*.
+- [x] It bans landed-plan records, milestone records, run reports and completion logs by name.
+- [x] It requires deleting the `MEMORY.md` index line with the file.
+- [x] `reflect/targets.md` states the same contract in its *Memory file format* section.
+- [x] `reflect/targets.md` shows the event-to-residue rewrite pattern.
+- [x] `make check` passes.
 
 ---
 
