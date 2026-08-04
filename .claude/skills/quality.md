@@ -18,3 +18,15 @@ this session.
   turn, and cite its output.
 - Document artifacts: re-read the final file and confirm every link and path
   it references exists.
+
+## Supersede check
+
+Before reporting work complete, retire what your change made false. This enforces
+the **Current state only** rule in [`AGENTS.md`](../../AGENTS.md).
+
+- Search docs, comments, instructions and memory for the statement you replaced.
+- Rewrite or delete every hit in the same change.
+- Cite the hit that proves the statement superseded; a suspicion is not one.
+- Delete nothing without that citation.
+- Report retirements beside additions: what you added, what you retired.
+- Nothing to retire is a valid result. State it in one line.
