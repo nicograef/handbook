@@ -32,7 +32,13 @@ Each rule is stated once and applies repo-wide.
   must match the files on disk.
 - **No dead links** — after renaming or deleting a file, `grep -r '<filename>' .` and update or
   remove every reference.
-- **Delete, don't deprecate** — if a file becomes redundant, delete it and remove all references.
+- **Current state only** — docs, comments and instructions describe what is true now.
+  - Git history is the archive, and the only record of a prior state.
+  - A change that makes a statement false rewrites or deletes it in the same change.
+  - A superseded version never stands beside its replacement.
+  - Banned in prose: dated change entries, "previously / formerly / used to", deprecation notes.
+  - Exceptions: `CHANGELOG.md`, ADR files, git history.
+  - **Delete, don't deprecate** — a redundant file is deleted, with every reference removed.
 - **Version consistency** — when a tool version changes, `grep` the whole repo and update every
   occurrence.
 - **Keep files concise** — no boilerplate prose; optimise for fast scanning.
@@ -88,11 +94,11 @@ Full contract: [.claude/skills/output-style.md](.claude/skills/output-style.md).
 For multi-file changes:
 
 1. **Research** — read affected files; understand existing style and cross-references.
-2. **Plan** — create `plan.md` in the project root with the goal, affected files, and a
+2. **Plan** — create `docs/plans/plan-<slug>.md` with the goal, affected files, and a
    step-by-step checklist. Do not make changes yet.
 3. **Execute** — work through the checklist; tick off each step (`- [x]`) as you complete it.
 4. **Verify** — check links, confirm `README.md` is up to date, re-read changed files.
-5. **Clean up** — delete `plan.md` when done.
+5. **Clean up** — delete `docs/plans/plan-<slug>.md` when done.
 
 - Trivial single-file changes (typo fix, adding one section): skip the plan, edit directly.
 

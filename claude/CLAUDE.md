@@ -42,6 +42,13 @@
 
 ### General
 
+- **Current state only** — docs, comments and instructions describe what is true now.
+  - Git history is the archive, and the only record of a prior state.
+  - A change that makes a statement false rewrites or deletes it in the same change.
+  - A superseded version never stands beside its replacement.
+  - Banned in prose: dated change entries, "previously / formerly / used to", deprecation notes.
+  - Exceptions: `CHANGELOG.md`, ADR files, git history.
+  - **Delete, don't deprecate** — a redundant file is deleted, with every reference removed.
 - EditorConfig: spaces everywhere except Go (tabs), LF line endings, UTF-8
 - Makefiles as dev interface (`make dev`, `make test`, `make lint`, etc.)
 - Conventional commits style

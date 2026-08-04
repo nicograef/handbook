@@ -181,7 +181,7 @@ Finalize first, then write the plan. Keep it short — an action list, not prose
 - **Plan then apply** — keep it **in memory**; write no file.
 - **Why** — writing one would add a file to the corpus being distilled.
 - **And** — the plan is consumed in the same turn.
-- **A deliberate exception** to the repo's plan-first `plan.md` convention.
+- **A deliberate exception** to the repo's plan-first `docs/plans/plan-<slug>.md` convention.
 - **Plan only** — write it to `docs/plans/plan-distill-<scope>.md`.
 - **Template** — [../create-plan/SKILL.md](../create-plan/SKILL.md), plus its placeholder-scan self-review.
 - **One phase** per directory or disposition group, each with its file list.

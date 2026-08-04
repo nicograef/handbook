@@ -98,9 +98,8 @@ Proposals:
 
 Propose:
 
-- **Completed plan files** — plan documents (e.g. `plan.md`,
-  `docs/plans/*.md`) with every checklist item ticked; one unticked box
-  disqualifies the file.
+- **Completed plan files** — plan documents (`docs/plans/*.md`) with every
+  checklist item ticked; one unticked box disqualifies the file.
 - **Merged worktrees** — `git worktree list` entries that are clean (no
   uncommitted changes) **and** whose branch is merged into the default
   branch.
