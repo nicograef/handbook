@@ -80,6 +80,11 @@ happens between checkpoints.
     [integration.md](integration.md), then re-verify in the main checkout.
     - Delete the `## Run state` block and commit that removal **before** landing.
     - The base branch never receives it.
+    - Every acceptance criterion in the plan ticked: `git rm` the plan file in
+      the main checkout after landing.
+    - Commit that removal on the base branch as its own commit.
+    - Any unticked criterion keeps the file.
+    - Step 11 then reports the plan file as surviving.
     - Then `git worktree remove` each worktree the run created.
     - And `git branch -d` each merged branch.
     - Push, PR or discard is [finish-branch](../finish-branch/SKILL.md)'s
@@ -89,6 +94,7 @@ happens between checkpoints.
     - **Phases** — completed, with criteria ticked and commits landed.
     - **Dropped** — agents that returned nothing, and what happened to their work.
     - **Unticked** — anything left unticked, with the reason.
+    - **Plan file** — deleted, or surviving with the unticked criteria that kept it.
     - Nothing dropped and nothing unticked: say so in one line, no padding.
 
 ## Stop and ask

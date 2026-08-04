@@ -81,6 +81,19 @@ then present exactly four options and execute the one chosen.
    - In a linked worktree, remove the worktree first (`git worktree remove <path>`).
    - Then delete the branch from the main checkout (`git -C "$MAIN" branch -D <feature-branch>`).
 
+6. **Handle the plan file** — `docs/plans/plan-<slug>.md`, when the branch implemented one:
+
+   | Option | Plan file |
+   | --- | --- |
+   | 1 merge | `git rm` in the main checkout after the merge, committed there |
+   | 2 PR | Kept, and named as an open follow-up in the PR body |
+   | 3 keep | Kept, untouched |
+   | 4 discard | Kept, untouched |
+
+   - Deletion requires every acceptance criterion ticked; one unticked box keeps the file.
+   - Option 1 only, because only there is the merge complete in this session.
+   - Rationale: the **Current state only** rule in `AGENTS.md`.
+
 ## Constraints
 
 - Never skip test verification.

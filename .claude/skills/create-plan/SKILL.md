@@ -85,6 +85,12 @@ slice cutting through ALL integration layers end-to-end.
 - Derive a slug from the task (e.g. `admin-dashboard`, `order-cancel`).
 - Create the file `docs/plans/plan-<slug>.md` (create the directory if it
   doesn't exist).
+- **Lifecycle** — the plan file is transient, not a record.
+- It dies when its last acceptance criterion lands.
+- [implement-plan](../implement-plan/SKILL.md) step 10 deletes it after landing.
+- [finish-branch](../finish-branch/SKILL.md) option 1 deletes it after a local merge.
+- One unticked criterion keeps the file alive.
+- Rationale: the **Current state only** rule in `AGENTS.md`.
 
 ### 7. Self-review the plan
 

@@ -123,6 +123,13 @@ A description of the things that are out of scope for this PRD.
 Any further notes about the feature.
 ```
 
+## Lifecycle
+
+- A shipped PRD is superseded by the docs that describe the built thing.
+- Deleting it is a [prune](../prune/SKILL.md) proposal the user picks.
+- No skill deletes a PRD automatically, this one included.
+- Rationale: the **Current state only** rule in `AGENTS.md`.
+
 ## Constraints
 
 - Do not include specific file paths or code snippets in Implementation Decisions; they go stale quickly.
