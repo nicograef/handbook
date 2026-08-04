@@ -61,7 +61,7 @@ Runs per chapter, chapters in parallel, after Round B settled the order.
 
 ## Step 11 — re-check the C diff
 
-Automatic. No approval, no user question.
+A verification pass, not a fourth round. It may revert, never rewrite.
 
 1. Diff each chapter against its Round B state.
 2. For every changed sentence carrying a claim, verify against `sources.md`.

@@ -70,20 +70,21 @@ Run the skill in the project whose system you want to understand.
 /audiobook database indexes in this service
 ```
 
-It plans, researches, structures, writes, and reviews. Twelve steps with one approval
-gate. Full contract: [.claude/skills/audiobook/SKILL.md](../.claude/skills/audiobook/SKILL.md).
+It plans, researches, structures, writes, reviews, and renders in one autonomous run.
+No approval gates, no clarifying questions.
+Full contract: [.claude/skills/audiobook/SKILL.md](../.claude/skills/audiobook/SKILL.md).
 
 | Phase | Steps | Produces |
 | --- | --- | --- |
 | Understand | 1-3 | Concept list, named gaps |
 | Research | 4-5 | `research-plan.md`, `sources.md` |
-| Structure | 6 | `PLAN.md`, `terms.yml`, `meta.yml` — **you approve here** |
+| Structure | 6 | `PLAN.md`, `terms.yml`, `meta.yml` |
 | Write | 7 | `NN-slug.md` per chapter |
 | Review | 8-11 | Correctness, then structure, then language, then a diff re-check |
 | Render | 12 | `book.epub` |
 
-The gate is step 6. You see the chapter plan, the question each chapter answers, and the
-dependency order before a single chapter is written.
+Every decision a question would have settled is written into `PLAN.md` under
+"Assumptions" and repeated in the closing report. Read those two before you listen.
 
 There is no length target at any step. A book runs as long as its subject needs.
 

@@ -1,6 +1,6 @@
 ---
 name: audiobook
-description: Plans, researches, structures, writes, and reviews an explanatory audiobook about a codebase or a topic, then renders it as an ElevenReader-ready EPUB. Use when the user wants to build deeper understanding of a system or a subject by listening instead of reading.
+description: Plans, researches, structures, writes, and reviews an explanatory audiobook about a codebase or a topic, then renders it as an ElevenReader-ready EPUB. Runs end to end without approval steps. Use when the user wants to build deeper understanding of a system or a subject by listening instead of reading.
 argument-hint: "<subject or project area> [→ output dir, default audiobook/]"
 ---
 
@@ -10,7 +10,11 @@ The deliverable is understanding, not narrated documentation. Generated docs
 describe *what* a system does. This book explains *why it works that way*, in an
 order a listener can follow from nothing.
 
-Never write chapters before step 6 is approved. Research and structure first.
+Run all twelve steps without stopping. No approval gates, no clarifying
+questions. Every decision that a question would have settled goes into
+`PLAN.md` as a stated assumption, and into the final report.
+
+Never write chapters before step 6 is complete. Research and structure first.
 
 - Pipeline and rendering: [guides/audiobook-pipeline.md](../../../guides/audiobook-pipeline.md)
 - Prose rules for the ear: [listenability.md](listenability.md)
@@ -35,9 +39,10 @@ the input of a later step, so the run survives an interruption.
 
 ### Understand
 
-1. **Scope.** Confirm subject and depth before anything else.
-   - Ask which subsystem or which concepts when the subject is a whole repo.
-   - Do not ask about length. There is no target length.
+1. **Scope.** Derive it from the argument and the repository. Do not ask.
+   - A whole-repo subject narrows to the subsystem carrying the most concepts.
+   - Write every scoping decision into `PLAN.md` under "Assumptions".
+   - Length is never a scoping input. There is no target length.
 2. **Inventory.** Read the code and docs that touch the subject.
    - List every concept in play, each with the file where it lives.
    - Record decisions the code makes silently. They become chapter hooks.
@@ -63,7 +68,8 @@ the input of a later step, so the run survives an interruption.
    - Write `PLAN.md`: per chapter the question it answers and its prerequisites.
    - Write `terms.yml`: every term mapped to the chapter that first explains it.
    - Write `meta.yml`: `title`, `creator`, `lang` (`de` for German narration).
-   - **Present `PLAN.md` and stop. Do not write chapters without approval.**
+   - Record scoping and cut decisions under "Assumptions" in `PLAN.md`.
+   - Continue straight into step 7. `PLAN.md` is the record, not a request.
 
 ### Write
 
@@ -89,7 +95,7 @@ Three rounds, one dimension each, in this order. Details and per-round contracts
 10. **Round C — language and flow.** Per chapter, in parallel.
     - Read for the ear only. Do not touch facts, order, or terminology.
     - Never cut for length. Repetition that serves the listener stays.
-11. **Re-check the Round C diff.** Automatic, no approval needed.
+11. **Re-check the Round C diff.**
     - Language edits can silently break a factual claim.
     - Verify only what Round C changed, against `sources.md`.
     - A broken claim goes back to Round A wording, not to a new rewrite.
@@ -101,9 +107,13 @@ Three rounds, one dimension each, in this order. Details and per-round contracts
     - A lint finding here is a bug in step 7, not something to strip.
     - Fix the chapter source and re-render.
     - Report chapters, total listening time, and the upload step.
+    - Report the `PLAN.md` assumptions and every claim left unverified.
+    - The report is the run's only review point. Make it complete.
 
 ## Constraints
 
+- Never stop for approval, confirmation, or a clarifying question.
+- An unclear scope is decided, written into `PLAN.md`, and reported at the end.
 - No length target, no chapter count target, no minutes-per-chapter target.
 - Never shorten, summarise, or trim a chapter to hit a size.
 - Never paste a code block, table, or diagram source into a chapter.
