@@ -2,6 +2,11 @@
 
 Taxonomy and per-repo target resolution for reflect plan items.
 
+- [Categories and decision criteria](#categories-and-decision-criteria)
+- [Memory directory resolution](#memory-directory-resolution)
+- [Handbook target map](#handbook-target-map)
+- [Generic repo resolution](#generic-repo-resolution-plugin-use-outside-the-handbook)
+
 ## Categories and decision criteria
 
 | Category | Choose when the learning is… |
@@ -50,6 +55,31 @@ metadata:
   directory's `MEMORY.md`.
 - **`MEMORY.md`** — index lines only, never memory content.
 - **Near-duplicate** — update the existing file instead of creating one.
+
+#### Memory holds current state, not events
+
+The **Current state only** rule (`AGENTS.md`, Working rules) applied to the memory directory.
+
+- **State, not events** — a memory says what is true, not what happened when.
+- **Banned** — landed-plan and milestone records, run reports, completion and incident logs.
+- **The lesson** from a run is a memory; the run itself is not.
+- **Superseded** — rewrite it in place, or delete it with its `MEMORY.md` index line.
+- **Dates** — only where the fact is itself a date.
+
+#### Event to residue
+
+An event record is rewritten as its residue, then deleted with its `MEMORY.md` line.
+
+| Event record | Residue that survives |
+| --- | --- |
+| a landed plan | the constraints it settled, as a `project` memory |
+| a run or session report | the lesson, as a `feedback` memory |
+| a completed milestone | the state it left behind, in present tense |
+| an incident log | the invariant that broke, and how to hold it |
+
+- **Order** — write the residue first, delete the record second.
+- **No residue** — delete the record outright.
+- **No keeper fits** — write one, then fold the residue into it.
 
 ## Handbook target map
 

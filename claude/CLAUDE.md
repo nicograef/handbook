@@ -128,6 +128,12 @@ Applies to every response — answers, reviews, summaries, commit proposals.
   - Omitting `model` inherits the session model; use `effort: 'low'` for cheap mechanical stages.
   - Forks (`subagent_type: "fork"`) always inherit the parent model.
   - Never fork for work `sonnet` could do.
+- **Memory holds current state, not events:** a memory says what is true, not what happened when.
+  - This is **Current state only** applied to the memory directory.
+  - Banned: landed-plan records, milestone records, run reports, completion logs, incident logs.
+  - The lesson from a run is a memory; the run itself is not.
+  - A superseded memory is rewritten in place, or deleted with its `MEMORY.md` index line.
+  - Dates appear only where the fact is itself a date.
 - **Research:** external facts (companies, tools, market data) need live verification.
   - Use official sources and state an as-of date.
   - Label anything unverified as "not verified"; no claims from training data alone.
