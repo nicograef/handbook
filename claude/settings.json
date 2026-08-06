@@ -79,7 +79,11 @@
       "Bash(php -S localhost:*)",
       "Bash(sqlc generate:*)",
       "Bash(gh pr checks:*)",
-      "Bash(gh workflow list:*)"
+      "Bash(gh workflow list:*)",
+      "Bash(uv run:*)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(docker compose exec:*)"
     ],
     "deny": [
       "Bash(rm -rf /*)",
