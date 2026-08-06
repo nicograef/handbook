@@ -67,7 +67,8 @@ are corrupted while both worktrees stay clean.
 ## Acknowledgement
 
 - A message is delivered when the recipient drains it, which writes a receipt.
-- `agent-bus.sh sent` shows `read` or `UNREAD` per message.
+- `agent-bus.sh sent` shows `read` or `UNREAD` per message, with the read time.
+- A read time far behind your send time means the peer acted on stale context.
 - Treat `UNREAD` as undelivered. Do not assume a correction landed because you
   sent it.
 - Acks are receipts, not messages: they never wake the sender.

@@ -327,8 +327,9 @@ render_inbox() {
     if [[ "$drain" == "1" ]]; then
       mkdir -p "$bus/inbox/$sid/read" "$bus/acks"
       # The ack is a receipt, not a message: it never wakes the sender.
-      jq -n --arg id "$id" --arg by "$sid" --arg at "$(now_ms)" \
-        '{id: $id, by: $by, ackAt: ($at | tonumber)}' > "$bus/acks/$id.json"
+      # Only the read time is stored. The id is the filename, and the reader is
+      # always the inbox owner, so recording either would duplicate a known fact.
+      jq -n --arg at "$(now_ms)" '{ackAt: ($at | tonumber)}' > "$bus/acks/$id.json"
       mv -f "$file" "$bus/inbox/$sid/read/"
     fi
   done
@@ -349,19 +350,26 @@ cmd_inbox() {
 
 cmd_sent() {
   need_jq
-  local bus sid file id state any=0
+  local bus sid file id state read_at any=0
   bus="$(bus_root)"
   sid="$(session_id)"
   [[ -d "$bus/outbox/$sid" ]] || { echo "Nothing sent from this session."; return 0; }
-  printf '%-10s %-24s %s\n' STATE TO TEXT
+  printf '%-8s %-10s %-10s %s\n' STATE TO READ TEXT
   for file in "$bus/outbox/$sid"/*.json; do
     [[ -e "$file" ]] || continue
     any=1
     id="$(jq -r '.id // ""' "$file")"
-    if [[ -f "$bus/acks/$id.json" ]]; then state='read'; else state='UNREAD'; fi
-    jq -r --arg state "$state" --arg bus "$bus" \
-      '[$state, (.to[0:8]), (.text | gsub("\n"; " ") | .[0:60])] | @tsv' "$file" \
-      | while IFS=$'\t' read -r a b c; do printf '%-10s %-24s %s\n' "$a" "$b" "$c"; done
+    state='UNREAD'
+    read_at='-'
+    if [[ -f "$bus/acks/$id.json" ]]; then
+      state='read'
+      read_at="$(jq -r 'if .ackAt then (.ackAt / 1000 | strflocaltime("%H:%M:%S")) else "-" end' \
+        "$bus/acks/$id.json" 2>/dev/null || true)"
+      [[ -n "$read_at" ]] || read_at='-'
+    fi
+    jq -r --arg state "$state" --arg read "$read_at" \
+      '[$state, (.to[0:8]), $read, (.text | gsub("\n"; " ") | .[0:52])] | @tsv' "$file" \
+      | while IFS=$'\t' read -r a b c d; do printf '%-8s %-10s %-10s %s\n' "$a" "$b" "$c" "$d"; done
   done
   [[ "$any" -eq 1 ]] || echo "Nothing sent from this session."
 }

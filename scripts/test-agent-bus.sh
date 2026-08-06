@@ -125,9 +125,24 @@ as_a send branch-b "0012 not 0013" --kind correction 2>/dev/null
 ok "receipt starts unread"  "$(as_a sent)"          "UNREAD"
 ok "peer receives it"       "$(as_b inbox --drain)" "0012 not 0013"
 ok "kind is carried"        "$(as_b sent)"          "STATE"
-ok "receipt flips to read"  "$(as_a sent)"          "read"
-no "receipt no longer unread" "$(as_a sent)"        "UNREAD"
+SENT="$(as_a sent)"
+ok "receipt flips to read"    "$SENT"               "read"
+no "receipt no longer unread" "$SENT"               "UNREAD"
 ok "no redelivery"          "$(as_b inbox)"         "Inbox empty."
+
+# The read time is the only field the ack stores, so a wall-clock stamp in the
+# output is what proves the receipt body is live data rather than a marker file.
+if [[ "$SENT" =~ [0-9][0-9]:[0-9][0-9]:[0-9][0-9] ]]; then
+  PASS=$((PASS + 1))
+else
+  fail "sent output carries no read time"
+fi
+
+# A receipt whose body is unreadable must still report the message as read.
+ACK_ID="$(jq -r .id "$BUS/outbox/$A"/*.json | head -1)"
+echo 'not json' > "$BUS/acks/$ACK_ID.json"
+ok "corrupt receipt still reads as delivered" "$(as_a sent)" "read"
+no "corrupt receipt shows no bogus time"      "$(as_a sent)" "99:99:99"
 
 log "addressing"
 ok "unknown peer rejected" "$(as_a send nosuchpeer hi 2>&1 || true)" "no peer matches"
