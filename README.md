@@ -82,8 +82,10 @@ Heading-grouped rules and idioms per stack — reference material, not runbooks.
 | [scripts/backup-postgres.sh](scripts/backup-postgres.sh)   | Verified, retained PostgreSQL backups for a Compose stack (cron)        |
 | [scripts/report-health.sh](scripts/report-health.sh)       | Daily dead-man health ping (reboot-required + unattended-upgrades + OOM check) |
 | [scripts/install-dotfiles.sh](scripts/install-dotfiles.sh) | Bootstrap shell config in a new Codespace or VM                        |
+| [scripts/agent-bus.sh](scripts/agent-bus.sh)               | Coordination bus for concurrent Claude Code sessions in one repo        |
 | [scripts/check-repo.sh](scripts/check-repo.sh)             | Repo self-check (links, shellcheck, README index, language, skills, compose, plugin, prose); `make check` |
 | [scripts/test-prune.sh](scripts/test-prune.sh)             | Fixture test for the prune skill's `prune-state.sh`; `make test-prune`  |
+| [scripts/test-agent-bus.sh](scripts/test-agent-bus.sh)     | Fixture test for `agent-bus.sh`; `make test-agent-bus`                  |
 | [scripts/md-to-epub.sh](scripts/md-to-epub.sh)             | Lint and render audiobook chapters into an ElevenReader EPUB           |
 | [scripts/check-terms.sh](scripts/check-terms.sh)           | Verify no audiobook term is used before the chapter that explains it   |
 
@@ -107,6 +109,7 @@ dotfiles.
 | Global Claude instructions | [claude/CLAUDE.md](claude/CLAUDE.md)                                   |
 | Claude settings + hooks    | [claude/settings.json](claude/settings.json)                           |
 | Status line script         | [claude/statusline.sh](claude/statusline.sh)                           |
+| Concurrent-session bus     | [scripts/agent-bus.sh](scripts/agent-bus.sh), [.claude/skills/parallel-sessions/SKILL.md](.claude/skills/parallel-sessions/SKILL.md) |
 | Repo self-check            | [Makefile](Makefile) (`make check`)                                    |
 | Dotfiles entrypoint        | [install.sh](install.sh)                                               |
 | Repo devcontainer          | [.devcontainer/devcontainer.json](.devcontainer/devcontainer.json)     |

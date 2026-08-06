@@ -41,7 +41,17 @@ then present exactly four options and execute the one chosen.
    GIT_COMMON=$(cd "$(git rev-parse --git-common-dir)" && pwd -P)
    ```
 
-4. **Present exactly these four options** — no open-ended "what next?":
+4. **Check for concurrent sessions before offering to integrate.**
+
+   ```bash
+   ~/.claude/agent-bus.sh radar
+   ```
+
+   - A peer session working in this repo makes landing a coordination step, not a
+     local one — see [../parallel-sessions/SKILL.md](../parallel-sessions/SKILL.md).
+   - Settle the landing order over the bus first, then continue.
+
+5. **Present exactly these four options** — no open-ended "what next?":
 
    ```
    Tests pass. What would you like to do with this branch?
@@ -52,7 +62,7 @@ then present exactly four options and execute the one chosen.
    4. Discard this work
    ```
 
-5. **Execute the chosen option only:**
+6. **Execute the chosen option only:**
 
    - **Option 1, merge locally (plain checkout)** — checkout `<base-branch>`, `git pull`, merge
      the feature branch.
@@ -81,7 +91,7 @@ then present exactly four options and execute the one chosen.
    - In a linked worktree, remove the worktree first (`git worktree remove <path>`).
    - Then delete the branch from the main checkout (`git -C "$MAIN" branch -D <feature-branch>`).
 
-6. **Handle the plan file** — `docs/plans/plan-<slug>.md`, when the branch implemented one:
+7. **Handle the plan file** — `docs/plans/plan-<slug>.md`, when the branch implemented one:
 
    | Option | Plan file |
    | --- | --- |

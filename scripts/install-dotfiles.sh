@@ -8,7 +8,8 @@
 #
 # What it does:
 #   1. Symlinks .bash_aliases and .tmux.conf into $HOME
-#   2. Symlinks Claude Code config (global CLAUDE.md, settings, agents, skills)
+#   2. Symlinks Claude Code config (global CLAUDE.md, settings, agents, skills,
+#      agent-bus.sh — the global hooks in settings.json call it by that path)
 #   3. Creates the handbook-plugin opt-out in adopted /workspaces repos
 #   4. Sets git config defaults (pull.rebase, push.autoSetupRemote, etc.)
 #   5. Installs gh CLI if missing (binary to ~/.local/bin, no sudo)
@@ -53,6 +54,7 @@ declare -A CLAUDE_LINKS=(
   ["claude/CLAUDE.md"]=".claude/CLAUDE.md"
   ["claude/settings.json"]=".claude/settings.json"
   ["claude/statusline.sh"]=".claude/statusline.sh"
+  ["scripts/agent-bus.sh"]=".claude/agent-bus.sh"
   [".claude/agents"]=".claude/agents"
   [".claude/skills"]=".claude/skills"
 )

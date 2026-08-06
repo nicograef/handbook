@@ -54,6 +54,7 @@
 | End-of-session retrospective; harvest learnings into memory, rules, skills, docs, tooling | [Reflect](reflect/)                                          |
 | Deleting stale agent state: old sessions, stale memories, outdated rules, repo leftovers | [Prune](prune/)                                              |
 | Running independent subagents in parallel                                                | [Dispatching Parallel Agents](dispatching-parallel-agents/)  |
+| Coordinating with other Claude Code sessions running concurrently in the same repo       | [Parallel Sessions](parallel-sessions/)                      |
 
 ## Adding a New Skill
 

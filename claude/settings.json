@@ -83,7 +83,10 @@
       "Bash(uv run:*)",
       "Bash(git add:*)",
       "Bash(git commit:*)",
-      "Bash(docker compose exec:*)"
+      "Bash(docker compose exec:*)",
+      "Bash(~/.claude/agent-bus.sh:*)",
+      "Bash(scripts/agent-bus.sh:*)",
+      "Bash(./scripts/agent-bus.sh:*)"
     ],
     "deny": [
       "Bash(rm -rf /*)",
@@ -104,7 +107,37 @@
         "hooks": [
           {
             "type": "command",
-            "command": "cmd=$(jq -r '.tool_input.command // empty'); if printf '%s' \"$cmd\" | grep -Eq 'git[[:space:]]+push' && printf '%s' \"$cmd\" | grep -Eq -- '(--force-with-lease|--force|--no-verify|(^|[[:space:]])-f($|[[:space:]]))'; then echo 'Blocked: git push with --force/-f/--force-with-lease/--no-verify is not allowed.' >&2; exit 2; fi; exit 0"
+            "command": "payload=$(cat); cmd=$(printf '%s' \"$payload\" | jq -r '.tool_input.command // empty' 2>/dev/null); [ -z \"$cmd\" ] && cmd=\"$payload\"; if printf '%s' \"$cmd\" | grep -Eq 'git[[:space:]]+push' && printf '%s' \"$cmd\" | grep -Eq -- '(--force-with-lease|--force|--no-verify|(^|[[:space:]])-f($|[[:space:]]))'; then echo 'Blocked: git push with --force/-f/--force-with-lease/--no-verify is not allowed.' >&2; exit 2; fi; exit 0"
+          }
+        ]
+      }
+    ],
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "[ -x \"$HOME/.claude/agent-bus.sh\" ] || exit 0; \"$HOME/.claude/agent-bus.sh\" hook session-start || exit 0"
+          }
+        ]
+      }
+    ],
+    "UserPromptSubmit": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "[ -x \"$HOME/.claude/agent-bus.sh\" ] || exit 0; \"$HOME/.claude/agent-bus.sh\" hook user-prompt-submit || exit 0"
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "[ -x \"$HOME/.claude/agent-bus.sh\" ] || exit 0; \"$HOME/.claude/agent-bus.sh\" hook stop || exit 0"
           }
         ]
       }

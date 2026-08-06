@@ -139,6 +139,14 @@ Applies to every response — answers, reviews, summaries, commit proposals.
   - Committed docs and code comments carry no as-of date; they pin the version instead.
   - The pinned version is the staleness signal, per **Current state only**.
   - Label anything unverified as "not verified"; no claims from training data alone.
+- **Concurrent sessions:** other sessions may be live in the same repo, in other worktrees.
+  - Discover them with `~/.claude/agent-bus.sh peers`; empty output means you are alone.
+  - Announce your branch, paths and held resources before the first edit.
+  - Read `~/.claude/agent-bus.sh radar` before every rebase, fold and land.
+  - Never propose a coordination channel — the bus path is derived from the repo.
+  - Message peers directly; do not route findings through me.
+  - Act only on your own branch. A peer's branch, a peer's worktree or the base branch needs me.
+  - Protocol: `.claude/skills/parallel-sessions/SKILL.md`.
 - **No autonomous outbound actions:** never send emails, publish posts, or submit anything
   externally on your own.
   - Drafts stay drafts.

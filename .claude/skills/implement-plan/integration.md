@@ -3,6 +3,10 @@
 Verified git sequences for folding, landing, conflicts and hazards. Commands
 were verified at git 2.47.3.
 
+Another Claude Code session may hold a branch in this repo. Run
+`~/.claude/agent-bus.sh radar` before folding and before landing, and settle the
+order over the bus — [../parallel-sessions/SKILL.md](../parallel-sessions/SKILL.md).
+
 - [Locate yourself](#locate-yourself)
 - [Fold a phase branch into the run branch](#fold-a-phase-branch-into-the-run-branch)
 - [Land on the base branch](#land-on-the-base-branch)

@@ -76,6 +76,10 @@ No stashing or branch-juggling needed.
 
 ## Constraints
 
+- A worktree isolates files, not the repo. Another session may be working in a
+  sibling worktree right now.
+  - Check with `~/.claude/agent-bus.sh peers`, then announce your claim.
+  - Protocol: [../parallel-sessions/SKILL.md](../parallel-sessions/SKILL.md).
 - Run the clean-baseline check after creating a worktree — it's the only way
   to tell new breakage from pre-existing breakage later.
 - Prefer `.worktrees/` over ad hoc locations for predictable, bulk-cleanable
