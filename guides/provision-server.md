@@ -103,6 +103,9 @@ sudo unattended-upgrade --dry-run --debug 2>&1 | grep -i 'allowed origins'
 # apt's periodic update/upgrade timers are active
 systemctl list-timers 'apt-daily*' --no-pager
 
+# swap is active, so the kernel has a reclaim path instead of only the OOM killer
+swapon --show
+
 # the daily health-ping cron entry is installed
 cat /etc/cron.d/report-health
 ```

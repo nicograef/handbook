@@ -77,10 +77,10 @@ Heading-grouped rules and idioms per stack — reference material, not runbooks.
 
 | Script                                                     | Description                                                            |
 | ---------------------------------------------------------- | ---------------------------------------------------------------------- |
-| [scripts/setup-server.sh](scripts/setup-server.sh)         | Provision a fresh Debian/Ubuntu VPS (user, SSH, UFW, fail2ban, Docker) |
+| [scripts/setup-server.sh](scripts/setup-server.sh)         | Provision a fresh Debian/Ubuntu VPS (user, SSH, swap, UFW, fail2ban, Docker) |
 | [scripts/prod-init.sh](scripts/prod-init.sh)               | First-time production deploy (cert request + stack start)              |
 | [scripts/backup-postgres.sh](scripts/backup-postgres.sh)   | Verified, retained PostgreSQL backups for a Compose stack (cron)        |
-| [scripts/report-health.sh](scripts/report-health.sh)       | Daily dead-man health ping (reboot-required + unattended-upgrades check) |
+| [scripts/report-health.sh](scripts/report-health.sh)       | Daily dead-man health ping (reboot-required + unattended-upgrades + OOM check) |
 | [scripts/install-dotfiles.sh](scripts/install-dotfiles.sh) | Bootstrap shell config in a new Codespace or VM                        |
 | [scripts/check-repo.sh](scripts/check-repo.sh)             | Repo self-check (links, shellcheck, README index, language, skills, compose, plugin, prose); `make check` |
 | [scripts/test-prune.sh](scripts/test-prune.sh)             | Fixture test for the prune skill's `prune-state.sh`; `make test-prune`  |

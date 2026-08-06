@@ -24,6 +24,7 @@ EXTRA_UFW_PORTS="${EXTRA_UFW_PORTS:-80/tcp 443/tcp}"  # space-separated
 PASSWORDLESS_SUDO="${PASSWORDLESS_SUDO:-false}"  # "true" grants NOPASSWD sudo (convenience over prompts)
 USER_PASSWORD="${USER_PASSWORD:-}"               # required unless PASSWORDLESS_SUDO=true; enables sudo prompts
 HEALTH_PING_URL="${HEALTH_PING_URL:-}"           # optional: daily dead-man health-ping URL (e.g. a Better Stack heartbeat)
+SWAP_SIZE_GB="${SWAP_SIZE_GB:-auto}"             # swapfile size in GB; "auto" = RAM capped at 8; "0" skips swap
 DRY_RUN="${DRY_RUN:-false}"                      # set to "true" or pass --dry-run
 # ─────────────────────────────────────────────────────────────────────────────
 
@@ -87,7 +88,51 @@ run apt dist-upgrade -y
 run apt install -y \
   curl wget git make vim unzip \
   ca-certificates gnupg \
+  jq lsof \
   ufw fail2ban
+
+# ── 1b. Swap ────────────────────────────────────────────────────────────────
+# A stock VPS image ships with no swap, which leaves the kernel no reclaim path:
+# under memory pressure its only move is to kill the largest process. That is how
+# a box loses every session at once rather than one — the OOM killer lands on the
+# user manager's dbus, systemd stops user@.service, and every process in its slice
+# (every tmux server included) goes with it.
+log "Configuring swap"
+if [[ "$SWAP_SIZE_GB" == "0" ]]; then
+  echo "  SWAP_SIZE_GB=0 — skipping swap by request."
+elif [[ "$(awk 'NR > 1' /proc/swaps | wc -l)" -gt 0 ]]; then
+  echo "  Swap is already active — leaving it alone."
+elif [[ -e /swapfile ]]; then
+  echo "  /swapfile exists but is not active — leaving it alone."
+else
+  if [[ "$SWAP_SIZE_GB" == "auto" ]]; then
+    # Match RAM, capped at 8 GB: enough to absorb a spike, never so much that a
+    # runaway thrashes the disk for an hour before the OOM killer settles it.
+    ram_gb="$(awk '/^MemTotal:/ { printf "%d", ($2 + 1048575) / 1048576 }' /proc/meminfo)"
+    SWAP_SIZE_GB=$(( ram_gb < 8 ? ram_gb : 8 ))
+    (( SWAP_SIZE_GB >= 1 )) || SWAP_SIZE_GB=1
+  fi
+  log "Creating a ${SWAP_SIZE_GB}G swapfile"
+  # fallocate can leave an extent layout swapon refuses on some filesystems; dd is
+  # slower and always produces a file swapon accepts.
+  run bash -c "fallocate -l ${SWAP_SIZE_GB}G /swapfile \
+    || dd if=/dev/zero of=/swapfile bs=1M count=$(( SWAP_SIZE_GB * 1024 )) status=none"
+  run chmod 600 /swapfile
+  run mkswap /swapfile
+  run swapon /swapfile
+  grep -q '^/swapfile ' /etc/fstab 2>/dev/null \
+    || run bash -c "echo '/swapfile none swap sw 0 0' >> /etc/fstab"
+fi
+
+# A tmpfs /tmp is RAM, and systemd's tmp.mount sizes it at half of it. Everything
+# written there — build caches, virtualenvs, git worktrees, downloads — is memory
+# that cannot be evicted, which on a CI or agent box is gigabytes. Report it and
+# leave it: moving /tmp to disk makes it survive a reboot, and that is a behaviour
+# change the operator should choose.
+if findmnt -no FSTYPE /tmp 2>/dev/null | grep -q tmpfs; then
+  echo "  NOTE: /tmp is a tmpfs — everything written there is RAM."
+  echo "        For build or agent workloads: systemctl mask tmp.mount && reboot"
+fi
 
 # ── 2. Create non-root user ─────────────────────────────────────────────────
 log "Creating user '$USERNAME'"
@@ -313,6 +358,11 @@ else
   echo "  Sudo:     password-prompted"
 fi
 echo "  SSH:      key-only, root login disabled"
+if [[ "$(awk 'NR > 1' /proc/swaps | wc -l)" -gt 0 ]]; then
+  echo "  Swap:     $(awk 'NR > 1 { printf "%s (%d MB)", $1, $3 / 1024 }' /proc/swaps)"
+else
+  echo "  Swap:     none — the kernel has no reclaim path under memory pressure"
+fi
 echo "  Firewall: UFW active (ssh + ${EXTRA_UFW_PORTS:-no extra ports})"
 echo "  fail2ban: active"
 echo "  Docker:   $(docker --version 2>/dev/null || echo 'not installed (dry-run)')"

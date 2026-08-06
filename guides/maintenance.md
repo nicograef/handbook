@@ -113,7 +113,7 @@
    didn't come up — check `docker compose -f docker-compose.prod.yml logs
    reverse-proxy`.
 
-## Disk and service checks (monthly)
+## Disk, memory and service checks (monthly)
 
 1. **Disk headroom.** Threshold: **act when the stack's filesystem is ≥ 80 %
    used**.
@@ -129,7 +129,21 @@
    Expected: the `/` row's `Use%` is **under 80 %**. At or above, take action the
    same day.
 
-2. **Docker's share of the disk** — images, containers, volumes, build cache:
+2. **Swap exists, and `/tmp` is not eating RAM.** A box with no swap has no
+   reclaim path. Under pressure the kernel's only move is to kill the largest
+   process. A tmpfs `/tmp` makes it worse — those pages are RAM, and without
+   swap they cannot be evicted at all.
+
+   ```bash
+   free -h && findmnt -no FSTYPE,SIZE,USED /tmp
+   ```
+
+   Expected: a non-zero `Swap` row, and `/tmp` **absent from `findmnt`** (it is a
+   plain directory on disk). A `tmpfs` line means every byte written to `/tmp` —
+   build caches, virtualenvs, git worktrees — is memory. `shared` in `free` is the
+   running total of it. Fix: `sudo systemctl mask tmp.mount` and reboot.
+
+3. **Docker's share of the disk** — images, containers, volumes, build cache:
 
    ```bash
    docker system df
@@ -140,7 +154,7 @@
    (see [image updates](#image-updates-every-deploy)); `postgres-data` under
    `Local Volumes` is **not** reclaimable and must stay.
 
-3. **No failed systemd units:**
+4. **No failed systemd units:**
 
    ```bash
    systemctl --failed
@@ -149,7 +163,7 @@
    Expected: `0 loaded units listed.` Any listed unit is a regression to
    investigate (often `fail2ban` or a timer).
 
-4. **fail2ban is active and jailing SSH:**
+5. **fail2ban is active and jailing SSH:**
 
    ```bash
    sudo systemctl is-active fail2ban && sudo fail2ban-client status sshd
@@ -159,7 +173,7 @@
    `Total banned`, …). A non-zero `Total banned` is normal on a public box.
    (Jail config: [provision-server.md](provision-server.md).)
 
-5. **UFW is up and rate-limiting SSH:**
+6. **UFW is up and rate-limiting SSH:**
 
    ```bash
    sudo ufw status verbose
@@ -167,6 +181,45 @@
 
    Expected: `Status: active`, `Default: deny (incoming)`, a `22/tcp  LIMIT`
    rule, and the `80,443/tcp` rules the app needs.
+
+## After an OOM kill
+
+Processes vanish, nothing is logged as failed, and `uptime` shows no reboot.
+
+The kernel's own report is usually unreadable — `dmesg_restrict=1` on Debian, and
+a user outside `adm`/`systemd-journal` sees no kernel lines. Three readings settle
+it without root.
+
+1. **Confirm it was an OOM, and whether a limit or the whole box ran out:**
+
+   ```bash
+   cat /sys/fs/cgroup/user.slice/user-$(id -u).slice/memory.events
+   ```
+
+   `oom_kill` counts the kills since boot. `max 0` and `high 0` beside a non-zero
+   `oom_kill` mean **no cgroup limit was hit**. The machine itself ran out, so the
+   fix is swap or less load.
+
+2. **Find which unit died, and how big it got.** systemd writes a high-water mark
+   when a scope exits, and it outlives every process in it:
+
+   ```bash
+   journalctl --since '1 day ago' | grep -E 'OOM killer|oom-kill|memory peak'
+   ```
+
+   The `Consumed … memory peak …` line names the culprit — one scope's peak against
+   the machine's total is usually the whole diagnosis.
+
+3. **Check whether the user manager itself died**, which is what turns one kill
+   into the loss of every session:
+
+   ```bash
+   systemctl show user@$(id -u).service -p MainPID -p ActiveEnterTimestamp
+   ```
+
+   A start timestamp later than the kill means the manager was replaced.
+   Everything in its slice went with it; [tmux.md](../cheatsheets/tmux.md) has
+   the lingering that prevents this.
 
 ## Restore drill (quarterly)
 
