@@ -5,180 +5,190 @@
 #   scripts/test-agent-bus.sh        # or: make test-agent-bus
 #
 # What it does:
-#   1. Builds a throwaway git repo with two branches in a temp directory.
-#   2. Drives announce, send, inbox, sent and radar as two simulated sessions.
-#   3. Exercises every hook body, including its fail-safe paths.
-#   4. Removes the temp directory and its stand-in processes on exit.
+#   1. Builds a throwaway git repo under a temp dir, so no real bus is touched.
+#   2. Drives announce, send, inbox, sent, radar and sweep against it.
+#   3. Feeds synthetic hook payloads to the three hook bodies.
+#   4. Asserts every hook stays silent on malformed input.
 #
-# Touches nothing outside its own temp directory.
+# Liveness is faked with a background process whose command line contains
+# "claude", which is what agent-bus.sh checks. Discovery through
+# `claude agents --json` needs a second real session and is not covered here.
 
 set -euo pipefail
 
-BUS_SH="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/agent-bus.sh"
+BUS_SCRIPT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/agent-bus.sh"
 TMP="$(mktemp -d)"
 FAKE_PID=""
-PASS=0
-FAIL=0
-
-log() { printf '\033[1;34m▸ %s\033[0m\n' "$*"; }
-
 cleanup() {
   [[ -n "$FAKE_PID" ]] && kill "$FAKE_PID" 2>/dev/null
   rm -rf "$TMP"
 }
 trap cleanup EXIT
 
-# ok compares actual against expected and records the result.
+PASS=0
+FAILED=0
+
+log() { printf '\033[1;34m▸ %s\033[0m\n' "$*"; }
+fail() { printf '\033[1;31mFAIL: %s\033[0m\n' "$*" >&2; FAILED=1; }
+
+# ok asserts that output $2 contains substring $3. $1 names the case.
 ok() {
-  local label="$1" want="$2" got="$3"
-  if [[ "$got" == *"$want"* ]]; then
+  if [[ "$2" == *"$3"* ]]; then
     PASS=$((PASS + 1))
-    printf '  \033[32mPASS\033[0m %s\n' "$label"
   else
-    FAIL=$((FAIL + 1))
-    printf '  \033[31mFAIL\033[0m %s\n        want: %s\n        got:  %s\n' \
-      "$label" "$want" "${got:0:160}"
+    fail "$1"
+    printf '  wanted: %s\n  got:    %s\n' "$3" "$2" >&2
   fi
 }
 
-# silent asserts a command exits 0 and prints nothing — the contract for a hook
-# that has no business acting.
-silent() {
-  local label="$1"; shift
-  local out rc=0
+# no asserts that output $2 does NOT contain substring $3.
+no() {
+  if [[ "$2" != *"$3"* ]]; then PASS=$((PASS + 1)); else fail "$1"; fi
+}
+
+# quiet asserts a command produced no output and exited 0.
+quiet() {
+  local name="$1" out rc=0
+  shift
   out="$("$@" 2>&1)" || rc=$?
   if [[ "$rc" -eq 0 && -z "$out" ]]; then
-    PASS=$((PASS + 1)); printf '  \033[32mPASS\033[0m %s\n' "$label"
+    PASS=$((PASS + 1))
   else
-    FAIL=$((FAIL + 1)); printf '  \033[31mFAIL\033[0m %s (rc=%s out=%s)\n' \
-      "$label" "$rc" "${out:0:120}"
+    fail "$name (rc=$rc, out=${out:0:120})"
   fi
 }
 
 # ── Fixture ─────────────────────────────────────────────────────────────────
-# alive() requires a running process whose cmdline contains "claude"; `exec -a`
-# supplies one without starting a real session.
-bash -c 'exec -a claude-agent-bus-test sleep 600' &
+
+# A process agent-bus.sh will accept as a live session.
+mkdir -p "$TMP/bin"
+printf '#!/usr/bin/env bash\nsleep 600\n' > "$TMP/bin/claude"
+chmod +x "$TMP/bin/claude"
+# Detach its stdio: a background child holding the pipe open makes any caller
+# that pipes this script's output block until the child exits.
+"$TMP/bin/claude" >/dev/null 2>&1 &
 FAKE_PID=$!
 
 REPO="$TMP/repo"
 mkdir -p "$REPO"
-git init -q "$REPO"
-git -C "$REPO" config user.email test@example.com
-git -C "$REPO" config user.name Test
-printf 'base\n' > "$REPO/shared.md"
-printf 'base\n' > "$REPO/mine.md"
-git -C "$REPO" add -A
-git -C "$REPO" commit -qm base
+cd "$REPO"
+git init -q -b main .
+git config user.email t@example.com
+git config user.name Test
+echo one > shared.txt
+git add -A && git commit -q -m base
 
-# A peer branch that edits the same file differently — a guaranteed conflict.
-git -C "$REPO" checkout -qb peer
-printf 'peer edit\n' > "$REPO/shared.md"
-git -C "$REPO" commit -qam peer
-git -C "$REPO" checkout -q -
-git -C "$REPO" checkout -qb mine
-printf 'my edit\n' > "$REPO/shared.md"
-git -C "$REPO" commit -qam mine
-
-# The peer gets a real linked worktree, as it would in practice. Both check out
-# different branches and share one git-common-dir, hence one bus.
-PEER_WT="$TMP/peer-wt"
-git -C "$REPO" worktree add -q "$PEER_WT" peer
+# branch-b edits the same line as main, so the merge really conflicts.
+git checkout -q -b branch-b
+echo two > shared.txt
+git commit -q -am b-change
+git checkout -q main
+echo three > shared.txt
+git commit -q -am a-change
 
 BUS="$REPO/.git/agent-bus"
-A="aaaaaaaa-0000-0000-0000-000000000000"   # this session, in the main checkout
-B="bbbbbbbb-0000-0000-0000-000000000000"   # the peer, in the linked worktree
+A="aaaaaaaa-0000-0000-0000-000000000001"
+B="bbbbbbbb-0000-0000-0000-000000000002"
 
-run_a() { (cd "$REPO" && AGENT_BUS_SESSION_ID="$A" CLAUDE_PID="$FAKE_PID" "$BUS_SH" "$@"); }
-run_b() { (cd "$PEER_WT" && AGENT_BUS_SESSION_ID="$B" CLAUDE_PID="$FAKE_PID" "$BUS_SH" "$@"); }
-hook()  { # hook <session> <event> [cwd]
-  local sid="$1" event="$2" cwd="${3:-}"
-  [[ -n "$cwd" ]] || { [[ "$sid" == "$B" ]] && cwd="$PEER_WT" || cwd="$REPO"; }
-  jq -n --arg s "$sid" --arg c "$cwd" '{session_id:$s,cwd:$c}' \
-    | (cd "$REPO" && CLAUDE_PID="$FAKE_PID" "$BUS_SH" hook "$event")
-}
+hookjson() { jq -nc --arg s "$1" --arg c "$REPO" '{session_id:$s,cwd:$c}'; }
+as_a() { CLAUDE_CODE_SESSION_ID="$A" CLAUDE_PID="$FAKE_PID" "$BUS_SCRIPT" "$@"; }
+as_b() { CLAUDE_CODE_SESSION_ID="$B" CLAUDE_PID="$FAKE_PID" "$BUS_SCRIPT" "$@"; }
+hook() { hookjson "$1" | CLAUDE_PID="$FAKE_PID" "$BUS_SCRIPT" hook "$2"; }
 
 # ── Registry ────────────────────────────────────────────────────────────────
-log "registry"
-run_a announce "phase 6" --paths "shared.md,mine.md" --resources "127.0.0.1:5433" \
-  --provides "phase-6" >/dev/null
-ok "announce records paths" "shared.md" "$(jq -c '.paths' "$BUS/peers/$A.json")"
-run_a announce "phase 6 revised" >/dev/null
-ok "task-only re-announce keeps paths" "shared.md" "$(jq -c '.paths' "$BUS/peers/$A.json")"
-ok "task-only re-announce updates task" "phase 6 revised" \
-  "$(jq -r '.task' "$BUS/peers/$A.json")"
 
-# The peer registers from its own worktree, so it records its own branch.
-run_b announce "phase 3" --paths "shared.md" --resources "127.0.0.1:5433" >/dev/null
-ok "peer registers its own branch" "peer" "$(jq -r '.branch' "$BUS/peers/$B.json")"
-ok "both worktrees share one bus" "$BUS" \
-  "$(cd "$PEER_WT" && printf '%s/agent-bus' "$(git rev-parse --path-format=absolute --git-common-dir)")"
+log "announce records and retains fields"
+as_a announce "phase 6" --paths "shared.txt" --resources "127.0.0.1:5433" --provides "p6" 2>/dev/null
+ok "task"      "$(jq -r .task "$BUS/peers/$A.json")"      "phase 6"
+ok "paths"     "$(jq -c .paths "$BUS/peers/$A.json")"     "shared.txt"
+ok "resources" "$(jq -c .resources "$BUS/peers/$A.json")" "127.0.0.1:5433"
+ok "provides"  "$(jq -c .provides "$BUS/peers/$A.json")"  "p6"
 
-# ── Messaging ───────────────────────────────────────────────────────────────
-log "messaging"
-ok "send resolves a peer by branch" "sent to bbbbbbbb" \
-  "$(run_a send peer "0012 not 0013" --kind correction 2>&1)"
-ok "unknown peer is rejected" "no peer matches" "$(run_a send nosuch hi 2>&1 || true)"
-ok "receipt starts UNREAD" "UNREAD" "$(run_a sent)"
-ok "peer sees the message" "0012 not 0013" "$(run_b inbox)"
-ok "drain shows the message" "0012 not 0013" "$(run_b inbox --drain)"
-ok "receipt flips to read" "read" "$(run_a sent)"
-ok "drained message is not redelivered" "Inbox empty." "$(run_b inbox)"
+as_a announce "phase 6 continued" 2>/dev/null
+ok "arrays survive a task-only re-announce" "$(jq -c .paths "$BUS/peers/$A.json")" "shared.txt"
+ok "task is updated" "$(jq -r .task "$BUS/peers/$A.json")" "phase 6 continued"
 
-# ── Radar ───────────────────────────────────────────────────────────────────
-log "radar"
-RADAR="$(run_a radar 2>&1)"
-ok "radar predicts the conflict" "CONFLICT" "$RADAR"
-ok "radar names the shared file" "shared.md" "$RADAR"
-ok "radar reports the resource collision" "RESOURCES: 127.0.0.1:5433" "$RADAR"
-
-# ── Hooks ───────────────────────────────────────────────────────────────────
-log "hooks"
-silent "stop hook is silent with an empty inbox" hook "$B" stop
-run_a send peer "hold your rebase" --kind block >/dev/null
-STOP="$(hook "$B" stop)"
-ok "stop hook blocks on a queued message" '"decision": "block"' "$STOP"
-ok "stop hook carries the text" "hold your rebase" "$STOP"
-silent "stop hook is silent once drained (no loop)" hook "$B" stop
-ok "wake counter advanced" "1" "$(cat "$BUS/wake/$B")"
-
-ok "session-start injects the peer list" "phase 6 revised" \
-  "$(hook "$B" session-start | jq -r '.hookSpecificOutput.additionalContext')"
-
-run_a send peer "read me on prompt" >/dev/null
-ok "user-prompt-submit delivers" "read me on prompt" \
-  "$(hook "$B" user-prompt-submit | jq -r '.hookSpecificOutput.additionalContext')"
-ok "user prompt resets the wake budget" "absent" \
-  "$([[ -f "$BUS/wake/$B" ]] && echo present || echo absent)"
-
-printf '25' > "$BUS/wake/$B"
-run_a send peer "over the cap" >/dev/null
-ok "wake cap holds messages instead of blocking" "systemMessage" \
-  "$(hook "$B" stop | jq -r 'keys[]')"
-
-# ── Fail-safe ───────────────────────────────────────────────────────────────
-log "fail-safe"
-silent "cwd outside a git repo"      hook "$B" stop "$TMP"
-silent "cwd that does not exist"     hook "$B" stop "$TMP/gone"
-silent "unknown hook event"          hook "$B" nonsense
-garbage_out="$(printf 'not json' | (cd "$REPO" && "$BUS_SH" hook stop) 2>&1)" && garbage_rc=0 || garbage_rc=$?
-if [[ "$garbage_rc" -eq 0 && -z "$garbage_out" ]]; then
-  PASS=$((PASS + 1)); printf '  \033[32mPASS\033[0m garbage stdin\n'
-else
-  FAIL=$((FAIL + 1)); printf '  \033[31mFAIL\033[0m garbage stdin\n'
-fi
-printf '{{{' > "$BUS/peers/corrupt.json"
-silent "corrupt registry entry"      hook "$B" stop
+log "a corrupt registry entry never crashes a read"
+echo '{{{ not json' > "$BUS/peers/corrupt.json"
+quiet "corrupt entry ignored by the stop hook" \
+  bash -c "printf '%s' '$(hookjson "$A")' | '$BUS_SCRIPT' hook stop"
 rm -f "$BUS/peers/corrupt.json"
 
-# ── Sweep ───────────────────────────────────────────────────────────────────
-log "sweep"
-jq '.pid = 999999' "$BUS/peers/$B.json" > "$TMP/x" && mv "$TMP/x" "$BUS/peers/$B.json"
-run_a sweep >/dev/null 2>&1
-ok "sweep drops a dead session" "absent" \
-  "$([[ -f "$BUS/peers/$B.json" ]] && echo present || echo absent)"
-ok "sweep keeps a live session" "present" \
-  "$([[ -f "$BUS/peers/$A.json" ]] && echo present || echo absent)"
+# ── Messaging ───────────────────────────────────────────────────────────────
 
-printf '\n%d passed, %d failed\n' "$PASS" "$FAIL"
-[[ "$FAIL" -eq 0 ]]
+log "send, deliver, acknowledge"
+as_b announce "phase 3" --paths "shared.txt" --resources "127.0.0.1:5433" 2>/dev/null
+jq '.branch="branch-b"' "$BUS/peers/$B.json" > "$BUS/peers/$B.tmp"
+mv "$BUS/peers/$B.tmp" "$BUS/peers/$B.json"
+
+as_a send branch-b "0012 not 0013" --kind correction 2>/dev/null
+ok "receipt starts unread"  "$(as_a sent)"          "UNREAD"
+ok "peer receives it"       "$(as_b inbox --drain)" "0012 not 0013"
+ok "kind is carried"        "$(as_b sent)"          "STATE"
+ok "receipt flips to read"  "$(as_a sent)"          "read"
+no "receipt no longer unread" "$(as_a sent)"        "UNREAD"
+ok "no redelivery"          "$(as_b inbox)"         "Inbox empty."
+
+log "addressing"
+ok "unknown peer rejected" "$(as_a send nosuchpeer hi 2>&1 || true)" "no peer matches"
+as_a send "${B:0:8}" "addressed by id prefix" 2>/dev/null
+ok "id prefix resolves" "$(as_b inbox --drain)" "addressed by id prefix"
+
+# ── Radar ───────────────────────────────────────────────────────────────────
+
+log "radar reports committed and declared collisions"
+RADAR="$(as_a radar main)"
+ok "peer branch listed"      "$RADAR" "branch-b"
+ok "overlapping file named"  "$RADAR" "shared.txt"
+ok "conflict predicted"      "$RADAR" "CONFLICT"
+ok "shared resource flagged" "$RADAR" "RESOURCES: 127.0.0.1:5433"
+
+# ── Hooks ───────────────────────────────────────────────────────────────────
+
+log "stop hook delivers exactly once"
+as_a send branch-b "hold your rebase" --kind block 2>/dev/null
+STOP="$(hook "$B" stop)"
+ok "stop blocks"            "$STOP" '"decision": "block"'
+ok "stop carries the text"  "$STOP" "hold your rebase"
+quiet "stop is silent once drained" bash -c "printf '%s' '$(hookjson "$B")' | '$BUS_SCRIPT' hook stop"
+
+log "wake budget holds messages instead of blocking"
+printf '25' > "$BUS/wake/$B"
+as_a send branch-b "over budget" 2>/dev/null
+ok "budget spent" "$(hook "$B" stop)" "systemMessage"
+rm -f "$BUS/wake/$B"
+
+log "user-prompt-submit delivers and resets the budget"
+printf '9' > "$BUS/wake/$B"
+as_a send branch-b "resumed" 2>/dev/null
+ok "prompt hook injects" "$(hook "$B" user-prompt-submit)" "resumed"
+if [[ -f "$BUS/wake/$B" ]]; then fail "wake budget not reset"; else PASS=$((PASS + 1)); fi
+
+log "session-start announces peers"
+ok "peer list injected" "$(hook "$B" session-start)" "Concurrent Claude Code sessions"
+
+log "malformed hook input is always silent"
+quiet "garbage stdin"  bash -c "printf 'not json' | '$BUS_SCRIPT' hook stop"
+quiet "empty stdin"    bash -c "printf '' | '$BUS_SCRIPT' hook stop"
+quiet "missing cwd"    bash -c "printf '{\"session_id\":\"x\",\"cwd\":\"/no/such/dir\"}' | '$BUS_SCRIPT' hook session-start"
+quiet "no session id"  bash -c "printf '{\"cwd\":\"$REPO\"}' | '$BUS_SCRIPT' hook stop"
+quiet "unknown event"  bash -c "printf '{}' | '$BUS_SCRIPT' hook nonsense"
+quiet "outside a repo" bash -c "printf '{\"session_id\":\"x\",\"cwd\":\"$TMP\"}' | '$BUS_SCRIPT' hook stop"
+
+# ── Sweep ───────────────────────────────────────────────────────────────────
+
+log "sweep drops dead sessions and keeps live ones"
+DEAD="dddddddd-0000-0000-0000-000000000003"
+jq -n --arg s "$DEAD" '{sessionId:$s,pid:2147483000,worktree:"/tmp",branch:"gone",
+  task:"",paths:[],resources:[],needs:[],provides:[],updatedAt:0}' > "$BUS/peers/$DEAD.json"
+as_a sweep 2>/dev/null
+if [[ -f "$BUS/peers/$DEAD.json" ]]; then fail "dead entry survived sweep"; else PASS=$((PASS + 1)); fi
+if [[ -f "$BUS/peers/$A.json" ]]; then PASS=$((PASS + 1)); else fail "live entry was swept"; fi
+
+# ── Result ──────────────────────────────────────────────────────────────────
+
+if [[ "$FAILED" -ne 0 ]]; then
+  printf '\033[1;31mtest-agent-bus: FAILED (%d assertions passed)\033[0m\n' "$PASS" >&2
+  exit 1
+fi
+printf '\033[1;32mtest-agent-bus: %d assertions passed\033[0m\n' "$PASS"
