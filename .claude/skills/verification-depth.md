@@ -66,6 +66,11 @@ defect found late costs more than the check costs now.
 - Any rule with a mechanical shape is a script, never a reviewer.
 - Report the class beside its new gate. A fix alone leaves the class alive.
 - A probe that keeps re-finding what a grep would catch is the review paying rent.
+- A gate retrofitted to a tree that violates it scans the **diff**, never the tree.
+  - Tree-wide it is red on arrival, and a red gate nobody can fix gets switched off.
+  - Diff-scoped it cannot make the tree worse, and every change leaves it cleaner.
+- Measure a candidate gate's hits on real history before landing it. Noise is what
+  kills a gate, not absence.
 
 ## Mechanise what is mechanical
 
@@ -75,6 +80,10 @@ defect found late costs more than the check costs now.
 - A test nobody has watched fail is not a test.
 - Its author proves it red before green, holding the file already. A probe proving
   it later costs a whole stage.
+- **A differential check proves its own baseline first.**
+  - A mutation run whose suite is red for its own reasons marks every mutant caught.
+  - It then reports perfect coverage over tests that never ran.
+  - The same holds for any check that reads a failure as evidence.
 
 ## Anti-patterns
 
