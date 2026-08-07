@@ -20,3 +20,12 @@ Research task: **$ARGUMENTS**
    - Keep the summary skimmable, with per-claim source links and an as-of date.
    - Close with a "not verified / open questions" section; zero entries is one line.
    - If a target file was named, the subagent writes the structured data there.
+
+## Constraints
+
+These restate what [`../../agents/web-researcher.md`](../../agents/web-researcher.md) already
+enforces; they add nothing.
+
+- **No outbound actions** — never submit a form, send a message, or apply to anything.
+- **Never answer from training memory** — an external fact needs a page fetched this session.
+- **Never drop the as-of date or an uncertainty label** when relaying the subagent's findings.

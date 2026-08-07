@@ -39,9 +39,9 @@ PROSE_ALLOW=(
 PROSE_MAX_WORDS=20
 PROSE_MAX_PARA_LINES=3
 
-# tracked_md lists tracked Markdown files, excluding the transient overhaul plan.
+# tracked_md lists every tracked Markdown file.
 tracked_md() {
-  git ls-files '*.md' | grep -vxF 'plan.md'
+  git ls-files '*.md'
 }
 
 # prose_md lists the Markdown files subject to the prose caps: tracked_md minus the
@@ -97,7 +97,8 @@ check_shell() {
       log "shellcheck failed for $script"
       shellcheck "$script" >&2 || true
     fi
-  done < <(git ls-files 'scripts/*.sh' 'install.sh' '.claude/skills/*/*.sh')
+  done < <(git ls-files 'scripts/*.sh' 'install.sh' 'claude/*.sh' 'templates/*.sh' \
+                        '.claude/skills/*/*.sh')
 }
 
 # 3. README index diff
