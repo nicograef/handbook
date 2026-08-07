@@ -67,9 +67,9 @@ happens between checkpoints.
      rides along with the change it describes. Never mint an empty commit for it.
    - Implement one criterion at a time, so its commit is whatever the tree
      already holds.
-   - Never write a phase broadly and then partition it into criteria. That
-     bisecting is pure overhead, and it is the only thing that makes a commit
-     expensive — the commit itself is a second.
+   - Never write a phase broadly and then partition it into criteria.
+   - That bisecting is the only thing that makes a commit expensive. The commit
+     itself is a second.
    - The phase's own worker runs the verification command: `make test` or
      `make check` if the repo has a Makefile.
    - Otherwise the language-appropriate default: `go test ./...`, `pnpm test`,
@@ -84,7 +84,10 @@ happens between checkpoints.
    - The lead reads that exit code. It re-runs the gate only after a fold, a
      rebase, or an edit the gate has not seen.
    - Commit the change with the run trailer (Constraints).
-   - Then flip `- [ ]` → `- [x]` and commit that separately.
+   - Tick the phase's criteria in **one** commit when the phase closes, not one
+     commit per box.
+   - The plan file is lead-owned, which is why the tick is a commit of its own —
+     bookkeeping, not granularity.
    - Tick only what a tool result from this session proves.
    - If verification fails twice on one phase for the same reason, switch to
      [systematic-debugging](../systematic-debugging/SKILL.md).
