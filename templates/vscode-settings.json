@@ -175,7 +175,7 @@
   "extensions.ignoreRecommendations": true,
   "window.autoDetectColorScheme": true,
   "java.format.settings.google.extra": "--aosp",
-  "workbench.preferredLightColorTheme": "Dark 2026",
+  "workbench.preferredLightColorTheme": "Default Light Modern",
   "claudeCode.preferredLocation": "panel",
   "explorer.confirmDelete": false,
   "js/ts.updateImportsOnFileMove.enabled": "always",

@@ -3,6 +3,10 @@
 #
 # Called by devcontainer.json postCreateCommand, or run manually.
 # Each block checks before installing — safe to re-run anytime.
+#
+# Delete the stack sections your project does not use, and their summary lines at
+# the bottom. Each section hard-requires its runtime, so a leftover Go section
+# fails the postCreateCommand of a frontend-only repo.
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -29,13 +33,10 @@ ensure_cmd() {
 info "Project root: $PROJECT_ROOT"
 cd "$PROJECT_ROOT"
 
-# ── Base runtime checks ─────────────────────────────────────────────────────
-
-info "Checking base runtimes..."
-ensure_cmd go "Install Go (see .devcontainer/devcontainer.json features)."
-ensure_cmd node "Install Node (see .devcontainer/devcontainer.json features)."
-
 # ── Go tools ─────────────────────────────────────────────────────────────────
+# Delete this whole section on a project without a Go backend.
+
+ensure_cmd go "Install Go (see .devcontainer/devcontainer.json features)."
 
 GO_BIN_PATH="$(go env GOPATH)/bin"
 export PATH="$GO_BIN_PATH:$PATH"
@@ -71,6 +72,9 @@ fi
 # fi
 
 # ── Node / pnpm ─────────────────────────────────────────────────────────────
+# Delete this whole section on a project without a Node frontend.
+
+ensure_cmd node "Install Node (see .devcontainer/devcontainer.json features)."
 
 info "Ensuring pnpm..."
 if command -v pnpm >/dev/null 2>&1; then

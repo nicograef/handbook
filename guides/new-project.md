@@ -78,9 +78,11 @@ mkdir -p .devcontainer && cp "$HANDBOOK/templates/devcontainer.json" .devcontain
 mkdir -p scripts && cp "$HANDBOOK/templates/setup-dev-tools.sh" scripts/setup-dev-tools.sh
 ```
 
-- [templates/setup-dev-tools.sh](../templates/setup-dev-tools.sh) — fill the
-  `<project-go-version>` placeholder (Go stacks) and uncomment the frontend-deps block (repos
-  with a `frontend/`); otherwise the devcontainer `postCreateCommand` fails.
+- [templates/setup-dev-tools.sh](../templates/setup-dev-tools.sh) — delete the stack sections
+  the repo does not use.
+  - Fill the `<project-go-version>` placeholder (Go stacks).
+  - Uncomment the frontend-deps block (repos with a `frontend/`).
+  - Otherwise the devcontainer `postCreateCommand` fails.
 - **Dockerfiles** — one per built tier, following
   [docker-multi-stage-builds.md](docker-multi-stage-builds.md); Java and Node examples there.
 - A Go backend uses the same two-stage pattern: compile a static binary into a minimal

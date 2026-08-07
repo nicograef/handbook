@@ -84,7 +84,8 @@ jobs:
       - name: Test
         run: go test -tags=unit -v -race -coverprofile=coverage.out ./...
 
-      - name: Check test coverage
+      # Reports only — add a threshold comparison here to make it a gate.
+      - name: Report test coverage
         run: |
           go tool cover -func=coverage.out
           COVERAGE=$(go tool cover -func=coverage.out | grep total | awk '{print $3}' | sed 's/%//')
@@ -107,7 +108,7 @@ jobs:
       - name: golangci-lint
         uses: golangci/golangci-lint-action@v9
         with:
-          version: latest
+          version: v2.11.4  # keep in sync with scripts/setup-dev-tools.sh
           working-directory: ./<backend-dir>  # e.g. ./backend
 
   # ── Node / pnpm Frontend ──────────────────────────────────────────────────

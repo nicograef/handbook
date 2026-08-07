@@ -80,7 +80,7 @@ prod-release:  ## Tag current main commit → triggers prod deploy
 
 .PHONY: db-shell help
 
-db-shell:      ## Open psql shell in running PostgreSQL container
+db-shell:      ## Open psql shell in running PostgreSQL container (needs the .env include above)
 	docker compose exec postgres psql -U $(POSTGRES_USER) -d $(POSTGRES_DB)
 
 # ssh-prod:    ## SSH into production server
