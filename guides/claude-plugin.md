@@ -14,12 +14,10 @@ Two tiers:
 - **Every skill** under `.claude/skills/` — the same source the symlink tier exposes.
 - **The `web-researcher` agent** (`.claude/agents/web-researcher.md`) — exposed through the
   root `agents` symlink.
-- **The manifest `agents` field** validated but did not load agents in Claude Code v2.1.197
-  (not re-verified since).
-- **So the plugin relies** on the default `agents/` directory scan instead.
+- **The manifest `agents` field** validated but did not load agents in Claude Code v2.1.197.
+  - Not re-verified since, so the plugin relies on the default `agents/` directory scan.
 - **Personal config is deliberately excluded** — no hooks, no `settings.json`, no statusline,
-  no MCP servers.
-- **Those stay** on the dev machine only.
+  no MCP servers; those stay on the dev machine only.
 - **Namespaced components** — skills invoke as `/handbook:<skill>`, e.g. `/handbook:distill`,
   not `/distill`.
 - **Namespaced agent** — `handbook:web-researcher`.

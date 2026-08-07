@@ -23,12 +23,12 @@ GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
 NC='\033[0m'
 
-info()  { echo -e "${GREEN}[INFO]${NC}  $*"; }
+log()   { echo -e "${GREEN}[INFO]${NC}  $*"; }
 warn()  { echo -e "${YELLOW}[WARN]${NC}  $*"; }
-error() { echo -e "${RED}[ERROR]${NC} $*"; exit 1; }
+error() { echo -e "${RED}[ERROR]${NC} $*" >&2; exit 1; }
 
 # ── Prerequisite Checks ──
-info "Checking prerequisites…"
+log "Checking prerequisites…"
 
 [[ -f .env ]] || error ".env file not found. Copy .env.example and fill in your credentials."
 
@@ -55,9 +55,9 @@ if [[ -z "$EMAIL" ]]; then
   [[ -n "$EMAIL" ]] || error "Email is required for Let's Encrypt registration."
 fi
 
-info "Domain:  $DOMAIN"
-info "Email:   $EMAIL"
-info "Project: $PROJECT"
+log "Domain:  $DOMAIN"
+log "Email:   $EMAIL"
+log "Project: $PROJECT"
 echo ""
 
 # ── Check if certificate already exists ──
@@ -68,15 +68,15 @@ if docker volume inspect "$CERT_VOLUME" >/dev/null 2>&1; then
     warn "Certificate for $DOMAIN already exists."
     read -rp "Skip certificate step and start the stack? [Y/n] " SKIP
     if [[ "${SKIP,,}" != "n" ]]; then
-      info "Starting full production stack…"
+      log "Starting full production stack…"
       $COMPOSE_PROD up --build -d
-      info "Production stack is running."
+      log "Production stack is running."
       exit 0
     fi
   fi
 fi
 
-info "Step 1/3 — Starting nginx for ACME challenge…"
+log "Step 1/3 — Starting nginx for ACME challenge…"
 $COMPOSE_CERT up -d reverse-proxy
 sleep 2
 
@@ -90,9 +90,9 @@ for i in {1..15}; do
   fi
   sleep 1
 done
-info "Nginx is ready."
+log "Nginx is ready."
 
-info "Step 2/3 — Requesting Let's Encrypt certificate…"
+log "Step 2/3 — Requesting Let's Encrypt certificate…"
 if ! docker run --rm \
   -v "${PROJECT}_certbot-challenges:/var/www/certbot" \
   -v "${PROJECT}_letsencrypt:/etc/letsencrypt" \
@@ -106,18 +106,14 @@ if ! docker run --rm \
   $COMPOSE_CERT down
   error "Certbot failed. Check that DNS for $DOMAIN points to this server."
 fi
-info "Certificate obtained successfully."
+log "Certificate obtained successfully."
 
-info "Step 3/3 — Starting full production stack…"
+log "Step 3/3 — Starting full production stack…"
 $COMPOSE_CERT down
 $COMPOSE_PROD up --build -d
 
 echo ""
-info "=========================================="
-info "  Production deployment complete!"
-info "  https://$DOMAIN"
-info "=========================================="
-info ""
-info "Useful commands:"
-info "  make prod-logs   — follow logs"
-info "  make prod-down   — stop the stack"
+log "Production deployment complete — https://$DOMAIN"
+log "Useful commands:"
+log "  make prod-logs   — follow logs"
+log "  make prod-down   — stop the stack"

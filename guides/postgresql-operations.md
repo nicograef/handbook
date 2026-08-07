@@ -182,6 +182,8 @@ database/migrations/000001_add_users_table.down.sql
 
 ### Run migrations
 
+- The wrapper below shadows the binary installed above; that install serves the
+  published-port form at the end of this section.
 - Run `migrate` as a throwaway container **on the compose network**.
 - It then reaches the database by its service name (`postgres`), no published port
   required.

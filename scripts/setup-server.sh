@@ -8,6 +8,7 @@
 #
 # What it does:
 #   1. System update & base packages
+#   1b. Swapfile (auto-sized from RAM, capped at 8G); appends it to /etc/fstab
 #   2. Create non-root user with sudo
 #   3. SSH hardening (pubkey only, no root login) via a drop-in
 #   4. UFW firewall

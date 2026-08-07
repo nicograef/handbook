@@ -571,5 +571,5 @@ case "${1:-}" in
   radar)    shift; cmd_radar "$@" ;;
   sweep)    shift; cmd_sweep "$@" ;;
   hook)     shift; cmd_hook "$@" ;;
-  *)        sed -n '4,12p' "$0" | sed 's/^# \{0,1\}//'; exit 2 ;;
+  *)        awk '/^# Usage:/{f=1} f && /^#$/{exit} f' "$0" | sed 's/^# \{0,1\}//'; exit 2 ;;
 esac
