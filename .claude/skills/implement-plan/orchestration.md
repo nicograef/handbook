@@ -143,16 +143,14 @@ first tick, forcing every later `agent()` call to re-run.
 
 ### Bound the long pole before dispatch
 
-A stage costs its slowest member, so the size of the largest unit sets the
-stage's wall clock. Headcount does not.
+The principle is the delegation contract's: a stage costs its slowest member.
+This is the plan-side mechanism for it.
 
-- Estimate each unit before dispatching it, not after it overruns.
-- A unit that looks longer than about 30 minutes gets split, or gets the
-  return-at-30-minutes instruction above.
+- Estimate each phase before dispatching it, not after it overruns.
+- A phase past roughly 30 minutes gets split, or gets the instruction above.
 - Splitting after the fact is not available: you cannot preempt a running agent.
-- A returned partial is resumable: its commits sit on its branch.
-- `SendMessage` continues it with what it learned still in context.
-- Re-dispatching a fresh agent throws that context away. Never do it.
+- A returned partial is resumable — its commits sit on its branch.
+- Continue it per [When an agent returns nothing](#when-an-agent-returns-nothing).
 
 ## Model routing
 
