@@ -9,12 +9,16 @@
 ### Prune unused resources
 
 ```bash
-docker system prune -af    # remove all unused images and containers, plus the build cache
-docker system df           # check disk usage
+docker system prune -af              # unused images and containers, plus the build cache
+docker system prune -af --volumes    # the above, plus every volume no container references
+docker system df                     # check disk usage
 ```
 
-> **Never add `--volumes` on a stack with `postgres-data`.** It deletes every volume no
-> running container holds — a stopped stack loses its database.
+> **`--volumes` and `postgres-data`.** A volume is safe while any container references it,
+> stopped ones included.
+> After `docker compose down` removes the containers, `postgres-data` is unreferenced and
+> `--volumes` deletes it.
+> Run the plain form inside a maintenance window, or bring the stack back up first.
 
 ## Verify
 

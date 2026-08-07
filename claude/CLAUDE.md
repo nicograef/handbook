@@ -160,7 +160,7 @@ Applies to every response — answers, reviews, summaries, commit proposals.
     - Prefer this whenever the task is fully specified.
   - `opus` (Opus 5, `claude-opus-5`) — the default worker and the top tier.
     - Implementation, code review, verification, debugging.
-    - Plus the hard reasoning that used to justify a bigger model.
+    - Plus the hardest reasoning in the run.
     - Architecture/design decisions, subtle correctness or concurrency analysis.
     - Final adversarial verification of critical findings, cross-cutting synthesis.
   - Mechanics — Agent tool: `model` parameter, `sonnet` or `opus` only.

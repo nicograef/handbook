@@ -1,7 +1,8 @@
 # handbook — Copilot Instructions
 
 Copilot-only pointers. Shared rules live in [`AGENTS.md`](../AGENTS.md), read alongside this
-file; nothing is restated here. The hard caps below apply to every response.
+file. The caps below are the one deliberate duplicate. They must survive a surface that
+loads this file alone.
 
 | Rule | Cap |
 | --- | --- |

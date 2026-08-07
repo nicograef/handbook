@@ -59,7 +59,8 @@
 > To reclaim more aggressively, use `docker system prune` from
 > [docker-setup.md](docker-setup.md#prune-unused-resources) instead.
 > It removes all images with no running container, plus the build cache.
-> Never pass `--volumes` on a stack with `postgres-data`.
+> `--volumes` additionally deletes any volume no container references.
+> That includes `postgres-data` once `docker compose down` has removed the containers.
 
 ## Reboot routine (monthly)
 

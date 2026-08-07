@@ -3,7 +3,9 @@
 <!-- One-line project description. -->
 <!-- Shared rules live in AGENTS.md — Copilot loads it on every surface (Chat, Inline,
      Agent, code review, cloud agent, CLI). Do NOT restate AGENTS.md rules here.
-     This file holds only Copilot-only deltas. If there are none, delete this file. -->
+     The caps table below is the one deliberate exception: it must survive a surface
+     that loads this file alone.
+     This file otherwise holds only Copilot-only deltas. If there are none, delete it. -->
 
 Hard caps for every response:
 
