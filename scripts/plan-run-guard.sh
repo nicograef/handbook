@@ -7,11 +7,13 @@
 #
 # What it does:
 #   1. Allows the stop unless a plan run is live in the payload's cwd.
-#   2. Live means a plan/<slug> branch exists and docs/plans/plan-<slug>.md
-#      still holds an unticked criterion.
-#   3. Blocks once, naming the next criterion. stop_hook_active lets the very
-#      next stop through, so a session can always end on the second attempt.
-#   4. Opt out per repo: touch "$(git rev-parse --git-dir)/plan-run-guard-off".
+#   2. Live means a plan/<slug> branch exists whose own copy of
+#      docs/plans/plan-<slug>.md still holds an unticked criterion.
+#   3. Reads that copy from the branch, never from the calling checkout — the
+#      base-branch copy stays stale by design until the run lands.
+#   4. Nudges once per branch tip. A run that stops committing goes quiet, so an
+#      abandoned branch can never trap the repo.
+#   5. Opt out per repo: touch "$(git rev-parse --git-dir)/plan-run-guard-off".
 
 set -euo pipefail
 
@@ -34,25 +36,42 @@ if [[ -z "$cwd" || ! -d "$cwd" ]]; then
   allow
 fi
 
+session="$(printf '%s' "$payload" | jq -r '.session_id // "nosession"')"
+
 gitdir=""
 gitdir="$(git -C "$cwd" rev-parse --path-format=absolute --git-dir 2>/dev/null)" || allow
 if [[ -e "$gitdir/plan-run-guard-off" ]]; then
   allow
 fi
 
-root=""
-root="$(git -C "$cwd" rev-parse --show-toplevel 2>/dev/null)" || allow
+# Worktrees share the common dir, so a lead on the base branch and a worker in
+# the run worktree see the same nudge markers.
+common=""
+common="$(git -C "$cwd" rev-parse --path-format=absolute --git-common-dir 2>/dev/null)" || allow
+state="$common/plan-run-guard"
+mkdir -p "$state"
+find "$state" -type f -mtime +1 -delete 2>/dev/null || true
 
 branches="$(git -C "$cwd" for-each-ref --format='%(refname:short)' 'refs/heads/plan/*' 2>/dev/null || true)"
 
 while IFS= read -r branch; do
   [[ -n "$branch" ]] || continue
   slug="${branch#plan/}"
-  plan="$root/docs/plans/plan-$slug.md"
-  [[ -f "$plan" ]] || continue
-  next="$(grep -m1 '^- \[ \] ' "$plan" 2>/dev/null || true)"
+
+  # The run's own copy of the plan, not the calling checkout's stale one.
+  planbody="$(git -C "$cwd" show "$branch:docs/plans/plan-$slug.md" 2>/dev/null || true)"
+  [[ -n "$planbody" ]] || continue
+
+  next="$(printf '%s\n' "$planbody" | grep -m1 '^- \[ \] ' || true)"
   [[ -n "$next" ]] || continue
   next="${next#- [ ] }"
+
+  # One nudge per tip: a run that stops advancing stops being nudged.
+  tip="$(git -C "$cwd" rev-parse "$branch" 2>/dev/null || echo unknown)"
+  marker="$state/$session-$slug-$tip"
+  [[ -e "$marker" ]] && continue
+  : > "$marker"
+
   jq -nc --arg s "$slug" --arg n "$next" '{
     decision: "block",
     reason: ("Plan run " + $s + " has an unticked criterion: " + $n

@@ -127,8 +127,11 @@ A live plan run must not yield the turn between phases. Two mechanisms hold it:
 | `outputStyle: "Proactive"` | Executes immediately, assumes instead of pausing on routine decisions. Main conversation only — subagents keep their own prompt. |
 | [scripts/plan-run-guard.sh](../scripts/plan-run-guard.sh) | Stop hook. Blocks the stop while `plan/<slug>` has an unticked criterion. |
 
-- The guard blocks once. `stop_hook_active` lets the next stop through, so a
-  session can always end on the second attempt.
+- It reads the plan from the run branch, never from the calling checkout. The
+  base-branch copy stays stale for the whole run, by design.
+- It nudges once per branch tip. A run that stops committing stops being nudged,
+  so an abandoned `plan/*` branch cannot trap the repo.
+- `stop_hook_active` lets the next stop through, so a session can always end.
 - Disarm it per repo: `touch "$(git rev-parse --git-dir)/plan-run-guard-off"`.
 - Test it: `make test-plan-run-guard`.
 

@@ -6,8 +6,9 @@
 #
 # What it does:
 #   1. Builds a throwaway git repo under mktemp -d with a docs/plans/ tree.
-#   2. Feeds the guard synthetic Stop payloads and asserts block vs allow.
-#   3. Never touches a real repo — every path lives inside the fixture.
+#   2. Gives the run branch and the base branch different copies of the plan,
+#      so a guard reading the wrong one fails the assertion.
+#   3. Feeds synthetic Stop payloads and asserts block vs allow.
 
 set -euo pipefail
 
@@ -35,8 +36,10 @@ echo seed > "$REPO/README.md"
 git -C "$REPO" add -A
 git -C "$REPO" commit -q -m seed
 
-payload() { printf '{"cwd":"%s","stop_hook_active":%s,"hook_event_name":"Stop"}' "$REPO" "${1:-false}"; }
-run() { payload "${1:-false}" | bash "$GUARD"; }
+run() { # run [stop_hook_active] [session_id]
+  printf '{"cwd":"%s","stop_hook_active":%s,"session_id":"%s","hook_event_name":"Stop"}' \
+    "$REPO" "${1:-false}" "${2:-sessA}" | bash "$GUARD"
+}
 
 # 1. No plan branch at all — the guard must stay out of the way.
 out="$(run)"
@@ -47,50 +50,82 @@ cat > "$REPO/docs/plans/plan-unstarted.md" <<'EOF'
 # Plan: unstarted
 - [ ] Criterion that no run owns
 EOF
+git -C "$REPO" add -A && git -C "$REPO" commit -q -m unstarted
 out="$(run)"
 if [[ -n "$out" ]]; then fail "unstarted plan: expected allow, got: $out"; else log "unstarted plan -> allow"; fi
 
-# 3. A live run: plan/<slug> branch plus an unticked criterion.
-git -C "$REPO" branch plan/live
+# The base-branch copy stays stale for the whole run: nothing is ticked here.
 cat > "$REPO/docs/plans/plan-live.md" <<'EOF'
 # Plan: live
-- [x] Already done
-- [ ] Wire the resolver
+- [ ] STALE base-branch criterion
 - [ ] Later one
 EOF
+git -C "$REPO" add -A && git -C "$REPO" commit -q -m "base copy of the plan"
+
+# The run branch ticks as it goes — this is the copy the guard must read.
+git -C "$REPO" checkout -q -b plan/live
+cat > "$REPO/docs/plans/plan-live.md" <<'EOF'
+# Plan: live
+- [x] STALE base-branch criterion
+- [ ] Wire the resolver
+EOF
+git -C "$REPO" add -A && git -C "$REPO" commit -q -m "phase 1 ticked"
+git -C "$REPO" checkout -q main
+
+# 3. The reported criterion must come from the branch, not the checkout.
 out="$(run)"
 if [[ "$(jq -r '.decision' <<< "$out" 2>/dev/null)" != "block" ]]; then
   fail "live run: expected block, got: $out"
 else
   reason="$(jq -r '.reason' <<< "$out")"
   case "$reason" in
-    *"Wire the resolver"*) log "live run -> block, names the next criterion" ;;
-    *) fail "live run: reason lost the criterion: $reason" ;;
+    *STALE*)              fail "live run: read the base-branch copy: $reason" ;;
+    *"Wire the resolver"*) log "live run -> block, reads the branch copy" ;;
+    *)                    fail "live run: unexpected reason: $reason" ;;
   esac
 fi
 
-# 4. stop_hook_active must always let the session end.
-out="$(run true)"
+# 4. Same tip, same session — nudge once, then go quiet.
+out="$(run false sessA)"
+if [[ -n "$out" ]]; then fail "repeat tip: expected allow, got: $out"; else log "same tip again -> allow"; fi
+
+# 5. The run commits again, so the guard may nudge once more.
+git -C "$REPO" checkout -q plan/live
+echo progress >> "$REPO/docs/plans/plan-live.md"
+git -C "$REPO" add -A && git -C "$REPO" commit -q -m "phase 2 progress"
+git -C "$REPO" checkout -q main
+out="$(run false sessA)"
+if [[ "$(jq -r '.decision' <<< "$out" 2>/dev/null)" != "block" ]]; then
+  fail "advanced tip: expected block, got: $out"
+else
+  log "branch advanced -> block again"
+fi
+
+# 6. stop_hook_active must always let the session end.
+out="$(run true sessB)"
 if [[ -n "$out" ]]; then fail "stop_hook_active: expected allow, got: $out"; else log "stop_hook_active -> allow"; fi
 
-# 5. The opt-out file disarms the guard.
+# 7. The opt-out file disarms the guard.
 touch "$REPO/.git/plan-run-guard-off"
-out="$(run)"
+out="$(run false sessC)"
 if [[ -n "$out" ]]; then fail "opt-out: expected allow, got: $out"; else log "opt-out file -> allow"; fi
 rm "$REPO/.git/plan-run-guard-off"
 
-# 6. Every criterion ticked means the run is done.
+# 8. Every criterion ticked on the branch means the run is done.
+git -C "$REPO" checkout -q plan/live
 cat > "$REPO/docs/plans/plan-live.md" <<'EOF'
 # Plan: live
-- [x] Already done
+- [x] STALE base-branch criterion
 - [x] Wire the resolver
 EOF
-out="$(run)"
+git -C "$REPO" add -A && git -C "$REPO" commit -q -m "all ticked"
+git -C "$REPO" checkout -q main
+out="$(run false sessD)"
 if [[ -n "$out" ]]; then fail "all ticked: expected allow, got: $out"; else log "all criteria ticked -> allow"; fi
 
-# 7. A branch with no matching plan file must not block.
+# 9. A branch carrying no plan file must not block.
 git -C "$REPO" branch plan/orphan
-out="$(run)"
+out="$(run false sessE)"
 if [[ -n "$out" ]]; then fail "orphan branch: expected allow, got: $out"; else log "branch without a plan file -> allow"; fi
 
 if [[ "$FAILED" -eq 0 ]]; then
