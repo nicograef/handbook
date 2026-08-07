@@ -140,7 +140,7 @@ It enforces stricter granularity and requires explicit confirmation between step
   before proceeding to the next change.
 - **Trivial follow-ups** (e.g. adding an import after a method change) may be grouped with
   the preceding step.
-- **Explain like a reviewer.** The What/Why/How explanation (see Quality Principles) must let
+- **Explain like a reviewer.** The post-task summary (see Git Workflow) must let
   the developer reproduce the change from the explanation alone, without the diff.
 -->
 
