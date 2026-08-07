@@ -42,7 +42,13 @@ Delegate independent problems to isolated subagents instead of investigating the
    - Each bullet opens with a bold keyword; nothing found is one line, no padding.
    - Example demand: "return a summary of root cause and files changed".
 3. **Dispatch all of them in the same response** so they run in parallel.
-4. **Read every summary when they return**, then **check for collisions.**
+   - Then keep dispatching. Act on each result as it lands, not after the
+     slowest one.
+   - Waiting for the set before starting anything is a barrier you rarely need.
+   - A barrier is earned only when the next step reads across *all* results.
+   - That means dedup, a total count, or a comparison between findings.
+   - Your own reading and thinking belongs inside someone else's runtime.
+4. **Read every summary as it returns**, then **check for collisions.**
    - Diff or grep to confirm no two agents touched the same file or region.
    - Resolve any overlap by hand before trusting either result.
 5. **Integrate and verify as a whole.** Run the full test suite or build after merging all
@@ -54,6 +60,11 @@ Delegate independent problems to isolated subagents instead of investigating the
 - Dispatching to check another agent's work is budgeted by
   [verification-depth.md](../verification-depth.md).
 - A stage costs its slowest member, so bound the long pole before cutting headcount.
+  - Estimate each unit before dispatch; split anything past roughly 30 minutes.
+  - Or tell it to commit what verifies and return at 30 minutes.
+  - You cannot preempt a running agent, so the bound has to be set up front.
+- Cap only the agents that own a worktree. Read-only agents carry none of that
+  cost, so cap them at the runtime's `min(16, cores − 2)` instead.
 - Isolate writes when agents change code in the same repo.
 - Give each a disjoint file-ownership partition, or run them in separate worktrees
   (`isolation: worktree`), so concurrent edits can't clobber each other.

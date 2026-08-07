@@ -26,6 +26,21 @@ contract in [../dispatching-parallel-agents/SKILL.md](../dispatching-parallel-ag
   workflows.
 - Folding and landing therefore stay with the lead.
 
+### Keep the pipeline full
+
+A sequential plan still runs one writer at a time. It does not have to run one
+*agent* at a time.
+
+- While phase *N*'s writer works, dispatch phase *N+1*'s **read-only** scout.
+- A scout resolves symbols, maps the test surface and lists the files the phase
+  will touch. It writes nothing, so it cannot conflict with the writer.
+- Hand its result to the writer as context when the writer is dispatched.
+- The lead's own reading and thinking is the cheapest thing to overlap. Do it
+  while something is running, never instead.
+- Dispatch the next unit **before** you finish processing the previous result.
+- Anti-pattern: read result → think → dispatch. That is a serial pipeline
+  wearing a parallel costume.
+
 ## The concurrency test
 
 - Sequential is the default: create-plan emits deliberately dependent vertical
@@ -58,9 +73,18 @@ Phases *i* and *j* may run concurrently only if **all** of these hold:
    - Report it as a one-off repo fix: it unlocks every group in the plan, not one.
 
 - Fewer than two phases passing ⇒ run sequentially.
-- Group cap 4: the binding cost is one checkout, one dependency install and one
-  fold per member.
-- Not the runtime's `min(16, cores − 2)`.
+
+### The cap is per writer, not per agent
+
+| Agent kind | Cap | Why |
+| --- | --- | --- |
+| Writer — owns a worktree and a branch | 4 | One checkout, one dependency install and one fold each |
+| Read-only — scout, reviewer, verifier | The runtime's `min(16, cores − 2)` | No checkout, no install, no fold |
+
+- A read-only agent carries none of the cost that justifies the cap of 4.
+- Capping scouts and reviewers at 4 buys nothing and costs wall clock.
+- Read-only means it is told to write nothing, and owns no worktree.
+- The runtime queues past its own cap; it never drops work.
 
 ## Review depth per phase
 
@@ -115,6 +139,20 @@ first tick, forcing every later `agent()` call to re-run.
 - the plan-file write ban
 - "commit each criterion the moment it verifies; an uncommitted result does not
   exist; return with a clean worktree"
+- "at 30 minutes, commit what verifies and return what is left" — see below
+
+### Bound the long pole before dispatch
+
+A stage costs its slowest member, so the size of the largest unit sets the
+stage's wall clock. Headcount does not.
+
+- Estimate each unit before dispatching it, not after it overruns.
+- A unit that looks longer than about 30 minutes gets split, or gets the
+  return-at-30-minutes instruction above.
+- Splitting after the fact is not available: you cannot preempt a running agent.
+- A returned partial is resumable: its commits sit on its branch.
+- `SendMessage` continues it with what it learned still in context.
+- Re-dispatching a fresh agent throws that context away. Never do it.
 
 ## Model routing
 
