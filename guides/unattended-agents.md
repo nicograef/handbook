@@ -108,7 +108,31 @@ devcontainer exec --workspace-folder . claude --permission-mode bypassPermission
   destructive git set in [claude/settings.json](../claude/settings.json) stays
   blocked even here.
 
-## Step 5 — survive the stops you cannot prevent
+## Step 5 — do not supervise with a second session
+
+A supervisor session observes; it cannot act on a peer. It cannot approve a
+prompt, and it cannot restart a peer that already ended its turn.
+
+- Its `CronCreate` wake-ups are themselves subject to the classifier.
+- Peers publish state to the bus: `~/.claude/agent-bus.sh peers` and `radar`.
+- Watch that from your own session with one `Monitor` on the bus directory.
+- Protocol: [parallel-sessions](../.claude/skills/parallel-sessions/SKILL.md).
+
+## Step 6 — keep the turn open
+
+A live plan run must not yield the turn between phases. Two mechanisms hold it:
+
+| Mechanism | Effect |
+| --- | --- |
+| `outputStyle: "Proactive"` | Executes immediately, assumes instead of pausing on routine decisions. Main conversation only — subagents keep their own prompt. |
+| [scripts/plan-run-guard.sh](../scripts/plan-run-guard.sh) | Stop hook. Blocks the stop while `plan/<slug>` has an unticked criterion. |
+
+- The guard blocks once. `stop_hook_active` lets the next stop through, so a
+  session can always end on the second attempt.
+- Disarm it per repo: `touch "$(git rev-parse --git-dir)/plan-run-guard-off"`.
+- Test it: `make test-plan-run-guard`.
+
+## Step 7 — survive the stops you cannot prevent
 
 | Stop | Recovery |
 | --- | --- |

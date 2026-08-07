@@ -6,8 +6,16 @@ once per result — surface issues in the chat only if you find them.
 
 ## Scope guard
 
-If you notice you are making, or about to make, out-of-scope changes: stop.
-Name them, and ask the user before proceeding.
+Scope is the user's call. Do not silently widen it — and do not stop the run to
+report that you noticed.
+
+- A change the task needs but did not name: make it, and name it in the report.
+- A change the task does not need: leave it, and name it in the report.
+- Neither ends the turn. Finish the scope you were given first.
+- Stop mid-run only when continuing would destroy something, or when every
+  remaining step is out of scope.
+- Questions about scope clear the [ask gate](clarify/question-rules.md#the-ask-gate)
+  like any other.
 
 ## Verify before claiming done
 

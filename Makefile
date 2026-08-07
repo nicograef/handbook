@@ -1,6 +1,6 @@
 # Handbook dev interface. `make check` is the full repo self-check.
 
-.PHONY: check links lint readme language skills compose plugin prose test-prune test-agent-bus help
+.PHONY: check links lint readme language skills compose plugin prose test-prune test-agent-bus test-plan-run-guard help
 
 ## check: run the full repo self-check (links, shellcheck, README index, language, skills, compose, plugin, prose)
 check:
@@ -45,6 +45,10 @@ test-prune:
 ## test-agent-bus: run the fixture test for scripts/agent-bus.sh
 test-agent-bus:
 	@scripts/test-agent-bus.sh
+
+## test-plan-run-guard: run the fixture test for scripts/plan-run-guard.sh
+test-plan-run-guard:
+	@scripts/test-plan-run-guard.sh
 
 ## help: list available targets
 help:

@@ -30,8 +30,10 @@ then present exactly four options and execute the one chosen.
    ```
 
    - Strip the `origin/` prefix for the local branch name.
-   - **Neither resolves** — ask the user which branch this work is based on.
-   - **Other long-lived branches this work could belong to** (`git branch --list`) — ask too.
+   - **Neither resolves** — try `git merge-base` against each long-lived branch
+     in `git branch --list`; the nearest ancestor is the base.
+   - Two candidates tie, or none is an ancestor: ask, per the
+     [ask gate](../clarify/question-rules.md#the-ask-gate).
 
 3. **Detect whether the branch lives in a linked worktree.** Compare git-dir
    against git-common-dir:

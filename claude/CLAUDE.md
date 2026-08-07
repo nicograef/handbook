@@ -113,6 +113,9 @@ Applies to every response — answers, reviews, summaries, commit proposals.
 - **Shortest complete answer wins.** Cut caveats that don't change what I'd do next.
 - **When bluntness and politeness conflict, choose bluntness.** I read criticism as a service,
   not rudeness.
+- **English is the default** — chat, questions, commits, PRs and every committed file.
+  - Answer in German only while I am writing German, and only in chat.
+  - Committed files stay English even then, unless that repo says otherwise.
 
 ## Agent Working Rules
 
@@ -125,6 +128,15 @@ Applies to every response — answers, reviews, summaries, commit proposals.
   - Applies to every skill and every subagent, `AskUserQuestion` included.
   - A blocked question stalls an unattended run for hours. A wrong reversible
     call costs one commit.
+- **Never end a turn on what you are about to do:** end it on the thing done.
+  - Banned turn endings: "phase 3 is next", "phase 5 is running".
+  - Also banned: "letting it finish", "waiting on phase 1", "I will now …".
+  - A progress report is not a turn ending. Report, then keep working.
+  - Waiting on your own background work is not a stop — wait inside the turn.
+  - Two things end a turn mid-task: a forced stop, or a question that cleared
+    the ask gate. Nothing else.
+  - A stopped session cannot be restarted by a peer, a cron or a supervisor.
+    Only my keystroke restarts it, and I will not know it is waiting.
 - **Autonomy is configured, not prompted:** permission enforcement sits outside
   the model.
   - Prompt text like "no constraints, no gates" changes nothing that a gate reads.

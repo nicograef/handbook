@@ -146,6 +146,12 @@ stall.
   `Plan: <slug> phase <N> criterion <M>`.
   - That trailer makes a dead agent's work findable after its branch is gone.
   - No AI attribution trailers.
+- **The run owns the turn.** Between phases, folds and landings there is no
+  human turn — see the opening line.
+  - A phase report goes in the same turn as the next phase's first action.
+  - Waiting on a dispatched agent or workflow is waiting inside the turn.
+  - `scripts/plan-run-guard.sh` blocks a stop while `plan/<slug>` still has an
+    unticked criterion, so a yielded turn costs a round trip.
 - **One writer per file, always.** The lead is the sole writer of the plan file
   for the whole run; subagents receive its path to read.
   - Index files, lockfiles and entry points are lead-owned, as in

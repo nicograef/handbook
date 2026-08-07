@@ -16,7 +16,9 @@ description: >-
 
 ## Invocation
 
-If the reference is ambiguous, ask one clarifying question before exploring.
+An ambiguous reference is usually resolvable: search the repo for the symbol or
+path first. Ask only when two candidates survive that search, per the
+[ask gate](../clarify/question-rules.md#the-ask-gate).
 
 ## Workflow
 
