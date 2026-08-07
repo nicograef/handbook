@@ -79,9 +79,10 @@ if [[ "$(jq -r '.decision' <<< "$out" 2>/dev/null)" != "block" ]]; then
 else
   reason="$(jq -r '.reason' <<< "$out")"
   case "$reason" in
-    *STALE*)              fail "live run: read the base-branch copy: $reason" ;;
+    *STALE*)               fail "live run: read the base-branch copy: $reason" ;;
+    *"- [ ]"*)             fail "live run: checkbox prefix not stripped: $reason" ;;
     *"Wire the resolver"*) log "live run -> block, reads the branch copy" ;;
-    *)                    fail "live run: unexpected reason: $reason" ;;
+    *)                     fail "live run: unexpected reason: $reason" ;;
   esac
 fi
 
@@ -123,7 +124,40 @@ git -C "$REPO" checkout -q main
 out="$(run false sessD)"
 if [[ -n "$out" ]]; then fail "all ticked: expected allow, got: $out"; else log "all criteria ticked -> allow"; fi
 
-# 9. A branch carrying no plan file must not block.
+# 9. Live background work makes the stop safe — the harness re-invokes on it.
+git -C "$REPO" checkout -q plan/live
+cat > "$REPO/docs/plans/plan-live.md" <<'EOF'
+# Plan: live
+- [x] STALE base-branch criterion
+- [ ] Still going
+EOF
+git -C "$REPO" add -A && git -C "$REPO" commit -q -m "unticked again"
+git -C "$REPO" checkout -q main
+
+AGENTS="$FIX/config/projects/proj/sessLIVE/subagents"
+mkdir -p "$AGENTS"
+echo '{}' > "$AGENTS/agent-running.jsonl"
+out="$(CLAUDE_CONFIG_DIR="$FIX/config" run false sessLIVE)"
+if [[ -n "$out" ]]; then fail "live agent: expected allow, got: $out"; else log "live background agent -> allow"; fi
+
+# A silent agent is a stuck one, so the nudge comes back.
+touch -d '2 hours ago' "$AGENTS/agent-running.jsonl"
+out="$(CLAUDE_CONFIG_DIR="$FIX/config" run false sessLIVE)"
+if [[ "$(jq -r '.decision' <<< "$out" 2>/dev/null)" != "block" ]]; then
+  fail "stale agent: expected block, got: $out"
+else
+  log "agent silent past the window -> block"
+fi
+
+# 10. A branch carrying no plan file must not block.
+git -C "$REPO" checkout -q plan/live
+cat > "$REPO/docs/plans/plan-live.md" <<'EOF'
+# Plan: live
+- [x] STALE base-branch criterion
+- [x] Still going
+EOF
+git -C "$REPO" add -A && git -C "$REPO" commit -q -m "live run finished"
+git -C "$REPO" checkout -q main
 git -C "$REPO" branch plan/orphan
 out="$(run false sessE)"
 if [[ -n "$out" ]]; then fail "orphan branch: expected allow, got: $out"; else log "branch without a plan file -> allow"; fi

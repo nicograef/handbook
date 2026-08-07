@@ -13,7 +13,9 @@
 #      base-branch copy stays stale by design until the run lands.
 #   4. Nudges once per branch tip. A run that stops committing goes quiet, so an
 #      abandoned branch can never trap the repo.
-#   5. Opt out per repo: touch "$(git rev-parse --git-dir)/plan-run-guard-off".
+#   5. Never nudges while the session has live background work — the harness
+#      re-invokes on completion, so that stop is safe.
+#   6. Opt out per repo: touch "$(git rev-parse --git-dir)/plan-run-guard-off".
 
 set -euo pipefail
 
@@ -37,6 +39,19 @@ if [[ -z "$cwd" || ! -d "$cwd" ]]; then
 fi
 
 session="$(printf '%s' "$payload" | jq -r '.session_id // "nosession"')"
+
+# A stop with live background work is safe: the harness re-invokes on completion.
+# A transcript touched inside the window is work still running.
+CONFIG_DIR="${CLAUDE_CONFIG_DIR:-$HOME/.claude}"
+IDLE_MIN="${PLAN_RUN_GUARD_IDLE_MIN:-10}"
+if [[ -n "$(find "$CONFIG_DIR/projects" -path "*/$session/subagents/agent-*.jsonl" \
+             -newermt "-$IDLE_MIN minutes" -print -quit 2>/dev/null)" ]]; then
+  allow
+fi
+if [[ -n "$(find /tmp -maxdepth 5 -path "*/$session/tasks/*.output" \
+             -newermt "-$IDLE_MIN minutes" -print -quit 2>/dev/null)" ]]; then
+  allow
+fi
 
 gitdir=""
 gitdir="$(git -C "$cwd" rev-parse --path-format=absolute --git-dir 2>/dev/null)" || allow
@@ -64,7 +79,7 @@ while IFS= read -r branch; do
 
   next="$(printf '%s\n' "$planbody" | grep -m1 '^- \[ \] ' || true)"
   [[ -n "$next" ]] || continue
-  next="${next#- [ ] }"
+  next="${next#- \[ \] }"
 
   # One nudge per tip: a run that stops advancing stops being nudged.
   tip="$(git -C "$cwd" rev-parse "$branch" 2>/dev/null || echo unknown)"

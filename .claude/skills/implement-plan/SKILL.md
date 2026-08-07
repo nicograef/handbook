@@ -62,7 +62,14 @@ happens between checkpoints.
    - Dispatch per [orchestration.md](orchestration.md) and the
      [delegation contract](../dispatching-parallel-agents/SKILL.md).
    - No two agents ever write one file; no agent ever writes the plan file.
-8. **Commit per acceptance criterion, then tick.**
+8. **Commit per acceptance criterion that names its own change, then tick.**
+   - A criterion asserting only the gate, or restating a sibling's verification,
+     rides along with the change it describes. Never mint an empty commit for it.
+   - Implement one criterion at a time, so its commit is whatever the tree
+     already holds.
+   - Never write a phase broadly and then partition it into criteria. That
+     bisecting is pure overhead, and it is the only thing that makes a commit
+     expensive — the commit itself is a second.
    - The phase's own worker runs the verification command: `make test` or
      `make check` if the repo has a Makefile.
    - Otherwise the language-appropriate default: `go test ./...`, `pnpm test`,
