@@ -6,6 +6,7 @@ contract in [../dispatching-parallel-agents/SKILL.md](../dispatching-parallel-ag
 
 - [Execution modes](#execution-modes)
 - [The concurrency test](#the-concurrency-test)
+- [Review depth per phase](#review-depth-per-phase)
 - [What a worker is told](#what-a-worker-is-told)
 - [Model routing](#model-routing)
 - [Workflow script shape](#workflow-script-shape)
@@ -55,6 +56,37 @@ Phases *i* and *j* may run concurrently only if **all** of these hold:
 - Group cap 4: the binding cost is one checkout, one dependency install and one
   fold per member.
 - Not the runtime's `min(16, cores − 2)`.
+
+## Review depth per phase
+
+The tier rule is [../verification-depth.md](../verification-depth.md). Read each
+phase's tier off the plan, at step 4, before the run contract quotes it.
+
+| The plan says this about the phase | Tier |
+| --- | --- |
+| Its output is rebuildable offline and free — a graph rebuild, a regeneration, a re-lint | Gate only |
+| It rewrites shared state, or a later rerun costs a provider call or a human | Gate + one probe |
+| It spends money, overwrites data with no copy, migrates production, or publishes | Gate + probes + a human read |
+| An irreversible phase's `**Depends on**` names it | Inherits that phase's tier |
+
+- Gate-only phases are reviewed **as one group**, once, over the group's whole diff.
+- One probe over ten phases' diff, never ten probes. That batching is the saving.
+- A plan whose phases are all gate-only gets one review unit at the end, not per phase.
+
+### The probe stage
+
+- One to two probes, `parallel()`, `model: 'opus'`, one structured findings schema.
+- Each probe is a skeptic with a named target: a mutation probe, a criterion audit.
+- Mutations rank by blast radius and cap at roughly eight. State the cap in the report.
+- A probe may edit only to measure, restores with `git restore`, and proves
+  `git status --porcelain` empty.
+- No probe commits, and no probe touches the plan file.
+
+### No judge stage
+
+- The lead adjudicates. It holds the plan, the diff and every probe report.
+- A judge agent re-verifies from scratch and buys the review a second time.
+- Reports too large for the lead's context: pass them to a judge that may run no tool.
 
 ## What a worker is told
 

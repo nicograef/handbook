@@ -105,6 +105,7 @@ dotfiles.
 | Skills index               | [.claude/skills/README.md](.claude/skills/README.md)                   |
 | Output style contract      | [.claude/skills/output-style.md](.claude/skills/output-style.md)       |
 | Verification contract      | [.claude/skills/quality.md](.claude/skills/quality.md)                 |
+| Verification depth budget  | [.claude/skills/verification-depth.md](.claude/skills/verification-depth.md) |
 | Web research agent         | [.claude/agents/web-researcher.md](.claude/agents/web-researcher.md)   |
 | Plugin manifests           | [.claude-plugin/plugin.json](.claude-plugin/plugin.json), [.claude-plugin/marketplace.json](.claude-plugin/marketplace.json) |
 | Plugin install & adoption  | [guides/claude-plugin.md](guides/claude-plugin.md)                     |

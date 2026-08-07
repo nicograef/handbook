@@ -36,9 +36,11 @@ happens between checkpoints.
    context files, conflicting instructions, criteria no command can verify.
 4. **Choose the shape** — execution mode and the concurrency test, both in
    [orchestration.md](orchestration.md). Sequential is the default.
+   - Then set each phase's review tier per
+     [verification-depth.md](../verification-depth.md).
 5. **Present the run contract and get one go-ahead.** Contract:
    - plan path, base branch and pinned sha
-   - the phase list with its grouping
+   - the phase list with its grouping and each phase's review tier
    - worktree paths and branch names
    - the verification command, the stop conditions
    - every question from step 3
@@ -61,10 +63,12 @@ happens between checkpoints.
      [delegation contract](../dispatching-parallel-agents/SKILL.md).
    - No two agents ever write one file; no agent ever writes the plan file.
 8. **Commit per acceptance criterion, then tick.**
-   - Run the project's verification command: `make test` or `make check` if the
-     repo has a Makefile.
+   - The phase's own worker runs the verification command: `make test` or
+     `make check` if the repo has a Makefile.
    - Otherwise the language-appropriate default: `go test ./...`, `pnpm test`,
      `mvn test`.
+   - The lead reads that exit code. It re-runs the gate only after a fold, a
+     rebase, or an edit the gate has not seen.
    - Commit the change with the run trailer (Constraints).
    - Then flip `- [ ]` → `- [x]` and commit that separately.
    - Tick only what a tool result from this session proves.
@@ -183,5 +187,7 @@ stall.
 
 - After each phase lands on `plan/<slug>`, run the shared
   [self-review checklist](../quality.md) on that phase's diff.
+- Review beyond that checklist is bought at the phase's tier —
+  [verification-depth.md](../verification-depth.md).
 - Surface issues in the chat only if found.
 - The final report follows the [output style contract](../output-style.md).

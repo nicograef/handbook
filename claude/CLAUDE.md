@@ -168,6 +168,21 @@ Applies to every response — answers, reviews, summaries, commit proposals.
   - Omitting `model` inherits the session model; use `effort: 'low'` for cheap mechanical stages.
   - Forks (`subagent_type: "fork"`) always inherit the parent model.
   - Never fork for work `sonnet` could do.
+- **Verification is budgeted by blast radius, not spent per unit.** An unattended run
+  pays for depth in wall clock.
+  - Free-to-redo work gets the gate, plus one batched review over the whole group.
+  - Work no later step can undo — spend, overwrite, publish, production migration —
+    earns probes and my read.
+  - A unit an irreversible unit consumes inherits the irreversible tier.
+  - Quote the tier per unit in the run contract, before the run starts.
+  - Every layer consumes the one below; re-deriving an input is a duplicate, not a check.
+  - The gate runs once, where the change is. The lead reads the exit code, and re-runs
+    only after a fold, a rebase or an unseen edit.
+  - No judge agent while the reports fit the lead's context — the lead adjudicates.
+  - A parallel stage costs its slowest member. Bound the long pole, not the headcount.
+  - Cutting reviewers saves nothing when the survivor is the long pole.
+  - `ultracode` deepens the tier it is handed. It never raises the tier.
+  - Contract: `.claude/skills/verification-depth.md` in the handbook.
 - **Memory holds current state, not events:** a memory says what is true, not what happened when.
   - This is **Current state only** applied to the memory directory.
   - Banned: landed-plan records, milestone records, run reports, completion logs, incident logs.

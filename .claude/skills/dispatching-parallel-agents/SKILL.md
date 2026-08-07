@@ -51,6 +51,9 @@ Delegate independent problems to isolated subagents instead of investigating the
 
 ## Constraints
 
+- Dispatching to check another agent's work is budgeted by
+  [verification-depth.md](../verification-depth.md).
+- A stage costs its slowest member, so bound the long pole before cutting headcount.
 - Isolate writes when agents change code in the same repo.
 - Give each a disjoint file-ownership partition, or run them in separate worktrees
   (`isolation: worktree`), so concurrent edits can't clobber each other.
