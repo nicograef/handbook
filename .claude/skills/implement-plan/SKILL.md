@@ -67,6 +67,10 @@ happens between checkpoints.
      `make check` if the repo has a Makefile.
    - Otherwise the language-appropriate default: `go test ./...`, `pnpm test`,
      `mvn test`.
+   - Per criterion the worker runs only the targeted tests for what it changed.
+   - The full gate runs once per phase, before the phase reports.
+   - A whole gate multiplied by the criterion count is a phase's largest
+     avoidable cost.
    - The lead reads that exit code. It re-runs the gate only after a fold, a
      rebase, or an edit the gate has not seen.
    - Commit the change with the run trailer (Constraints).
@@ -189,5 +193,11 @@ stall.
   [self-review checklist](../quality.md) on that phase's diff.
 - Review beyond that checklist is bought at the phase's tier —
   [verification-depth.md](../verification-depth.md).
+- Defects a review returns go back to that phase's own worker, by `SendMessage`.
+  - A fresh fixer re-reads what that worker already holds; never dispatch one.
+  - Rule and mechanics:
+    [dispatching-parallel-agents](../dispatching-parallel-agents/SKILL.md).
+- Carry the defect *classes* into the next phase's worker prompt.
+  - Unnamed, the same class recurs in every later phase and is bought twice each time.
 - Surface issues in the chat only if found.
 - The final report follows the [output style contract](../output-style.md).

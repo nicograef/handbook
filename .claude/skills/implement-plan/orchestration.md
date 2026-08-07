@@ -51,6 +51,11 @@ Phases *i* and *j* may run concurrently only if **all** of these hold:
    - The two branches also merge into each other cleanly.
    - Exit 1 alone does not prove conflict — a bad ref name also exits 1.
    - Require the hex oid.
+5. The gate survives two concurrent runs of itself.
+   - Probe and test database names, ports and temp paths are derived, not fixed.
+   - A worktree under the repo root is excluded from every lint and type scan.
+   - Either one unfixed turns both runs red, and the failure blames the wrong phase.
+   - Report it as a one-off repo fix: it unlocks every group in the plan, not one.
 
 - Fewer than two phases passing ⇒ run sequentially.
 - Group cap 4: the binding cost is one checkout, one dependency install and one

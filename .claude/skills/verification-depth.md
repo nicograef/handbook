@@ -10,6 +10,8 @@ defect found late costs more than the check costs now.
 - [Every layer consumes the one below](#every-layer-consumes-the-one-below)
 - [A finding carries its proof](#a-finding-carries-its-proof)
 - [A parallel stage costs its slowest member](#a-parallel-stage-costs-its-slowest-member)
+- [A finding that recurs becomes a gate](#a-finding-that-recurs-becomes-a-gate)
+- [Mechanise what is mechanical](#mechanise-what-is-mechanical)
 - [Anti-patterns](#anti-patterns)
 
 ## The tier is what a late catch costs
@@ -48,6 +50,23 @@ defect found late costs more than the check costs now.
 - A cheap reviewer beside a slow one is free. Add breadth, bound depth.
 - State every cap in the report. A silent cap reads as full coverage.
 
+## A finding that recurs becomes a gate
+
+- A probe discovers a defect *class*. A gate catches that class's instances, free.
+- A class found twice has earned a linter. Write it, and no probe looks again.
+- Any rule with a mechanical shape is a script, never a reviewer.
+- Report the class beside its new gate. A fix alone leaves the class alive.
+- A probe that keeps re-finding what a grep would catch is the review paying rent.
+
+## Mechanise what is mechanical
+
+- Split each probe into the reasoning and the loop that reasoning drives.
+- A mutation probe reasons about which mutations matter. A script then runs them.
+- Edit, run the targeted tests, restore: a shell loop, not model work.
+- A test nobody has watched fail is not a test.
+- Its author proves it red before green, holding the file already. A probe proving
+  it later costs a whole stage.
+
 ## Anti-patterns
 
 | Anti-pattern | What it costs | Instead |
@@ -56,4 +75,5 @@ defect found late costs more than the check costs now.
 | A judge that verifies from scratch | A second full review, bought twice | The lead adjudicates |
 | The lead re-running a green gate | The implementer's run, paid again | Read the exit code |
 | An uncapped mutation probe | It alone sets its stage's wall clock | Rank, cap, report the cap |
+| A fresh agent to repair a review's findings | A cold read of files the author still holds | Resume the author |
 | Depth inherited from the fan-out default | `ultracode` deepens a tier, never raises it | Tier first, then fan out |
