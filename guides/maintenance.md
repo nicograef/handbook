@@ -235,5 +235,5 @@ See also:
 - [guides/postgresql-operations.md](postgresql-operations.md) — backup, restore, and the restore drill
 - [guides/provision-server.md](provision-server.md) — unattended-upgrades stance, UFW, fail2ban
 - [guides/letsencrypt-docker.md](letsencrypt-docker.md) — cert renewal loop
-- [guides/docker-setup.md](docker-setup.md) — Docker install and pruning
+- [guides/docker-setup.md](docker-setup.md) — post-install config and pruning
 - [cheatsheets/docker-compose.md](../cheatsheets/docker-compose.md) — Compose command reference

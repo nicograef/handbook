@@ -9,9 +9,12 @@
 ### Prune unused resources
 
 ```bash
-docker system prune -af --volumes    # remove all unused images, containers, volumes
-docker system df                     # check disk usage
+docker system prune -af    # remove all unused images and containers, plus the build cache
+docker system df           # check disk usage
 ```
+
+> **Never add `--volumes` on a stack with `postgres-data`.** It deletes every volume no
+> running container holds — a stopped stack loses its database.
 
 ## Verify
 

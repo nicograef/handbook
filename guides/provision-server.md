@@ -150,7 +150,8 @@ sudo systemctl restart ssh   # 'ssh' is the canonical unit on Debian/Ubuntu
 - IPv6-only server? Set up DNS64 resolvers (and check the limits) —
   see [ipv6-only-vps.md](ipv6-only-vps.md)
 - Open extra firewall ports as needed: `sudo ufw allow 443/tcp`
-- Deploy apps via Docker Compose – see [docker-setup.md](docker-setup.md)
+- Deploy apps via Docker Compose – see [letsencrypt-docker.md](letsencrypt-docker.md);
+  Docker post-install config: [docker-setup.md](docker-setup.md)
 - Install tmux and the modern CLI tools the shell aliases expect — all in
   Debian 13 `main`:
 
@@ -183,5 +184,5 @@ sudo systemctl restart ssh   # 'ssh' is the canonical unit on Debian/Ubuntu
 See also:
 - [scripts/setup-server.sh](../scripts/setup-server.sh) — automated server provisioning script
 - [guides/ipv6-only-vps.md](ipv6-only-vps.md) — IPv6-only servers (DNS64/NAT64, Docker IPv6)
-- [guides/docker-setup.md](docker-setup.md) — Docker installation
+- [guides/docker-setup.md](docker-setup.md) — Docker post-install config and pruning
 - [guides/letsencrypt-docker.md](letsencrypt-docker.md) — TLS certificates

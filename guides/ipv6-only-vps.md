@@ -124,4 +124,4 @@ Expected:
 
 See also:
 
-- [guides/docker-setup.md](docker-setup.md) — Docker install & dual-stack post-install config
+- [guides/docker-setup.md](docker-setup.md) — dual-stack post-install config

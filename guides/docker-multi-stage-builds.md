@@ -80,6 +80,6 @@ Key points:
 ---
 
 See also:
-- [guides/docker-setup.md](docker-setup.md) — Docker installation
+- [guides/docker-setup.md](docker-setup.md) — Docker post-install config and pruning
 - [cheatsheets/docker-compose.md](../cheatsheets/docker-compose.md) — Compose commands
 - [templates/docker-compose.prod.yml](../templates/docker-compose.prod.yml) — production Compose template
