@@ -173,7 +173,7 @@ Applies to every response — answers, reviews, summaries, commit proposals.
   - Free-to-redo work gets the gate, plus one batched review over the whole group.
   - Work no later step can undo — spend, overwrite, publish, production migration —
     earns probes and my read.
-  - A unit an irreversible unit consumes inherits the irreversible tier.
+  - A unit whose output an irreversible unit consumes inherits the irreversible tier.
   - Quote the tier per unit in the run contract, before the run starts.
   - Every layer consumes the one below; re-deriving an input is a duplicate, not a check.
   - The gate runs once, where the change is. The lead reads the exit code, and re-runs
