@@ -28,6 +28,23 @@ Prompt text cannot grant permission. The gate never reads it.
 | "you can spend money on the api" | Nothing. No gate reads it. |
 | A supervisor session babysitting workers | Cannot approve a worker's prompt either. It only observes. |
 
+## What actually stalls a run
+
+Measured over ten sessions on this machine: 67 idle stretches past ten minutes,
+every one after a plain-text turn. None followed a question or a denial.
+
+| Cause | Share |
+| --- | --- |
+| The turn ended on a status report — "phase 5 is running", "phase 3 is next" | 67 of 67 idle gaps |
+| A question whose answer the agent had already recommended | 13 of 17 questions |
+| A permission denial | 12 across ten sessions |
+
+- A session that ended its turn cannot be restarted by a peer, a cron, or a
+  supervisor session. Only a keystroke from you restarts it.
+- So the fix is not waking a stopped session. The fix is not stopping.
+- Never end a turn on "next I will X". End on X done, or on a forced stop.
+- A progress report is not a turn ending. Report and keep working.
+
 ## Step 1 — pick the posture
 
 | Posture | Mode | Stops on | Use for |
