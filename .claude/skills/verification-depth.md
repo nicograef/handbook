@@ -10,6 +10,7 @@ defect found late costs more than the check costs now.
 - [Every layer consumes the one below](#every-layer-consumes-the-one-below)
 - [A finding carries its proof](#a-finding-carries-its-proof)
 - [A parallel stage costs its slowest member](#a-parallel-stage-costs-its-slowest-member)
+- [A review blocks only where its defects propagate](#a-review-blocks-only-where-its-defects-propagate)
 - [A finding that recurs becomes a gate](#a-finding-that-recurs-becomes-a-gate)
 - [Mechanise what is mechanical](#mechanise-what-is-mechanical)
 - [Anti-patterns](#anti-patterns)
@@ -49,6 +50,14 @@ defect found late costs more than the check costs now.
 - A mutation probe ranks by blast radius, and caps. It never walks the whole diff.
 - A cheap reviewer beside a slow one is free. Add breadth, bound depth.
 - State every cap in the report. A silent cap reads as full coverage.
+
+## A review blocks only where its defects propagate
+
+- A read-only probe blocks nothing. Overlap it with the work it reviews.
+- Its findings stream to the author as each lands, never batched behind the slowest.
+- The next unit may start under an open review at the gate-only tier.
+- It may not when the reviewed unit feeds an irreversible one.
+- Work built on a unit the review then refutes is repaid at full price.
 
 ## A finding that recurs becomes a gate
 

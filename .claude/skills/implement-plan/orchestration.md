@@ -80,8 +80,15 @@ phase's tier off the plan, at step 4, before the run contract quotes it.
 
 ### The probe stage
 
+- Author the probe set **once per plan**, parameterised by phase number.
+- The invariants do not change per phase, so a bespoke script per phase is lead time
+  spent twice.
 - One to two probes, `parallel()`, `model: 'opus'`, one structured findings schema.
 - Each probe is a skeptic with a named target: a mutation probe, a criterion audit.
+- Probes read only, so they may start before the phase ends.
+  - Stream them behind the commit log: verify criterion 1 while criterion 7 is built.
+  - Whole-phase probes — end-to-end behaviour, trim, teardown — still wait.
+- Send findings to the worker as each probe lands, not after the slowest one.
 - Mutations rank by blast radius and cap at roughly eight. State the cap in the report.
 - A probe may edit only to measure, restores with `git restore`, and proves
   `git status --porcelain` empty.
@@ -119,8 +126,16 @@ first tick, forcing every later `agent()` call to re-run.
 | Work | Route to |
 | --- | --- |
 | Phase implementation, post-fold verification | `opus` |
+| A probe: which mutations matter, is this criterion met, is this test able to fail | `opus` |
 | A fully mechanical phase (rename, formatting, regenerate-and-check) | `sonnet`, `effort: 'low'` |
+| Plan-review readers: list a phase's write set, resolve its symbols | `sonnet` |
+| A rule with a mechanical shape — counts, dead links, forbidden strings | a script, no agent |
 | Ticking, folding, landing | the lead, no agent |
+
+- A probe is tool-bound, not token-bound: its clock is the test runs it drives.
+- A cheaper model therefore buys little there, and costs the judgment that ranks
+  the probe's work.
+- Cheapen a probe by mechanising its loop, never by demoting its reasoning.
 
 ## Workflow script shape
 

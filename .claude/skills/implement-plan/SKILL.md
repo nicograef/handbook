@@ -69,6 +69,9 @@ happens between checkpoints.
      `mvn test`.
    - Per criterion the worker runs only the targeted tests for what it changed.
    - The full gate runs once per phase, before the phase reports.
+   - Scope even that gate to the languages the phase touched.
+   - A Python-only phase paying for a frontend build is waste times the criterion
+     count.
    - A whole gate multiplied by the criterion count is a phase's largest
      avoidable cost.
    - The lead reads that exit code. It re-runs the gate only after a fold, a
