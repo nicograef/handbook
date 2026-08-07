@@ -16,14 +16,17 @@ services:
     # environment:
     #   - NODE_ENV=production
     # depends_on:
-    #   - db
+    #   - postgres
 
-  # db:
+  # Service name matches docker-compose.prod.yml, so the Makefile's `db` and
+  # `db-shell` targets address the same service in both stacks.
+  # postgres:
   #   image: postgres:17
   #   restart: unless-stopped
   #   environment:
-  #     POSTGRES_PASSWORD: changeme
-  #     POSTGRES_DB: app
+  #     POSTGRES_USER: ${POSTGRES_USER}
+  #     POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+  #     POSTGRES_DB: ${POSTGRES_DB}
   #   volumes:
   #     - pgdata:/var/lib/postgresql/data
   #   ports:
