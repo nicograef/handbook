@@ -96,6 +96,15 @@ as `~/.claude/agent-bus.sh`. Its details are in
   branch.**
 - **Never resolve a conflict in a file a peer has claimed** — send them the
   conflict instead.
+- **Never `git add -A` or `git add .` while a peer shares the checkout.** Stage
+  the paths you changed, by name.
+  - A repo-wide add stages a peer's file mid-edit, and their half-written work
+    lands under your commit message.
+  - The index is per repository, not per session — a claim does not fence it.
+  - It succeeds silently: no conflict, no warning, and the diff looks like yours.
+  - Swept a peer's work already? Tell them what moved and under which sha.
+  - Do not rewrite the commit to undo it: the content is safe, and only the
+    message is wrong.
 - **Never clear another session's state**: its `index.lock`, its worktree, its
   `refs/agent-lock/*`. Report and stop.
 - **A claim is not a lock.** It tells a peer where you will be, so they route
