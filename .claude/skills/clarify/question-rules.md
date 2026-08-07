@@ -3,6 +3,36 @@
 Canonical rules for asking clarifying questions. The clarify, create-plan, and
 write-prd skills all follow these — link here instead of restating them.
 
+## The ask gate
+
+A question spends the user's turn. Earn it first. Run this before every
+question, and before every `AskUserQuestion` call.
+
+1. **Enumerate** the options, including the ones you would not have offered.
+2. **Score** each against the constraints already on the table — repo
+   conventions, `CLAUDE.md`, the PRD, the plan, the user's stated goal.
+3. **Name the consequences** of each: effort, risk, reversibility, what it
+   forecloses.
+4. **Eliminate** every option a stated constraint already rules out.
+
+Then count the survivors:
+
+| Survivors | Action |
+| --- | --- |
+| 0 | The constraints conflict. That conflict is the question — ask it. |
+| 1 | Take it. Record it as a **Decision** with its reasoning. Do not ask. |
+| ≥ 2, one clearly better | Take it. Record it as a **Decision**. Do not ask. |
+| ≥ 2, none clearly better | Ask. Steps 1–3 are the question's context. |
+
+- The last row is the only one that earns a question.
+- "I am unsure" is not a survivor count — do the scoring, then count.
+- Cannot name the surviving options? The question is not ready to ask.
+- Never ask to hand back a call you are equipped to make.
+- Never ask to confirm something you already verified.
+- Asking costs a turn; a wrong reversible call costs a commit. Prefer the commit.
+
+## Rules
+
 - **Explore before asking.** If a question can be answered by reading the
   codebase, read the codebase instead of asking the user. Only ask when the
   answer requires a human judgment call.

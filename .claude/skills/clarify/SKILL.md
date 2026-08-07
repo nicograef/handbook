@@ -9,7 +9,8 @@ description: >-
 
 # Clarify
 
-Never assume — always ask, before acting on ambiguity.
+Never act on an unresolved ambiguity. Resolve it by reading, then by deciding,
+and only then by asking.
 
 - Resolve unknowns through structured questions: walk each decision-tree
   branch, resolve dependencies between decisions one by one.
@@ -17,11 +18,15 @@ Never assume — always ask, before acting on ambiguity.
   needed.
 - create-plan and write-prd embed a lighter clarification pass scoped to
   their own work.
+- Invoking this skill does not make every unknown a question. Each one still
+  passes the [ask gate](question-rules.md#the-ask-gate); the ones that resolve
+  to a single option are decided, not asked.
 
 ## Workflow
 
 1. Ask in rounds, biggest unknowns first — ambiguous or underspecified parts
    of the request — per the [clarification question rules](question-rules.md).
+   Every question clears the [ask gate](question-rules.md#the-ask-gate) first.
 2. Drill deeper on prior answers: remaining gaps, edge cases, conflicting
    constraints. Confirm critical decisions before proceeding.
 3. Stop once the decision tree resolves, even after one round — don't pad

@@ -99,11 +99,19 @@ happens between checkpoints.
 
 ## Stop and ask
 
+Two different things live here, and conflating them is what turns a run into a
+stall.
+
+- A **forced stop** ends the run and hands back. There is no question to answer.
+- A **judgment call** runs the
+  [ask gate](../clarify/question-rules.md#the-ask-gate) first. Most resolve to a
+  single option and never reach the user.
+
+### Forced stops
+
 - Any merge or rebase conflict.
   - Abort in the owning worktree, report the paths and their classes, hand back.
   - Nothing is auto-resolved by content — see [integration.md](integration.md).
-- A phase's criteria are ambiguous, unverifiable, or depend on something that
-  does not exist.
 - Verification fails repeatedly for the same reason after a debugging pass.
 - Proceeding would need anything on the [hazard list](integration.md#hazards), a
   push, a force-push, or `--no-verify`.
@@ -111,13 +119,26 @@ happens between checkpoints.
 - A worktree, branch, `index.lock` or `refs/agent-lock/*` the run does not own is
   dirty, held, or mid-operation and blocks the path.
   - Report it; never clear another worktree's state.
-- The plan would have to change — a new phase, a reworded criterion, a different
-  design.
-  - That is [create-plan](../create-plan/SKILL.md)'s job; this skill executes.
-- A usage limit or a terminal API error. Not a question, a forced stop.
+- A usage limit or a terminal API error.
   - Write and commit the `## Run state` block.
   - Then report the verbatim failure string and any reset time it printed.
   - Taxonomy in [recovery.md](recovery.md).
+
+### Judgment calls
+
+- A phase's criterion is ambiguous, unverifiable, or names something that does
+  not exist.
+  - Read the plan's `### Context`, the repo and its conventions first.
+  - One reading survives: implement it and say which reading you took in the
+    commit body. Two survive with no clear winner: stop and ask.
+- The plan would have to change.
+  - A different design, or a new phase, is
+    [create-plan](../create-plan/SKILL.md)'s job — stop.
+  - A criterion whose wording is wrong but whose intent is unambiguous is not a
+    plan change. Implement the intent; note the wording in the report.
+- A phase needs a shell command the allowlist does not cover.
+  - Reach the goal with an allowlisted command where one exists.
+  - None exists: stop, and name the exact command in the handoff.
 
 ## Constraints
 

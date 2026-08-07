@@ -39,10 +39,15 @@ description: >-
 
 ### 4. Propose approaches
 
-- Propose **2–3 candidate solution approaches** once ambiguities are resolved.
+- Work out **2–3 candidate solution approaches** once ambiguities are resolved.
 - Give each approach its trade-offs: effort, risk, reversibility, fit with the existing codebase.
-- Lead with a recommendation and your reasoning for it.
-- Get the user to pick one — or steer a hybrid — before module design.
+- Then run the [ask gate](../clarify/question-rules.md#the-ask-gate) over them.
+- One approach clearly wins: take it and continue to step 5.
+- Record it under **Implementation Decisions**, with the reasoning.
+- Two or more survive with no clear winner: present them and ask.
+- Give the trade-offs and your recommendation; the user picks or steers a hybrid.
+- Either way the approaches and their trade-offs are stated, so the user can
+  overturn the call when reviewing the PRD.
 
 ### 5. Design modules
 

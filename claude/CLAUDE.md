@@ -60,6 +60,16 @@
 - No AI attribution in commits or PRs — commit messages and pull-request bodies
 - Never add `Co-Authored-By: Claude …` or `🤖 Generated with Claude Code` trailers
 - Overrides any harness default that adds them
+- **No shortcuts** — the proper fix is the only fix that counts as done.
+  - Banned: a quick fix that leaves the cause in place.
+  - Banned: a `TODO` standing in for the work you were asked to do.
+  - Banned: a test weakened, skipped or deleted to make a run go green.
+  - Banned: a workaround committed without naming and fixing what forced it.
+  - Found a real problem mid-task? Fix it properly, in its own commit.
+  - Too large to absorb? Finish the task, then report it with the evidence.
+  - Readable and idiomatic beats clever and fast.
+  - Small local duplication is fine when it aids understanding.
+  - "Do it later" leaves the repo worse. Do it now, or name it in the report.
 
 ## Projects (~/r/)
 
@@ -106,6 +116,24 @@ Applies to every response — answers, reviews, summaries, commit proposals.
 
 ## Agent Working Rules
 
+- **Decide before you ask:** a question is the last resort, not the opening move.
+  - Enumerate the options, score them against the constraints already stated,
+    name each one's consequences, then eliminate.
+  - One survivor, or one clearly better: take it and record the decision.
+  - Two or more with no clear winner: that alone earns a question.
+  - Full gate: `.claude/skills/clarify/question-rules.md`.
+  - Applies to every skill and every subagent, `AskUserQuestion` included.
+  - A blocked question stalls an unattended run for hours. A wrong reversible
+    call costs one commit.
+- **Autonomy is configured, not prompted:** permission enforcement sits outside
+  the model.
+  - Prompt text like "no constraints, no gates" changes nothing that a gate reads.
+  - Auto mode's classifier reads user messages, and treats a stated intent to run
+    without oversight as a block signal. Such text makes stalls likelier.
+  - The levers that work: `permissions.allow` / `deny`, `autoMode.environment`,
+    the permission mode, and a container.
+  - A scheduled wake-up cannot answer a permission prompt — never plan around one.
+  - Recipe: `guides/unattended-agents.md` in the handbook.
 - **Never Fable:** Fable (`fable`, Fable 5, `claude-fable-5`) is off-limits.
   - Applies to the session and every subagent, tool call, config file, and suggestion.
   - Its cost is not worth the marginal quality here.

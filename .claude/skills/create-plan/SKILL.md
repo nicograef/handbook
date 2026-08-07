@@ -28,8 +28,13 @@ description. Output is a Markdown file in `docs/plans/`.
 - **Always run this step** — whether a PRD was provided or not.
 - A PRD may contain gaps, conflicting requirements, or underspecified decisions.
 - Resolve those before planning begins.
-- Resolve unknowns through **1–3 rounds** of structured questions before planning.
+- Resolve unknowns through **0–3 rounds** of structured questions before planning.
 - Follow the canonical [clarification question rules](../clarify/question-rules.md).
+- Every question clears the [ask gate](../clarify/question-rules.md#the-ask-gate)
+  first. Unknowns the codebase, the PRD or the conventions already settle become
+  **Resolved decisions**, not questions.
+- Zero rounds is the correct outcome when nothing survives the gate. Say so in
+  one line and plan.
 
 ### 3. Research the codebase
 

@@ -25,6 +25,7 @@ Setting something up? Start at [guides/bootstrap.md](guides/bootstrap.md).
 | Server maintenance & upkeep       | [guides/maintenance.md](guides/maintenance.md)                             |
 | End-to-end verification drill     | [guides/verification-drill.md](guides/verification-drill.md)               |
 | Audiobooks for ElevenReader       | [guides/audiobook-pipeline.md](guides/audiobook-pipeline.md)               |
+| Unattended agent runs             | [guides/unattended-agents.md](guides/unattended-agents.md)                 |
 
 ### Stack conventions
 
@@ -108,6 +109,8 @@ dotfiles.
 | Path-scoped rules (Claude) | `.claude/rules/`                                                        |
 | Global Claude instructions | [claude/CLAUDE.md](claude/CLAUDE.md)                                   |
 | Claude settings + hooks    | [claude/settings.json](claude/settings.json)                           |
+| Unattended run recipe      | [guides/unattended-agents.md](guides/unattended-agents.md)             |
+| Ask gate (decide vs. ask)  | [.claude/skills/clarify/question-rules.md](.claude/skills/clarify/question-rules.md) |
 | Status line script         | [claude/statusline.sh](claude/statusline.sh)                           |
 | Concurrent-session bus     | [scripts/agent-bus.sh](scripts/agent-bus.sh), [.claude/skills/parallel-sessions/SKILL.md](.claude/skills/parallel-sessions/SKILL.md) |
 | Repo self-check            | [Makefile](Makefile) (`make check`)                                    |

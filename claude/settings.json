@@ -86,7 +86,40 @@
       "Bash(docker compose exec:*)",
       "Bash(~/.claude/agent-bus.sh:*)",
       "Bash(scripts/agent-bus.sh:*)",
-      "Bash(./scripts/agent-bus.sh:*)"
+      "Bash(./scripts/agent-bus.sh:*)",
+
+      "Bash(make check)",
+      "Bash(make test)",
+      "Bash(make lint)",
+      "Bash(make fmt)",
+      "Bash(make build)",
+      "Bash(make links)",
+      "Bash(make help)",
+      "Bash(pnpm run test)",
+      "Bash(pnpm run lint)",
+      "Bash(pnpm run build)",
+      "Bash(pnpm run typecheck)",
+      "Bash(mvn test)",
+      "Bash(mvn verify)",
+      "Bash(./mvnw test)",
+      "Bash(./mvnw verify)",
+      "Bash(uv run pytest:*)",
+      "Bash(uv run ruff:*)",
+      "Bash(uv run mypy:*)",
+
+      "Bash(git symbolic-ref:*)",
+      "Bash(git ls-remote:*)",
+      "Bash(git merge-tree:*)",
+      "Bash(git worktree list:*)",
+      "Bash(git worktree add:*)",
+      "Bash(git worktree prune:*)",
+      "Bash(git worktree repair:*)",
+      "Bash(git switch:*)",
+      "Bash(git checkout -b:*)",
+      "Bash(git rebase --continue)",
+      "Bash(git rebase --abort)",
+      "Bash(git merge --abort)",
+      "Bash(git fsck:*)"
     ],
     "deny": [
       "Bash(rm -rf /*)",
@@ -95,9 +128,39 @@
       "Bash(git push -f:*)",
       "Bash(git push --force-with-lease:*)",
       "Bash(git push --no-verify:*)",
-      "Bash(git reset --hard:*)"
+
+      "Bash(git reset --hard:*)",
+      "Bash(git checkout --:*)",
+      "Bash(git restore .:*)",
+      "Bash(git clean -fd:*)",
+      "Bash(git branch -D:*)",
+      "Bash(git worktree remove --force:*)",
+      "Bash(git gc --prune=now:*)",
+      "Bash(git update-ref:*)",
+      "Bash(git rebase --update-refs:*)",
+      "Bash(git stash)",
+      "Bash(git stash push:*)",
+      "Bash(git stash pop:*)",
+      "Bash(git stash drop:*)",
+      "Bash(git stash clear:*)"
     ],
     "defaultMode": "auto"
+  },
+  "autoMode": {
+    "environment": [
+      "$defaults",
+      "Organization: none — Nico Gräf, a solo developer on a single-user Linux machine. Primary use of Claude Code: software development on personal projects.",
+      "Source control: GitHub, org github.com/nicograef, and every repo under it. SSH remotes of the form git@github.com:nicograef/<repo>.git.",
+      "Repository visibility: handbook, jotti and rag are public. barista and career are private. Treat any repo not named here as private.",
+      "Trusted repo: every git repository under /home/nico/r, including the worktree and rescue copies barista-worktrees, barista-rescue, barista-eval and barista-backups, and any .worktrees/ directory inside a repo.",
+      "Cloud provider(s): AWS. VPS hosting on Hetzner and netcup, reached over SSH.",
+      "Key internal services: PostgreSQL 17 and Ollama on localhost, and the Docker Compose stacks each repo defines. Vite and Go dev servers on localhost.",
+      "Internal package registry: none. The public npm registry, Go module proxy, PyPI, crates.io and Maven Central are the expected registries.",
+      "Sensitive data locations & audiences: /home/nico/.claude holds session transcripts and credentials, and /home/nico/r/career holds private job-search data. Neither leaves this machine, and neither belongs in any commit, push, PR body or paste.",
+      "Sensitive remote targets: the Hetzner and netcup VPS hosts and any AWS account. An agent session never deploys to them.",
+      "Protected IaC scopes: every AWS CDK stack. An agent session never runs cdk deploy or cdk destroy.",
+      "Additional context: single-user machine, no shared or multi-tenant infrastructure, no CI secrets held locally. Agent sessions work in git worktrees under .worktrees/ and land on feature branches; they never deploy and never push to main."
+    ]
   },
   "model": "claude-opus-5[1m]",
   "hooks": {
@@ -108,6 +171,17 @@
           {
             "type": "command",
             "command": "payload=$(cat); cmd=$(printf '%s' \"$payload\" | jq -r '.tool_input.command // empty' 2>/dev/null); [ -z \"$cmd\" ] && cmd=\"$payload\"; if printf '%s' \"$cmd\" | grep -Eq 'git[[:space:]]+push' && printf '%s' \"$cmd\" | grep -Eq -- '(--force-with-lease|--force|--no-verify|(^|[[:space:]])-f($|[[:space:]]))'; then echo 'Blocked: git push with --force/-f/--force-with-lease/--no-verify is not allowed.' >&2; exit 2; fi; exit 0"
+          }
+        ]
+      }
+    ],
+    "PermissionDenied": [
+      {
+        "matcher": ".*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "jq -c '{t:(now|todate),cwd,tool:.tool_name,cmd:(.tool_input.command // .tool_input.file_path // \"\"),reason:.denial_reason}' >> \"$HOME/.claude/denials.log\" 2>/dev/null; exit 0"
           }
         ]
       }
