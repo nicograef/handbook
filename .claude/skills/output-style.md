@@ -56,3 +56,5 @@ New exceptions require an edit here, never a local override.
 ## Enforcement
 
 `make prose` flags paragraphs of ≥ 4 lines and sentences over 20 words across tracked Markdown.
+
+The files above are listed in `PARA_ALLOW` in [`../../scripts/check-repo.sh`](../../scripts/check-repo.sh), which lifts the paragraph cap for them only.

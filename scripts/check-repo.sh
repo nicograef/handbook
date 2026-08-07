@@ -31,8 +31,15 @@ LANG_ALLOW=(
   "claude/CLAUDE.md"
 )
 
-# Files exempt from the prose caps. Every entry needs a justification comment.
-PROSE_ALLOW=(
+# Files exempt from the paragraph cap only — the sentence cap still applies to them.
+# Source of truth: .claude/skills/output-style.md → Named prose exceptions.
+PARA_ALLOW=(
+  ".claude/skills/tutor/SKILL.md"                 # hint ladders, post-answer explanations
+  ".claude/skills/understand/SKILL.md"            # step 6 holistic narrative
+  ".claude/skills/guided-implementation/SKILL.md" # What/Why/How coaching text
+  ".claude/skills/write-prd/SKILL.md"             # problem statement, user stories
+  ".claude/skills/cleanup/readability.md"         # illustrative bad/good prose
+  ".claude/skills/cleanup/readability-de.md"      # illustrative bad/good prose
 )
 
 # Prose caps enforced by check_prose (see .claude/skills/output-style.md).
@@ -362,13 +369,15 @@ prose_scan() {
 
 # 8. Prose caps
 check_prose() {
-  local file allow violation
+  local file allow violation para_exempt
   while IFS= read -r file; do
-    for allow in ${PROSE_ALLOW[@]+"${PROSE_ALLOW[@]}"}; do
-      [[ "$file" == "$allow" ]] && continue 2
+    para_exempt=false
+    for allow in "${PARA_ALLOW[@]}"; do
+      [[ "$file" == "$allow" ]] && para_exempt=true
     done
     while IFS= read -r violation; do
       [[ -z "$violation" ]] && continue
+      [[ "$para_exempt" == true && "$violation" == *"paragraph of"* ]] && continue
       log "prose: $violation"
     done < <(prose_scan "$file")
   done < <(prose_md)
