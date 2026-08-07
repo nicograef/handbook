@@ -38,7 +38,7 @@ Runs once, over the whole book, after every chapter passed Round A.
 
 - Verify the dependency order in `PLAN.md` still holds after Round A edits.
 - Check every guiding question in `BRIEF.md` is answered by some chapter.
-- Run `scripts/check-terms.sh <dir>`; every use-before-explained hit gets fixed.
+- Run `<handbook>/scripts/check-terms.sh <dir>`; every use-before-explained hit gets fixed.
 - Two fixes are legitimate: move the explanation earlier, or move the chapter.
 - Adding a second explanation of the same term is not a fix. It is drift.
 - Update `terms.yml` when an explanation moves.

@@ -103,7 +103,7 @@ Three rounds, one dimension each, in this order. Details and per-round contracts
 10. **Round B — structure and terms.** Once, over the whole book.
     - Verify the dependency order still holds after Round A.
     - Check every `BRIEF.md` guiding question is actually answered.
-    - Run `scripts/check-terms.sh <dir>`; fix every use-before-explained hit.
+    - Run `<handbook>/scripts/check-terms.sh <dir>`; fix every use-before-explained hit.
 11. **Round C — language and flow.** Per chapter, in parallel.
     - Read for the ear only. Do not touch facts, order, or terminology.
     - Never cut for length. Repetition that serves the listener stays.
