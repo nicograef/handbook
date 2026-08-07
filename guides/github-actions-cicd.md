@@ -7,11 +7,15 @@ The full, copy-paste-ready workflow lives in [templates/ci.yml](../templates/ci.
 targets live in [templates/Makefile](../templates/Makefile). This guide explains the patterns
 behind them.
 
+The template covers build, lint and test only. Deploy, tag triggers and the Java job are
+patterns to add per project — they are not in it.
+
 ## Prerequisites
 
 - A repository with `backend/`, `frontend/`, and (optionally) `database/` subdirectories.
 - For OIDC deploys: an AWS account where you can create an IAM OIDC provider and role.
-- Tooling matching the versions in `templates/ci.yml`: Go 1.26, Node 24, pnpm 10, Java 21.
+- Tooling matching the versions in `templates/ci.yml`: Go 1.26, Node 24, pnpm 10.
+- Java 21 for the Maven patterns below; the template ships no Java job.
 
 ## AWS OIDC Deploy
 
@@ -84,8 +88,8 @@ gh run list --limit 1
 gh run watch
 ```
 
-Expected: the `changes` job runs first, only the affected `*-ci` jobs execute, and `deploy` runs
-last (and only on `main` / a `prod-*` tag).
+Expected: the `changes` job runs first, and only the affected `*-ci` jobs execute. With a deploy
+job added, it runs last — and only on `main` or a `prod-*` tag.
 
 ## Troubleshooting
 

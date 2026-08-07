@@ -109,4 +109,4 @@ Key rules:
 
 See also:
 - [guides/docker-multi-stage-builds.md](docker-multi-stage-builds.md) — multi-stage builds for Java
-- [guides/github-actions-cicd.md](github-actions-cicd.md) — Java + Maven CI job
+- [guides/github-actions-cicd.md](github-actions-cicd.md) — CI patterns; Maven caching
