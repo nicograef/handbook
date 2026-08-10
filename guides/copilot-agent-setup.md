@@ -66,8 +66,6 @@ Contextual instructions loaded automatically when the agent edits files matching
 - **If the repo already carries `.claude/rules/*.md`**, do **not** add a parallel
   `.github/instructions/` copy.
 - **Why** — that dual surface drifts (see [Cross-tool compatibility](#cross-tool-compatibility)).
-- **This repo** dropped its `.github/instructions/` copies for exactly that reason.
-- **It now routes** Copilot through `AGENTS.md`.
 - **`applyTo` is required** — every instructions file needs an `applyTo` glob (e.g. `backend/**`, `frontend/**`, `scripts/**`) that scopes where it loads. Use `applyTo: "**"` for repo-wide instructions.
 - Use `excludeAgent: "code-review"` or `excludeAgent: "cloud-agent"` to hide a file from a specific Copilot agent; without it, every agent loads the file.
 

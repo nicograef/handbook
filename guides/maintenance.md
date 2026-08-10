@@ -57,10 +57,8 @@
    ends with a `Total reclaimed space: <N>` line (`0B` if nothing was orphaned).
 
 > To reclaim more aggressively, use `docker system prune` from
-> [docker-setup.md](docker-setup.md#prune-unused-resources) instead.
-> It removes all images with no running container, plus the build cache.
-> Never pass `--volumes` on a stack with `postgres-data`.
-> Once `docker compose down` has removed the containers, that flag deletes the database.
+> [docker-setup.md](docker-setup.md#prune-unused-resources) instead — it carries the
+> `--volumes` prohibition that protects `postgres-data`.
 
 ## Reboot routine (monthly)
 

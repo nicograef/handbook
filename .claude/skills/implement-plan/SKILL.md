@@ -193,7 +193,7 @@ stall.
   [integration.md](integration.md#hazards).
 - **Never push the base branch, never force-push, never `--no-verify`.**
 - Set `model` explicitly on every delegated agent; routing in
-  [distill/parallelism.md](../distill/parallelism.md#model-routing).
+  [dispatching-parallel-agents](../dispatching-parallel-agents/SKILL.md#model-routing).
 - Prefer simple, clear, idiomatic solutions.
   - No performance optimisation at the cost of readability.
   - Small local duplication is fine when it aids understanding.

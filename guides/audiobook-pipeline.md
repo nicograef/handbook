@@ -84,17 +84,11 @@ Full contract: [.claude/skills/audiobook/SKILL.md](../.claude/skills/audiobook/S
 | Review | 9-12 | Correctness, then structure, then language, then a diff re-check |
 | Render | 13 | `book.epub` |
 
-Step 4 asks three things: scope boundary, guiding questions, prior-knowledge level.
-Each comes with a proposed default, so "yes" is a complete answer. Everything else —
-chapter count, order, theory depth, terminology, length — is derived, never asked.
-
-It sits before the research because research is the first expensive step. A wrong scope
-caught here costs minutes; caught after writing it costs the whole run.
+What step 4 asks, what it never asks, and why it sits there:
+[the-checkpoint.md](../.claude/skills/audiobook/the-checkpoint.md).
 
 Everything the checkpoint did not cover lands in `PLAN.md` under "Assumptions" and in the
 closing report. Read those two before you listen.
-
-There is no length target at any step. A book runs as long as its subject needs.
 
 `meta.yml` carries `title`, `creator`, and `lang`. Use `lang: de` for German narration.
 Chapters are `NN-slug.md`; the prefix sets reading order and keeps the planning

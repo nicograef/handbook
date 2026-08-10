@@ -154,8 +154,8 @@ This is the plan-side mechanism for it.
 
 ## Model routing
 
-- The rule is in
-  [../distill/parallelism.md](../distill/parallelism.md#model-routing).
+- The general rule is in
+  [../dispatching-parallel-agents/SKILL.md](../dispatching-parallel-agents/SKILL.md#model-routing).
 - Set `model` explicitly in every `agent()` opts — an agent that omits it
   inherits the session model.
 

@@ -55,6 +55,20 @@ Delegate independent problems to isolated subagents instead of investigating the
    results.
    - Passing in isolation doesn't guarantee passing together.
 
+## Model routing
+
+Decide the model per task. Never let a worker inherit the session model silently.
+
+| Work | Model |
+| --- | --- |
+| Mechanical and fully specified — searches, renames, formatting, doc sweeps, scaffolding | `sonnet` |
+| Judgment — implementation, review, verification, debugging, cross-cutting synthesis | `opus` |
+
+- Set it explicitly: the `Agent` tool's `model`, or `model` in every `agent()` call's opts.
+- Omitting it inherits the session model; a fork always inherits its parent's.
+- A skill's own table refines this per stage — [distill](../distill/parallelism.md#model-routing),
+  [implement-plan](../implement-plan/orchestration.md#model-routing).
+
 ## Constraints
 
 - Dispatching to check another agent's work is budgeted by

@@ -28,8 +28,9 @@ Pick once, from the file count in step 2:
 
 ## Model routing
 
-Per the global routing rules: `sonnet` for mechanical and fully-specified work,
-`opus` for judgment. Never let a worker inherit the session model silently.
+The general rule is in
+[../dispatching-parallel-agents/SKILL.md](../dispatching-parallel-agents/SKILL.md#model-routing).
+Distill's per-stage refinement:
 
 | Work | Model |
 | --- | --- |

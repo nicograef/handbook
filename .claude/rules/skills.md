@@ -52,12 +52,7 @@ Every `SKILL.md` includes:
 - Progressive disclosure — load only what's needed.
 - Every reference file over 100 lines opens with a short bullet TOC of its `##` headings,
   directly under the H1.
-- Sentence: ≤ 20 words, one claim.
-- Paragraph: ≤ 3 lines, ≤ 1 per section.
-- Bullet: ≤ 2 lines.
-- Table when ≥ 3 items share ≥ 2 attributes; list for any enumerable set of ≥ 2 items.
-- Format order: table → list → paragraph.
-- Full contract: [`../skills/output-style.md`](../skills/output-style.md).
+- Output caps and format order: [`../skills/output-style.md`](../skills/output-style.md).
 
 ## Deployment
 

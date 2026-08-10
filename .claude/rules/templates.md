@@ -18,8 +18,7 @@ paths: "templates/**"
 - Keep inline comments short — explain *why*, not *what*.
 - Group related settings with a section header comment (`# ── Section ──`).
 - Prefer sensible defaults over empty values.
-- Hard caps: sentence ≤ 20 words, one claim; paragraph ≤ 3 lines; bullet ≤ 2 lines.
-- Use a table or list before a paragraph — full contract: [output-style.md](../skills/output-style.md).
+- Output caps and format order: [output-style.md](../skills/output-style.md).
 
 ## File naming
 
