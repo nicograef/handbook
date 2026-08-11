@@ -158,7 +158,7 @@
       "Organization: none — Nico Gräf, a solo developer on a single-user Linux machine. Primary use of Claude Code: software development on personal projects.",
       "Source control: GitHub, org github.com/nicograef, and every repo under it. SSH remotes of the form git@github.com:nicograef/<repo>.git.",
       "Repository visibility: handbook, jotti and rag are public. barista and career are private. Treat any repo not named here as private.",
-      "Trusted repo: every git repository under /home/nico/r, including the worktree and rescue copies barista-worktrees, barista-rescue, barista-eval and barista-backups, and any .worktrees/ directory inside a repo.",
+      "Trusted repo: every git repository under /home/nico/r, and any .worktrees/ directory inside a repo. Agent worktrees for barista live in /home/nico/r/.worktrees, outside every repo, so that ty check . never scans one.",
       "Cloud provider(s): AWS. VPS hosting on Hetzner and netcup, reached over SSH.",
       "Key internal services: PostgreSQL 17 and Ollama on localhost, and the Docker Compose stacks each repo defines. Vite and Go dev servers on localhost.",
       "Internal package registry: none. The public npm registry, Go module proxy, PyPI, crates.io and Maven Central are the expected registries.",
