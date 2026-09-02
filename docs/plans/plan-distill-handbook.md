@@ -433,9 +433,9 @@ Cut the prose corpus from 10,729 to roughly 6,900 Markdown lines (about −36%) 
 
 ### Acceptance criteria
 
-- [ ] `the-checkpoint.md` deleted; `audiobook/SKILL.md` step 4 contains "new to the domain" and "Never write chapters before step 7"; `grep -c "chapter-file.md" .claude/skills/audiobook/SKILL.md` ≥ 1.
-- [ ] `guides/audiobook-pipeline.md` ≤ 80 lines and keeps "hand-written", "jgm/pandoc/releases", "-t plain /dev/null".
-- [ ] `scripts/check-repo.sh links` and `prose` clean for the phase's files.
+- [x] `the-checkpoint.md` deleted; `audiobook/SKILL.md` step 4 contains "new to the domain" and "Never write chapters before step 7"; `grep -c "chapter-file.md" .claude/skills/audiobook/SKILL.md` ≥ 1.
+- [x] `guides/audiobook-pipeline.md` ≤ 80 lines and keeps "hand-written", "jgm/pandoc/releases", "-t plain /dev/null".
+- [x] `scripts/check-repo.sh links` and `prose` clean for the phase's files.
 
 ---
 
