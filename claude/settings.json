@@ -27,8 +27,6 @@
       "Bash(git blame:*)",
       "Bash(git merge:*)",
       "Bash(git rebase:*)",
-      "Bash(git checkout:*)",
-      "Bash(git push:*)",
       "Bash(gh pr view:*)",
       "Bash(gh pr list:*)",
       "Bash(gh pr diff:*)",
@@ -152,7 +150,7 @@
     ],
     "defaultMode": "auto"
   },
-  "model": "claude-fable-5-1",
+  "model": "claude-opus-5[1m]",
   "hooks": {
     "PreToolUse": [
       {
