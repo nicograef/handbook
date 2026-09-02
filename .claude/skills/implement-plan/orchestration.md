@@ -106,7 +106,8 @@ forcing every later `agent()` call to re-run.
 
 - The general rule is in [../dispatching-parallel-agents/SKILL.md](../dispatching-parallel-agents/SKILL.md#model-routing).
 - Set `model` explicitly in every `agent()` opts — an agent that omits it inherits the session model.
-
+- A fully mechanical phase (rename, formatting, regenerate-and-check): `sonnet`, `effort: 'low'`.
+- Ticking, folding, landing: the lead, no agent.
 - A probe is tool-bound, not token-bound, so a cheaper model buys little there. It costs the judgment that ranks its work.
 - Cheapen a probe by mechanising its loop, never by demoting its reasoning.
 

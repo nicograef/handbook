@@ -11,7 +11,7 @@ description: >-
 
 _Adapted from the MIT-licensed [superpowers](https://github.com/obra/superpowers) plugin._
 
-- **Cost** — roughly 15× the tokens of a single linear pass.
+- **Cost** — delegating to isolated subagents costs roughly 15× the tokens of a single linear pass.
 - **Reserve for** — genuinely independent, each-substantial work.
 - **Do it yourself** — two small related fixes.
 
@@ -58,8 +58,9 @@ Decide the model per task. Never let a worker inherit the session model silently
 | Judgment — implementation, review, verification, debugging, cross-cutting synthesis | `opus` |
 
 - Set it explicitly: the `Agent` tool's `model`, or `model` in every `agent()` call's opts.
-- Omitting it inherits the session model; a fork always inherits its parent's.
-- A skill's own table refines this per stage — [distill](../distill/parallelism.md#model-routing),
+- Omitting it inherits the session model; a fork always inherits its parent's. Never fork for work `sonnet` could do.
+- Use `effort: 'low'` for cheap mechanical stages.
+- A skill refines this per stage — [distill](../distill/parallelism.md#model-routing),
   [implement-plan](../implement-plan/orchestration.md#model-routing).
 
 ## Constraints
