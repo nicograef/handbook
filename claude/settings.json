@@ -87,7 +87,6 @@
       "Bash(~/.claude/agent-bus.sh:*)",
       "Bash(scripts/agent-bus.sh:*)",
       "Bash(./scripts/agent-bus.sh:*)",
-
       "Bash(make check)",
       "Bash(make test)",
       "Bash(make lint)",
@@ -111,7 +110,6 @@
       "Bash(docker compose up -d:*)",
       "Bash(docker compose down:*)",
       "Bash(docker compose build:*)",
-
       "Bash(git symbolic-ref:*)",
       "Bash(git ls-remote:*)",
       "Bash(git merge-tree:*)",
@@ -133,7 +131,6 @@
       "Bash(git push -f:*)",
       "Bash(git push --force-with-lease:*)",
       "Bash(git push --no-verify:*)",
-
       "Bash(git reset --hard:*)",
       "Bash(git checkout --:*)",
       "Bash(git restore .:*)",
@@ -151,24 +148,7 @@
     ],
     "defaultMode": "auto"
   },
-  "autoMode": {
-    "environment": [
-      "$defaults",
-      "Organization: none — Nico Gräf, a solo developer on a single-user Linux machine. Primary use of Claude Code: software development on personal projects.",
-      "Source control: GitHub, org github.com/nicograef, and every repo under it. SSH remotes of the form git@github.com:nicograef/<repo>.git.",
-      "Repository visibility: handbook, jotti and rag are public. barista and career are private. Treat any repo not named here as private.",
-      "Trusted repo: every git repository under /home/nico/r, including the worktree and rescue copies barista-worktrees, barista-rescue, barista-eval and barista-backups, and any .worktrees/ directory inside a repo.",
-      "Cloud provider(s): AWS. VPS hosting on Hetzner and netcup, reached over SSH.",
-      "Key internal services: PostgreSQL 17 and Ollama on localhost, and the Docker Compose stacks each repo defines. Vite and Go dev servers on localhost.",
-      "Internal package registry: none. The public npm registry, Go module proxy, PyPI, crates.io and Maven Central are the expected registries.",
-      "Sensitive data locations & audiences: /home/nico/.claude holds session transcripts and credentials, and /home/nico/r/career holds private job-search data. Neither leaves this machine, and neither belongs in any commit, push, PR body or paste.",
-      "Sensitive remote targets: the Hetzner and netcup VPS hosts and any AWS account. An agent session never deploys to them.",
-      "Protected IaC scopes: every AWS CDK stack. An agent session never runs cdk deploy or cdk destroy.",
-      "Additional context: single-user machine, no shared or multi-tenant infrastructure, no CI secrets held locally. Agent sessions work in git worktrees under .worktrees/ and land on feature branches; they never deploy and never push to main."
-    ]
-  },
   "model": "claude-opus-5[1m]",
-  "outputStyle": "Proactive",
   "hooks": {
     "PreToolUse": [
       {
@@ -242,6 +222,7 @@
     "typescript-lsp@claude-plugins-official": true,
     "gopls-lsp@claude-plugins-official": true
   },
+  "outputStyle": "Proactive",
   "effortLevel": "xhigh",
   "promptSuggestionEnabled": false,
   "awaySummaryEnabled": false,
@@ -252,5 +233,21 @@
   "fileCheckpointingEnabled": false,
   "showTurnDuration": true,
   "inputNeededNotifEnabled": true,
-  "agentPushNotifEnabled": true
+  "agentPushNotifEnabled": true,
+  "autoMode": {
+    "environment": [
+      "$defaults",
+      "Organization: gyva (legal entity AugRep GmbH), Freiburg im Breisgau, Germany. Nico Gräf is a software developer there. This is a company-issued, single-user Linux laptop. Primary use of Claude Code: software development for gyva, plus personal projects.",
+      "Source control: GitHub. Personal org github.com/nicograef with SSH remotes git@github.com:nicograef/<repo>.git. The company's GitHub org and remotes: not yet provided.",
+      "Repository visibility: handbook is public. Treat every other repo, company or personal, as private.",
+      "Trusted repo: every git repository under /home/nico/r, and any .worktrees/ directory inside a repo.",
+      "Cloud provider(s): not yet provided.",
+      "Key internal services: the Docker Compose stacks each repo defines, and dev servers on localhost. Company services: not yet provided.",
+      "Internal package registry: not yet provided. The public npm registry, Go module proxy, PyPI, crates.io and Maven Central are the expected registries.",
+      "Sensitive data locations & audiences: /home/nico/.claude holds session transcripts and credentials. Company source code and data are confidential. None of it leaves this machine except through the company's own git remotes, and none belongs in a PR body, paste, or third-party service.",
+      "Sensitive remote targets: not yet provided. An agent session never deploys anywhere.",
+      "Protected IaC scopes: not yet provided. An agent session never runs an infrastructure deploy or destroy command.",
+      "Additional context: single-user company laptop, no CI secrets held locally. Agent sessions work in git worktrees under .worktrees/ and land on feature branches; they never deploy and never push to main."
+    ]
+  }
 }

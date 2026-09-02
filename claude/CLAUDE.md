@@ -3,40 +3,16 @@
 ## Who I am
 
 - Name: Nico Gräf
-- Full-stack web and cloud developer
-- Email: graef.nico@gmail.com
+- Experienced software developer, full-stack web and cloud
+- Employer: gyva (legal entity AugRep GmbH), a startup in Freiburg im Breisgau, Germany, since 2026-09-01
+- Work email: nico.graef@gyva.ai; personal email: graef.nico@gmail.com; GitHub `nicograef`
+- Primary use of Claude Code: software development for gyva, plus personal projects
 
-## Tech Stack
+## Company context
 
-### Languages & Runtimes
-
-| Language | Use | Stack |
-| --- | --- | --- |
-| TypeScript/Node.js | primary frontend and backend | Node 24, pnpm 10+ |
-| Go | backend services | 1.26+, stdlib net/http, no frameworks |
-| Java + Spring Boot | backend services | Java 21, Spring Boot 3.x, Maven |
-| SQL | databases | PostgreSQL 17 exclusively |
-
-### Frontend
-
-- React 19, Vite, TypeScript (strict, `--max-warnings=0`)
-- Tailwind CSS 4, shadcn/ui, Radix UI, Lucide React
-- React Hook Form + Zod, Vitest + Testing Library
-- ESLint (flat config), Prettier (semi: false, singleQuote: true)
-
-### Backend
-
-- **Go:** stdlib HTTP, pgx/v5, sqlc, zerolog, zog, golang-jwt, Argon2id
-- **Java:** Spring Boot 3, Spring Data JPA, Flyway, Constructor injection (no field @Autowired)
-
-### Infrastructure & DevOps
-
-- Docker + Docker Compose (multi-stage builds, Alpine images) — local dev and production
-- Nginx reverse proxy, Let's Encrypt TLS (certbot)
-- GitHub Actions for CI/CD
-- AWS CDK (TypeScript) for cloud infra, OIDC for auth — no static credentials
-- No Terraform yet (lexiban v2 branch is migrating to it)
-- Hosting: VPS on Hetzner/netcup (Germany), AWS for some projects
+- Company, team, product, repositories, tech stack, and infrastructure: not yet provided by Nico.
+- Until provided, treat every company repo as private and every remote target as sensitive.
+- Ask before assuming anything about the company's stack or conventions.
 
 ## Code Conventions
 
@@ -70,19 +46,6 @@
   - Readable and idiomatic beats clever and fast.
   - Small local duplication is fine when it aids understanding.
   - "Do it later" leaves the repo worse. Do it now, or name it in the report.
-
-## Projects (~/r/)
-
-- **jotti** — Go backend + React frontend; source-available (non-commercial) POS for non-profit orgs; event sourcing architecture
-- **lexiban** — Java/Spring Boot + React; IBAN validator; deployed on AWS via CDK
-- **handbook** — Personal knowledge base, runbooks, scripts, devcontainer templates (English)
-- **website** — Personal website (nicograef.com), PHP, rsync-deployed
-- **rag** — Python RAG learning project / public playbook; pgvector + Ollama, framework-free, CPU-only
-- **barista** — private Python prototype; RAG coffee & coffee-machine assistant, framework-free
-- **career** — private job-search workspace (German): applications, company research, interview prep
-- **msh-sportpferde** — static German marketing site, plain HTML/CSS, rsync-deployed
-- **escpresso** — Rust ESC/POS thermal-printer emulator with egui GUI preview; published on crates.io
-- **behoerden-lotse** — idea stage, docs/PRD only: chat app answering questions about German public administration
 
 ## Communication Style
 
