@@ -127,10 +127,10 @@ Cut the prose corpus from 10,729 to roughly 6,900 Markdown lines (about −36%) 
 
 ### Acceptance criteria
 
-- [ ] `claude/CLAUDE.md` ≤ 100 lines; every pointer inside it starts with `~/.claude/` and resolves on this machine; `grep -c "Claude-Session" claude/CLAUDE.md` = 1; the string "empty output" is gone.
-- [ ] `AGENTS.md` has no line "Each rule is stated once", no v2.1.197 note, one README rule, three Language exceptions, and a decide-before-ask bullet linking the ask gate.
-- [ ] `.github/copilot-instructions.md` is deleted and `AGENTS.md` no longer lists it as a surface.
-- [ ] `scripts/check-repo.sh links` and `prose` clean for the three files.
+- [x] `claude/CLAUDE.md` ≤ 100 lines; every pointer inside it starts with `~/.claude/` and resolves on this machine; `grep -c "Claude-Session" claude/CLAUDE.md` = 1; the string "empty output" is gone.
+- [x] `AGENTS.md` has no line "Each rule is stated once", no v2.1.197 note, one README rule, three Language exceptions, and a decide-before-ask bullet linking the ask gate.
+- [x] `.github/copilot-instructions.md` is deleted and `AGENTS.md` no longer lists it as a surface.
+- [x] `scripts/check-repo.sh links` and `prose` clean for the three files.
 
 ---
 
