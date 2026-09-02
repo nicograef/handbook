@@ -40,16 +40,6 @@ Rules the script applies on top of the allowlist:
   deleted as one unit.
 - **Unit mtime** — judged by the newer of the two mtimes.
 - **Orphan** — a session directory without a transcript is judged by its own mtime.
-- `<slug>` — the working directory with `/` replaced by `-`.
-- **Session-id shape gate** — session entries are recognized only by UUID shape
-  (`8-4-4-4-12` lowercase hex).
-- **Everything else** — anything else in a walked directory, `memory/` above all, can never
-  become a deletion candidate.
-- **Live-session exclusion** — the session id passed via `--exclude-session` is skipped in
-  every class.
-- **No-id fallback** — independently, the newest-mtime transcript in each project directory
-  always survives.
-- **Symlinks are never followed and never deleted** (e.g. `~/.claude/debug/latest`).
 
 ## Never touched
 
@@ -68,9 +58,5 @@ that setting; it stays as the backstop.
 
 ## Cross-references
 
-- **Transcript layout facts** — agree with [../reflect/sources.md](../reflect/sources.md).
-- Top-level `*.jsonl` files are the transcripts.
-- Subdirectories are per-session working data.
-- Exclude the live session.
 - Semantic prunability (memories, rules, repo leftovers) is a separate,
   always-gated layer — see [criteria.md](criteria.md).

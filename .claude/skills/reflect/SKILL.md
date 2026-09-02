@@ -26,9 +26,6 @@ Argument: $ARGUMENTS
 
 ### 2. Analyze the evidence
 
-- **Current session** — mine the conversation directly.
-- **Transcript and git scopes** — synthesize across the subagent summaries.
-- **Either way** — extract the four classes below.
 - **Problems and issues that arose** — errors, wrong turns, rework, misunderstandings.
 - **Solutions that worked** — fixes, commands, approaches worth repeating.
 - **Notable insights** — repo quirks, clarified conventions, facts worth remembering.
@@ -36,17 +33,9 @@ Argument: $ARGUMENTS
 
 ### 3. Report in the chat
 
-One chat report, fixed sections in this order:
+One chat report, fixed sections in this order: **Problems & issues**, **Solutions found**,
+**Notable insights**, **Recurring friction**. Each section is one bullet per entry.
 
-1. **Counts** — e.g. `6 items — 2 problems, 2 solutions, 1 insight, 1 friction`.
-2. **Problems & issues** — one bullet per entry.
-3. **Solutions found** — one bullet per entry.
-4. **Notable insights** — one bullet per entry.
-5. **Recurring friction** — one bullet per entry.
-
-Rules, not sections:
-
-- **Every bullet** opens with a bold keyword, then the fact.
 - **Empty section** — one line, no padding.
 - **Chat only** — never write a report file, journal, or reflections directory.
 
@@ -64,9 +53,7 @@ Derive a short improvement plan from the report. Each item:
 
 Before proposing, check each candidate for existing coverage:
 
-- **memory** — the memory directory's `MEMORY.md` index and the memory files it links.
-- **rules** — `AGENTS.md` and `.claude/rules/*.md`.
-- **docs** — the `README.md`-indexed files in `guides/` and `cheatsheets/`.
+- **Per-category surfaces** — see the target map in [targets.md](targets.md#handbook-target-map).
 - **Non-handbook repo** — check the discovered artifacts from [targets.md](targets.md) instead.
 - **Already covered** — drop the learning.
 - **Covered, but the new evidence adds something** — convert it into an update-proposal for the
@@ -77,19 +64,11 @@ Before proposing, check each candidate for existing coverage:
 
 Run the **Supersede check** from [../quality.md](../quality.md) over every surviving item.
 
-- **Search** the dedup surfaces above — memory, instructions, docs — for what the item makes false.
-- **Retirement** — one hit plus its verdict: delete the statement, or rewrite it.
-- **Citation** — the file, the superseded line quoted, and the item that supersedes it.
-- **No citation, no retirement** — a suspicion is not evidence.
-- **Nothing to retire** — the item states that in one line.
-- **Never invent one** — a fabricated retirement is worse than none.
 - **Memory hits** — retire them per the event-to-residue pattern in [targets.md](targets.md).
 
 ### 7. Present the plan — gated multi-select
 
-- Present the surviving items as a multi-select.
-- **Tool** — a structured question tool if the surface has one.
-- **Fallback** — otherwise format the options clearly in the conversation, per
+- Present the surviving items as a multi-select, per
   [../clarify/question-rules.md](../clarify/question-rules.md).
 - **Each option** shows category, target, and the cited observation.
 - **Each retirement** is its own option, listed under its item and pickable on its own.

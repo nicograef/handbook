@@ -17,9 +17,7 @@ Taxonomy and per-repo target resolution for reflect plan items.
 | **documentation** | human-facing knowledge someone will look up: how-tos, commands, background |
 | **tooling/process** | preventable by automation: a CI check, test, lint rule, Make target, script, or command |
 
-- **Most automatable wins** — a learning fitting several categories gets the most automatable one.
 - **Precedence** — a CI check beats a rule; a rule beats a memory.
-- **Why** — automation changes future behavior without anyone having to remember anything.
 
 ## Memory directory resolution
 
@@ -34,11 +32,6 @@ Taxonomy and per-repo target resolution for reflect plan items.
 
 - **File** — one per fact, named `<short-kebab-slug>.md`.
 - **`name`** — the same short kebab slug.
-- **`description`** — one line; it decides relevance during recall.
-- **`metadata.type`** — one of `user`, `feedback`, `project`, `reference`.
-- **Body** — the fact itself.
-- **Body, `feedback` and `project` types** — follow the fact with **Why:** and
-  **How to apply:** lines.
 
 ```markdown
 ---
@@ -82,8 +75,6 @@ An event record is rewritten as its residue, then deleted with its `MEMORY.md` l
 - **No keeper fits** — write one, then fold the residue into it.
 
 ## Handbook target map
-
-The richest target set — applies when reflecting inside the handbook repo:
 
 | Category | Target |
 | --- | --- |

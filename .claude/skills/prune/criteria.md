@@ -41,7 +41,6 @@ only where the project's repo exists locally:
 - **Match** — the remaining slug tail against its entries.
 - **No unambiguous match** — treat the repo as absent.
 - **A slug without a local repo** gets **mechanical checks only**.
-- Never guess about a codebase that is not there to verify against.
 - **Stale claim** — the repo contradicts it: the referenced file, command, flag, or convention
   is gone or changed.
 - **Superseded** — or git history shows the described state was superseded.
@@ -55,11 +54,10 @@ A memory holding an event instead of a state. The class is `expired-record`.
 
 - **Rule** — **Memory holds current state, not events**, in
   [../reflect/targets.md](../reflect/targets.md).
-- **Events** — a landed plan, a completed milestone, a run report, an incident log.
 - **Never deletable on sight** — extract the live residue first, per that file's
   event-to-residue table.
-- **Residue found** — the proposal folds it into the keeper memory, then deletes the record.
-- **No residue** — the proposal is a plain deletion.
+- **Residue** — fold it into the keeper memory before deleting the record; cite the evidence
+  either way.
 - **Evidence** — the git state that overtook the event, or the later memory holding its residue.
 - **Age proves nothing** — a record written today can already be expired.
 

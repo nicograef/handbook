@@ -23,8 +23,8 @@ allowed-tools:
 
 Retire agent state in two layers.
 
-- **Mechanical** — deletes aged session state without asking, by explicit design. `dry-run` is
-  the escape hatch.
+- **Mechanical** — for a user-invoked `/prune`, deletes aged session state without asking, by
+  explicit design. `dry-run` is the escape hatch.
 - **Semantic** — proposes judgment-based deletions behind a multi-select gate.
 
 ## Workflow
@@ -44,35 +44,25 @@ Argument: $ARGUMENTS — the parts combine freely:
 
 - **Live session id** — `$CLAUDE_CODE_SESSION_ID` from the session environment.
 - **If unset** — proceed without it.
-- **No-id fallback** — the script always keeps the newest-mtime transcript per project.
 
 ### 3. Mechanical sweep (ungated)
 
-Run the bundled script via the skill's base directory with an explicit interpreter:
-
-```bash
-bash <skill-base-dir>/prune-state.sh --days <N> --scope <slug-or-all> \
-  --exclude-session "$CLAUDE_CODE_SESSION_ID" --delete
-```
+Run the bundled script via the skill's base directory with an explicit interpreter.
+Flags are in its own usage line (`prune-state.sh`, top of file).
 
 - Never use an absolute handbook path.
 - Never rely on the execute bit — the plugin cache may not preserve it.
-- Pass `--delete` unless `dry-run` was given — do not ask first.
+- Pass `--delete` unless `dry-run` was given — do not ask first, for a user-invoked `/prune`.
 - The mechanical classes are age-rule-decidable by design.
 - What the script may touch, and everything it never touches, is in [state-map.md](state-map.md).
 - If the machine's layout stops matching the state map, stop and re-verify per its drift rule
   before trusting the sweep.
 - Never bypass the script with ad-hoc `rm` on harness state.
-- Parse the `MODE` / per-class / `total` lines for the report (step 7).
 
 ### 4. Semantic review — collect findings
 
 Review the three classes per [criteria.md](criteria.md). Every finding carries class, target,
 cited evidence, and proposed action: delete or update.
-
-- **`--days` governs the mechanical sweep only** — it never reaches memories, rules, or repo
-  leftovers.
-- **This layer judges content, not age** — a memory can be obsolete the day it is written.
 
 ### 5. Gate — multi-select
 
@@ -97,16 +87,13 @@ cited evidence, and proposed action: delete or update.
 
 One chat report, in this order:
 
-1. **Counts** — e.g. `3 findings — 1 applied, 2 skipped`.
-2. **Mechanical** — a table, one row per class: files and bytes deleted, or would-be-deleted in
+1. **Mechanical** — a table, one row per class: files and bytes deleted, or would-be-deleted in
    dry-run.
-3. **Kept and why** — live session (id or newest-mtime fallback), entries younger than the
+2. **Kept and why** — live session (id or newest-mtime fallback), entries younger than the
    threshold, memory directories (never touched).
-4. **Semantic** — one bullet per finding, bold keyword first: proposed, picked (applied), or
+3. **Semantic** — one bullet per finding, bold keyword first: proposed, picked (applied), or
    skipped.
-5. **Skip reason** — declined, dry-run, or ambiguous.
-6. **Zero findings** — one line, no padding.
-7. **Reflect pairing** — **pruned transcripts are gone as reflection evidence — run `/reflect`
+4. **Reflect pairing** — **pruned transcripts are gone as reflection evidence — run `/reflect`
    before the first prune of a busy period.**
 
 ## Constraints
