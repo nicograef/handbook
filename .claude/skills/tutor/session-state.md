@@ -1,7 +1,5 @@
 # Session State
 
-File layout, formats, and the setup-subagent brief for tutor sessions.
-
 - [Layout](#layout)
 - [bank.json](#bankjson)
 - [key.json](#keyjson)
@@ -81,9 +79,6 @@ corrected) → `learned` (correct twice, spaced).
 - A due entry is satisfied by whichever same-concept item served it.
 - The entry itself advances one rung on success and resets to 0 on failure.
 - It is removed after a success at 21 days; concept stats keep the history.
-- Errata stay answer-free one-liners — they name the problem, not the fix.
-- That matters because `progress.json` is read at session start, before items are re-asked.
-- The next session's setup subagent applies pending errata.
 
 ## Setup subagent brief
 
@@ -96,10 +91,8 @@ Inputs to pass:
 
 The subagent must:
 
-1. Digest the material:
-   - Read the given files.
-   - Fetch web sources for niche or recent topics.
-   - Draw on model knowledge for established ones.
+1. Digest the material. Grounding and provenance rules:
+   [question-design.md](question-design.md).
 2. Generate about **2× the session's item count**, following `question-design.md`:
    - **At least two items per concept**.
    - The spares serve re-asks and rephrased variants.

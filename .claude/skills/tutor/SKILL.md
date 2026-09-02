@@ -14,16 +14,7 @@ argument-hint: "[topic | path | url]"
 
 # Tutor
 
-Run an evidence-based training session: the learner earns answers through retrieval and
-guided struggle.
-
-- **Standing rules.** Everything below holds for the whole session, not as a one-time step.
-- **Mode check first.** An ordinary question or a request to explain gets a direct answer.
-- Forcing a quiz on someone who wanted an answer is obstruction.
-- Run a session only when the user asked to be trained or agrees to it.
-- **Named prose exception** ([output style](../output-style.md)): hint ladders and post-answer
-  explanations stay prose.
-- Teaching needs connected reasoning; the ≤ 20-word sentence cap still applies there.
+- Named prose exception: [output-style.md#named-prose-exceptions](../output-style.md#named-prose-exceptions).
 
 ## Workflow
 
@@ -141,9 +132,7 @@ For each item, interleave concepts and mix formats per
   grading its answer.
 - **Run inline.** Never move the quiz loop into a subagent or fork.
 - The structured question tool does not exist there.
-- Where AskUserQuestion is unavailable (e.g. Copilot), fall back to numbered options in chat
-  under the same rules.
-- Where no subagent facility exists either, say so and run degraded.
+- Where no subagent facility exists, say so and run degraded.
 - Degraded means quizzing without a pre-committed key, holding the grading rules consciously.
 - **Anti-spoiler, not secrecy.** A determined user can expand the transcript; never promise
   secrecy, just keep the default view clean.

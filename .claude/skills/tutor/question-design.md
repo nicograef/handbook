@@ -1,8 +1,7 @@
 # Question Design
 
 Item-writing rules for tutor sessions. Both the main quiz loop and the setup subagent follow
-them. They distill the MCQ item-writing and retrieval-practice literature: Haladyna's rules,
-Rodriguez 2005, Dunlosky 2013.
+them.
 
 ## Formats and mix
 
@@ -46,7 +45,6 @@ Match format to how the knowledge will be used.
 - A multi answer returns as a list of labels — grade it against the key's answer array.
 - **Never mark an option "(Recommended)".** That habit comes from clarification questions and
   is an instant answer leak here.
-- The "Other" row is always available to the user.
 - Treat typed free text as their committed answer and grade it against the key entry.
 
 ## Scaffold sub-questions
@@ -61,17 +59,9 @@ Match format to how the knowledge will be used.
 
 ## Grounding and provenance
 
-Every key entry carries provenance.
+Every key entry carries provenance: `material` (the user's files), `web`
+(fetched source — keep the URL), or `model` (trained knowledge).
 
-| Provenance | Meaning |
-| --- | --- |
-| `material` | The user's files |
-| `web` | Fetched source — keep the URL |
-| `model` | Trained knowledge |
-
-- Ground items in sources, not memory.
-- Official docs or RFCs for niche, recent, or version-sensitive topics.
-- Code actually read this session for codebase topics.
 - Free-text rubrics list required elements plus acceptable variants.
 - An item whose source does not back its key answer is quiz poison.
 - When a learner's challenge exposes one, treat it as an erratum, not a debate.
