@@ -309,9 +309,9 @@ Cut the prose corpus from 10,729 to roughly 6,900 Markdown lines (about −36%) 
 
 ### Acceptance criteria
 
-- [ ] `make lint`, `make test-agent-bus`, `make test-prune`, `make test-plan-run-guard` green.
-- [ ] `scripts/agent-bus.sh` with no arguments still prints the Usage block.
-- [ ] `git diff` shows no change outside comment lines.
+- [x] `make lint`, `make test-agent-bus`, `make test-prune`, `make test-plan-run-guard` green.
+- [x] `scripts/agent-bus.sh` with no arguments still prints the Usage block.
+- [x] `git diff` shows no change outside comment lines.
 
 ---
 
