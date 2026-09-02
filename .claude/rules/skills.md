@@ -7,14 +7,8 @@ paths: ".claude/skills/**"
 
 ## Directory Structure
 
-Each skill lives in its own directory under `.claude/skills/`:
-
-```
-.claude/skills/<skill-name>/
-├── SKILL.md           # required — main skill definition
-├── REFERENCE.md       # optional — supplementary reference material
-└── <topic>.md         # optional — additional reference files
-```
+Each skill lives in its own directory under `.claude/skills/`. `SKILL.md` is the
+required main definition; any number of optional reference files sit beside it.
 
 ## SKILL.md Format
 
@@ -61,4 +55,5 @@ Every `SKILL.md` includes:
 
 ## After Creating or Renaming a Skill
 
-Add or update the entry in `.claude/skills/README.md` (discovery index).
+Add or update the entry in `.claude/skills/README.md` — `make skills` verifies the
+index in both directions.

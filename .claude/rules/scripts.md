@@ -25,9 +25,8 @@ set -euo pipefail
 
 ## Style
 
-- Use a `log()` helper for status output (coloured prefix); quote all variables: `"$var"`, not `$var`; use `[[ ]]` for conditionals.
+- Use a `log()` helper for status output (coloured prefix); quote all variables: `"$var"`, not `$var`; use `[[ ]]` for conditionals. `make lint` (shellcheck) catches a subset.
 - Make scripts **idempotent** — safe to run multiple times; provide configurable values at the top as env-var defaults: `VAR="${VAR:-default}"`.
-- `set -euo pipefail` is mandatory.
 - Guard destructive operations with pre-flight checks (e.g. root check, required env vars).
 - Name files `<verb>-<noun>.sh` — lowercase, hyphens. Example: `setup-server.sh`.
 - Output caps and format order: [output-style.md](../skills/output-style.md).

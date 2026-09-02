@@ -20,7 +20,6 @@ Reference guides that state coding conventions for a stack (`go.md`, `java-sprin
 `react.md`). They are heading-grouped rules and tables, not procedures.
 
 - Group rules under `##`/`###` headings, or use tables; keep rationale to one line per rule.
-- Open by naming the file a stack-convention guide; no runbook restructure is needed.
 
 ## Content rules
 
