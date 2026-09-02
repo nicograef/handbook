@@ -1,4 +1,4 @@
-# Claude Code runtime artifacts (mirror of .git/info/exclude)
+# Claude Code runtime artifacts
 **/.claude/scheduled_tasks.lock
 **/.claude/scheduled_tasks.json
 **/.claude/routines/.state/

@@ -2,10 +2,8 @@
 
 Automatically apply your shell config to every new Codespace.
 
-- Covers prompt, aliases, and git settings.
 - [`scripts/install-dotfiles.sh`](../scripts/install-dotfiles.sh) symlinks the config files
   into `$HOME`.
-- `~/.claude/settings.local.json` stays machine-local, intentionally not linked.
 
 > **Why no `.bashrc`?** Every stock `.bashrc` (Debian, Ubuntu, Codespaces)
 > already sources `~/.bash_aliases` *after* setting its own history defaults and PS1.
@@ -27,13 +25,8 @@ Automatically apply your shell config to every new Codespace.
 
 Every new Codespace will now clone this repo and run `scripts/install-dotfiles.sh`.
 
-## How it works
-
 - Codespaces looks for an install script in the dotfiles repo root or common locations.
 - Those locations: `install.sh`, `install`, `bootstrap.sh`, `setup.sh`, `script/setup`.
-- Our script lives at `scripts/install-dotfiles.sh`.
-- The wrapper Codespaces looks for already exists in the repo root: [install.sh](../install.sh).
-- It just execs the real script — nothing to create.
 
 ## Manual run
 

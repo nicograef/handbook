@@ -11,7 +11,7 @@
     // Docker-in-Docker: the `compose` check stage runs `docker compose config`.
     "ghcr.io/devcontainers/features/docker-in-docker:2": {},
     // Claude Code CLI: the `plugin` check stage runs `claude plugin validate .`,
-    // and the container uses the skills in-session. Pinned to major :1.
+    // and the container uses the skills in-session.
     "ghcr.io/anthropics/devcontainer-features/claude-code:1": {}
   },
 
@@ -26,7 +26,6 @@
         "terminal.integrated.defaultProfile.linux": "bash"
       },
       "extensions": [
-        // EditorConfig enforces the repo's whitespace rules (kept from template).
         "editorconfig.editorconfig"
       ]
     }
