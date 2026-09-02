@@ -1,12 +1,5 @@
 # Review Rounds
 
-- [Why the order is fixed](#why-the-order-is-fixed)
-- [Round A — correctness](#round-a--correctness)
-- [Round B — structure and terms](#round-b--structure-and-terms)
-- [Round C — language and flow](#round-c--language-and-flow)
-- [Step 12 — re-check the C diff](#step-12--re-check-the-c-diff)
-- [Drift guards](#drift-guards)
-
 Three rounds, one dimension each. A round that edits outside its dimension is a
 defect, not initiative.
 
@@ -57,7 +50,6 @@ Runs per chapter, chapters in parallel, after Round B settled the order.
 
 - Read every paragraph aloud. Rewrite what you would not say that way.
 - **Never cut for length.** Repetition that serves the listener stays.
-- Compression is the default failure here. Resist it.
 - Leave the terminology alone. Round B owns it.
 
 ## Step 12 — re-check the C diff

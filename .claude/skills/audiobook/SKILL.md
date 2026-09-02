@@ -6,36 +6,12 @@ argument-hint: "<subject or project area> [→ output dir, default audiobook/]"
 
 Audiobook subject: **$ARGUMENTS**
 
-The deliverable is understanding, not narrated documentation. Generated docs
-describe *what* a system does. This book explains *why it works that way*, in an
-order a listener can follow from nothing.
-
-One checkpoint, at step 4. Everything after it runs to completion without
-stopping. Every decision not covered by that checkpoint goes into `PLAN.md`
-as a stated assumption, and into the final report.
-
 Never write chapters before step 7 is complete. Research and structure first.
 
 - Pipeline and rendering: [guides/audiobook-pipeline.md](../../../guides/audiobook-pipeline.md)
-- The step 4 checkpoint: [the-checkpoint.md](the-checkpoint.md)
 - Prose rules for the ear: [listenability.md](listenability.md)
 - German prose, English terms: [german-narration.md](german-narration.md)
 - Review contracts: [review-rounds.md](review-rounds.md)
-
-## Artifacts
-
-Everything lands in the output directory, default `audiobook/`. Each artifact is
-the input of a later step, so the run survives an interruption.
-
-| File | Written in step | Purpose |
-| --- | --- | --- |
-| `BRIEF.md` | 4 | Confirmed scope, guiding questions, prior-knowledge level |
-| `research-plan.md` | 5 | Open questions, prioritised, with what would answer them |
-| `sources.md` | 6 | One entry per claim: statement, source URL, as-of date |
-| `PLAN.md` | 7 | Chapter list, the question each answers, dependency order |
-| `terms.yml` | 7 | `term: chapter-file` — where each term is first explained |
-| `NN-slug.md` | 8 | One chapter per file, single H1 |
-| `meta.yml` | 7 | `title`, `creator`, `lang` |
 
 ## Workflow
 
@@ -43,7 +19,7 @@ the input of a later step, so the run survives an interruption.
 
 1. **Draft the scope.** Derive it from the argument and the repository.
    - A whole-repo subject narrows to the subsystem carrying the most concepts.
-   - Length is never a scoping input. There is no target length.
+   - Length is never a scoping input.
 2. **Inventory.** Read the code and docs that touch the subject.
    - List every concept in play, each with the file where it lives.
    - Record decisions the code makes silently. They become chapter hooks.
@@ -54,10 +30,39 @@ the input of a later step, so the run survives an interruption.
 ### Confirm
 
 4. **The one checkpoint.** Ask before the first expensive step, never after.
-   - Full contract: [the-checkpoint.md](the-checkpoint.md).
+   - Earlier the proposal would be a guess, with no inventory behind it.
+   - Later the research is already paid for, and a wrong scope wastes all of it.
+   - Research is the first expensive step. The checkpoint guards exactly that line.
    - Three items only: scope boundary, guiding questions, prior knowledge.
-   - Propose a concrete default for each. A bare "ja" must be a valid answer.
+   - Offer prior-knowledge levels the user can pick without thinking.
+   - For example: new to the domain; working knowledge but no theory; solid
+     theory, only this system is new.
+   - Propose a concrete default for all three items. Never ask an open question.
+   - A bare "ja" must be a complete, valid answer that starts the run.
+   - Present the scope as in-scope and out-of-scope, both named explicitly.
+   - List the guiding questions as the questions the book will answer.
+   - Ask all three in one interaction. Never split them across turns.
+   - Never ask about what is derived, not decided:
+
+   | Never ask | Derived from |
+   | --- | --- |
+   | Chapter count, chapter titles | The concept graph in step 7 |
+   | Chapter order | Concept dependencies, never the repo layout |
+   | How much theory prelude | The prior-knowledge answer |
+   | Terminology, glosses, language | [german-narration.md](german-narration.md) |
+   | Length, minutes, word count | Nothing. There is no length target |
+
    - Write the answers to `BRIEF.md`, then run to the end without stopping.
+   - `Scope` — what is in, what is out, in the user's own framing.
+   - `Guiding questions` — the numbered list the book has to answer.
+   - `Prior knowledge` — the chosen level, in one line.
+   - `Changed by the user` — what the answer changed against the proposal.
+   - `BRIEF.md` is read again in step 7 and in Round B. It is the contract for
+     the run, not a transcript.
+   - The run does not stop again, not even when research contradicts the brief.
+   - A contradiction is recorded in `PLAN.md` under "Assumptions", not escalated.
+   - The final report names every drift from `BRIEF.md` and the reason.
+   - If research invalidates a guiding question, answer why it cannot be answered.
 
 ### Research
 
@@ -77,7 +82,8 @@ the input of a later step, so the run survives an interruption.
    - A concept may only appear after everything it depends on.
    - Chapter order follows the concept graph, never the repository layout.
    - Write `PLAN.md`: per chapter the question it answers and its prerequisites.
-   - Write `terms.yml`: every term mapped to the chapter that first explains it.
+   - Write `terms.yml`: one `term: chapter-file.md` line per term, mapped to
+     the chapter that first explains it.
    - Write `meta.yml`: `title`, `creator`, `lang` (`de` for German narration).
    - Record every decision the checkpoint did not cover under "Assumptions".
    - Continue straight into step 8. `PLAN.md` is the record, not a request.
@@ -90,7 +96,7 @@ the input of a later step, so the run survives an interruption.
    - Resolve tables, diagrams, and code into prose here. This is the only step
      that can do it; the Lua filter deletes, it does not translate.
    - Anchor each concept in a named file or decision from step 2.
-   - Write to completion. Length is whatever the subject needs.
+   - Write to completion.
 
 ### Review
 
@@ -98,19 +104,10 @@ Three rounds, one dimension each, in this order. Details and per-round contracts
 [review-rounds.md](review-rounds.md).
 
 9. **Round A — correctness.** Per chapter, in parallel.
-   - Check every claim against `sources.md` and against the code.
-   - Fix the chapter directly. Add missing sources to `sources.md`.
 10. **Round B — structure and terms.** Once, over the whole book.
-    - Verify the dependency order still holds after Round A.
-    - Check every `BRIEF.md` guiding question is actually answered.
     - Run `<handbook>/scripts/check-terms.sh <dir>`; fix every use-before-explained hit.
 11. **Round C — language and flow.** Per chapter, in parallel.
-    - Read for the ear only. Do not touch facts, order, or terminology.
-    - Never cut for length. Repetition that serves the listener stays.
 12. **Re-check the Round C diff.**
-    - Language edits can silently break a factual claim.
-    - Verify only what Round C changed, against `sources.md`.
-    - A broken claim goes back to Round A wording, not to a new rewrite.
 
 ### Render
 
@@ -118,7 +115,6 @@ Three rounds, one dimension each, in this order. Details and per-round contracts
     [scripts/md-to-epub.sh](../../../scripts/md-to-epub.sh) with `STRICT=1`.
     - A lint finding here is a bug in step 8, not something to strip.
     - Fix the chapter source and re-render.
-    - Report chapters, total listening time, and the upload step.
     - Report the `PLAN.md` assumptions and every claim left unverified.
     - Name anything that drifted from `BRIEF.md`, and why.
 

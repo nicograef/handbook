@@ -1,14 +1,6 @@
 # Listenability
 
-- [The test](#the-test)
-- [Element rules](#element-rules)
-- [Writing for the ear](#writing-for-the-ear)
-- [Chapter shape](#chapter-shape)
-- [Anti-patterns](#anti-patterns)
-
 Rules for prose that is heard once, in order, with no way to scroll back.
-Reference doc conventions invert here: a written doc optimises for scanning,
-a chapter optimises for a listener who cannot re-read.
 
 ## The test
 
@@ -16,9 +8,6 @@ Read the sentence aloud. If you would not say it that way to a colleague on a
 walk, rewrite it.
 
 ## Element rules
-
-Written docs carry meaning in layout. Speech has no layout, so every visual
-element has to become prose or disappear.
 
 | Element | Rule |
 | --- | --- |
@@ -33,10 +22,6 @@ element has to become prose or disappear.
 | Formula | Write it in words, or drop the formula and keep the consequence |
 | Footnote | Fold it into the sentence, or delete it |
 | Heading | One H1 per chapter file. H2 for sections. No deeper |
-
-The lint in [scripts/md-to-epub.sh](../../../scripts/md-to-epub.sh) reports
-violations by file and line. The Lua filter strips them at render time, but a
-stripped table leaves a hole in the argument. Fix the source.
 
 ## Writing for the ear
 
@@ -54,14 +39,10 @@ Sentences may run longer than the handbook prose cap. Spoken sentences of 25 to
 
 ## Chapter shape
 
-- No length target. A chapter runs as long as its concept needs.
 - Never trim, summarise, or merge chapters to hit a size.
 - Open with the question the chapter answers, in one sentence.
 - Close with what the listener should now be able to decide or do.
 - One concept per chapter. Two concepts means two chapters.
-
-Order chapters so each one only needs what came before. A chapter that requires
-a later one is misplaced.
 
 ## Anti-patterns
 
