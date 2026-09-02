@@ -1,8 +1,5 @@
 # Architecture
 
-Focused checks for incremental review of architectural boundaries — not a full
-architectural assessment.
-
 - Significant restructuring and large boundary issues are flagged as a separate
   refactor for the user to schedule. Never fix those in place.
 
@@ -10,29 +7,21 @@ architectural assessment.
 
 **Flag when:**
 
-- Domain code imports a database client, an ORM, or a framework type.
-- Domain code imports an HTTP request/response type or a concrete external SDK.
-- An entity's primary definition is its JSON tags, ORM decorators, or
-  serialization annotations.
+- An entity's primary definition is its JSON tags, ORM decorators, or serialization annotations.
 
 ## Inversion of Control
 
 **Flag when:**
 
-- Business logic constructs its own dependencies (`new DatabaseClient()`,
-  `sql.Open()`).
-- A constructor creates its dependencies instead of receiving them.
 - Infrastructure is initialised inside a domain function.
-- A function reads environment variables directly instead of receiving
-  configuration as a parameter.
+- A function reads environment variables directly instead of receiving configuration as a parameter.
 
 ## Deep vs. Shallow Modules
 
 **Flag when:**
 
 - A "service" layer only calls the repository without adding business logic.
-- Pure-delegation wrapper, single-implementation interface and single-use helper
-  tells: [code-smells.md → Redundant Abstractions](code-smells.md#redundant-abstractions).
+- Pure-delegation wrapper, single-implementation interface and single-use helper tells: [code-smells.md → Redundant Abstractions](code-smells.md#redundant-abstractions).
 
 **Do NOT flag when:**
 
@@ -44,9 +33,6 @@ architectural assessment.
 
 **Flag when:**
 
-- An entity is a plain struct/class with only public fields and no methods.
-- Business rules about it live entirely in a separate service
-  (`OrderService.cancel()` instead of `Order.cancel()`).
 - The entity can be put into an invalid state by setting fields directly.
 - Status transitions are managed by external code.
 
@@ -60,24 +46,19 @@ architectural assessment.
 
 **Flag when:**
 
-- A repository returns database rows, DTOs, or ORM-generated types instead of
-  domain objects.
+- A repository returns database rows, DTOs, or ORM-generated types instead of domain objects.
 - Its interface is defined in the infrastructure layer instead of the domain layer.
 - It exposes query-builder methods or raw SQL to callers.
 - There is one repository per database table instead of per aggregate root.
-- Method names leak persistence concerns (`FindByColumnName` instead of
-  `FindByEmail`).
+- Method names leak persistence concerns (`FindByColumnName` instead of `FindByEmail`).
 
 ## Anti-Corruption Layer
 
 **Flag when:**
 
-- Raw DTOs, response types or field names from an external system reach service
-  or domain code.
-- Enum values or SDK types from an external system reach service or domain code
-  (e.g. `if stripeEvent.Type == "payment_intent.succeeded"`).
-- Mapping between external and internal types happens inside domain code instead
-  of at the boundary.
+- Raw DTOs, response types or field names from an external system reach service or domain code.
+- Enum values or SDK types from an external system reach service or domain code (e.g. `if stripeEvent.Type == "payment_intent.succeeded"`).
+- Mapping between external and internal types happens inside domain code instead of at the boundary.
 
 ## Bounded Context Violations
 
@@ -85,16 +66,11 @@ architectural assessment.
 
 - A module imports internal (non-public-API) types from another module.
 - A module directly queries another module's database tables.
-- A module carries domain concepts across contexts (billing concepts in the user
-  management module).
+- A module carries domain concepts across contexts (billing concepts in the user management module).
 - A shared "models" package contains types from multiple unrelated domains.
 
 ## Separation from Frameworks
 
 **Flag when:**
 
-- Business rules are embedded inside HTTP handler functions.
-- Framework-specific types (request, response, context) are passed deep into the
-  application.
-- A domain service imports a web framework, ORM, or queue library.
 - Test setup for business logic requires booting infrastructure.

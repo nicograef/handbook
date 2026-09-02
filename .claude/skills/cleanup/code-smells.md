@@ -4,17 +4,7 @@
 - [AI Slop — Code](#ai-slop--code)
 - [AI Slop — Config and Infrastructure](#ai-slop--config-and-infrastructure)
 
-Catalog of structural anti-patterns and AI-generated slop patterns. For each
-smell: what it looks like, why it hurts, what to suggest.
-
----
-
 ## Structural Smells
-
-### Deep Nesting
-
-See [readability.md → Deep Nesting](readability.md#deep-nesting) for the
-canonical rule.
 
 ### Dead Code
 
@@ -43,8 +33,6 @@ Callers need to know implementation details to use an API correctly.
 
 **Suggest:** Fix the abstraction so callers do not need internal knowledge. If
 the fix is large, flag for later.
-
----
 
 ## AI Slop — Code
 
@@ -141,8 +129,6 @@ Over-engineered control flow where a simpler form reads better. Overlaps with
 - A `map`/`filter`/`reduce` chain is harder to follow than a simple loop
 
 **Suggest:** Rewrite in the simplest form that expresses the intent.
-
----
 
 ## AI Slop — Config and Infrastructure
 

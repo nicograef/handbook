@@ -42,9 +42,6 @@ Resolve the file set in this order:
 ### 2. Understand conventions
 
 - Before flagging anything, read surrounding code that is NOT part of the changes.
-- The codebase's existing conventions are the baseline.
-- Flag deviations from clean code principles, not deviations from personal
-  preferences.
 
 ### 3. Multi-pass review
 
@@ -83,7 +80,7 @@ Severity order within each file:
 
 | Rank | Category | Covers |
 |---|---|---|
-| 1 | Boundary & consistency risks | Logic at system edges: missing validation on external input (HTTP handlers, CLI, external APIs), broken dependency direction, cross-layer shape/validation mismatches — see [architecture.md](architecture.md) and [cross-layer.md](cross-layer.md). For general bug-hunting inside a function, use `/code-review`. |
+| 1 | Boundary & consistency risks | Missing validation on external input (HTTP handlers, CLI, external APIs), broken dependency direction, or cross-layer shape/validation mismatches at system edges. See [architecture.md](architecture.md) and [cross-layer.md](cross-layer.md); for general bug-hunting inside a function, use `/code-review`. |
 | 2 | Readability wins | Naming, clarity, nesting, AI slop removal |
 | 3 | Principle violations | SOLID, DRY, KISS, YAGNI |
 | 4 | Structural suggestions | Deeper modules, better boundaries, domain model improvements |
@@ -92,10 +89,7 @@ Severity order within each file:
 - **Drop** any finding you cannot anchor to exact lines, or that does not hold on
   re-read.
 - **Mark** remaining uncertainty as unverified.
-- **Zero findings** is a valid outcome — report one line that the code is clean,
-  then stop.
-- **Never manufacture findings** to fill a report.
-- **Counts line first** — `7 findings — 2 boundary, 3 readability, 2 structural`.
+- Findings follow the shared [report shape](../output-style.md#report-shape).
 - **Group** findings by file, sorted by the severity order above.
 - **Prioritized summary last** — up to 5 of the most impactful changes across all
   files.
@@ -116,8 +110,6 @@ Effort: S
 - Make the minimal change described in the suggestion.
 - After finishing all changes to a file, verify that file still compiles or
   passes lint.
-- Verify no functionality changed — output, return values, side effects, and
-  behavior stay identical.
 
 ## Constraints
 

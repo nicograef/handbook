@@ -3,11 +3,6 @@
 - [Code Readability](#code-readability)
 - [Prose and Documentation Slop](#prose-and-documentation-slop)
 
-Patterns that affect how quickly a reader can understand code, documentation,
-and config files.
-
----
-
 ## Code Readability
 
 ### Naming
@@ -17,12 +12,8 @@ implemented?
 
 **Flag when:**
 
-- A function name describes the mechanism (`processData`, `handleStuff`)
-  instead of the intent (`calculateDiscount`, `sendWelcomeEmail`)
 - Abbreviations are used that are not universally understood in the project
   (`ctx` is fine, `cBldFctry` is not)
-- A boolean is named without a clear true/false reading (`flag`, `status` vs
-  `isActive`, `hasPermission`)
 - Inconsistent naming: same concept is called `user`, `account`, `customer` in
   different places without distinct meaning
 
@@ -32,13 +23,6 @@ need for comments.
 ### Clever Code
 
 **Ask:** Would a team member understand this without the author explaining it?
-
-**Flag when:**
-
-- Bitwise operations carry non-bitwise logic
-- Short-circuit evaluation is used for control flow (`condition && doThing()`)
-- Operator overloading or implicit conversions create surprising behavior
-- A language trick requires looking up documentation
 
 **Suggest:** Replace with the obvious version. Only justify cleverness with a
 measured performance requirement and a comment explaining why.
@@ -55,8 +39,6 @@ measured performance requirement and a comment explaining why.
 
 **Suggest:** Invert conditions and return early. Put the exceptional case first
 (`if invalid, return error`) so the happy path runs at the top level.
-
----
 
 ## Prose and Documentation Slop
 
