@@ -10,32 +10,9 @@ description: >-
 
 # Ubiquitous Language
 
-## Workflow
-
-1. **Scan the conversation** for domain-relevant nouns, verbs, and concepts
-2. **Identify problems**:
-   - Same word used for different concepts (ambiguity)
-   - Different words used for the same concept (synonyms)
-   - Vague or overloaded terms
-3. **Propose a canonical glossary** with opinionated term choices
-4. **Write to `docs/UBIQUITOUS_LANGUAGE.md`** (create the `docs/` directory if it
-   doesn't exist) using the format below
-5. **Output a summary** inline in the conversation
-
 ## Output Format
 
 Write `docs/UBIQUITOUS_LANGUAGE.md` (create `docs/` if missing) in this shape:
-
-| Section | Shape |
-| --- | --- |
-| `# Ubiquitous Language` | H1 title, file-level |
-| `## <Category>` | One H2 per domain area, e.g. `Order lifecycle`, `People` |
-| Term table per category | Columns: `Term` (bold), `Definition` (one sentence, what it IS), `Aliases to avoid` |
-| `## Relationships` | Bullet list: `**A** <verb phrase> **B**` |
-| `## Example dialogue` | Blockquote, ≥ 2 exchanges, alternating `**Dev:**` / `**Domain expert:**` |
-| `## Flagged ambiguities` | Bullet list: the term, both meanings, the canonical pick |
-
-Example:
 
 ```md
 # Ubiquitous Language
@@ -73,17 +50,11 @@ Example:
 
 ## Constraints
 
-- **Be opinionated.** Pick the best word per concept and list synonyms as
-  aliases to avoid.
-- **Flag conflicts explicitly.** Flag ambiguous conversation terms in
-  "Flagged ambiguities" with a clear recommendation.
-- **Only include terms relevant for domain experts.** Skip module or class
-  names unless they carry domain meaning.
-- **Keep definitions tight.** One sentence max. Define what it IS, not what it
-  does.
+- **Be opinionated.** Pick the best word per concept and list synonyms as aliases to avoid.
+- **Flag conflicts explicitly.** Flag ambiguous conversation terms in "Flagged ambiguities" with a clear recommendation.
+- **Only include terms relevant for domain experts.** Skip module or class names unless they carry domain meaning.
+- **Keep definitions tight.** One sentence max. Define what it IS, not what it does.
 
 ## Quality
 
-- Run the shared [self-review checklist](../quality.md) on the glossary file;
-  surface issues in chat only if found.
-- Format the chat summary per [output style](../output-style.md).
+- Run the shared [self-review checklist](../quality.md) on the glossary file, and format the chat summary per [output style](../output-style.md).
