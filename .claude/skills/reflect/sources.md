@@ -39,7 +39,7 @@ Tolerate unparseable lines without failing the summary.
 
 ## Git history (`last N commits` | `<rev>..<rev>`)
 
-- **Interesting** — reverts, fixups, repeated touches of one file, "fix"/"actually"/"again"
-  wording.
+- **Look for** — reverts, fixups, repeated touches of one file, and "fix"/"actually"/"again"
+  wording in `git log --stat <range>`.
 - **Large ranges** — chunk into roughly 10–20 commits per subagent, same four-part contract as
   transcripts. More than 5 chunks needs the same fan-out confirmation as sessions.
