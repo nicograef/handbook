@@ -36,6 +36,7 @@ Cut the prose corpus from 10,729 to roughly 6,900 Markdown lines (about −36%) 
 - **Model-known procedures are derivable**: debugging loop, TDD loop, code-exploration steps, DDD glossary steps, refactoring catalogue. Those skills keep only constraints, calibration and the artifact contract.
 - **Off-limits**: `cheatsheets/` is not deleted (trimmed instead). Everything else listed below is approved.
 - **Mode**: apply; one final commit `docs: distill handbook` per phase group is acceptable, FLAGs go in the commit body of the landing commit.
+- **Execution routing**: every phase worker runs on `sonnet` with `effort: 'high'` — each row names the file, the lines and the keepers, so the work is fully specified; `effort: 'low'` is too cheap for line-range edits with keep lists. Reviewers, the Phase 1 probe and post-fold verification run on `opus`. This overrides implement-plan's default of `opus` for phase implementation.
 - **Conflict resolutions** (both locations were reported; Nico approved these):
   - Scope guard: `templates/AGENTS.md` § Quality Principles adopts `quality.md` wording — finish the scope, name the out-of-scope change in the report; never stop to ask.
   - "Ask instead of assuming" (`AGENTS.md` § Working rules, `templates/AGENTS.md` § Boundaries) → one bullet: decide before you ask; `AGENTS.md` links `.claude/skills/clarify/question-rules.md`.
