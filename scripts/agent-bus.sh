@@ -11,6 +11,11 @@
 #   agent-bus.sh sweep                       drop registry entries of dead sessions
 #   agent-bus.sh hook <event>                hook body; reads hook JSON on stdin
 #
+# What it does:
+#   1. Registers each session's branch, task, paths, resources and deps under the shared git dir.
+#   2. Predicts merge conflicts, path overlap and resource collisions between those sessions.
+#   3. Queues messages in the git dir and delivers them into a running session from its Stop hook.
+#
 # The channel is derived, never negotiated: every worktree of a repo resolves
 # `git rev-parse --git-common-dir` to the same directory, so both sides compute the
 # same bus path without agreeing on one. Two sessions that negotiate a channel can
