@@ -12,26 +12,21 @@
 - This file governs maintaining the repo.
 - To consume the handbook — set up a VPS, Codespace, dev machine, or project — start at
   [guides/bootstrap.md](guides/bootstrap.md).
-- The manifest `agents` field did not load agents in Claude Code v2.1.197; not re-verified since.
 
 ## Working rules
 
-Each rule is stated once and applies repo-wide.
-
-- **Read `README.md` first** — it is the file index.
 - **Read the target directory** — learn existing content and style before editing or creating a file.
 - **Verify before claiming** — search the codebase before asserting anything about existing code,
   structure, or behaviour. Read the actual source instead of guessing.
-- **Ask instead of assuming** — when uncertain about requirements or intent, ask structured
-  questions. Proceed on documented assumptions only if the user declines to answer.
+- **Decide before you ask** — a question is the last resort, not the opening move.
+  Full gate: [.claude/skills/clarify/question-rules.md](.claude/skills/clarify/question-rules.md).
 - **Web search for external knowledge** — when working with external tools, libraries, or specs,
   consult authoritative sources. Use official docs and RFCs, not training data.
 - **Single source of truth** — never duplicate content across files. Reference a template, script,
   or another doc with a relative link instead of copying it inline.
-- **README is the index** — update it after every file add, remove, or rename. Its table entries
-  must match the files on disk.
+- **Read `README.md` first**; update it after every add, remove or rename.
 - **No dead links** — after renaming or deleting a file, `grep -r '<filename>' .` and update or
-  remove every reference.
+  remove every reference. `make links` checks file targets only.
 - **Current state only** — docs, comments and instructions describe what is true now.
   - Git history is the archive, and the only record of a prior state.
   - A change that makes a statement false rewrites or deletes it in the same change.
@@ -41,7 +36,6 @@ Each rule is stated once and applies repo-wide.
   - **Delete, don't deprecate** — a redundant file is deleted, with every reference removed.
 - **Version consistency** — when a tool version changes, `grep` the whole repo and update every
   occurrence.
-- **Keep files concise** — no boilerplate prose; optimise for fast scanning.
 - **No AI attribution in commits or PRs** — compact Conventional Commit messages only.
   - Never append `Co-Authored-By: Claude …`, `Claude-Session: …`, `🤖 Generated with …`, or similar
     trailers/footers.
@@ -87,8 +81,8 @@ Full contract: [.claude/skills/output-style.md](.claude/skills/output-style.md).
 ## Language
 
 - All content is written in English.
-- Exception: the German example phrases in `.claude/skills/cleanup/readability-de.md` and
-  `.claude/skills/audiobook/german-narration.md`.
+- Exception: the German example phrases in `.claude/skills/cleanup/readability-de.md`,
+  `.claude/skills/audiobook/german-narration.md`, and `claude/CLAUDE.md`.
 - Their explanatory prose stays English.
 
 ## Plan-first workflow
