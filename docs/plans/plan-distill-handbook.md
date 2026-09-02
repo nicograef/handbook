@@ -513,4 +513,4 @@ Cut the prose corpus from 10,729 to roughly 6,900 Markdown lines (about −36%) 
 | Worktrees | /home/nico/r/handbook/.worktrees/plan-distill-handbook -> plan/distill-handbook -> phase 15 |
 | Next criterion | phase 1 criterion 1 |
 | Verify | `bash /tmp/claude-1000/-home-nico-r-handbook/86c00fac-b80f-4d9c-b0b1-44051be02085/scratchpad/phase-gate.sh <worktree> 3408ffb88e12b3e20819eebecadb7a019bc560c5` per phase; `make check` at phase 15 |
-| Workflow | scriptPath=/home/nico/.claude/projects/-home-nico-r-handbook/86c00fac-b80f-4d9c-b0b1-44051be02085/workflows/scripts/implement-plan-distill-group-wf_c3edbfa6-24b.js runId=wf_c3edbfa6-24b |
+| Workflow | scriptPath=/tmp/claude-1000/-home-nico-r-handbook/86c00fac-b80f-4d9c-b0b1-44051be02085/scratchpad/implement-plan-distill-group.js runId=wf_c3edbfa6-24b |
