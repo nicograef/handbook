@@ -63,6 +63,7 @@ Personal skill paths (in `$HOME`, not committed) differ per surface:
 - Name the file `<name>.agent.md`; the `<name>` part becomes the agent's identifier and may only contain `.`, `-`, `_`, and alphanumerics.
 - `description` is **required**; `name` and the rest are optional. The Markdown body (the prompt) is limited to **30,000 characters**.
 - **`.github/prompts/*.prompt.md`** — an **IDE-only preview** feature (VS Code / JetBrains); not loaded by the cloud agent or Copilot CLI.
+  - **`agent:` frontmatter** (optional) selects which agent runs the prompt — `ask`, `agent`, `plan`, or a custom agent name.
 
 See also:
 - [templates/AGENTS.md](../templates/AGENTS.md) — agent instructions template
