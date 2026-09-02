@@ -81,9 +81,7 @@ else
 fi
 
 # ── Handbook plugin opt-out (Codespaces) ────────────────────────────────────
-# Repos that adopt the handbook plugin via a committed .claude/settings.json
-# would load every skill twice on a machine that also has the symlink tier
-# above (guides/claude-plugin.md → "Dev-machine opt-out"). Codespaces clones
+# See guides/claude-plugin.md → "Dev-machine opt-out". Codespaces clones
 # the workspace repo before dotfiles run, so create the machine-local opt-out
 # here. No-op outside Codespaces (no /workspaces) and on already-opted-out repos.
 for settings in /workspaces/*/.claude/settings.json; do
@@ -103,7 +101,6 @@ for settings in /workspaces/*/.claude/settings.json; do
 done
 
 # ── Git config defaults ─────────────────────────────────────────────────────
-# Idempotent – safe to run on every Codespace create.
 # user.name / user.email are set automatically by Codespaces.
 log "Setting git config defaults…"
 git config --global init.defaultBranch main
@@ -124,7 +121,6 @@ if command -v gh >/dev/null 2>&1; then
   log "gh already installed: $(gh --version | head -1)"
 else
   GH_VERSION="$(curl -fsSL https://api.github.com/repos/cli/cli/releases/latest | grep '"tag_name"' | sed 's/.*"v\(.*\)".*/\1/')" || true
-  # gh release tarballs are named linux_amd64 / linux_arm64; map from dpkg's arch.
   GH_ARCH="$(dpkg --print-architecture)"   # amd64 or arm64 on Debian/Ubuntu
   if [[ -n "${GH_VERSION:-}" ]]; then
     log "Installing gh ${GH_VERSION} (linux_${GH_ARCH}) to ~/.local/bin…"

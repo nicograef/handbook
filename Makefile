@@ -1,4 +1,4 @@
-# Handbook dev interface. `make check` is the full repo self-check.
+# Handbook dev interface.
 
 .PHONY: check links lint readme language skills compose plugin prose test-prune test-agent-bus test-plan-run-guard help
 
@@ -10,7 +10,7 @@ check:
 links:
 	@scripts/check-repo.sh links
 
-## lint: run shellcheck on scripts/*.sh, install.sh, and .claude/skills/*/*.sh
+## lint: run shellcheck on every tracked shell script
 lint:
 	@scripts/check-repo.sh lint
 

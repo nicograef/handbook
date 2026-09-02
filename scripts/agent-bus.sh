@@ -11,13 +11,6 @@
 #   agent-bus.sh sweep                       drop registry entries of dead sessions
 #   agent-bus.sh hook <event>                hook body; reads hook JSON on stdin
 #
-# What it does:
-#   1. Finds sessions whose working directory shares this repo's git-common-dir.
-#   2. Keeps a registry of each session's branch, task, paths, resources and deps.
-#   3. Predicts merge conflicts, path overlap and resource collisions.
-#   4. Moves messages between sessions through a directory queue in the git dir.
-#   5. Delivers queued messages into a running session from its Stop hook.
-#
 # The channel is derived, never negotiated: every worktree of a repo resolves
 # `git rev-parse --git-common-dir` to the same directory, so both sides compute the
 # same bus path without agreeing on one. Two sessions that negotiate a channel can
@@ -157,7 +150,6 @@ registry_rows() {
   done
 }
 
-# peer_file prints the registry path for a session id.
 peer_file() { printf '%s/peers/%s.json' "$1" "$2"; }
 
 # queued_count prints how many messages are waiting for a session.

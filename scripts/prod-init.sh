@@ -60,7 +60,6 @@ log "Email:   $EMAIL"
 log "Project: $PROJECT"
 echo ""
 
-# ── Check if certificate already exists ──
 CERT_VOLUME="${PROJECT}_letsencrypt"
 if docker volume inspect "$CERT_VOLUME" >/dev/null 2>&1; then
   if docker run --rm -v "$CERT_VOLUME":/letsencrypt alpine \

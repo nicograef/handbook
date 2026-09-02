@@ -1,7 +1,5 @@
 #!/usr/bin/env bash
 # Claude Code status line for Nico
-# Line 1: model  dir  branch (when in a git repo)
-# Line 2: context-usage bar · session cost · lines changed (when data is available)
 #
 # This script intentionally omits `set -euo pipefail`: a status line should degrade
 # gracefully (print what it can) rather than crash the whole line on a missing field
@@ -16,25 +14,22 @@ model=$(echo "$input" | jq -r '.model.display_name // .model.id // "unknown"')
 cwd=$(echo "$input" | jq -r '.workspace.current_dir // .cwd // ""')
 dir=$(basename "$cwd")
 
-# Shorten model name: keep only the tier word (case-insensitive)
 short_model=$(echo "$model" | grep -oiE 'opus|sonnet|haiku' | head -1)
 if [[ -z "$short_model" ]]; then
   short_model="$model"
 fi
 
-# Git branch — skip optional locks, suppress all errors
 branch=""
 if [[ -n "$cwd" ]] && git -C "$cwd" rev-parse --git-dir >/dev/null 2>&1; then
   branch=$(git -C "$cwd" --no-optional-locks symbolic-ref --short HEAD 2>/dev/null)
 fi
 
-# Context window + cost (line 2)
 pct=$(echo "$input" | jq -r '.context_window.used_percentage // empty')
 cost=$(echo "$input" | jq -r '.cost.total_cost_usd // empty')
 added=$(echo "$input" | jq -r '.cost.total_lines_added // 0')
 removed=$(echo "$input" | jq -r '.cost.total_lines_removed // 0')
 
-# Colors (dim-friendly: bold white for separators, cyan for model, default for rest)
+# Colors (dim-friendly: cyan for model, default for rest)
 CYAN='\033[36m'
 DIM='\033[2m'
 GREEN='\033[32m'

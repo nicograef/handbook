@@ -24,7 +24,6 @@ REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 FILTER="${FILTER:-$REPO_ROOT/templates/strip-visuals.lua}"
 WPM="${WPM:-150}"          # narration speed used for the time estimate
 STRICT="${STRICT:-0}"      # 1 = abort on any lint finding
-# ─────────────────────────────────────────────────────────────────────────────
 
 log() { printf '\033[1;34m▸ %s\033[0m\n' "$1"; }
 warn() { printf '\033[1;33m! %s\033[0m\n' "$1" >&2; }
@@ -45,8 +44,6 @@ if ! [[ "$PANDOC_MAJOR" =~ ^[0-9]+$ ]] || [[ "$PANDOC_MAJOR" -lt 3 ]]; then
   die "pandoc 3.0 or newer required, found: $(pandoc --version | head -1)"
 fi
 
-# Chapters are NN-slug.md. The prefix fixes reading order and keeps planning
-# artifacts (PLAN.md, sources.md) in the same directory out of the book.
 CHAPTERS=()
 while IFS= read -r file; do
   CHAPTERS+=("$file")

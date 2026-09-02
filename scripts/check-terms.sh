@@ -27,8 +27,7 @@ SRC_DIR="${1:-}"
 TERMS_FILE="$SRC_DIR/terms.yml"
 [[ -f "$TERMS_FILE" ]] || die "no $TERMS_FILE — the skill writes it in step 6"
 
-# Chapters in reading order; the array index is the reading position. The
-# NN- prefix keeps PLAN.md and sources.md out of the chapter list.
+# Chapters in reading order; the array index is the reading position.
 CHAPTERS=()
 while IFS= read -r file; do
   CHAPTERS+=("$(basename "$file")")
@@ -56,7 +55,6 @@ WARNINGS=0
 CHECKED=0
 
 while IFS= read -r line; do
-  # Skip blanks, comments and YAML document markers.
   [[ -z "${line// /}" ]] && continue
   [[ "$line" =~ ^[[:space:]]*# ]] && continue
   [[ "$line" =~ ^[[:space:]]*---[[:space:]]*$ ]] && continue
@@ -64,7 +62,6 @@ while IFS= read -r line; do
 
   term="${line%%:*}"
   declared="${line#*:}"
-  # Trim surrounding whitespace and optional quotes.
   term="$(printf '%s' "$term" | sed -E 's/^[[:space:]]*"?//; s/"?[[:space:]]*$//')"
   declared="$(printf '%s' "$declared" | sed -E 's/^[[:space:]]*"?//; s/"?[[:space:]]*$//')"
   [[ -n "$term" && -n "$declared" ]] || continue

@@ -15,7 +15,7 @@ cd "$REPO_ROOT"
 
 FAILED=0
 
-# log() prints a focused error to stderr and marks the run as failed.
+# log() prints an error to stderr and marks the run as failed.
 log() {
   printf 'check-repo: %s\n' "$*" >&2
   FAILED=1
@@ -34,19 +34,18 @@ LANG_ALLOW=(
 # Files exempt from the paragraph cap only — the sentence cap still applies to them.
 # Source of truth: .claude/skills/output-style.md → Named prose exceptions.
 PARA_ALLOW=(
-  ".claude/skills/tutor/SKILL.md"                 # hint ladders, post-answer explanations
-  ".claude/skills/understand/SKILL.md"            # step 6 holistic narrative
-  ".claude/skills/guided-implementation/SKILL.md" # What/Why/How coaching text
-  ".claude/skills/write-prd/SKILL.md"             # problem statement, user stories
-  ".claude/skills/cleanup/readability.md"         # illustrative bad/good prose
-  ".claude/skills/cleanup/readability-de.md"      # illustrative bad/good prose
+  ".claude/skills/tutor/SKILL.md"
+  ".claude/skills/understand/SKILL.md"
+  ".claude/skills/guided-implementation/SKILL.md"
+  ".claude/skills/write-prd/SKILL.md"
+  ".claude/skills/cleanup/readability.md"
+  ".claude/skills/cleanup/readability-de.md"
 )
 
 # Prose caps enforced by check_prose (see .claude/skills/output-style.md).
 PROSE_MAX_WORDS=20
 PROSE_MAX_PARA_LINES=3
 
-# tracked_md lists every tracked Markdown file.
 tracked_md() {
   git ls-files '*.md'
 }

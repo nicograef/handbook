@@ -5,11 +5,11 @@
 #   scripts/backup-postgres.sh              # uses the defaults / env-var overrides below
 #   BACKUP_DIR=/opt/backups/postgres COMPOSE_DIR=/opt/myapp scripts/backup-postgres.sh
 #
-#   Intended for cron (bare environment) — see guides/postgresql-operations.md §3:
+#   Intended for cron — see guides/postgresql-operations.md §3:
 #     0 3 * * * /opt/scripts/backup-postgres.sh >> /var/log/pg-backup.log 2>&1
 #
 # What it does:
-#   1. Loads the Compose .env from COMPOSE_DIR (cron has no shell environment).
+#   1. Loads the Compose .env from COMPOSE_DIR.
 #   2. Dumps the DB (custom format) via `docker compose exec -T` to a TEMP file.
 #   3. Verifies the fresh dump with `pg_restore --list` (run in the container —
 #      the host is not assumed to have postgresql-client installed).
@@ -27,7 +27,6 @@ RETENTION_DAYS="${RETENTION_DAYS:-14}"
 COMPOSE_DIR="${COMPOSE_DIR:-/opt/myapp}"
 BACKUP_PING_URL="${BACKUP_PING_URL:-}"
 
-# ── Colors ──
 RED='\033[0;31m'
 GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
@@ -76,7 +75,7 @@ if ! docker compose exec -T postgres pg_restore --list < "$temp_file" >/dev/null
   error "Dump verification failed — corrupt or truncated archive. Not keeping it."
 fi
 
-# ── 3. Promote to the final name (only now is the dump trustworthy) ──
+# ── Promote to the final name (only now is the dump trustworthy) ──
 mv "$temp_file" "$final_file"
 log "Verified backup written: $final_file"
 
