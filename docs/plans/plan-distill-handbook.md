@@ -206,10 +206,10 @@ Cut the prose corpus from 10,729 to roughly 6,900 Markdown lines (about −36%) 
 
 ### Acceptance criteria
 
-- [ ] `guides/docker-setup.md` and `guides/nginx-reverse-proxy.md` are deleted; `templates/nginx-spa.conf` exists with both blocks; `guides/maintenance.md` contains "never an agent's".
-- [ ] `guides/provision-server.md` ≤ 100 lines with `## Inputs` and `## Verify` intact; no `00-hardening.conf` heredoc.
-- [ ] `guides/ipv6-only-vps.md` ≤ 70 lines with no `"fixed-cidr-v6"` block; `guides/letsencrypt-docker.md` ≤ 65 lines with no `certonly` fence; `guides/monitoring.md` ≤ 95 lines with the L74-83 callout intact.
-- [ ] `scripts/check-repo.sh links` and `prose` clean for the phase's files; inbound hits outside the phase reported.
+- [x] `guides/docker-setup.md` and `guides/nginx-reverse-proxy.md` are deleted; `templates/nginx-spa.conf` exists with both blocks; `guides/maintenance.md` contains "never an agent's".
+- [x] `guides/provision-server.md` ≤ 100 lines with `## Inputs` and `## Verify` intact; no `00-hardening.conf` heredoc.
+- [x] `guides/ipv6-only-vps.md` ≤ 70 lines with no `"fixed-cidr-v6"` block; `guides/letsencrypt-docker.md` ≤ 65 lines with no `certonly` fence; `guides/monitoring.md` ≤ 95 lines with the L74-83 callout intact.
+- [x] `scripts/check-repo.sh links` and `prose` clean for the phase's files; inbound hits outside the phase reported.
 
 ---
 
