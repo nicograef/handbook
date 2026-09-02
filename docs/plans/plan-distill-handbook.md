@@ -381,9 +381,9 @@ Cut the prose corpus from 10,729 to roughly 6,900 Markdown lines (about −36%) 
 
 ### Acceptance criteria
 
-- [ ] `orchestration.md` ≤ 125 lines with no `export const meta` block and with "cap of 4" and "did not happen" intact.
-- [ ] `finish-branch/SKILL.md` step 3 is a link and contains no `git-common-dir` test of its own; `implement-plan/SKILL.md` step 2 mentions stripping `origin/`.
-- [ ] `scripts/check-repo.sh links` and `prose` clean for the phase's files.
+- [x] `orchestration.md` ≤ 125 lines with no `export const meta` block and with "cap of 4" and "did not happen" intact.
+- [x] `finish-branch/SKILL.md` step 3 is a link and contains no `git-common-dir` test of its own; `implement-plan/SKILL.md` step 2 mentions stripping `origin/`.
+- [x] `scripts/check-repo.sh links` and `prose` clean for the phase's files.
 
 ---
 
