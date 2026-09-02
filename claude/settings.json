@@ -152,23 +152,7 @@
     ],
     "defaultMode": "auto"
   },
-  "autoMode": {
-    "environment": [
-      "$defaults",
-      "Organization: none — Nico Gräf, a solo developer on a single-user Linux machine. Primary use of Claude Code: software development on personal projects.",
-      "Source control: GitHub, org github.com/nicograef, and every repo under it. SSH remotes of the form git@github.com:nicograef/<repo>.git.",
-      "Repository visibility: handbook, jotti and rag are public. barista and career are private. Treat any repo not named here as private.",
-      "Trusted repo: every git repository under /home/nico/r, and any .worktrees/ directory inside a repo. Agent worktrees for barista live in /home/nico/r/.worktrees, outside every repo, so that ty check . never scans one.",
-      "Cloud provider(s): AWS. VPS hosting on Hetzner and netcup, reached over SSH.",
-      "Key internal services: PostgreSQL 17 and Ollama on localhost, and the Docker Compose stacks each repo defines. Vite and Go dev servers on localhost.",
-      "Internal package registry: none. The public npm registry, Go module proxy, PyPI, crates.io and Maven Central are the expected registries.",
-      "Sensitive data locations & audiences: /home/nico/.claude holds session transcripts and credentials, and /home/nico/r/career holds private job-search data. Neither leaves this machine, and neither belongs in any commit, push, PR body or paste.",
-      "Sensitive remote targets: the Hetzner and netcup VPS hosts and any AWS account. An agent session never deploys to them, except barista on this host, where make prod is the sanctioned deploy and an agent session may run it.",
-      "Protected IaC scopes: every AWS CDK stack. An agent session never runs cdk deploy or cdk destroy.",
-      "Additional context: single-user machine, no shared or multi-tenant infrastructure, no CI secrets held locally. Agent sessions work in git worktrees under .worktrees/ and land on feature branches; they never deploy and never push to main, except a run explicitly authorised for barista, which may do both."
-    ]
-  },
-  "model": "claude-opus-5[1m]",
+  "model": "claude-fable-5-1",
   "hooks": {
     "PreToolUse": [
       {
