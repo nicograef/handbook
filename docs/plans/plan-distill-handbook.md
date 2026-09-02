@@ -463,10 +463,10 @@ Cut the prose corpus from 10,729 to roughly 6,900 Markdown lines (about −36%) 
 
 ### Acceptance criteria
 
-- [ ] `evaluation-criteria.md` and `research/` deleted; `anti-patterns.md` contains "Coverage Loss" and a decision tree; no skill in the phase still contains "manufacture" (all link the report shape).
-- [ ] `tdd/SKILL.md` ≤ 45 lines, `systematic-debugging/SKILL.md` ≤ 40, `understand/SKILL.md` ≤ 60, `ubiquitous-language/SKILL.md` ≤ 60; each keeps its Constraints.
-- [ ] Exactly one file states the deep-module checklist (`write-prd/SKILL.md`); `tdd` and `guided-implementation` link it.
-- [ ] `scripts/check-repo.sh links` and `prose` clean for the phase's files.
+- [x] `evaluation-criteria.md` and `research/` deleted; `anti-patterns.md` contains "Coverage Loss" and a decision tree; no skill in the phase still contains "manufacture" (all link the report shape).
+- [x] `tdd/SKILL.md` ≤ 45 lines, `systematic-debugging/SKILL.md` ≤ 40, `understand/SKILL.md` ≤ 60, `ubiquitous-language/SKILL.md` ≤ 60; each keeps its Constraints.
+- [x] Exactly one file states the deep-module checklist (`write-prd/SKILL.md`); `tdd` and `guided-implementation` link it.
+- [x] `scripts/check-repo.sh links` and `prose` clean for the phase's files.
 
 ---
 
