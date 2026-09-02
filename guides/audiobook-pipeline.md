@@ -34,7 +34,7 @@ Source: [ElevenLabs docs on adding content](https://elevenlabs.io/docs/help-cent
 ## Step 1 — Render the EPUB
 
 ```bash
-STRICT=1 FILTER=tools/strip-visuals.lua \
+STRICT=1 FILTER=<handbook>/templates/strip-visuals.lua \
   <handbook>/scripts/md-to-epub.sh audiobook/ book.epub
 ```
 
