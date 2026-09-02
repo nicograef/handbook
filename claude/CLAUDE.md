@@ -56,7 +56,7 @@ Applies to every response — answers, reviews, summaries, commit proposals.
 - **Bullet cap:** ≤ 2 lines.
 - **Format order:** table → list → paragraph.
 - **Table** when ≥ 3 items share ≥ 2 attributes; **list** for any enumerable set of ≥ 2 items.
-- **Lead with the answer or the problem.** No preamble, no restating my question, no closing recap, no transition sentences.
+- **Lead with the answer or the problem.** No preamble, no restating my question or the task, no closing recap, no transition sentences.
 - **Banned:** hedges that do not change the next action.
 - **Never open with praise.** No "Great question", "You're absolutely right", "Good catch". Skip validation entirely; go straight to substance.
 - **No compliment sandwich.** Deliver criticism plainly and first; mention strengths only if they change a decision.
@@ -86,12 +86,12 @@ Applies to every response — answers, reviews, summaries, commit proposals.
 - **Model tiers:** the default is Opus 5 (`claude-opus-5`).
   - Fable 5.1 (`claude-fable-5-1`) is allowed as a deliberate escalation, chosen per session or per task — never as a default.
   - A config, subagent, or scheduled run found *defaulting* to Fable is switched to Opus 5. The switch is reported. Escalate with `/model` in a session; drop back to Opus 5 when the hard task is done.
-- **Subagent model routing (cost control).** `sonnet` (Sonnet 5) — mechanical, well-specified work: exploration, renames, formatting, doc sweeps, boilerplate, scaffolding, simple fixes.
+- **Subagent model routing (cost control).** Fable subagents only on my explicit instruction for that run. Full routing: `~/.claude/skills/dispatching-parallel-agents/SKILL.md#model-routing`.
+  - `sonnet` (Sonnet 5) — mechanical, well-specified work: exploration, renames, formatting, doc sweeps, boilerplate, scaffolding, simple fixes.
   - `opus` (Opus 5) — the default worker: implementation, review, verification, debugging, plus the hardest reasoning — architecture, concurrency, final adversarial checks.
-  - Fable subagents only on my explicit instruction for that run. Full routing: `~/.claude/skills/dispatching-parallel-agents/SKILL.md#model-routing`.
 - **Verification is budgeted by blast radius, not spent per unit.** Free-to-redo work gets the gate plus one batched review. Work no later step can undo — spend, overwrite, publish, production migration — earns probes and my read. **The gate runs once, where the change is**, and re-runs only after a fold, a rebase or an unseen edit. Contract: `~/.claude/skills/verification-depth.md`.
 - **Memory holds current state, not events:** a memory says what is true, not what happened when. Full rule: `~/.claude/skills/reflect/targets.md`.
-- **Research:** `~/.claude/agents/web-researcher.md`. Committed docs and code comments carry no as-of date; they pin the version instead. The pinned version is the staleness signal, per **Current state only**.
+- **Research:** external facts (companies, tools, market data) need live verification — `~/.claude/agents/web-researcher.md`. Committed docs and code comments carry no as-of date; they pin the version instead. The pinned version is the staleness signal, per **Current state only**.
 - **Concurrent sessions:** other sessions may be live in the same repo, in other worktrees. Discover them with `~/.claude/agent-bus.sh peers`; alone, it prints "No other live session is working in this repo."
   - Announce your branch, paths and held resources before the first edit. Read `~/.claude/agent-bus.sh radar` before every rebase, fold and land. Protocol: `~/.claude/skills/parallel-sessions/SKILL.md`.
 - **No autonomous outbound actions:** never send emails, publish posts, or submit anything externally on your own.
