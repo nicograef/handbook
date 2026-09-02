@@ -3,24 +3,16 @@
 The handbook ships as a public Claude Code plugin served from this repo, which is its own
 marketplace.
 
-Two tiers:
-
-- **Remote (this guide)** — any fresh machine, Codespace, or Claude web session, without the
-  dotfile symlinks.
 - **Local symlinks** — see [dotfiles-codespaces.md](dotfiles-codespaces.md).
 
 ## What the plugin contains
 
-- **Every skill** under `.claude/skills/` — the same source the symlink tier exposes.
-- **The `web-researcher` agent** (`.claude/agents/web-researcher.md`) — exposed through the
-  root `agents` symlink.
 - **The manifest `agents` field** validated but did not load agents in Claude Code v2.1.197.
   - Not re-verified since, so the plugin relies on the default `agents/` directory scan.
 - **Personal config is deliberately excluded** — no hooks, no `settings.json`, no statusline,
   no MCP servers; those stay on the dev machine only.
 - **Namespaced components** — skills invoke as `/handbook:<skill>`, e.g. `/handbook:distill`,
   not `/distill`.
-- **Namespaced agent** — `handbook:web-researcher`.
 
 ## Prerequisites
 
@@ -41,12 +33,13 @@ claude plugin install handbook@nicograef
 ## Adopt the plugin in a project
 
 Commit the enablement so Claude web sessions on the project repo load skills with zero manual
-steps.
+steps (not verified).
 
 - **New file** — copy [`templates/claude-settings.json`](../templates/claude-settings.json)
   to the project as `.claude/settings.json`.
-- **Existing file** — merge its two keys into the existing content.
-- **The two keys** — `extraKnownMarketplaces.nicograef` and `enabledPlugins."handbook@nicograef"`.
+- **Existing file** — merge its three keys into the existing content.
+- **The three keys** — `includeCoAuthoredBy`, `extraKnownMarketplaces.nicograef`, and
+  `enabledPlugins."handbook@nicograef"`.
 
 ## Dev-machine opt-out
 
@@ -61,11 +54,7 @@ In each adopted repo, add a **gitignored** `.claude/settings.local.json`:
 - **Local scope overrides project scope** — skills never load twice on the dev machine.
 - **Cloud sessions** on the same repo stay enabled.
 - **Keep `.claude/settings.local.json`** out of version control.
-- **Codespaces** — the file is created automatically by
-  [`scripts/install-dotfiles.sh`](../scripts/install-dotfiles.sh).
-- **It scans `/workspaces`** for adopted repos, writing the opt-out wherever it is missing.
-- **Symlink tier** is always present in Codespaces, since the dotfiles install runs in every
-  one.
+- **Codespaces** — created by [`scripts/install-dotfiles.sh`](../scripts/install-dotfiles.sh).
 - **Manual creation** is only needed on machines that don't use the dotfiles install.
 
 ## Update behavior
@@ -97,7 +86,11 @@ claude plugin update handbook@nicograef       # repoint the install at the new S
 ## Verify
 
 ```bash
+# first install
 claude plugin details handbook   # one skill per .claude/skills/ dir, 1 agent, 0 hooks, 0 MCP servers
+
+# after an update
+claude plugin list               # installed SHA matches the pushed commit
 ```
 
 ---
