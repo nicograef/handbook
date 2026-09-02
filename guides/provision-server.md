@@ -2,12 +2,7 @@
 
 Automated setup using [`scripts/setup-server.sh`](../scripts/setup-server.sh).
 
-## Prerequisites
-
-- A fresh VPS with root SSH access
-- An SSH key pair on your local machine
-
-### Inputs
+## Inputs
 
 Collect a value for every variable in the Configuration block at the top of
 [`scripts/setup-server.sh`](../scripts/setup-server.sh) before running. The steps
@@ -19,65 +14,27 @@ also use placeholders not in that block:
 
 ## Usage
 
-Two paths:
+- **cloud-init** (preferred, Hetzner Cloud) — the server provisions itself on first
+  boot. Copy [`templates/cloud-init.yml`](../templates/cloud-init.yml), fill the
+  `<angle-bracket>` placeholders (`<ssh-public-key>`, `<username>`, `<user-password>`,
+  `<health-ping-url>`; adjust `EXTRA_UFW_PORTS`), then create the server with it — via
+  the console **Cloud config** field, or:
 
-- **cloud-init** (preferred) — the server provisions itself on first boot.
-- **manual SSH pipe** — the fallback when the provider has no user-data field.
+  ```bash
+  hcloud server create \
+    --name <name> --type <type> --image debian-12 \
+    --ssh-key <key-name> \
+    --user-data-from-file cloud-init.yml
 
-> **Security:** user-data — including `USER_PASSWORD` — stays readable from the
-> instance metadata endpoint. Rotate the password at first login (`passwd`) or
-> use `PASSWORDLESS_SUDO=true` and omit `USER_PASSWORD` entirely.
+  # wait for cloud-init to finish
+  ssh <username>@<host> "sudo cloud-init status --wait"   # → status: done
+  ssh <username>@<host> "sudo tail -n 40 /var/log/cloud-init-output.log"
+  ```
 
-### Primary: cloud-init (Hetzner)
-
-Reference provider: Hetzner Cloud, which exposes a user-data field.
-
-1. Copy [`templates/cloud-init.yml`](../templates/cloud-init.yml) and fill the
-   `<angle-bracket>` placeholders (`<ssh-public-key>`, `<username>`,
-   `<user-password>`, `<health-ping-url>`; adjust `EXTRA_UFW_PORTS`). To skip
-   `USER_PASSWORD`, switch to the commented passwordless-sudo block.
-2. Create the server with it — via the console **Cloud config** field, or the CLI:
-
-   ```bash
-   hcloud server create \
-     --name <name> --type <type> --image debian-12 \
-     --ssh-key <key-name> \
-     --user-data-from-file cloud-init.yml
-   ```
-
-3. Wait for cloud-init to finish, then verify it ran cleanly:
-
-   ```bash
-   ssh <username>@<host> "sudo cloud-init status --wait"   # → status: done
-   ssh <username>@<host> "sudo tail -n 40 /var/log/cloud-init-output.log"
-   ```
-
-   Then run the [Verify](#verify) block below.
-
-### Fallback: manual SSH pipe (netcup)
-
-- Use this when the provider has no user-data field.
-- netcup officially supports only SSH-key injection at image install — no
-  user-data field.
-- So netcup servers take this path.
-- Pass configuration inline to the remote shell — the vars are consumed on the
-  server, not your local machine.
-
-```bash
-# preview first (no changes made)
-ssh root@<host> "SSH_PUBLIC_KEY='$(cat ~/.ssh/id_ed25519.pub)' bash -s -- --dry-run" \
-  < scripts/setup-server.sh
-
-# then run for real — USER_PASSWORD is required unless you opt into passwordless sudo
-ssh root@<host> \
-  "SSH_PUBLIC_KEY='$(cat ~/.ssh/id_ed25519.pub)' USERNAME=nico USER_PASSWORD='<pw>' EXTRA_UFW_PORTS='80/tcp 443/tcp' bash -s" \
-  < scripts/setup-server.sh
-
-# or opt into passwordless (NOPASSWD) sudo instead of setting a password
-ssh root@<host> \
-  "SSH_PUBLIC_KEY='$(cat ~/.ssh/id_ed25519.pub)' PASSWORDLESS_SUDO=true bash -s" \
-  < scripts/setup-server.sh
-```
+- **manual SSH pipe** (netcup) — the fallback for a provider with no user-data
+  field. Netcup supports only SSH-key injection at image install; see
+  [`scripts/setup-server.sh`](../scripts/setup-server.sh)'s header comment for the
+  invocation.
 
 ## Verify
 
@@ -125,64 +82,19 @@ cat /etc/cron.d/report-health
   the stock `50unattended-upgrades` `Origins-Pattern`.
 - Expected: our drop-in extends that `Origins-Pattern` rather than replacing it.
 
-## SSH hardening (drop-in)
-
-The script automates this (step 3). Run it by hand when debugging or tightening
-an existing server.
-
-```bash
-# ensure the main config includes the drop-in dir (some minimal images omit this)
-grep -qxF 'Include /etc/ssh/sshd_config.d/*.conf' /etc/ssh/sshd_config \
-  || echo 'Include /etc/ssh/sshd_config.d/*.conf' | sudo tee -a /etc/ssh/sshd_config
-
-sudo tee /etc/ssh/sshd_config.d/00-hardening.conf > /dev/null <<'EOF'
-PubkeyAuthentication yes
-PasswordAuthentication no
-PermitRootLogin no
-KbdInteractiveAuthentication no
-EOF
-
-sudo systemctl restart ssh   # 'ssh' is the canonical unit on Debian/Ubuntu
-```
-
 ## After provisioning
 
 - IPv6-only server? Set up DNS64 resolvers (and check the limits) —
   see [ipv6-only-vps.md](ipv6-only-vps.md)
-- Open extra firewall ports as needed: `sudo ufw allow 443/tcp`
-- Deploy apps via Docker Compose – see [letsencrypt-docker.md](letsencrypt-docker.md);
-  Docker post-install config: [docker-setup.md](docker-setup.md)
-- Install tmux and the modern CLI tools the shell aliases expect — all in
-  Debian 13 `main`:
+- Deploy apps via Docker Compose – see [letsencrypt-docker.md](letsencrypt-docker.md)
+- Install tmux and the modern CLI tools the shell aliases expect, all in Debian 13
+  `main`. Without them the aliases in
+  [templates/.bash_aliases](../templates/.bash_aliases) silently stay inactive:
 
   ```bash
   sudo apt install -y tmux bat eza fzf fd-find ripgrep git-delta
   ```
 
-  Without them the aliases in
-  [templates/.bash_aliases](../templates/.bash_aliases) silently stay inactive.
-
-- Install personal dotfiles — shell aliases, history + git prompt, tmux config,
-  git defaults, gh CLI:
-
-  ```bash
-  git clone https://github.com/nicograef/handbook.git ~/handbook && ~/handbook/install.sh
-  ```
-
-  Idempotent to re-run. The Claude config symlinks it also creates are inert on
-  servers without Claude Code. See
-  [dotfiles-codespaces.md](dotfiles-codespaces.md) for what the installer does in
-  detail.
-
 - Work in a named tmux session: `tmux new -A -s <project>` — see
-  [cheatsheets/tmux.md](../cheatsheets/tmux.md).
-- An ssh disconnect then only detaches instead of killing running processes
-  (Claude Code, builds).
-
----
-
-See also:
-- [scripts/setup-server.sh](../scripts/setup-server.sh) — automated server provisioning script
-- [guides/ipv6-only-vps.md](ipv6-only-vps.md) — IPv6-only servers (DNS64/NAT64, Docker IPv6)
-- [guides/docker-setup.md](docker-setup.md) — Docker post-install config and pruning
-- [guides/letsencrypt-docker.md](letsencrypt-docker.md) — TLS certificates
+  [cheatsheets/tmux.md](../cheatsheets/tmux.md). An ssh disconnect then only detaches
+  instead of killing running processes (Claude Code, builds).
