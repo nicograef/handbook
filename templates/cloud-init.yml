@@ -10,13 +10,13 @@
 runcmd:
   # ── Provision ──
   # Env vars are consumed by setup-server.sh on the server; see the script's
-  # Configuration block for the full interface. Optional vars are commented out.
+  # Configuration block for the full interface. Optional vars are commented out:
+  # EXTRA_UFW_PORTS='80/tcp 443/tcp' (already the script default) and
+  # HEALTH_PING_URL='<health-ping-url>' (move into the command below to enable).
   - >-
     SSH_PUBLIC_KEY='<ssh-public-key>'
     USERNAME='<username>'
     USER_PASSWORD='<user-password>'
-    EXTRA_UFW_PORTS='80/tcp 443/tcp'
-    HEALTH_PING_URL='<health-ping-url>'
     bash -c "curl -fsSL https://raw.githubusercontent.com/nicograef/handbook/main/scripts/setup-server.sh | bash -s"
 
   # ── Passwordless-sudo variant ──
