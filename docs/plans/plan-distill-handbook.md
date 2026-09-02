@@ -156,11 +156,11 @@ Cut the prose corpus from 10,729 to roughly 6,900 Markdown lines (about −36%) 
 
 ### Acceptance criteria
 
-- [ ] `templates/copilot-instructions.md` deleted; `templates/AGENTS.md` carries the quality.md scope guard, one decide-before-ask bullet and the PR-trailer strip bullet.
-- [ ] No `.claude/rules/*.md` contains "≤ 20 words"; each keeps its file-naming section.
-- [ ] `.claude/skills/verification-depth.md` has no Anti-patterns table and no TOC, and still contains "resume the author" and "deepens".
-- [ ] `.claude/agents/web-researcher.md` has no `| Sentence |` table row, links `../skills/output-style.md`, and its `tools:` line names `mcp__plugin_context7_context7__query-docs`.
-- [ ] `scripts/check-repo.sh links` and `prose` clean for the phase's files.
+- [x] `templates/copilot-instructions.md` deleted; `templates/AGENTS.md` carries the quality.md scope guard, one decide-before-ask bullet and the PR-trailer strip bullet.
+- [x] No `.claude/rules/*.md` contains "≤ 20 words"; each keeps its file-naming section.
+- [x] `.claude/skills/verification-depth.md` has no Anti-patterns table and no TOC, and still contains "resume the author" and "deepens".
+- [x] `.claude/agents/web-researcher.md` has no `| Sentence |` table row, links `../skills/output-style.md`, and its `tools:` line names `mcp__plugin_context7_context7__query-docs`.
+- [x] `scripts/check-repo.sh links` and `prose` clean for the phase's files.
 
 ---
 
