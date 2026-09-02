@@ -38,6 +38,8 @@ Applies to every review, audit, or findings report.
 2. Findings as a table, or one bullet per finding with fixed fields.
 3. Each bullet opens with a bold keyword, then the fact.
 4. Zero findings: one line, no padding.
+5. Never manufacture findings to fill a report.
+6. No social filler: "you're right", "great point", "thanks for catching that".
 
 ## Named prose exceptions
 

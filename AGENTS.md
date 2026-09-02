@@ -68,6 +68,7 @@ Full contract: [.claude/skills/output-style.md](.claude/skills/output-style.md).
 | List trigger | any enumerable set of ≥ 2 items |
 | Format order | table → list → paragraph |
 
+- **Compression removes words, never a rule, condition, exception or caveat.**
 - **Lead with the answer or the problem.** No preamble, no restating the question, no closing recap.
 - **Never open with praise.** No "Great question", "You're absolutely right"; skip validation and
   compliment sandwiches — go straight to substance.

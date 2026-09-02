@@ -25,6 +25,7 @@ Then count the survivors:
 | ≥ 2, none clearly better | Ask. Steps 1–3 are the question's context. |
 
 - The last row is the only one that earns a question.
+- Applies to every skill and every subagent, `AskUserQuestion` included.
 - "I am unsure" is not a survivor count — do the scoring, then count.
 - Cannot name the surviving options? The question is not ready to ask.
 - Never ask to hand back a call you are equipped to make.

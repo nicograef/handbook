@@ -112,6 +112,7 @@
 - **Table** when ≥ 3 items share ≥ 2 attributes; **list** for any enumerable set of ≥ 2 items.
 - **Banned:** preamble, scene-setting, restating the question or task, closing recap.
 - **Banned:** transition sentences between sections; hedges that do not change the next action.
+- **Compression removes words, never a rule, condition, exception or caveat.**
 
 ## Quality Principles
 
