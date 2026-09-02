@@ -1,16 +1,6 @@
 # Set Up a New Project Repository
 
-Scaffold a new repo from the handbook's templates.
-
-- Pick a project shape, then copy the matching template subset in the right order.
-- Wire up agent config, CI, and the handbook plugin.
 - This is the "New project" path of [bootstrap.md](bootstrap.md).
-
-## Prerequisites
-
-- `gh` CLI authenticated (`gh auth status`) — or plain `git` for the local-only path.
-- A local clone of this handbook (for the `cp` commands below).
-- The toolchain for your chosen stack installed (see the stack guide in [Step 3](#3-stack-scaffolding)).
 
 ### Inputs
 
@@ -54,10 +44,6 @@ mkdir -p .vscode && cp "$HANDBOOK/templates/vscode-settings.json" .vscode/settin
 cp "$HANDBOOK/templates/Makefile" .
 ```
 
-- [templates/Makefile](../templates/Makefile) → trim targets to the stack (drop `prod-*`
-  for a service you do not self-host, `fe`/`be` for a single-tier repo). See
-  [cheatsheets/makefile.md](../cheatsheets/makefile.md).
-
 ## 3. Stack scaffolding
 
 Pick the row for your `<stack>`; copy only its templates. `db` = uncomment the Postgres
@@ -78,15 +64,8 @@ mkdir -p .devcontainer && cp "$HANDBOOK/templates/devcontainer.json" .devcontain
 mkdir -p scripts && cp "$HANDBOOK/templates/setup-dev-tools.sh" scripts/setup-dev-tools.sh
 ```
 
-- [templates/setup-dev-tools.sh](../templates/setup-dev-tools.sh) — delete the stack sections
-  the repo does not use.
-  - Fill the `<project-go-version>` placeholder (Go stacks).
-  - Uncomment the frontend-deps block (repos with a `frontend/`).
-  - Otherwise the devcontainer `postCreateCommand` fails.
-- **Dockerfiles** — one per built tier, following
-  [docker-multi-stage-builds.md](docker-multi-stage-builds.md); Java and Node examples there.
-- A Go backend uses the same two-stage pattern: compile a static binary into a minimal
-  runtime image.
+- **Dockerfiles** — one per built tier, following [docker-multi-stage-builds.md](docker-multi-stage-builds.md); Java and Node examples there.
+- A Go backend uses the same two-stage pattern: compile a static binary into a minimal runtime image.
 - Then follow the linked **stack guide(s)** for source layout and conventions.
 
 ## 4. CI and dependency updates
@@ -97,27 +76,14 @@ cp "$HANDBOOK/templates/ci.yml" .github/workflows/ci.yml
 cp "$HANDBOOK/templates/dependabot.yml" .github/dependabot.yml
 ```
 
-- [templates/ci.yml](../templates/ci.yml) — delete the jobs that do not apply, fill
-  `<backend-dir>` / `<frontend-dir>` / `<database-dir>` / `<database-name>`. Patterns:
-  [github-actions-cicd.md](github-actions-cicd.md).
-- [templates/dependabot.yml](../templates/dependabot.yml) — keep only the ecosystems your
-  repo uses; adapt the directories.
-
 ## 5. Agent setup
 
 ```bash
 cp "$HANDBOOK/templates/AGENTS.md" AGENTS.md
 printf '@AGENTS.md\n' > CLAUDE.md          # first line imports AGENTS.md
-mkdir -p .github && cp "$HANDBOOK/templates/copilot-instructions.md" .github/copilot-instructions.md
 ```
 
-- [templates/AGENTS.md](../templates/AGENTS.md) — fill in every `<placeholder>` (tech stack,
-  commands, structure, boundaries). Single source of truth for all agent surfaces. Its
-  Communication section carries the anti-sycophancy rules — see
-  [anti-sycophancy.md](anti-sycophancy.md) for the rationale and full countermeasure map.
-- `CLAUDE.md` — sibling whose first line is `@AGENTS.md` so Claude Code loads the same rules.
-- [templates/copilot-instructions.md](../templates/copilot-instructions.md) →
-  `.github/copilot-instructions.md` — Copilot-only deltas, or delete it if none.
+- [templates/AGENTS.md](../templates/AGENTS.md) — Communication section carries the anti-sycophancy rules; see [anti-sycophancy.md](anti-sycophancy.md) for the rationale and full countermeasure map.
 - Add deeper layers only when needed: contextual instructions, skills, agents, prompts.
 - See [copilot-agent-setup.md](copilot-agent-setup.md) for the layer table and when to add each.
 
@@ -126,11 +92,6 @@ mkdir -p .github && cp "$HANDBOOK/templates/copilot-instructions.md" .github/cop
 ```bash
 mkdir -p .claude && cp "$HANDBOOK/templates/claude-settings.json" .claude/settings.json
 ```
-
-- [templates/claude-settings.json](../templates/claude-settings.json) →
-  `.claude/settings.json` — cloud Claude sessions load the handbook skills with zero setup.
-- On a dev machine that already loads the skills via the symlink tier, add the gitignored
-  opt-out per [claude-plugin.md](claude-plugin.md#dev-machine-opt-out).
 
 ## Verify
 
@@ -142,13 +103,3 @@ grep -Eo 'extraKnownMarketplaces|enabledPlugins' .claude/settings.json
 # -> extraKnownMarketplaces
 # -> enabledPlugins
 ```
-
----
-
-See also:
-- [guides/bootstrap.md](bootstrap.md) — the four bootstrap scenarios (VPS, Codespace, dev machine, project)
-- [guides/copilot-agent-setup.md](copilot-agent-setup.md) — agent context layers
-- [guides/claude-plugin.md](claude-plugin.md) — plugin adoption and dev-machine opt-out
-- [guides/docker-multi-stage-builds.md](docker-multi-stage-builds.md) — production Dockerfiles
-- [guides/github-actions-cicd.md](github-actions-cicd.md) — CI workflow patterns
-- [guides/go.md](go.md) · [guides/react.md](react.md) · [guides/java-spring-boot.md](java-spring-boot.md) — stack conventions
