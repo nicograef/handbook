@@ -1,26 +1,12 @@
 # Readability — German Prose
 
-- [Prose and Documentation Slop — German](#prose-and-documentation-slop--german)
+German-specific patterns for documentation, comments, commit messages, and
+README files — supplements [readability.md](readability.md) for
+German-language content.
+Use it for German prose, readability.md for English, and both for
+mixed-language content.
 
-German-specific patterns that affect how quickly a reader can understand
-documentation, comments, commit messages, and README files. Supplements
-[readability.md](readability.md) for German-language content.
-
-- The Code Readability section in [readability.md](readability.md) is
-  language-neutral and applies to all code regardless of prose language.
-- This file covers only the Prose and Documentation Slop section.
-
-**Scope:**
-
-- Apply this file when the prose is in German.
-- For English text, use the prose section in [readability.md](readability.md).
-- For mixed-language content, apply both to the respective sections.
-
----
-
-## Prose and Documentation Slop — German
-
-### KI-Vokabular
+## KI-Vokabular
 
 | Remove or replace                 | Typically means                         |
 | --------------------------------- | --------------------------------------- |
@@ -50,7 +36,7 @@ Not every occurrence is slop.
 - "Grundlegend" in a sentence about foundations is literal.
 - "Grundlegend" in "spielt eine grundlegende Rolle" is slop.
 
-### Overused Conjunctions
+## Overused Conjunctions
 
 LLMs use formal connectors mechanically and too often, creating a stiff,
 formulaic rhythm.
@@ -69,7 +55,7 @@ formulaic rhythm.
 - Remove or replace with simpler alternatives ("auch", "und") when the sentence
   flows without the connector.
 
-### Puffery and Significance Claims
+## Puffery and Significance Claims
 
 **Flag sentences containing:**
 
@@ -86,7 +72,7 @@ formulaic rhythm.
 - "symbolisiert" (without concrete referent)
 - "prägt die [Landschaft/Zukunft/Entwicklung]"
 
-### Superficial Analysis
+## Superficial Analysis
 
 German LLMs attach shallow analysis via Partizip-I constructions (present
 participle). These are more marked in German than English "-ing" forms and
@@ -105,7 +91,7 @@ sound stilted or bureaucratic.
 **Suggest:** Delete the trailing phrase. The sentence before it usually stands
 on its own.
 
-### Promotional Tone
+## Promotional Tone
 
 **Flag:**
 
@@ -121,7 +107,7 @@ on its own.
 - "renommiert"
 - "kuratiert"
 
-### Copula Avoidance
+## Copula Avoidance
 
 Inflated alternatives to "ist/sind" or "hat/haben."
 
@@ -136,7 +122,7 @@ Inflated alternatives to "ist/sind" or "hat/haben."
 | "zeichnet sich aus durch"      | "hat" / "ist"   |
 | "weist ... auf"                | "hat" / "zeigt" |
 
-### Collaborative Residue
+## Collaborative Residue
 
 **Flag:**
 
@@ -149,7 +135,7 @@ Inflated alternatives to "ist/sind" or "hat/haben."
 - "Hier ist eine detailliertere Aufschlüsselung..."
 - Any sentence addressing "Sie/du" when the document should not
 
-### Generic Filler
+## Generic Filler
 
 **Common patterns:**
 
@@ -161,7 +147,7 @@ Inflated alternatives to "ist/sind" or "hat/haben."
 - "Im Folgenden wird erläutert..."
 - "Es lässt sich festhalten, dass..."
 
-### Section Summaries and "Fazit"
+## Section Summaries and "Fazit"
 
 LLMs summarize sections with formulaic closings — a pattern common in academic
 writing but inappropriate in most technical documentation.
@@ -176,7 +162,7 @@ writing but inappropriate in most technical documentation.
 
 **Suggest:** Delete. The preceding content should stand on its own.
 
-### Negative Parallelisms
+## Negative Parallelisms
 
 Contrastive constructions that create an argumentative tone inappropriate for
 neutral prose.
@@ -189,12 +175,12 @@ neutral prose.
 
 **Suggest:** State the point directly without the contrastive setup.
 
-### Elegant Variation
+## Elegant Variation
 
 "Das System", "die Plattform", "die Lösung", "das Werkzeug" — all meaning the
 same thing.
 
-### Knowledge Cutoff Hints
+## Knowledge Cutoff Hints
 
 Traces of the model's training-data cutoff that remain visible in the output.
 
@@ -210,7 +196,7 @@ Traces of the model's training-data cutoff that remain visible in the output.
 
 **Suggest:** Delete the sentence. These are definitive proof of unedited LLM output.
 
-### Compulsive Triples
+## Compulsive Triples
 
 German LLMs group items in threes, often using "sowohl... als auch... und" or
 three coordinated adjectives.
@@ -219,7 +205,7 @@ three coordinated adjectives.
 - "sowohl kulturell als auch wirtschaftlich und sozial"
 - "Fachleute, Experten und Stakeholder"
 
-### False Extension
+## False Extension
 
 "Von... bis" constructions that enumerate examples without conveying information.
 
@@ -230,7 +216,7 @@ three coordinated adjectives.
 
 **Suggest:** List the specific examples or remove the enumeration if it adds no information.
 
-### Vague Attributions
+## Vague Attributions
 
 **Flag:**
 
@@ -241,7 +227,7 @@ three coordinated adjectives.
 - "laut verschiedenen Quellen"
 - "nach Einschätzung von Fachleuten"
 
-### Formatting Tells
+## Formatting Tells
 
 Weak signals on their own but strengthen the case alongside content patterns.
 
