@@ -110,7 +110,7 @@ Applies to every response — answers, reviews, summaries, commit proposals.
   - A scheduled wake-up cannot answer a permission prompt — never plan around one.
   - Recipe: `guides/unattended-agents.md` in the handbook.
 - **Model tiers:** the default is Opus 5 (`claude-opus-5`) at high or xhigh effort.
-  - Fable 5 (`claude-fable-5`) is allowed as a deliberate escalation, chosen per session
+  - Fable 5.1 (`claude-fable-5-1`) is allowed as a deliberate escalation, chosen per session
     or per task — never as a default.
   - A config, subagent, or scheduled run found *defaulting* to Fable is switched to Opus 5.
     The switch is reported.
