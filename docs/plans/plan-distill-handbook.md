@@ -407,9 +407,9 @@ Cut the prose corpus from 10,729 to roughly 6,900 Markdown lines (about −36%) 
 
 ### Acceptance criteria
 
-- [ ] `radar.md` deleted; `protocol.md` contains `## Radar`, "permissions.allow" and no `## Failure modes`; `parallel-sessions/SKILL.md` has no "Empty output".
-- [ ] `reflect/SKILL.md` keeps "Zero picks"; `reflect/sources.md` ≤ 45 lines; `prune/SKILL.md` keeps "Confirm intent".
-- [ ] `scripts/check-repo.sh links` and `prose` clean for the phase's files.
+- [x] `radar.md` deleted; `protocol.md` contains `## Radar`, "permissions.allow" and no `## Failure modes`; `parallel-sessions/SKILL.md` has no "Empty output".
+- [x] `reflect/SKILL.md` keeps "Zero picks"; `reflect/sources.md` ≤ 45 lines; `prune/SKILL.md` keeps "Confirm intent".
+- [x] `scripts/check-repo.sh links` and `prose` clean for the phase's files.
 
 ---
 
