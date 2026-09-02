@@ -283,9 +283,9 @@ Cut the prose corpus from 10,729 to roughly 6,900 Markdown lines (about −36%) 
 
 ### Acceptance criteria
 
-- [ ] `git diff --stat` for the phase shows comment lines only; `docker compose -f templates/docker-compose.prod.yml --env-file templates/.env.example config -q` still passes; `make compose` green.
-- [ ] `templates/docker-compose.prod.yml` usage line contains `-p`.
-- [ ] `make lint` green.
+- [x] `git diff --stat` for the phase shows comment lines only; `docker compose -f templates/docker-compose.prod.yml --env-file templates/.env.example config -q` still passes; `make compose` green.
+- [x] `templates/docker-compose.prod.yml` usage line contains `-p`.
+- [x] `make lint` green.
 
 ---
 
