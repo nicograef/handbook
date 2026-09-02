@@ -255,9 +255,9 @@ Cut the prose corpus from 10,729 to roughly 6,900 Markdown lines (about −36%) 
 
 ### Acceptance criteria
 
-- [ ] `guides/stack-conventions.md` exists (≤ 90 lines) with `## Go`, `## Java`, `## React` and contains "constructor injection", "-tags", "cn()", and exactly one fetch rule; the three source guides are deleted.
-- [ ] Each cheatsheet is shorter than at `fad62ea` and still contains its keeper (`-prune`, `enable-linger`, `127.0.0.1`, `$$(`).
-- [ ] `scripts/check-repo.sh links` and `prose` clean; inbound hits reported.
+- [x] `guides/stack-conventions.md` exists (≤ 90 lines) with `## Go`, `## Java`, `## React` and contains "constructor injection", "-tags", "cn()", and exactly one fetch rule; the three source guides are deleted.
+- [x] Each cheatsheet is shorter than at `fad62ea` and still contains its keeper (`-prune`, `enable-linger`, `127.0.0.1`, `$$(`).
+- [x] `scripts/check-repo.sh links` and `prose` clean; inbound hits reported.
 
 ---
 
