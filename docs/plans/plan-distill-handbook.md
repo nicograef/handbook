@@ -181,10 +181,10 @@ Cut the prose corpus from 10,729 to roughly 6,900 Markdown lines (about −36%) 
 
 ### Acceptance criteria
 
-- [ ] `guides/copilot-agent-setup.md` ≤ 70 lines and still contains "chatmode", "IDE-only", "~/.agents/skills".
-- [ ] `guides/claude-plugin.md` says "three keys", has one Verify command per scenario, and the string "Personal config is deliberately excluded" survives.
-- [ ] `guides/unattended-agents.md` has no `PermissionDenied` JSON block and keeps "67 idle stretches".
-- [ ] `scripts/check-repo.sh links` and `prose` clean for the phase's files.
+- [x] `guides/copilot-agent-setup.md` ≤ 70 lines and still contains "chatmode", "IDE-only", "~/.agents/skills".
+- [x] `guides/claude-plugin.md` says "three keys", has one Verify command per scenario, and the string "Personal config is deliberately excluded" survives.
+- [x] `guides/unattended-agents.md` has no `PermissionDenied` JSON block and keeps "67 idle stretches".
+- [x] `scripts/check-repo.sh links` and `prose` clean for the phase's files.
 
 ---
 
