@@ -485,10 +485,10 @@ Cut the prose corpus from 10,729 to roughly 6,900 Markdown lines (about −36%) 
 
 ### Acceptance criteria
 
-- [ ] `make check` exits 0.
-- [ ] `grep -rln -e docker-setup.md -e nginx-reverse-proxy.md -e verification-drill.md -e github-actions-cicd.md -e copilot-instructions.md -e evaluation-criteria.md -e the-checkpoint.md -e radar.md -e 'guides/go.md' -e java-spring-boot.md -e 'guides/react.md' -e research/SKILL.md . --exclude-dir=.git --exclude-dir=docs` returns only `scripts/setup-server.sh` (FLAG).
-- [ ] `git ls-files '*.md' | xargs wc -l | tail -1` reports ≤ 7,500 total lines.
-- [ ] `guides/anti-sycophancy.md` names no deleted file and points the report-shape rules at `.claude/skills/output-style.md`.
+- [x] `make check` exits 0.
+- [x] `grep -rln -e docker-setup.md -e nginx-reverse-proxy.md -e verification-drill.md -e github-actions-cicd.md -e copilot-instructions.md -e evaluation-criteria.md -e the-checkpoint.md -e radar.md -e 'guides/go.md' -e java-spring-boot.md -e 'guides/react.md' -e research/SKILL.md . --exclude-dir=.git --exclude-dir=docs` returns only `scripts/setup-server.sh` (FLAG).
+- [x] `git ls-files '*.md' | xargs wc -l | tail -1` reports 8551 total lines; the 7,500 target is waived by Nico ("ignore the line target", 2026-09-02).
+- [x] `guides/anti-sycophancy.md` names no deleted file and points the report-shape rules at `.claude/skills/output-style.md`.
 
 ## Run state
 
