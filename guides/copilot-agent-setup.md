@@ -6,15 +6,15 @@ Configure a repository so GitHub Copilot understands the project, follows conven
 
 | Layer                       | File                                      | Loaded when                                          | Token cost      |
 | ---------------------------- | ------------------------------------------ | ----------------------------------------------------- | ---------------- |
-| **Root instructions**       | `AGENTS.md`                               | Every Copilot surface — always                       | High (full)     |
+| **Root instructions**       | `AGENTS.md`                               | Cloud agent, github.com code review, Copilot CLI — not Chat | High (full)     |
 | **Contextual instructions** | `.github/instructions/*.instructions.md`  | Automatically, when editing files matching `applyTo` | Per-area        |
 | **Skills**                  | `.github/skills/<name>/SKILL.md`          | Loaded on demand when a task matches the skill        | Zero until used |
 | **Custom agents**           | `.github/agents/*.agent.md`               | When invoked by name (agent picker / `@name`)         | Zero until used |
 | **Reusable prompts**        | `.github/prompts/*.prompt.md`             | On demand (`/prompt-name` in chat)                    | Zero until used |
 
-- **Every Copilot surface reads `AGENTS.md`** — Chat, Inline, Agent Mode, code review, cloud agent, and Copilot CLI. One agent file at the repo root is the norm.
+- **`AGENTS.md` is read by the cloud agent, code review on github.com, and Copilot CLI** — not by Chat or Inline. One agent file at the repo root is the norm.
 - Nested `AGENTS.md` files apply to their subtree, and the nearest file wins.
-- **A root `CLAUDE.md`** is only a fallback when no `AGENTS.md` is present.
+- **Claude Code reads `CLAUDE.md`, never `AGENTS.md`** — the pattern is a `CLAUDE.md` that imports it. No fallback rule exists.
 
 ### When to add each layer
 
@@ -44,7 +44,7 @@ Configure a repository so GitHub Copilot understands the project, follows conven
 | -------------------- | ---------------------------------------------------------------- |
 | `.github/skills/`   | Repo skills (Copilot code review, cloud agent, VS Code, CLI)   |
 | `.claude/skills/`   | Personal + project skills (also read by VS Code Copilot)       |
-| `.agents/skills/`   | Personal skills for Copilot CLI (`~/.agents/skills`)            |
+| `.agents/skills/`   | Project skills, all surfaces; `~/.agents/skills` is personal (VS Code + CLI) |
 
 Personal skill paths (in `$HOME`, not committed) differ per surface:
 

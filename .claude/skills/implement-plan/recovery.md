@@ -97,9 +97,9 @@ A stop leaves a `## Run state` section in the plan file. Commit it to
 
 - A user action, not skill behaviour: setting `CLAUDE_CODE_RETRY_WATCHDOG=1` in
   the environment before an unattended run.
-- It retries capacity 429s and 529s indefinitely.
-- It is documented for capacity errors only.
-- Whether it waits out a plan usage-limit window is unverified.
+- It retries every 429 and 529/overloaded indefinitely, waiting out the reset.
+- It fails immediately on organization spend-limit and out-of-credits errors.
+- Whether it waits out a personal plan usage-limit window is unverified.
 - Do not run a plan assuming it does.
 
 ## What does not exist

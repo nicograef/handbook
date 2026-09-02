@@ -15,8 +15,8 @@ A dropped ssh connection only detaches; the work keeps running.
 ### Surviving logout needs lingering
 
 A detach survives on its own; a logout does not. Without lingering, systemd stops
-`user@$UID.service` once the last session ends. **Every** tmux server in that
-slice dies with it — not just yours. Enable it once:
+`user@$UID.service` after the last logout. Whether tmux servers in that scope die is
+`KillUserProcesses=` in logind.conf (Debian default `no` keeps them). Enable it once:
 
 ```bash
 sudo loginctl enable-linger "$USER"
@@ -32,6 +32,6 @@ a lingering one stays up instead of taking its slice down. Diagnosing one:
 | Key                | Action                                  |
 | ------------------ | --------------------------------------- |
 | Prefix + `[`       | Enter copy mode (then arrows/PgUp)      |
-| `Space` … `Enter`  | Start selection … copy it               |
+| `Space` … `Enter` (vi) / `C-Space` … `M-w` (emacs) | Start selection … copy it |
 | Prefix + `]`       | Paste                                   |
 | `q`                | Leave copy mode                         |

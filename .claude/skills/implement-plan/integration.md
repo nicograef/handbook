@@ -119,9 +119,10 @@ Never run these in a multi-worktree repo:
   0. Land branches one at a time.
 - `stash` — repo-global, not per-worktree. Commit instead.
 - `checkout -- .` / `restore .` / `clean -fd` / `reset --hard` — unrecoverable;
-  uncommitted work was never an object.
-- `branch -D` — deletes the branch's reflog too. Use `-d`, which refuses an
-  unmerged branch.
+  unstaged and untracked work was never an object (staged work survives as an
+  unreachable blob).
+- `branch -D` — skips the merged check; `-d` refuses an unmerged branch. Either
+  form deletes the reflog, so note the sha first.
 - `worktree remove --force` — removes a worktree holding staged work. Use the
   plain form and read its refusal.
 - `push --force` / `-f` / `--force-with-lease`, `--no-verify`,

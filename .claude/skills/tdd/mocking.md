@@ -29,8 +29,7 @@ func (s *Service) SetInternalState(state State) {
 
 // GOOD: build the state through the test helper, not the production API
 func newServiceWithState(t *testing.T, state State) *Service {
-    s := NewService()
-    // seed via real constructor args, fixtures, or exported test hooks
+    s := NewService(WithState(state))
     return s
 }
 ```
@@ -45,10 +44,10 @@ partial mocks hide integration gaps.
   DB, fake server) — never a partial stand-in.
 
 ```go
-// BAD: only Charge is implemented; Refund panics/no-ops if ever called
+// BAD: only Charge is implemented; the struct fails to compile against the interface
 type partialPaymentClient struct{}
 func (p *partialPaymentClient) Charge(amount int) error { return nil }
-// Refund, GetStatus, etc. missing — compiler/runtime gap hides real coverage
+// Refund, GetStatus, etc. missing — a nil-method panic needs an embedded interface instead
 
 // GOOD: implement the full interface, or use a real in-memory fake
 type fakePaymentClient struct{ charges []int }

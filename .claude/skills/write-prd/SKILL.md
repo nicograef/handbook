@@ -34,7 +34,7 @@ description: >-
 
 ### 3. Clarify ambiguities
 
-- Resolve unknowns through **1–3 rounds** of structured questions.
+- Resolve unknowns through **0–3 rounds** of structured questions.
 - Follow the canonical [clarification question rules](../clarify/question-rules.md).
 
 ### 4. Propose approaches

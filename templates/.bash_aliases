@@ -1,7 +1,7 @@
 alias ll='ls -la'
 alias la='ls -A'
 # Start ssh-agent only if none is reachable (ssh-add -l exit code 2 = no
-# agent), then add keys — reuses the same agent across shells/sourcing.
+# agent), then add keys — reused within this shell/children (SSH_AUTH_SOCK); an independent login shell starts fresh.
 sss() {
   ssh-add -l >/dev/null 2>&1
   if [ "$?" -eq 2 ]; then
@@ -38,10 +38,11 @@ if command -v fdfind >/dev/null && ! command -v fd >/dev/null; then
 fi
 # fzf: Ctrl-R fuzzy history, Ctrl-T insert file, ** fuzzy completion.
 # The stock Ubuntu .bashrc sources this file BEFORE enabling bash-completion, so
-# load bash-completion here first: fzf only *wraps* an existing completion (e.g.
-# git's) when _completion_loader already exists — otherwise it clobbers git with
-# plain path completion. bash-completion is idempotent, so .bashrc's later load
-# is a harmless no-op.
+# load bash-completion here first: fzf's completion.bash prefers _comp_load
+# (bash-completion ≥ 2.12), then __load_completion, then the legacy _completion_loader,
+# and only wraps an existing completion (e.g. git's) when one is defined — otherwise
+# it clobbers git with plain path completion. bash-completion is idempotent, so
+# .bashrc's later load is a harmless no-op.
 if command -v fzf >/dev/null; then
   if ! declare -F _completion_loader >/dev/null; then
     for _bc in /usr/share/bash-completion/bash_completion /etc/bash_completion; do

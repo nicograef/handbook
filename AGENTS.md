@@ -2,7 +2,7 @@
 
 | Surface | Role |
 | --- | --- |
-| `AGENTS.md` | The single canonical instruction set; every Copilot surface reads it directly |
+| `AGENTS.md` | The single canonical instruction set; read by the Copilot coding agent, code review on github.com, and Copilot CLI (not Chat) |
 | `CLAUDE.md` | Loads this file for Claude Code via `@AGENTS.md` |
 | `.claude/rules/*.md` | The only path-scoped conventions surface; Claude Code loads it on matching files |
 | `agents` symlink (root) | Exposes `.claude/agents/` (subagent definitions) to the plugin's default agent scan |
@@ -45,8 +45,9 @@
   - It injects even when the submitted body has none.
   - After creating a PR, re-read its body and strip the trailer with a body update.
   - Body updates are not re-injected.
-- **PR titles use Conventional Commit format** (like commit messages). A squash merge turns the PR
-  title into the commit message on the default branch.
+- **PR titles use Conventional Commit format** (like commit messages). A squash merge of a PR
+  with 2+ commits turns the PR title into the commit message. A single-commit PR keeps its own
+  commit title.
 - Ask before deleting or renaming a file (check for references first).
 
 ## Communication
@@ -82,7 +83,8 @@ Full contract: [.claude/skills/output-style.md](.claude/skills/output-style.md).
 
 - All content is written in English.
 - Exception: the German example phrases in `.claude/skills/cleanup/readability-de.md` and
-  `.claude/skills/audiobook/german-narration.md`, and the German proper noun in `claude/CLAUDE.md`.
+  `.claude/skills/audiobook/german-narration.md`, and the German proper noun in `claude/CLAUDE.md`
+  and `claude/settings.json`.
 - Their explanatory prose stays English.
 
 ## Plan-first workflow

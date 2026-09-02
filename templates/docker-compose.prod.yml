@@ -106,7 +106,7 @@ services:
     environment:
       CERT_PING_URL: ${CERT_PING_URL:-}
     entrypoint: /bin/sh
-    # No --quiet: renewal failures surface in `docker compose logs certbot`.
+    # No --quiet: certbot prints errors either way — omitting it just keeps successful-renewal output in the logs too.
     # Ping the heartbeat ONLY after a successful `certbot renew` (dead-man's
     # switch): a failed renew withholds the ping so the missed window alerts.
     # $$ escapes the runtime shell var from Compose interpolation; busybox wget

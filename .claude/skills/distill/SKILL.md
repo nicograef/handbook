@@ -168,7 +168,7 @@ Finalize first, then write the plan. Keep it short — an action list, not prose
 - **Drop** everything excluded in question 2.
 - **Design the target file set** for every SPLIT and MERGE per [restructure.md](restructure.md).
 - **Name** every new file, its source sections, and its projected line count.
-- **Three or more monoliths** — design them in parallel per [parallelism.md](parallelism.md).
+- **Three or more monoliths** — design them in parallel.
 - **The plan holds, in apply order**, everything step 8 needs without re-deriving anything.
 - **Every action** — file, disposition, exact sections or line ranges, one-line reason.
 - **The new file tree** for every split and merge, with source sections mapped.
@@ -230,7 +230,8 @@ Later stages depend on the file set the earlier ones produce.
 - **Run the repo's own checks** if they exist: `make check`, link linters, docs build.
 - **Re-read the largest surviving file** end to end.
 - **A list of links with no content of its own** means the split went too far — merge back.
-- **Report actual before/after line counts** from `git diff --stat`, not the plan's projections.
+- **Report actual before/after line counts** — the delta from `git diff --stat`, totals from
+  re-running step 2's `wc -l` inventory.
 - **Delegate the mechanical half** to one `sonnet` agent — link sweep, index-vs-disk comparison.
 - **The judgment half stays with the lead** — did the split go too far.
 
@@ -249,7 +250,8 @@ Commit the distillation as one commit — `docs: distill <scope>`.
 
 ## Constraints
 
-- **Never apply anything without explicit approval.** Steps 1–7 write nothing to the corpus.
+- **Never apply anything without explicit approval.** Steps 1–7 write nothing to the corpus,
+  except the plan file that plan-only mode writes in step 6.
 - **Silence is not approval** — never commit mid-apply.
 - **Never delete outside version control** — clean tree before, `git diff` as the record after.
 - **No archive directory, no `.old` copies** — that is deprecating.
@@ -257,7 +259,8 @@ Commit the distillation as one commit — `docs: distill <scope>`.
 - **Never delete legal or compliance content** — licences, third-party notices, security
   policies, attribution requirements — regardless of how boilerplate it reads.
 - **Never delete agent instruction surfaces** without per-file confirmation.
-- **Surfaces** — `AGENTS.md`, `CLAUDE.md`, `.claude/rules/*`.
+- **Surfaces** — `AGENTS.md`, `CLAUDE.md`, `.claude/rules/*`, `.claude/agents/*` (subagent
+  definitions).
 - **They read as restating the obvious** because that is their job; they are load-bearing contracts.
 - **Unverifiable is not false** — cannot check a claim from this session? FLAG it.
 - **Deleting what you failed to understand** is the main way this skill causes damage.

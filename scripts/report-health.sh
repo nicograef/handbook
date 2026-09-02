@@ -3,7 +3,7 @@
 #
 # Usage (installed as /usr/local/bin/report-health, run by cron):
 #   report-health
-#   HEALTH_PING_URL=https://hc-ping.com/<uuid> report-health   # ad-hoc override
+#   DEFAULTS_FILE=/dev/null HEALTH_PING_URL=https://hc-ping.com/<uuid> report-health   # ad-hoc override; the env value only applies when the defaults file is absent or leaves HEALTH_PING_URL unset
 #
 # What it does:
 #   1. Reads HEALTH_PING_URL from /etc/default/report-health (env is the fallback).
@@ -61,7 +61,8 @@ fi
 # the user manager. The cgroup counters under /sys/fs/cgroup are cumulative since
 # boot and carry no timestamps, so a bounded journal window is the only reading
 # that distinguishes "killed something last night" from "killed something in May".
-# Both spellings are matched: the kernel's own line and systemd's unit-level one.
+# Three patterns are matched: two kernel spellings (Out of memory: Killed
+# process, oom-kill:) and systemd's unit-level "killed by the OOM killer".
 # Counted, not `grep -q`: under `set -o pipefail` a quiet grep exits at the first
 # match, journalctl dies of SIGPIPE, and the non-zero pipeline makes the condition
 # false — the check would silently never fire. `grep -c` drains the stream instead,

@@ -36,8 +36,8 @@ docker compose -f docker-compose.prod.yml up -d certbot   # recreate to pick up 
 echo 'HEALTH_PING_URL=<heartbeat-url>' | sudo tee -a /etc/default/report-health
 ```
 
-- The cert-renewal grace is wide. The loop sleeps 24 h between passes. Most passes are no-op pings, since Let's Encrypt only renews within
-  30 days of expiry. A failed *reload* is caught by the TLS-expiry monitor below, not this heartbeat.
+- The cert-renewal grace is wide. The loop sleeps 24 h between passes. Most passes are no-op pings. Certbot renews within a third of the cert's lifetime — about 30 of 90
+  days, not a fixed Let's Encrypt date. A failed *reload* is caught by the TLS-expiry monitor below, not this heartbeat.
 - `report-health` pings only when `report-health.sh`'s three conditions hold.
 
 ## Prerequisites

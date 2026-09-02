@@ -15,11 +15,11 @@ Source: [Permission modes](https://code.claude.com/docs/en/permission-modes),
 
 ## What does not work
 
-Prompt text cannot grant permission. The gate never reads it.
+Prompt text cannot grant permission — but the classifier does read it.
 
-> Permission rules are enforced by Claude Code, not by the model. Instructions in
-> your prompt or `CLAUDE.md` shape what Claude tries to do, but they don't change
-> what Claude Code allows.
+> Permission rules are enforced by Claude Code, not by the model. The auto-mode
+> classifier does read your prompt and `CLAUDE.md`. A specific, explicit statement of
+> the exact action clears a soft block; a blanket "no constraints" is a block signal.
 
 | Habit | What it actually does |
 | --- | --- |
@@ -50,7 +50,7 @@ every one after a plain-text turn. None followed a question or a denial.
 | Pipeline | `dontAsk` | Nothing — it denies instead of asking | CI, scripted runs |
 
 - `auto`'s pause thresholds are not configurable. Attended runs will stop.
-- `-p` non-interactive runs **abort** on repeated blocks instead of pausing.
+- `-p` runs without `--permission-prompt-tool` don't abort on repeated blocks; the blocked action doesn't run, and Claude keeps working.
 - `dontAsk` denies `AskUserQuestion` outright, so the run cannot ask you anything.
 
 ## Step 2 — make the denials visible
@@ -65,9 +65,11 @@ Add a `PermissionDenied` hook so a stalled run leaves evidence of what it wanted
 ## Step 3 — teach the classifier your infrastructure
 
 `autoMode.environment` is what stops the classifier guessing. It is read from
-`~/.claude/settings.json` only — never from a repo's `.claude/settings.json`.
+`~/.claude/settings.json`, managed settings and `--settings` — never from a repo's
+`.claude/settings.json` or `.claude/settings.local.json`.
 
-- Keep `"$defaults"` as the first entry, or you discard the built-in rules.
+- `"$defaults"` must be present anywhere in the array — defaults splice in at its
+  position; entries may go before or after it. Omitting it discards the built-ins.
 - Name your source-control org, repo visibility, trusted hosts and sensitive paths.
 - Confirm it took effect: `claude auto-mode config`.
 - Print the built-in rules to compare: `claude auto-mode defaults`.
@@ -93,7 +95,8 @@ devcontainer exec --workspace-folder . claude --permission-mode bypassPermission
 ## Step 5 — do not supervise with a second session
 
 A supervisor session observes; it cannot act on a peer. It cannot approve a
-prompt, and it cannot restart a peer that already ended its turn.
+prompt. A cross-session `SendMessage` to an idle peer does start a new turn
+there, subject to the receiver's `crossSessionInbound` setting.
 
 - Its `CronCreate` wake-ups are themselves subject to the classifier.
 - Peers publish state to the bus: `~/.claude/agent-bus.sh peers` and `radar`.
@@ -134,7 +137,7 @@ A live plan run must not yield the turn between phases. Two mechanisms hold it:
 claude auto-mode config | jq -r '.environment[] | select(startswith("Source control"))'
 ```
 
-Expected: the `Source control: GitHub, org github.com/nicograef …` entry from
+Expected: the `Source control: GitHub. Personal org github.com/nicograef with SSH remotes git@github.com:nicograef/<repo>.git …` entry from
 [claude/settings.json](../claude/settings.json).
 
 ```bash

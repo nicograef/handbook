@@ -4,8 +4,9 @@
 
 **Rule: no auto-pull in production.**
 
-- Image tags in [docker-compose.prod.yml](../templates/docker-compose.prod.yml)
-  are **pinned**, and bumped **deliberately** at deploy time.
+- Image tags in [docker-compose.prod.yml](../templates/docker-compose.prod.yml) are
+  explicit, not `latest`, and bumped **deliberately** at deploy time. Only `certbot` is
+  pinned to a concrete version; `postgres` and `nginx` use minor-series tags.
 - Never float on `latest`; never pull on a schedule.
 - A deploy is the only moment images change.
 - So a deploy is also where you prune the images the bump superseded.
@@ -26,8 +27,8 @@
    +    image: postgres:17.6
    ```
 
-2. **Fetch the new pinned images** (only the `image:` services pull; `build:`
-   services rebuild):
+2. **Fetch the new pinned images** (`pull` also tries `build:` services, reporting
+   they must be built; `--ignore-buildable` skips them — `build` rebuilds them):
 
    ```bash
    docker compose -f docker-compose.prod.yml pull
@@ -56,11 +57,11 @@
    Expected: dangling images left untagged by the bump are removed; the summary
    ends with a `Total reclaimed space: <N>` line (`0B` if nothing was orphaned).
 
-> To reclaim more aggressively, use `docker system prune -af`. **Never add
-> `--volumes` on a stack with `postgres-data`.** It deletes every volume no
-> container references.
-> After `docker compose down` has removed the containers, that includes the
-> database. Deleting a volume needs a human decision, never an agent's.
+> To reclaim more aggressively, use `docker system prune -af`. Its `--volumes` flag
+> prunes only **anonymous** volumes — `postgres-data`, being named, survives it.
+> **`docker volume prune --all` or `docker compose down --volumes` remove it too.**
+> After `down` drops the containers, that includes the database. Deleting a volume
+> needs a human decision, never an agent's.
 
 ## Reboot routine (monthly)
 
@@ -73,9 +74,8 @@
 
 ### Steps
 
-1. **Check whether a reboot is actually pending.** The health-ping already
-   surfaces this ([monitoring.md](monitoring.md), Step 5), but confirm on the
-   box:
+1. **Check whether a reboot is actually pending.** [`report-health.sh`](../scripts/report-health.sh)
+   already surfaces this, but confirm on the box:
 
    ```bash
    test -f /var/run/reboot-required && echo "reboot required" || echo "no reboot needed"
@@ -193,7 +193,8 @@ it without root.
    cat /sys/fs/cgroup/user.slice/user-$(id -u).slice/memory.events
    ```
 
-   `oom_kill` counts the kills since boot. `max 0` and `high 0` beside a non-zero
+   `oom_kill` counts kills since the cgroup was created, not since boot. A recreated
+   `user-<uid>.slice` starts at zero. `max 0` and `high 0` beside a non-zero
    `oom_kill` mean **no cgroup limit was hit**. The machine itself ran out, so the
    fix is swap or less load.
 

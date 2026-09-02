@@ -34,8 +34,8 @@ Transcript JSONL is a harness-internal format that changes between CLI versions.
 Process one line at a time; keep only user and assistant text, skip tool dumps.
 Tolerate unparseable lines without failing the summary.
 
-- GitHub Copilot keeps no locally readable session history; transcript scope covers Claude Code
-  sessions only. For work done in Copilot, use the git-history scope instead.
+- Copilot CLI keeps sessions under `~/.copilot/session-state/`; other Copilot surfaces keep no
+  readable history — use the git-history scope for those.
 
 ## Git history (`last N commits` | `<rev>..<rev>`)
 

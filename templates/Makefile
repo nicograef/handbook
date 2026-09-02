@@ -69,12 +69,12 @@ prod-logs:     ## Follow production logs
 
 .PHONY: prod-release
 
-prod-release:  ## Tag current main commit → triggers prod deploy
+prod-release:  ## Push a prod-<timestamp> tag (add your own tag-triggered deploy workflow)
 	@BRANCH=$$(git rev-parse --abbrev-ref HEAD); \
 	if [ "$$BRANCH" != "main" ]; then echo "Error: must be on main (currently on $$BRANCH)"; exit 1; fi
 	@TAG=prod-$$(date +%Y%m%d-%H%M) && \
 	git tag $$TAG && git push origin $$TAG && \
-	echo "Pushed tag $$TAG — prod deploy triggered"
+	echo "Pushed tag $$TAG"
 
 # ── Utilities ──
 

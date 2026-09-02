@@ -16,8 +16,8 @@
   },
 
   // ── Post-create setup ─────────────────────────────────────────────────────
-  // This repo ships no app toolchain, so the template's setup-dev-tools.sh does
-  // not apply — the checks only need make and shellcheck.
+  // The apt part of the toolchain is make and shellcheck; make check also needs
+  // docker and the claude CLI, both supplied by the features above.
   "postCreateCommand": "sudo apt-get update && sudo apt-get install -y make shellcheck",
 
   "customizations": {

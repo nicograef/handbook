@@ -69,7 +69,7 @@ What `agent-bus.sh radar` computes, and how to act on each result.
 | `MERGE CONFLICT` | Send `conflict` and settle the rebase order before touching anything |
 | A lockfile or index file in `SHARED PATHS` | Treat as a conflict even when `clean` |
 | `RESOURCES` non-empty | Stop and settle ownership before running tests |
-| `(no live peer branch)` | You are alone on git; declared claims may still collide |
+| `(no live peer branch to compare against)` | You are alone on git; declared claims may still collide |
 
 Choke files deserve the extra caution: lockfiles, `go.mod`, `package.json`,
 `README.md` and any index, plus migration-sequence files. Two clean auto-merges

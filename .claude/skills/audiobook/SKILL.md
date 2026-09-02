@@ -129,7 +129,8 @@ Three rounds, one dimension each, in this order. Details and per-round contracts
 - Never walk the repository file by file. That is a tour, not a chapter.
 - Never restate an existing doc in longer sentences. Rewrite from the concept.
 - Exactly three review rounds. No "until it is good" loop.
-- Chapter prose is exempt from the handbook sentence and paragraph caps.
+- Chapter prose is exempt from the paragraph cap
+  ([named exception](../output-style.md#named-prose-exceptions)); the sentence cap applies.
 - The EPUB is a build artifact. Gitignore it; keep the chapter Markdown.
 - Do not upload anything. The reader ingest step is the user's.
 

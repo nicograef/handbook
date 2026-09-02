@@ -37,7 +37,9 @@ warn()  { echo -e "${YELLOW}[WARN]${NC}  $*"; }
 error() { echo -e "${RED}[ERROR]${NC} $*" >&2; exit 1; }
 
 # ── Load the Compose .env (cron runs with a bare environment) ──
-# Sets the container's POSTGRES_* vars and lets `docker compose` find the project.
+# Loads BACKUP_PING_URL (and the POSTGRES_* values) into this script's environment;
+# the container's own POSTGRES_* come from Compose at container creation, and
+# `docker compose` finds the project from the working directory set below.
 [[ -d "$COMPOSE_DIR" ]] || error "COMPOSE_DIR not found: $COMPOSE_DIR"
 [[ -f "$COMPOSE_DIR/.env" ]] || error ".env not found in COMPOSE_DIR: $COMPOSE_DIR/.env"
 set -a

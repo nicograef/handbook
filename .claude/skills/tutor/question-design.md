@@ -9,7 +9,7 @@ Match format to how the knowledge will be used.
 
 | Knowledge type | Format |
 | --- | --- |
-| Definitions and APIs | Recall |
+| Definitions and APIs | Free-text |
 | Trade-offs and failure modes | Single-choice |
 | "Which of these apply" facts | Multiple-select |
 | Procedures and design reasoning | Free-text |

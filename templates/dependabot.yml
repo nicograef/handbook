@@ -35,7 +35,7 @@ updates:
           - "*"
 
   # ── Docker base images ──
-  # Scans Dockerfiles (FROM lines) — not docker-compose.yml image pins.
+  # Covers Dockerfiles and Kubernetes manifests — compose image pins need a separate package-ecosystem: docker-compose entry.
   # - package-ecosystem: "docker"
   #   directory: "/<backend-dir>" # one entry per directory containing a Dockerfile
   #   schedule:

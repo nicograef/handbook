@@ -30,7 +30,7 @@ _Adapted from the MIT-licensed [superpowers](https://github.com/obra/superpowers
 5. **Evaluate technical soundness for this stack.**
    - A suggestion can be generically reasonable and still wrong for Nico's stack.
    - Judge it in that context, never in the abstract.
-   - That context: Go stdlib patterns, React/TS conventions, sqlc-generated code, etc.
+   - That context: the stack of the repo in hand, discovered per task.
 6. **Push back with reasoning when a suggestion is wrong.**
    - State the specific technical reason: a failing assumption, a broken test, a compatibility
      constraint.
@@ -51,7 +51,8 @@ _Adapted from the MIT-licensed [superpowers](https://github.com/obra/superpowers
 - A suggestion conflicting with an existing architectural choice — flag it and ask.
 - Never silently override either the reviewer or the prior decision.
 - Reply to inline PR comments on GitHub in the comment thread, not as a new top-level PR comment.
-- Thread reply endpoint: `gh api repos/{owner}/{repo}/pulls/{pr}/comments/{id}/replies`.
+- Thread reply endpoint:
+  `gh api --method POST repos/{owner}/{repo}/pulls/<pull_number>/comments/<comment_id>/replies -f body='…'`.
 
 ## Quality
 

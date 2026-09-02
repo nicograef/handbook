@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # check-repo.sh – repo self-check for the handbook knowledge base.
 #
-# Every stage is documented as a target in the Makefile.
+# Every stage except `all` has a same-named Makefile target; `all` is reached as `make check`.
 #
 # Idempotent: reads only, never writes.
 

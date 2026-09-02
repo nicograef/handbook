@@ -29,7 +29,9 @@ cost=$(echo "$input" | jq -r '.cost.total_cost_usd // empty')
 added=$(echo "$input" | jq -r '.cost.total_lines_added // 0')
 removed=$(echo "$input" | jq -r '.cost.total_lines_removed // 0')
 
-# Colors (dim-friendly: cyan for model, default for rest)
+# Colors: cyan for the model, dim for directory, percentage and cost,
+# green/yellow/red for the context bar, green/red for the +/- counts;
+# the branch alone is uncoloured.
 CYAN='\033[36m'
 DIM='\033[2m'
 GREEN='\033[32m'

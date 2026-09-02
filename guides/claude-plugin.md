@@ -11,8 +11,9 @@ marketplace.
   - Not re-verified since, so the plugin relies on the default `agents/` directory scan.
 - **Personal config is deliberately excluded** — no hooks, no `settings.json`, no statusline,
   no MCP servers; those stay on the dev machine only.
-- **Namespaced components** — skills invoke as `/handbook:<skill>`, e.g. `/handbook:distill`,
-  not `/distill`.
+- **Namespaced components** — skills invoke as `/handbook:<skill>`, e.g. `/handbook:distill`.
+  The bare `/distill` also works unless another command claims that name — as on a dev
+  machine that also symlinks the skills.
 
 ## Prerequisites
 

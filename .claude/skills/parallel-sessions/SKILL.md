@@ -94,7 +94,7 @@ as `~/.claude/agent-bus.sh`. Its details are in
   the paths you changed, by name.
   - A repo-wide add stages a peer's file mid-edit, and their half-written work
     lands under your commit message.
-  - The index is per repository, not per session — a claim does not fence it.
+  - The index is per working tree, not per session — a claim does not fence it.
   - It succeeds silently: no conflict, no warning, and the diff looks like yours.
   - Swept a peer's work already? Tell them what moved and under which sha.
   - Do not rewrite the commit to undo it: the content is safe, and only the

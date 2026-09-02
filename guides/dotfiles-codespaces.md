@@ -26,7 +26,8 @@ Automatically apply your shell config to every new Codespace.
 Every new Codespace will now clone this repo and run `scripts/install-dotfiles.sh`.
 
 - Codespaces looks for an install script in the dotfiles repo root or common locations.
-- Those locations: `install.sh`, `install`, `bootstrap.sh`, `setup.sh`, `script/setup`.
+- Those locations: `install.sh`, `install`, `bootstrap.sh`, `bootstrap`, `script/bootstrap`,
+  `setup.sh`, `setup`, `script/setup`.
 
 ## Manual run
 

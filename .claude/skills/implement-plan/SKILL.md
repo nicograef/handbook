@@ -162,7 +162,7 @@ once committed and ticked — that is the unit of progress.
     unticked criterion, so a yielded turn costs a round trip.
 - **One writer per file, always.** The lead is the sole writer of the plan file
   for the whole run; subagents receive its path to read.
-  - Index files, lockfiles and entry points are lead-owned, as in
+  - Index files and entry points are lead-owned, as in
     [distill/parallelism.md](../distill/parallelism.md#apply-stage-partitioning).
 - **Never `git stash`** — it is repo-global, not per-worktree, so two agents pop
   each other's work. Commit instead.

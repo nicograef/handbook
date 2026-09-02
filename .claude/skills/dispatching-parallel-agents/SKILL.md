@@ -11,7 +11,7 @@ description: >-
 
 _Adapted from the MIT-licensed [superpowers](https://github.com/obra/superpowers) plugin._
 
-- **Cost** — delegating to isolated subagents costs roughly 15× the tokens of a single linear pass.
+- **Cost** — delegating to isolated subagents costs roughly 15× the tokens of a chat interaction, about 4× a single agent pass.
 - **Reserve for** — genuinely independent, each-substantial work.
 - **Do it yourself** — two small related fixes.
 
@@ -70,7 +70,7 @@ Decide the model per task. Never let a worker inherit the session model silently
 - A stage costs its slowest member, so bound the long pole before cutting headcount.
   - Estimate each unit before dispatch; split anything past roughly 30 minutes.
   - Or tell it to commit what verifies and return at 30 minutes.
-  - You cannot preempt a running agent, so the bound has to be set up front.
+  - A stopped agent loses whatever it has not committed, so the bound has to be set up front.
 - Cap only the agents that own a worktree. Read-only agents carry none of that
   cost, so cap them at the runtime's `min(16, cores − 2)` instead.
 - Isolate writes when agents change code in the same repo.

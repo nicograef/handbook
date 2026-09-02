@@ -72,9 +72,11 @@ Expected: plain text reads as continuous prose, both counts equal.
 ## Troubleshooting
 
 ```bash
-# "pandoc 3.0 or newer required" → the distro package is 2.x.
-# Install the release binary from github.com/jgm/pandoc/releases instead.
+# "pandoc 3.0 or newer required" → Debian 12 and older ship pandoc 2.x.
+# Debian 13 ships 3.1, new enough. Needed only on Debian 12 or older:
+# install the release binary from github.com/jgm/pandoc/releases.
 
-# Title shows as the filename → meta.yml is missing or not valid YAML.
+# Title shows as UNTITLED → meta.yml is missing (the script warns).
+# A YAML error in meta.yml aborts the render instead.
 pandoc --metadata-file audiobook/meta.yml -f markdown -t plain /dev/null   # exit 0 = valid
 ```

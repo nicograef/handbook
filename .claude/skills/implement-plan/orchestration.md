@@ -43,11 +43,11 @@ Phases *i* and *j* may run concurrently only if **all** of these hold:
 2. Every symbol *j*'s context names already resolves at the pinned base: `git grep -n <symbol> $BASE`.
 3. Neither writes a choke file: the plan file, `README.md` or another index, lockfiles, `go.mod` / `package.json`, migration-sequence files.
 4. Proof, after both branches exist and again before folding:
-   - `git merge-tree --write-tree --messages "$BASE" <branch>` exits 0 for each branch.
-   - It prints a 40-hex tree oid on stdout line 1.
+   - `git merge-tree --write-tree --messages "$BASE" <branch>`: exit 0 clean, exit 1
+     conflict, anything else an error (a bad ref name exits 128).
+   - Line 1 of stdout carries the tree oid in both the clean and the conflicted
+     case. Read the exit code, not only the oid.
    - The two branches also merge into each other cleanly.
-   - Exit 1 alone does not prove conflict — a bad ref name also exits 1.
-   - Require the hex oid.
 5. The gate survives two concurrent runs of itself.
    - Probe and test database names, ports and temp paths are derived, not fixed.
    - A worktree under the repo root is excluded from every lint and type scan.
@@ -70,7 +70,7 @@ Phases *i* and *j* may run concurrently only if **all** of these hold:
 
 ## Review depth per phase
 
-The tier rule is [../verification-depth.md](../verification-depth.md). Read each phase's tier off the plan, at step 4, before the run contract quotes it.
+The tier rule is [../verification-depth.md](../verification-depth.md). Set each phase's tier at step 4, before the run contract quotes it.
 
 - Gate-only phases are reviewed **as one group**, once, over the group's whole diff.
 - One probe over ten phases' diff, never ten probes. That batching is the saving.

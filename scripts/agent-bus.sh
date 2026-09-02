@@ -12,7 +12,7 @@
 #   agent-bus.sh hook <event>                hook body; reads hook JSON on stdin
 #
 # What it does:
-#   1. Registers each session's branch, task, paths, resources and deps under the shared git dir.
+#   1. Registers each session's branch, task, paths, resources, needs and provides under the shared git dir.
 #   2. Predicts merge conflicts, path overlap and resource collisions between those sessions.
 #   3. Queues messages in the git dir and delivers them into a running session from its Stop hook.
 #

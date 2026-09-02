@@ -15,6 +15,6 @@ ps aux | grep '[n]ginx'                         # find process (no grep self-mat
 ## json (jq)
 
 ```bash
-jq 'sort_by(.id) | sort_keys' new.json > new-sorted.json  # sort for diffing
+jq -S 'sort_by(.id)' new.json > new-sorted.json  # sort for diffing
 diff --side-by-side --suppress-common-lines old-sorted.json new-sorted.json | more
 ```

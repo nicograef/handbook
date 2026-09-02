@@ -3,7 +3,7 @@
 What accumulates where, which classes `prune-state.sh` may delete, and what it
 must never touch.
 
-- **Verified against Claude Code CLI 2.1.224 (dev machine).**
+- **Verified against Claude Code CLI 2.1.258 (dev machine).**
 - **Internal layout** — it drifts between CLI versions.
 - **Drift rule** — a machine on another CLI version re-verifies by listing the directories.
 - **Drift signs** — locations missing, renamed, or differently keyed.
@@ -35,7 +35,8 @@ use them.
 
 Rules the script applies on top of the allowlist:
 
-- **Age** — mtime strictly older than `--days` days (default 7, minimum 1).
+- **Age** — mtime strictly older than `--days` days (required, minimum 1). The
+  7-day default belongs to the skill's argument parsing (`prune/SKILL.md`), not the script.
 - **Transcript units** — a top-level `<session-id>.jsonl` and its same-id session directory are
   deleted as one unit.
 - **Unit mtime** — judged by the newer of the two mtimes.
@@ -53,8 +54,8 @@ reader does not have to infer them:
 - any top-level file in a project directory that is not a `<session-id>.jsonl`
 - anything else outside the allowlist table above
 
-The harness's built-in 90-day transcript cleanup is untouched. Prune neither reads nor modifies
-that setting; it stays as the backstop.
+The harness's transcript cleanup (`cleanupPeriodDays`, 90 in `claude/settings.json`; harness
+default 30) is untouched. Prune neither reads nor modifies that setting; it stays as the backstop.
 
 ## Cross-references
 

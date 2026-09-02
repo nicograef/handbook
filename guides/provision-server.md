@@ -88,7 +88,7 @@ cat /etc/cron.d/report-health
   see [ipv6-only-vps.md](ipv6-only-vps.md)
 - Deploy apps via Docker Compose – see [letsencrypt-docker.md](letsencrypt-docker.md)
 - Install tmux and the modern CLI tools the shell aliases expect, all in Debian 13
-  `main`. Without them the aliases in
+  `main`. Without bat, eza, fd-find or fzf, their aliases in
   [templates/.bash_aliases](../templates/.bash_aliases) silently stay inactive:
 
   ```bash
