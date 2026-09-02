@@ -3,6 +3,7 @@
 German-specific patterns for documentation, comments, commit messages, and
 README files — supplements [readability.md](readability.md) for
 German-language content.
+
 Use it for German prose, readability.md for English, and both for
 mixed-language content.
 
