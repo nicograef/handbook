@@ -53,7 +53,7 @@ In each adopted repo, add a **gitignored** `.claude/settings.local.json`:
 
 - **Local scope overrides project scope** — skills never load twice on the dev machine.
 - **Cloud sessions** on the same repo stay enabled.
-- **Keep `.claude/settings.local.json`** out of version control.
+- **Keep `.claude/settings.local.json`** out of version control — [templates/.gitignore](../templates/.gitignore) covers it.
 - **Codespaces** — created by [`scripts/install-dotfiles.sh`](../scripts/install-dotfiles.sh).
 - **Manual creation** is only needed on machines that don't use the dotfiles install.
 
