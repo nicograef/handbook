@@ -3,6 +3,10 @@
 Prefix is `Ctrl-b` (press and release, then the key). Config:
 [templates/.tmux.conf](../templates/.tmux.conf).
 
+```bash
+tmux source-file ~/.tmux.conf     # apply config changes to the running server
+```
+
 ## Sessions — survive ssh disconnects
 
 Run long-lived work (Claude Code, builds, migrations) inside a named session.
@@ -31,7 +35,3 @@ a lingering one stays up instead of taking its slice down. Diagnosing one:
 | `Space` … `Enter`  | Start selection … copy it               |
 | Prefix + `]`       | Paste                                   |
 | `q`                | Leave copy mode                         |
-
-```bash
-tmux source-file ~/.tmux.conf     # apply config changes to the running server
-```
