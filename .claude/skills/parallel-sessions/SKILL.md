@@ -31,8 +31,6 @@ as `~/.claude/agent-bus.sh`. Its details are in
 2. **Announce before your first edit.**
 
    - Declare the paths you will write and the resources you will hold.
-   - Resources are ports, database clusters, containers — see
-     [protocol.md](protocol.md#resources).
 
    ```bash
    ~/.claude/agent-bus.sh announce "phase 6: domain graph" \
