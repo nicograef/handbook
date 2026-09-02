@@ -2,7 +2,6 @@
 
 Start here when you (or an agent) are told "follow the handbook to set up X".
 
-- Each scenario below routes to an **ordered** sequence of existing guides.
 - Gather the listed inputs **before** you start, so nothing is discovered mid-run.
 - This file is routing only — every command lives in the linked guide.
 
@@ -28,7 +27,6 @@ workload needs.
 4. **Deploy TLS + reverse proxy** (web app only). Point DNS at the VPS first.
 
    - Follow [letsencrypt-docker.md](letsencrypt-docker.md).
-   - Config patterns: [nginx-reverse-proxy.md](nginx-reverse-proxy.md).
    - First deploy: [templates/docker-compose.prod.yml](../templates/docker-compose.prod.yml)
      and [scripts/prod-init.sh](../scripts/prod-init.sh).
 
@@ -55,8 +53,7 @@ workload needs.
 One-time account setup that makes every future Codespace bootstrap your shell and
 Claude config automatically.
 
-**Gather first** — a GitHub account with Codespaces enabled and this repo under
-your account ([prerequisites](dotfiles-codespaces.md#prerequisites)).
+**Gather first** — [dotfiles-codespaces.md#prerequisites](dotfiles-codespaces.md#prerequisites).
 
 1. **Enable account-level dotfiles** (one-time) —
    [dotfiles-codespaces.md → Setup](dotfiles-codespaces.md#setup-one-time).
@@ -78,9 +75,10 @@ Codespace.
 
 Two tiers — pick by what the machine is for. A machine can carry both.
 
-**Gather first** — symlink tier needs `bash`, `git`, `curl`
-([prerequisites](dotfiles-codespaces.md#prerequisites)); plugin tier needs an
-authenticated Claude Code CLI ([prerequisites](claude-plugin.md#prerequisites)).
+**Gather first**:
+
+- [dotfiles-codespaces.md#prerequisites](dotfiles-codespaces.md#prerequisites) (symlink tier)
+- [claude-plugin.md#prerequisites](claude-plugin.md#prerequisites) (plugin tier)
 
 1. **Machines you develop on (symlink tier)** — clone the handbook and run
    [`install.sh`](../install.sh); it symlinks shell + Claude config and the
@@ -100,7 +98,4 @@ passes, or (plugin tier) `claude plugin details handbook` lists the skills
 
 **Gather first** — [new-project.md#inputs](new-project.md#inputs).
 
-Follow [new-project.md](new-project.md) — it scaffolds the repo (templates, CI,
-agent instructions, plugin adoption) end-to-end in one ordered sequence.
-
-**Done when** [new-project.md](new-project.md)'s Verify section passes.
+Follow [new-project.md](new-project.md) end-to-end; **done when** its Verify section passes.

@@ -8,22 +8,17 @@ Setting something up? Start at [guides/bootstrap.md](guides/bootstrap.md).
 
 | Topic                             | File                                                                       |
 | --------------------------------- | -------------------------------------------------------------------------- |
-| Using this handbook (start here)  | [guides/bootstrap.md](guides/bootstrap.md)                                 |
 | Set up a new project repository   | [guides/new-project.md](guides/new-project.md)                             |
 | Provision & harden a new VPS      | [guides/provision-server.md](guides/provision-server.md)                   |
 | IPv6-only VPS (DNS64/NAT64, Docker) | [guides/ipv6-only-vps.md](guides/ipv6-only-vps.md)                       |
-| Docker post-install config & pruning | [guides/docker-setup.md](guides/docker-setup.md)                        |
 | Docker multi-stage builds         | [guides/docker-multi-stage-builds.md](guides/docker-multi-stage-builds.md) |
 | Let's Encrypt with Docker Compose | [guides/letsencrypt-docker.md](guides/letsencrypt-docker.md)               |
-| Nginx reverse proxy (HTTPS + SPA) | [guides/nginx-reverse-proxy.md](guides/nginx-reverse-proxy.md)             |
-| GitHub Actions CI/CD              | [guides/github-actions-cicd.md](guides/github-actions-cicd.md)             |
 | GitHub Copilot Agent Mode setup   | [guides/copilot-agent-setup.md](guides/copilot-agent-setup.md)             |
 | Dotfiles for GitHub Codespaces    | [guides/dotfiles-codespaces.md](guides/dotfiles-codespaces.md)             |
 | Install the handbook plugin       | [guides/claude-plugin.md](guides/claude-plugin.md)                         |
 | PostgreSQL operations             | [guides/postgresql-operations.md](guides/postgresql-operations.md)         |
 | External monitoring (Better Stack)| [guides/monitoring.md](guides/monitoring.md)                               |
 | Server maintenance & upkeep       | [guides/maintenance.md](guides/maintenance.md)                             |
-| End-to-end verification drill     | [guides/verification-drill.md](guides/verification-drill.md)               |
 | Audiobooks for ElevenReader       | [guides/audiobook-pipeline.md](guides/audiobook-pipeline.md)               |
 | Unattended agent runs             | [guides/unattended-agents.md](guides/unattended-agents.md)                 |
 
@@ -33,10 +28,7 @@ Heading-grouped rules and idioms per stack — reference material, not runbooks.
 
 | Topic                             | File                                                                       |
 | --------------------------------- | -------------------------------------------------------------------------- |
-| Go backend conventions            | [guides/go.md](guides/go.md)                                               |
-| Java / Spring Boot conventions    | [guides/java-spring-boot.md](guides/java-spring-boot.md)                   |
-| React frontend conventions        | [guides/react.md](guides/react.md)                                         |
-| Anti-sycophancy agent setup       | [guides/anti-sycophancy.md](guides/anti-sycophancy.md)                     |
+| Go, Java/Spring Boot, React conventions | [guides/stack-conventions.md](guides/stack-conventions.md)          |
 
 ## Cheatsheets
 
@@ -63,13 +55,13 @@ Heading-grouped rules and idioms per stack — reference material, not runbooks.
 | [templates/docker-compose.initial-cert.yml](templates/docker-compose.initial-cert.yml) | Minimal Compose for first-time cert issuance (ACME challenge only) |
 | [templates/nginx-initial-cert.conf](templates/nginx-initial-cert.conf) | Catch-all nginx config for the initial ACME challenge             |
 | [templates/nginx-tls.conf](templates/nginx-tls.conf)                   | Nginx TLS reverse proxy config                                    |
+| [templates/nginx-spa.conf](templates/nginx-spa.conf)                   | SPA container nginx config: client-side routing + asset caching   |
 | [templates/cloud-init.yml](templates/cloud-init.yml)                   | cloud-init user-data that fetches & runs `setup-server.sh`        |
 | [templates/setup-dev-tools.sh](templates/setup-dev-tools.sh)           | Dev tool setup script skeleton (Go, Node/pnpm blocks)             |
 | [templates/ci.yml](templates/ci.yml)                                   | GitHub Actions CI workflow (Go, Node, integration tests)          |
 | [templates/dependabot.yml](templates/dependabot.yml)                   | Dependabot config (monthly, one grouped PR per ecosystem)         |
 | [templates/.env.example](templates/.env.example)                       | Standard env vars for Docker Compose templates                    |
 | [templates/AGENTS.md](templates/AGENTS.md)                             | Agent instructions template for Copilot Agent Mode                |
-| [templates/copilot-instructions.md](templates/copilot-instructions.md) | Copilot instructions template (`.github/copilot-instructions.md`) |
 | [templates/vscode-settings.json](templates/vscode-settings.json)       | VS Code workspace settings for consistent formatting              |
 | [templates/claude-settings.json](templates/claude-settings.json)       | Project `.claude/settings.json` to adopt the handbook plugin      |
 | [templates/strip-visuals.lua](templates/strip-visuals.lua)             | Pandoc filter that removes what a narrator cannot speak           |
@@ -84,7 +76,7 @@ Heading-grouped rules and idioms per stack — reference material, not runbooks.
 | [scripts/report-health.sh](scripts/report-health.sh)       | Daily dead-man health ping (reboot-required + unattended-upgrades + OOM check) |
 | [scripts/install-dotfiles.sh](scripts/install-dotfiles.sh) | Bootstrap shell config in a new Codespace or VM                        |
 | [scripts/agent-bus.sh](scripts/agent-bus.sh)               | Coordination bus for concurrent Claude Code sessions in one repo        |
-| [scripts/check-repo.sh](scripts/check-repo.sh)             | Repo self-check (links, shellcheck, README index, language, skills, compose, plugin, prose); `make check` |
+| [scripts/check-repo.sh](scripts/check-repo.sh)             | Repo self-check; `make check`                                          |
 | [scripts/test-prune.sh](scripts/test-prune.sh)             | Fixture test for the prune skill's `prune-state.sh`; `make test-prune`  |
 | [scripts/test-agent-bus.sh](scripts/test-agent-bus.sh)     | Fixture test for `agent-bus.sh`; `make test-agent-bus`                  |
 | [scripts/plan-run-guard.sh](scripts/plan-run-guard.sh)     | Stop hook that keeps a live plan run from yielding the turn             |
@@ -99,10 +91,8 @@ dotfiles.
 
 | Item                       | File / Directory                                                       |
 | -------------------------- | ---------------------------------------------------------------------- |
-| Canonical instructions     | [AGENTS.md](AGENTS.md)                                                  |
-| Claude Code entrypoint     | [CLAUDE.md](CLAUDE.md) (imports `AGENTS.md`)                            |
-| Copilot instructions       | [.github/copilot-instructions.md](.github/copilot-instructions.md)     |
 | Skills index               | [.claude/skills/README.md](.claude/skills/README.md)                   |
+| Anti-sycophancy agent setup | [guides/anti-sycophancy.md](guides/anti-sycophancy.md)                |
 | Output style contract      | [.claude/skills/output-style.md](.claude/skills/output-style.md)       |
 | Verification contract      | [.claude/skills/quality.md](.claude/skills/quality.md)                 |
 | Verification depth budget  | [.claude/skills/verification-depth.md](.claude/skills/verification-depth.md) |
@@ -118,7 +108,6 @@ dotfiles.
 | Concurrent-session bus     | [scripts/agent-bus.sh](scripts/agent-bus.sh), [.claude/skills/parallel-sessions/SKILL.md](.claude/skills/parallel-sessions/SKILL.md) |
 | Repo self-check            | [Makefile](Makefile) (`make check`)                                    |
 | Dotfiles entrypoint        | [install.sh](install.sh)                                               |
-| Repo devcontainer          | [.devcontainer/devcontainer.json](.devcontainer/devcontainer.json)     |
 
 ## License
 
