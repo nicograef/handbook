@@ -1,21 +1,17 @@
 # Principles
 
-The principles pass covers KISS, YAGNI, DRY, SOLID, separation of concerns, and
-least surprise. It also covers composition over inheritance, fail fast, and
-minimal mutable state.
+This pass covers KISS, YAGNI, DRY, SOLID, separation of concerns, least
+surprise, composition over inheritance, fail fast, minimal mutable state.
 
 - Their definitions and the usual violation tells are assumed known.
 - What follows is only the calibration that keeps the pass from over-firing.
 
----
-
 ## YAGNI — You Aren't Gonna Need It
 
-- **Suggest:** Add the extension point when a second use case actually appears.
+- **Suggest:** Add the extension point when a second or third use case makes
+  it earn its keep (Rule of Three).
 - Concrete single-implementation-interface and pure-delegation tells:
   [code-smells.md → Redundant Abstractions](code-smells.md#redundant-abstractions).
-
----
 
 ## DRY — Don't Repeat Yourself
 
@@ -34,8 +30,6 @@ minimal mutable state.
 coincidental similarity alone — wrong DRY couples unrelated things, which is
 worse than repetition.
 
----
-
 ## Single Responsibility (SOLID — S)
 
 - **Ask:** Does this function, class, or module have exactly one reason to change?
@@ -44,8 +38,6 @@ worse than repetition.
 - For a layering leak, name which concern is leaking where.
 - Do not extract during cleanup — note the small ones.
 - Flag large ones as a separate refactor for the user to schedule.
-
----
 
 ## Open/Closed (SOLID — O)
 
