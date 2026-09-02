@@ -1,6 +1,7 @@
 # CI workflow template – copy to .github/workflows/ci.yml
 # All jobs are active. Delete the ones you don't need.
 # Search for <angle-bracket> placeholders and adapt to your project.
+# Validate locally before pushing: actionlint .github/workflows/ci.yml
 name: CI
 
 on:
@@ -21,7 +22,6 @@ concurrency:
 
 jobs:
   # ── Change Detection ───────────────────────────────────────────────────────
-  # Only run jobs whose files actually changed.
   changes:
     runs-on: ubuntu-latest
     outputs:
