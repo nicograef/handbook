@@ -57,7 +57,9 @@ Manage schema with Flyway. Never modify existing migrations — only add new one
 | Value Object | Plain JUnit 5 | Pure logic, normalization |
 | HTTP Client | `MockRestServiceServer` | Outbound calls without a real network |
 
-Constructor injection is what makes unit tests work without Spring.
+A controller never talks to a repository. A repository never contains business logic.
+
+Always use constructor injection, never `@Autowired` field injection. Constructor injection is what makes unit tests work without Spring.
 
 ## React
 
