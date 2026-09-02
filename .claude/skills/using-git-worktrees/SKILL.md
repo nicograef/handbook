@@ -11,9 +11,6 @@ description: >-
 
 _Adapted from the MIT-licensed [superpowers](https://github.com/obra/superpowers) plugin._
 
-Gives work its own checkout and branch, isolated from whatever is checked out.
-No stashing or branch-juggling needed.
-
 ## Workflow
 
 1. **Rule out a submodule first.**
@@ -80,9 +77,3 @@ No stashing or branch-juggling needed.
   sibling worktree right now.
   - Check with `~/.claude/agent-bus.sh peers`, then announce your claim.
   - Protocol: [../parallel-sessions/SKILL.md](../parallel-sessions/SKILL.md).
-- Run the clean-baseline check after creating a worktree — it's the only way
-  to tell new breakage from pre-existing breakage later.
-- Prefer `.worktrees/` over ad hoc locations for predictable, bulk-cleanable
-  worktrees (`git worktree list`, `git worktree prune`).
-- Remove worktrees once their branch is merged or abandoned — stale worktrees
-  accumulate and confuse `git worktree list`.

@@ -10,15 +10,11 @@ description: >-
 
 _Adapted from the MIT-licensed [superpowers](https://github.com/obra/superpowers) plugin._
 
-Once work on a branch is done, decide how to integrate it. Verify tests first,
-then present exactly four options and execute the one chosen.
-
 ## Workflow
 
 1. **Run the project's test command.** Use `make test` if the repo has a Makefile.
    - Otherwise the language-appropriate default (`go test ./...`, `pnpm test`, `mvn test`).
    - **Tests fail** — stop. Report the failures and present no options.
-   - Nothing gets merged, pushed, or discarded until tests pass.
    - **Tests pass** — continue.
 
 2. **Determine the base branch.** Detect the repo's default branch rather than
@@ -35,13 +31,8 @@ then present exactly four options and execute the one chosen.
    - Two candidates tie, or none is an ancestor: ask, per the
      [ask gate](../clarify/question-rules.md#the-ask-gate).
 
-3. **Detect whether the branch lives in a linked worktree.** Compare git-dir
-   against git-common-dir:
-
-   ```bash
-   GIT_DIR=$(cd "$(git rev-parse --git-dir)" && pwd -P)
-   GIT_COMMON=$(cd "$(git rev-parse --git-common-dir)" && pwd -P)
-   ```
+3. **Detect whether the branch lives in a linked worktree**, per
+   [using-git-worktrees](../using-git-worktrees/SKILL.md) steps 1-2.
 
 4. **Check for concurrent sessions before offering to integrate.**
 

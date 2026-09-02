@@ -13,8 +13,7 @@ argument-hint: "<path to plan file>"
 # Implement Plan
 
 Execute a whole plan without a human turn between phases. Work is durable only
-once committed and ticked — that is the unit of progress. Everything else
-happens between checkpoints.
+once committed and ticked — that is the unit of progress.
 
 ## Workflow
 
@@ -29,6 +28,7 @@ happens between checkpoints.
    - Detect the base branch with
      `git symbolic-ref --short refs/remotes/origin/HEAD`.
    - Fall back to `git ls-remote --symref origin HEAD`.
+   - Strip the `origin/` prefix for the local branch name.
    - If neither resolves, ask — do not assume `main`.
    - Then pin it: `BASE=$(git rev-parse refs/heads/<base>)`.
    - Every dry run, rebase and merge targets `$BASE`, never a moving branch name.
@@ -68,8 +68,6 @@ happens between checkpoints.
    - Implement one criterion at a time, so its commit is whatever the tree
      already holds.
    - Never write a phase broadly and then partition it into criteria.
-   - That bisecting is the only thing that makes a commit expensive. The commit
-     itself is a second.
    - The phase's own worker runs the verification command: `make test` or
      `make check` if the repo has a Makefile.
    - Otherwise the language-appropriate default: `go test ./...`, `pnpm test`,
@@ -79,15 +77,10 @@ happens between checkpoints.
    - Scope even that gate to the languages the phase touched.
    - A Python-only phase paying for a frontend build is waste times the criterion
      count.
-   - A whole gate multiplied by the criterion count is a phase's largest
-     avoidable cost.
-   - The lead reads that exit code. It re-runs the gate only after a fold, a
-     rebase, or an edit the gate has not seen.
    - Commit the change with the run trailer (Constraints).
    - Tick the phase's criteria in **one** commit when the phase closes, not one
      commit per box.
-   - The plan file is lead-owned, which is why the tick is a commit of its own —
-     bookkeeping, not granularity.
+   - The plan file is lead-owned, which is why the tick is a commit of its own.
    - Tick only what a tool result from this session proves.
    - If verification fails twice on one phase for the same reason, switch to
      [systematic-debugging](../systematic-debugging/SKILL.md).
@@ -110,18 +103,12 @@ happens between checkpoints.
     - And `git branch -d` each merged branch.
     - Push, PR or discard is [finish-branch](../finish-branch/SKILL.md)'s
       decision, not yours.
-11. **Report.** Counts line first, then one bullet per field:
-    - `3 phases — 2 complete, 1 blocked; 9 criteria ticked; 11 commits landed`
-    - **Phases** — completed, with criteria ticked and commits landed.
-    - **Dropped** — agents that returned nothing, and what happened to their work.
-    - **Unticked** — anything left unticked, with the reason.
-    - **Plan file** — deleted, or surviving with the unticked criteria that kept it.
-    - Nothing dropped and nothing unticked: say so in one line, no padding.
+11. **Report**, per the [report shape](../output-style.md#report-shape).
+    - Counts line first, e.g. `3 phases — 2 complete, 1 blocked; 9 criteria
+      ticked; 11 commits landed`.
+    - Then phases, dropped agents, unticked items and the plan file's fate.
 
 ## Stop and ask
-
-Two different things live here, and conflating them is what turns a run into a
-stall.
 
 - A **forced stop** ends the run and hands back. There is no question to answer.
 - A **judgment call** runs the
@@ -192,11 +179,6 @@ stall.
 - What each destroys and its safe substitute are in
   [integration.md](integration.md#hazards).
 - **Never push the base branch, never force-push, never `--no-verify`.**
-- Set `model` explicitly on every delegated agent; routing in
-  [dispatching-parallel-agents](../dispatching-parallel-agents/SKILL.md#model-routing).
-- Prefer simple, clear, idiomatic solutions.
-  - No performance optimisation at the cost of readability.
-  - Small local duplication is fine when it aids understanding.
 - If the user wants to write the code themselves, that is
   [guided-implementation](../guided-implementation/SKILL.md).
 
