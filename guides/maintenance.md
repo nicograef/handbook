@@ -56,14 +56,16 @@
    Expected: dangling images left untagged by the bump are removed; the summary
    ends with a `Total reclaimed space: <N>` line (`0B` if nothing was orphaned).
 
-> To reclaim more aggressively, use `docker system prune` from
-> [docker-setup.md](docker-setup.md#prune-unused-resources) instead — it carries the
-> `--volumes` prohibition that protects `postgres-data`.
+> To reclaim more aggressively, use `docker system prune -af`. **Never add
+> `--volumes` on a stack with `postgres-data`.** It deletes every volume no
+> container references.
+> After `docker compose down` has removed the containers, that includes the
+> database. Deleting a volume needs a human decision, never an agent's.
 
 ## Reboot routine (monthly)
 
 - Unattended-upgrades installs security patches but **never auto-reboots**
-  (see [provision-server.md](provision-server.md)).
+  (see [`setup-server.sh`](../scripts/setup-server.sh)).
 - Kernel and libc updates only take effect on the next reboot.
 - The health-ping heartbeat alerts when a reboot is pending; this routine clears it.
 - Run it in a low-traffic maintenance window — a reboot drops all connections
@@ -128,19 +130,15 @@
    Expected: the `/` row's `Use%` is **under 80 %**. At or above, take action the
    same day.
 
-2. **Swap exists, and `/tmp` is not eating RAM.** A box with no swap has no
-   reclaim path. Under pressure the kernel's only move is to kill the largest
-   process. A tmpfs `/tmp` makes it worse — those pages are RAM, and without
-   swap they cannot be evicted at all.
+2. **Swap exists, and `/tmp` is not eating RAM** — see the swap and tmpfs
+   comments in [`setup-server.sh`](../scripts/setup-server.sh) for why both matter.
 
    ```bash
    free -h && findmnt -no FSTYPE,SIZE,USED /tmp
    ```
 
-   Expected: a non-zero `Swap` row, and `/tmp` **absent from `findmnt`** (it is a
-   plain directory on disk). A `tmpfs` line means every byte written to `/tmp` —
-   build caches, virtualenvs, git worktrees — is memory. `shared` in `free` is the
-   running total of it. Fix: `sudo systemctl mask tmp.mount` and reboot.
+   Expected: a non-zero `Swap` row, and `/tmp` **absent from `findmnt`** (a plain
+   directory on disk, not tmpfs). Fix: `sudo systemctl mask tmp.mount` and reboot.
 
 3. **Docker's share of the disk** — images, containers, volumes, build cache:
 
@@ -170,7 +168,7 @@
 
    Expected: `active`, then an `sshd` jail status block (`Currently banned`,
    `Total banned`, …). A non-zero `Total banned` is normal on a public box.
-   (Jail config: [provision-server.md](provision-server.md).)
+   (Jail config: [`setup-server.sh`](../scripts/setup-server.sh).)
 
 6. **UFW is up and rate-limiting SSH:**
 
@@ -222,17 +220,6 @@ it without root.
 
 ## Restore drill (quarterly)
 
-- **Drill** — follow the
-  [Restore drill in postgresql-operations.md](postgresql-operations.md#4-restore-drill).
-- **Actual disaster** (restore into the live DB, not a throwaway) — use the
-  [full-restore commands](postgresql-operations.md#2-restore) instead.
+Follow the [restore drill](postgresql-operations.md#4-restore-drill) into a throwaway DB;
+an actual disaster uses the [full-restore commands](postgresql-operations.md#2-restore) instead.
 
----
-
-See also:
-- [guides/monitoring.md](monitoring.md) — external heartbeats that alert between these checks
-- [guides/postgresql-operations.md](postgresql-operations.md) — backup, restore, and the restore drill
-- [guides/provision-server.md](provision-server.md) — unattended-upgrades stance, UFW, fail2ban
-- [guides/letsencrypt-docker.md](letsencrypt-docker.md) — cert renewal loop
-- [guides/docker-setup.md](docker-setup.md) — post-install config and pruning
-- [cheatsheets/docker-compose.md](../cheatsheets/docker-compose.md) — Compose command reference
