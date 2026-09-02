@@ -41,13 +41,8 @@ description: >-
 
 - Work out **2–3 candidate solution approaches** once ambiguities are resolved.
 - Give each approach its trade-offs: effort, risk, reversibility, fit with the existing codebase.
-- Then run the [ask gate](../clarify/question-rules.md#the-ask-gate) over them.
-- One approach clearly wins: take it and continue to step 5.
-- Record it under **Implementation Decisions**, with the reasoning.
-- Two or more survive with no clear winner: present them and ask.
-- Give the trade-offs and your recommendation; the user picks or steers a hybrid.
-- Either way the approaches and their trade-offs are stated, so the user can
-  overturn the call when reviewing the PRD.
+- Then run the [ask gate](../clarify/question-rules.md#the-ask-gate) over them; the survivor
+  becomes the recorded **Implementation Decisions** entry, with its reasoning.
 
 ### 5. Design modules
 
@@ -69,7 +64,6 @@ description: >-
 - The user reviews the finished document and requests changes there.
 - That is cheaper and more informed than approving fragments.
 - Scale each section's depth to the complexity of the feature.
-- A small feature doesn't need a long-winded Problem Statement.
 - Use the template below and save it to `docs/prds/prd-<name>.md`.
 - Create the directory if it doesn't exist.
 - Use a short kebab-case name derived from the feature, e.g. `prd-user-onboarding.md`.
@@ -144,7 +138,6 @@ Any further notes about the feature.
 
 - Once the PRD file is written, run the shared [self-review checklist](../quality.md) on it.
 - Format it per the shared [output style contract](../output-style.md), minus the named prose exception.
-- Surface issues in the chat only if found.
 - Also run a PRD-specific self-review pass before presenting the final file:
   - Scan for placeholders, TBDs, or unresolved brackets left over from drafting.
   - Check internal consistency across User Stories, Implementation Decisions, Out of Scope, and Solution.
