@@ -137,8 +137,6 @@ Work the lanes per [sources.md](sources.md). One verdict per claim.
 - Both are findings about the repo, not about the doc.
 - **Every verdict carries evidence from this session** — see *The evidence rule* in
   [sources.md](sources.md).
-- A verdict without an artifact is a guess.
-- It is the single way this skill does damage: it "corrects" a right doc into a wrong one.
 - Verification routes to `opus` — deciding what an artifact actually proves is judgment.
 - A cheap pass moves the cost to a wrong fix.
 
@@ -210,8 +208,7 @@ Counts line first: `142 claims — 9 fixed, 3 deleted, 4 unreached`. Then these 
 - Corrections are the deliverable; they never get aggregated away.
 - The one-line lane-`none` count never absorbs an inherited FLAG.
 - A prior session escalated it deliberately, and dropping it silently defeats the handoff.
-- Each finding is one bullet: a bold keyword first, then the fact.
-- Zero findings: one line, no padding.
+- Report shape follows [../output-style.md#report-shape](../output-style.md#report-shape).
 
 Then commit — one commit, `docs: correct <scope> against verified sources`.
 

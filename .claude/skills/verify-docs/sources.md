@@ -74,8 +74,7 @@ The nearest and cheapest lane, and the one most claims belong to.
   RFC.
 - A blog post, a forum answer, and a model's recollection are none of these.
 - **Every external verdict carries an as-of date and the URL.**
-- "Current" is a moving target; a version verified today is a dated observation.
-- It is not a permanent fact, and the report says so.
+- "Current" is a moving target — a dated observation, not a permanent fact, and the report says so.
 - **Do not "correct" a deliberate pin.** A repo pinning an older version is stating a
   decision.
 - Check the lockfile, manifest, or CI config before treating an upstream release as staleness

@@ -15,11 +15,8 @@ then load one small file instead of a large one.
 
 ## Why size is a correctness problem
 
-A 900-line document is not just tiring. Split for retrieval, not for tidiness.
+Split for retrieval, not for tidiness.
 
-- **Read partially** — its later sections drift unchallenged.
-- **Loaded whole into an agent's context** — it crowds out the code the agent needs.
-- **It accretes**, because nobody reorganizes it, so contradictions accumulate inside one file.
 - **The unit of value** — the smallest file that fully answers one question a reader arrives with.
 - **Restructuring is not a substitute for deletion** — run the deletion pass first, then split what survives.
 - **A 900-line file that should have been 200 lines** produces six files nobody needed.
@@ -101,7 +98,6 @@ Splitting a monolith reliably exposes the same claim stated in three sections.
 - **Deduplicate *during* the split**, never after.
 - **A split that copies duplicates** into separate files turns one inconsistency into three that disagree.
 - **Order of operations** — extract claims → cluster → assign each cluster one home.
-- **Then** — place the claims into the new files.
 - **Never open a new file** and paste a section into it.
 
 ## Merging

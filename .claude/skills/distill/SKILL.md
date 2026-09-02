@@ -37,9 +37,6 @@ survives into small files that load cheaply.
 
 ## The method: re-derive, do not edit
 
-Editing docs is status-quo biased. Every line reads as if it earned its place.
-So "can I cut this?" gets a defensive answer.
-
 - **Invert it** — suspend the existing structure, decisions and file boundaries.
 - **Ask the re-derivation question below** of each thing.
 - **Keep is the exception** that needs an argument, not the default.
@@ -87,7 +84,7 @@ Run this pass in the execution mode chosen in step 2.
 - **Workers are read-only** — they propose; they never edit or delete.
 - **Dispositions are provisional** — the keep-bar is not settled until step 5.
 - **Mark every disposition that would flip** under a different reader.
-- **Marker** — `audience-sensitive: would be KEEP for external users`.
+- **Marker** — `audience_sensitive: would be KEEP for external users`.
 - **Audience-independent** — duplication, staleness, derivability.
 - **Audience-dependent** — "too obvious to document".
 - **Apply** the re-derivation question above and the categories in [criteria.md](criteria.md).
@@ -143,7 +140,7 @@ AGENTS.md, .claude/rules/      → agents
 docs/adr/                      → unclear — who reads these?
 ```
 
-- **The audience sets the keep-bar** and decides every `audience-sensitive` marker from step 3.
+- **The audience sets the keep-bar** and decides every `audience_sensitive` marker from step 3.
 - **Name the consequence** — install instructions survive for external users, die in a private knowledge base.
 - **Anything left unclear stays FLAG** — never guess an audience into a deletion.
 
@@ -161,13 +158,13 @@ docs/adr/                      → unclear — who reads these?
 | Answer | Effect |
 | --- | --- |
 | **Plan then apply** | Continue to step 6 with the plan in memory. State the changes; apply on approval. |
-| **Plan only** | Write the plan to a file and stop. Nothing in the corpus changes this session. Pre-answered by the `plan-only` argument. It exists because a large distillation is worth reviewing away from the session that proposed it. |
+| **Plan only** | Write the plan to a file and stop. Nothing in the corpus changes this session. Pre-answered by the `plan-only` argument. |
 
 ### 6. Plan
 
 Finalize first, then write the plan. Keep it short — an action list, not prose.
 
-- **Apply the confirmed keep-bar** to every `audience-sensitive` disposition from step 3.
+- **Apply the confirmed keep-bar** to every `audience_sensitive` disposition from step 3.
 - **Drop** everything excluded in question 2.
 - **Design the target file set** for every SPLIT and MERGE per [restructure.md](restructure.md).
 - **Name** every new file, its source sections, and its projected line count.
@@ -179,8 +176,7 @@ Finalize first, then write the plan. Keep it short — an action list, not prose
 - **The conflicts and FLAGs** — kept out of the action list.
 - **Where it lives** depends on the answer to question 3.
 - **Plan then apply** — keep it **in memory**; write no file.
-- **Why** — writing one would add a file to the corpus being distilled.
-- **And** — the plan is consumed in the same turn.
+- **Why** — writing one would add a file to the corpus being distilled. The plan is consumed in the same turn.
 - **A deliberate exception** to the repo's plan-first `docs/plans/plan-<slug>.md` convention.
 - **Plan only** — write it to `docs/plans/plan-distill-<scope>.md`.
 - **Template** — [../create-plan/SKILL.md](../create-plan/SKILL.md), plus its placeholder-scan self-review.
@@ -270,11 +266,8 @@ Commit the distillation as one commit — `docs: distill <scope>`.
 - **Never invent the corrected version.**
 - **Rewrite freely; never invent or alter a claim.**
 - **Allowed and usually the point** — restyling, condensing, merging, restructuring surviving prose.
-- **A distilled file reads as one voice**, not as the seams of what was cut.
-- **Never change what a sentence asserts**, and never add an assertion that was not there.
 - **Surviving exactly as stated** — every fact, command, flag, path, version, name and constraint.
 - **Why** — that is what keeps the later verification sweep able to do its job.
-- **The prose around them is yours.**
 - **Never trade precision for brevity.** A short doc that lost the exact command, flag,
   path, or version is worse than the long one it replaced.
 - **Never edit generated documentation.** Fix the generator or leave it.

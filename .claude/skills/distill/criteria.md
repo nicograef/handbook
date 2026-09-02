@@ -17,8 +17,7 @@ they never see it**. Both halves are required.
 - **From the source of truth** — reading the config, running `--help`, opening the type, checking `git log`.
 - **If yes** — the doc is a stale mirror. Delete it and point at the source.
 - **Derivability is measured in *reader cost***, not in principle.
-- **Not derivable** — a fact recoverable only by reading eight files and running the code.
-- **It belongs in the docs.**
+- **Not derivable** — a fact recoverable only by reading eight files and running the code; it belongs in the docs.
 - **The breakage test (consequence)** — delete it in your head and ask who gets hurt.
 - **No answer means no reader.**
 - **"They would run the wrong command against production"** means keep, whatever it looks like.
@@ -67,7 +66,7 @@ Text explaining things the named audience already knows. **Delete.**
 
 **The bar moves with the audience**, which step 5 settles. An external-user README
 may need the install line; a private knowledge base never does. Until then, mark
-the verdict `audience-sensitive` rather than assuming.
+the verdict `audience_sensitive` rather than assuming.
 
 ### Aspirational content
 
@@ -86,11 +85,6 @@ non-existent system actively mislead — a reader cannot tell which paragraphs a
 The same claim in more than one place. Handled by the cross-file pass, not by
 per-file review.
 
-- **Delete all but the canonical home.**
-- **Canonical** — the file whose stated purpose the claim belongs to, nearest to the thing it describes.
-- **Replace with a relative link** only where the reader would otherwise be stuck.
-- **Conflicting duplicates are never merged by you** — report both locations to the user.
-
 ### Ceremonial scaffolding
 
 Structure that exists because documents are supposed to have structure.
@@ -105,8 +99,7 @@ Structure that exists because documents are supposed to have structure.
 - "This document describes…", "In this section we will…"
 
 **Sentence-level patterns** — see the slop catalogue in
-[../cleanup/readability.md](../cleanup/readability.md). Those patterns: puffery,
-compulsive triples, negative parallelisms, vague attributions.
+[../cleanup/readability.md](../cleanup/readability.md).
 
 ### Narrative padding
 
@@ -125,7 +118,6 @@ something. These categories survive even when they look like noise.
 
 - **Non-derivable why** — the reason behind a surprising choice, especially where the obvious alternative fails.
 - **Example** — `// batch size 500 — 1000 hits the provider's undocumented payload cap`; it cannot be recovered.
-- **This is the single most valuable prose** in most repos, and the easiest to mistake for a stray comment.
 - **Facts that exist nowhere else** — where credentials live, which registrar holds the domain.
 - **Also** — which colleague owns the upstream service, why the staging host is named oddly, a dashboard URL.
 - **Tribal knowledge has no source of truth** to link to; the doc *is* the source.
