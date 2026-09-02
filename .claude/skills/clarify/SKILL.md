@@ -14,8 +14,6 @@ and only then by asking.
 
 - Resolve unknowns through structured questions: walk each decision-tree
   branch, resolve dependencies between decisions one by one.
-- Use when clarification is the task itself, or thorough spec-gathering is
-  needed.
 - create-plan and write-prd embed a lighter clarification pass scoped to
   their own work.
 - Invoking this skill does not make every unknown a question. Each one still
@@ -29,9 +27,7 @@ and only then by asking.
    Every question clears the [ask gate](question-rules.md#the-ask-gate) first.
 2. Drill deeper on prior answers: remaining gaps, edge cases, conflicting
    constraints. Confirm critical decisions before proceeding.
-3. Stop once the decision tree resolves, even after one round — don't pad
-   with extra rounds.
-4. Update the current plan or document with every decision made, then
+3. Update the current plan or document with every decision made, then
    proceed with the task.
 
 ## Constraints
