@@ -20,8 +20,7 @@ description: >-
 
 - Evaluate every test file.
 - Assign each test exactly one tag: **Keep**, **Refactor**, **Delete**, or **Merge**.
-- Apply the decision rules in [evaluation-criteria.md](evaluation-criteria.md).
-- [anti-patterns.md](anti-patterns.md) catalogs the patterns to recognise.
+- Apply the decision rules and anti-pattern catalog in [anti-patterns.md](anti-patterns.md).
 - Group findings by file.
 - Do not make changes yet.
 
@@ -29,7 +28,6 @@ description: >-
 
 Present the summary to the user before touching any code.
 
-- **Counts line first** — `20 tests — 4 keep, 5 refactor, 2 delete, 1 merge`.
 - **Group** the tags by file, in this shape:
 
 ```
@@ -47,9 +45,7 @@ Total: 20 tests → 17 tests after changes
 
 - **Fields** — Keep and Merge list test names; Merge adds the target.
 - **Fields** — Refactor and Delete add a one-line reason per test.
-- **Mostly-Keep is a success** — a suite already testing behavior through the public API.
-- **Report that outcome** in one line, with no padding.
-- **Never manufacture** Delete or Merge tags to show activity.
+- Delete and Merge tags follow the [report shape](../output-style.md#report-shape) rules.
 - **Explain** the biggest quality wins after the report.
 - **Ask** for explicit confirmation before proceeding.
 - **Update** any tag the user disagrees with, before proceeding.
@@ -64,7 +60,8 @@ Work through changes one file at a time.
 - [ ] Apply **Delete** last (already confirmed in the Step 3 report)
 - [ ] Remove dead test helpers and fixtures that are no longer referenced
 - [ ] Clean up imports left orphaned by deleted tests
-- [ ] Preserve mocks at true system boundaries (HTTP, DB, email, time, randomness)
+- [ ] Preserve mocks at true system boundaries (HTTP, email, time, randomness).
+      Prefer a real test DB, mocking the driver only when none is available.
 
 ### Step 5 — Verify
 
@@ -81,9 +78,8 @@ Work through changes one file at a time.
 - **Never add new tests** — out of scope; redirect to TDD skill if coverage gaps exist
 - **Never rewrite a test to make it pass** — broken behavior is fixed in the
   implementation, not the test
-- **Never mock internal collaborators** — mocks belong at system boundaries only
-- **Never keep tests that verify call counts or argument order** on internal
-  methods — these are implementation-detail tests
+- **Never keep call-count or argument-order assertions on internal methods** — these are
+  implementation-detail tests. A REFACTOR that verifies via output is allowed.
 - **Never bypass the public interface** to verify state (e.g. querying the DB
   directly after calling a service method)
 - **Preserve integration-style tests** even if they are "slow" — they are the
@@ -94,4 +90,3 @@ Work through changes one file at a time.
 
 - Before presenting results, run the shared [self-review checklist](../quality.md).
 - Reports follow the shared [output style contract](../output-style.md).
-- Surface issues in the chat only if found.

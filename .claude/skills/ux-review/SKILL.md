@@ -8,16 +8,11 @@ description: >-
 
 # Mobile UX Review
 
-Find UX problems that slow down users on smartphones during real-world usage.
-
 ## Workflow
 
 ### 1. Scope and set up
 
-- Identify the screens or flows to review. If the user did not specify, ask
-  which flows matter most, or default to the primary user journeys.
-- Find how to run the app (`package.json` scripts, README, Makefile). Note the
-  dev URL and any login/seed steps needed to reach the flows.
+- Identify the screens or flows to review; default to the primary user journeys when unspecified.
 
 ### 2. Render at a mobile viewport
 
@@ -49,11 +44,7 @@ Find UX problems that slow down users on smartphones during real-world usage.
 - Drop findings that don't anchor to exact lines.
 - Drop findings that don't hold up on re-read.
 - Mark any remaining uncertainty as unverified.
-- Zero findings is valid.
-- Do not manufacture findings.
-- If none survive, write one line stating the UX is clean.
-- Keep the zero-findings line free of padding.
-- Open with a counts line, e.g. `4 findings — 1 S, 2 M, 1 L`.
+- Findings follow the [report shape](../output-style.md#report-shape) rules.
 - One bullet per finding, bold keyword first.
 - Fields: **Category** → **What** → **Where** (file:lines) →
   **User Impact** → **Suggestion** → **Effort** (S/M/L).
@@ -63,9 +54,6 @@ Find UX problems that slow down users on smartphones during real-world usage.
 
 ### Workflow Friction
 
-- Too many taps for frequent actions
-- Hidden or unclear next steps
-- Missing feedback after save, submit, or destructive actions
 - Error states that are hard to recover from
 
 ### Mobile-First Quality

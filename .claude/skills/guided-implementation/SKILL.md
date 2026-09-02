@@ -11,10 +11,6 @@ description: >-
 
 # Guided Implementation
 
-- **Role** — a senior pair-programming navigator.
-- **The developer drives** — they write every line of code.
-- **You navigate** — explore the codebase, plan the path, explain each step, verify progress.
-
 ## Invocation
 
 The user provides one of:
@@ -22,7 +18,8 @@ The user provides one of:
 - A **user story** from a PRD (`docs/prds/prd-*.md`).
 - A **phase** from a plan (`docs/plans/plan-*.md`).
 - A **task description** in conversation.
-- Unclear reference → ask which story or phase to work on before proceeding.
+- Unclear reference → resolve by reading first; ask only when two or more candidates survive the
+  [ask gate](../clarify/question-rules.md).
 
 ## Workflow
 
@@ -34,33 +31,20 @@ The user provides one of:
 | Phase from plan | The full plan — goal, architectural decisions, inventory | Focus on the phase |
 | Task description | — | Take it as-is; clarify scope if ambiguous |
 
-### 2. Explore the codebase
-
-Build a deep understanding of the current state before giving any guidance:
-
-- Read the files listed in the plan's `Context:` block or the PRD's implementation decisions.
-- Trace the relevant code paths — entry points, data flow, integration layers.
-- Identify existing patterns, naming conventions, and architectural style.
-- Note the test structure and testing conventions already in use.
-- Cite every finding with file path and line range (e.g. `src/orders/handler.go:42-58`).
-
-### 3. Break into vertical steps
+### 2. Break into vertical steps
 
 **Slice rules (from the tracer-bullet philosophy):**
 
 - Decompose the work into the smallest useful steps.
 - Each step is one logical change — one method, one field, one component, one migration.
-- Start with a thin end-to-end path that proves the integration works.
-- Each subsequent step adds one behavior or capability.
 - Order steps so the developer can verify progress after each one — run tests, see output, check
   behavior.
-- Never batch multiple concepts into one step.
 - Present the step list as a numbered overview.
 - Ask the developer, then wait for confirmation before proceeding:
 
 > "Does this breakdown look right? Should any steps be split or reordered?"
 
-### 4. Guide step by step
+### 3. Guide step by step
 
 For each step, brief the developer with this structure:
 
@@ -73,14 +57,14 @@ For each step, brief the developer with this structure:
 
 - Then **stop and wait** — do not proceed until the developer confirms the current step is done.
 
-### 5. Review after each step
+### 4. Review after each step
 
 When the developer signals completion, **read the changed code** and run a focused review.
 
 - Be critical — this is not a rubber-stamp.
 - The review covers the three dimensions below.
 
-#### 5a. Correctness & Consistency
+#### 4a. Correctness & Consistency
 
 - Does the change actually solve the stated step?
 - Cross-layer consistency: do types, validation, contracts, and schemas still agree across layers?
@@ -88,27 +72,23 @@ When the developer signals completion, **read the changed code** and run a focus
 - Are error cases handled at the boundary?
 - Are naming and conventions consistent with the rest of the codebase?
 
-#### 5b. Interface Quality
+#### 4b. Interface Quality
 
 - Is the interface as small as possible?
 - Could any parameter or method be removed without losing functionality?
-- Is the module deep — a small interface hiding meaningful complexity — or shallow?
-- Does it inject dependencies instead of constructing them?
-- Does it return values instead of mutating inputs?
-- Does it keep its surface small?
+- Apply the deep-module checklist ([write-prd/SKILL.md](../write-prd/SKILL.md) step 5).
 - Is the code easy to use correctly and hard to misuse?
-- Are there unnecessary abstractions, wrappers, or indirection layers?
+- Unnecessary abstractions, wrappers, or indirection layers? See
+  [redundant abstractions](../cleanup/code-smells.md#redundant-abstractions).
 
-#### 5c. Test Quality
+#### 4c. Test Quality
 
 - If the step includes a test, judge it against the
-  [testing evaluation criteria](../test-quality/evaluation-criteria.md).
+  [test anti-patterns](../test-quality/anti-patterns.md).
 
 #### Review output
 
-**Named prose exception.** This section stays connected prose — the What/Why/How coaching is the
-deliverable. The ≤ 20-word sentence cap still applies; see
-[`../output-style.md`](../output-style.md).
+[Named prose exception](../output-style.md#named-prose-exceptions).
 
 Present findings honestly and directly. For each issue found:
 
@@ -123,7 +103,7 @@ If the developer gets stuck during implementation, before signaling completion, 
 context. Trace the relevant code path, explain the underlying concept, or point to a concrete
 example in the codebase.
 
-### 6. After all steps
+### 5. After all steps
 
 Once the last step is confirmed and you are working from a plan, check off completed tasks
 (`- [ ]` → `- [x]`).
@@ -156,6 +136,6 @@ Once the last step is confirmed and you are working from a plan, check off compl
 ## Quality
 
 - Once all steps are complete, run the shared [self-review checklist](../quality.md) on the
-  finished work. Surface issues in the chat only if found.
-- The per-step review in step 5 is separate from this final pass.
+  finished work.
+- The per-step review in step 4 is separate from this final pass.
 - Follow the shared [output style contract](../output-style.md).

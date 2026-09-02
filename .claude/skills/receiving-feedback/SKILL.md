@@ -12,9 +12,6 @@ description: >-
 
 _Adapted from the MIT-licensed [superpowers](https://github.com/obra/superpowers) plugin._
 
-Code review requires technical evaluation, not a reflex to agree. Verify before implementing,
-ask before assuming, and prefer technical correctness over social comfort.
-
 ## Workflow
 
 1. **Read all feedback first.** Do not reply or start fixing item by item.
@@ -41,16 +38,15 @@ ask before assuming, and prefer technical correctness over social comfort.
 7. **Implement one item at a time, in this order:** blocking issues (bugs, security), then
    simple fixes, then complex/structural fixes.
    - Verify each one (tests, build, manual check) before moving to the next.
-8. **Report back factually.** Counts line first: `6 items — 4 implemented, 1 rejected, 1 open`.
+8. **Report back factually.**
    - **Implemented** — what changed and where.
    - **Not implemented** — the item, plus the technical reason it was rejected.
    - **Wrong pushback** — you pushed back and were wrong: say so plainly, then fix it.
-   - Nothing to report: one line, no padding.
 
 ## Constraints
 
 - Acknowledge with the fix itself or a one-line factual note.
-- Skip the social filler: "you're right", "great point", "thanks for catching that".
+- No social filler, per the [report shape](../output-style.md#report-shape) rule 6.
 - Architectural pushback goes to Nico, never into a unilateral decision.
 - A suggestion conflicting with an existing architectural choice — flag it and ask.
 - Never silently override either the reviewer or the prior decision.
@@ -60,5 +56,4 @@ ask before assuming, and prefer technical correctness over social comfort.
 ## Quality
 
 - Before presenting results, run the shared [self-review checklist](../quality.md).
-- Surface issues in the chat only if found.
 - Format the report per the [output style contract](../output-style.md).
