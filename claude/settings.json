@@ -226,7 +226,7 @@
   "effortLevel": "xhigh",
   "promptSuggestionEnabled": false,
   "awaySummaryEnabled": false,
-  "autoUpdatesChannel": "stable",
+  "autoUpdatesChannel": "latest",
   "tui": "fullscreen",
   "skipWorkflowUsageWarning": true,
   "theme": "auto",
