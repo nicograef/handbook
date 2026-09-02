@@ -19,6 +19,7 @@ Confirm the interface and the behaviors to test with the user. Apply the deep-mo
 **You can't test everything.** Ask what the interface should look like, and which behaviors matter most. Focus on critical paths and complex logic, not every edge case.
 
 ### 2. Tracer Bullet
+
 Write ONE test that confirms ONE thing about the system:
 
 ```
