@@ -333,9 +333,9 @@ Cut the prose corpus from 10,729 to roughly 6,900 Markdown lines (about −36%) 
 
 ### Acceptance criteria
 
-- [ ] `cleanup/SKILL.md` has no "Never manufacture findings" line and links `../output-style.md#report-shape`; `readability.md` keeps `### Deep Nesting`; `code-smells.md` keeps "Over-Engineered Error Messages"; `architecture.md` keeps every "Do NOT flag".
-- [ ] `readability-de.md` has more than one `##` heading and no lone TOC line.
-- [ ] `scripts/check-repo.sh links` and `prose` clean for the phase's files.
+- [x] `cleanup/SKILL.md` has no "Never manufacture findings" line and links `../output-style.md#report-shape`; `readability.md` keeps `### Deep Nesting`; `code-smells.md` keeps "Over-Engineered Error Messages"; `architecture.md` keeps every "Do NOT flag".
+- [x] `readability-de.md` has more than one `##` heading and no lone TOC line.
+- [x] `scripts/check-repo.sh links` and `prose` clean for the phase's files.
 
 ---
 
