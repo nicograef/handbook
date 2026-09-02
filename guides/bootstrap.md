@@ -75,10 +75,8 @@ Codespace.
 
 Two tiers — pick by what the machine is for. A machine can carry both.
 
-**Gather first**:
-
-- [dotfiles-codespaces.md#prerequisites](dotfiles-codespaces.md#prerequisites) (symlink tier)
-- [claude-plugin.md#prerequisites](claude-plugin.md#prerequisites) (plugin tier)
+**Gather first** — [dotfiles-codespaces.md#prerequisites](dotfiles-codespaces.md#prerequisites)
+(symlink tier), [claude-plugin.md#prerequisites](claude-plugin.md#prerequisites) (plugin tier).
 
 1. **Machines you develop on (symlink tier)** — clone the handbook and run
    [`install.sh`](../install.sh); it symlinks shell + Claude config and the
