@@ -356,9 +356,9 @@ Cut the prose corpus from 10,729 to roughly 6,900 Markdown lines (about −36%) 
 
 ### Acceptance criteria
 
-- [ ] `grep -rn "audience-sensitive" .claude/skills/distill` returns nothing; `parallelism.md` contains `read_in_full` and all six original `##` headings.
-- [ ] `distill/SKILL.md` keeps "cannot audit its own output" and "Surviving exactly as stated".
-- [ ] `scripts/check-repo.sh links` and `prose` clean for the phase's files.
+- [x] `grep -rn "audience-sensitive" .claude/skills/distill` returns nothing; `parallelism.md` contains `read_in_full` and all six original `##` headings.
+- [x] `distill/SKILL.md` keeps "cannot audit its own output" and "Surviving exactly as stated".
+- [x] `scripts/check-repo.sh links` and `prose` clean for the phase's files.
 
 ---
 
