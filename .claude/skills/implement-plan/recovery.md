@@ -55,9 +55,6 @@ Two limits on this:
 - The log is authoritative **only where the trailer is present**.
 - A worker that skipped the trailer produces durable but unattributable work.
 - The fallback is reading the commit range on that phase's branch.
-- Re-verifying a committed-but-unticked criterion re-runs the very verification
-  the checkpoint existed to avoid.
-- Reconciliation is cheaper than redoing the work, not free.
 
 ## Half-finished operations
 
@@ -106,8 +103,6 @@ A stop leaves a `## Run state` section in the plan file. Commit it to
 - Do not run a plan assuming it does.
 
 ## What does not exist
-
-So nobody invents it:
 
 - **No sleep-until-reset.** The reset epoch reaches only a status-line shell
   command, and workflow scripts cannot read a clock at all.

@@ -18,16 +18,12 @@ description. Output is a Markdown file in `docs/plans/`.
 ### 1. Determine the entry point
 
 - **PRD provided** (file or in conversation context) → read it fully.
-- Then continue to step 2, checking for ambiguities before planning.
-- **Task description only** → continue to step 2.
 - PRD exists but is not yet in context → ask the user to paste it or point you
   to the file.
 
 ### 2. Clarify ambiguities
 
 - **Always run this step** — whether a PRD was provided or not.
-- A PRD may contain gaps, conflicting requirements, or underspecified decisions.
-- Resolve those before planning begins.
 - Resolve unknowns through **0–3 rounds** of structured questions before planning.
 - Follow the canonical [clarification question rules](../clarify/question-rules.md).
 - Every question clears the [ask gate](../clarify/question-rules.md#the-ask-gate)
@@ -46,9 +42,6 @@ description. Output is a Markdown file in `docs/plans/`.
 Before slicing, identify high-level decisions unlikely to change throughout
 implementation. They go in the plan header, so every phase can reference them.
 
-- Route structures / URL patterns
-- Database schema shape
-- Key data models
 - Authentication / authorization approach
 - Third-party service boundaries
 
@@ -90,16 +83,10 @@ slice cutting through ALL integration layers end-to-end.
 - Derive a slug from the task (e.g. `admin-dashboard`, `order-cancel`).
 - Create the file `docs/plans/plan-<slug>.md` (create the directory if it
   doesn't exist).
-- **Lifecycle** — the plan file is transient, not a record.
-- It dies when its last acceptance criterion lands.
-- [implement-plan](../implement-plan/SKILL.md) step 10 deletes it after landing.
-- [finish-branch](../finish-branch/SKILL.md) option 1 deletes it after a local merge.
-- One unticked criterion keeps the file alive.
-- Rationale: the **Current state only** rule in `AGENTS.md`.
+- **Lifecycle** — the plan file is transient, not a record; deletion rules are
+  [implement-plan](../implement-plan/SKILL.md) step 10.
 
 ### 7. Self-review the plan
-
-Read the written plan with fresh eyes before presenting it.
 
 - **Placeholder scan.** Search for vagueness that would block an implementer;
   fix inline.
@@ -123,7 +110,6 @@ Read the written plan with fresh eyes before presenting it.
   symbol name, e.g. `backend/api/product/http/handler.go — handleCheckout()`.
 - Not line numbers — lines drift as later phases land.
 - Use line numbers only for in-conversation citations while researching.
-- **Readability-first.** Prefer simple, clear, idiomatic solutions.
 
 ## Quality
 

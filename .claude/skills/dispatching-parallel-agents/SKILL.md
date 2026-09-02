@@ -11,10 +11,6 @@ description: >-
 
 _Adapted from the MIT-licensed [superpowers](https://github.com/obra/superpowers) plugin._
 
-Delegate independent problems to isolated subagents instead of investigating them one by one.
-
-- **Context** — each subagent gets exactly what it needs, not your full session history.
-- **Effect** — it stays focused; your own context stays free for coordination.
 - **Cost** — roughly 15× the tokens of a single linear pass.
 - **Reserve for** — genuinely independent, each-substantial work.
 - **Do it yourself** — two small related fixes.
@@ -36,11 +32,8 @@ Delegate independent problems to isolated subagents instead of investigating the
    - Explore/Plan-style agents don't load CLAUDE.md.
    - **Constraints** — explicit, including file ownership, so no two agents write the same file.
    - Examples: "only modify files under `src/agents/`", "fix tests only, don't touch production code".
-   - **Return format** — state it exactly, in the report shape.
-   - Counts line first (e.g. `3 findings — 1 root cause, 2 files changed`), then one bullet per
-     finding with fixed fields.
-   - Each bullet opens with a bold keyword; nothing found is one line, no padding.
-   - Example demand: "return a summary of root cause and files changed".
+   - **Return format** — state it exactly, per the
+     [report shape](../output-style.md#report-shape).
 3. **Dispatch all of them in the same response** so they run in parallel.
    - Then keep dispatching. Act on each result as it lands, not after the
      slowest one.

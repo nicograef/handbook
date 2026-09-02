@@ -66,7 +66,6 @@ git update-ref -d "$LOCK"
   nothing.
 - Landing must run in the main worktree.
 - `git push . HEAD:<base>` is rejected by `receive.denyCurrentBranch`.
-- `git update-ref` desyncs the main worktree silently.
 
 ## When the base moves under you
 
