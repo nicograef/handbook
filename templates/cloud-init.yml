@@ -1,11 +1,7 @@
 #cloud-config
 # cloud-init user-data for a fresh Debian / Ubuntu VPS.
 #
-# Fetches and runs scripts/setup-server.sh from the handbook (single source of
-# truth — no provisioning logic is duplicated here). Fill the <angle-bracket>
-# placeholders, then pass the file as user-data:
-#   - Hetzner Cloud console: paste into the "Cloud config" field, or
-#   - hcloud server create --user-data-from-file cloud-init.yml ...
+# Fetches and runs scripts/setup-server.sh from the handbook (single source of truth).
 #
 # SECURITY: user-data (incl. USER_PASSWORD) stays readable from the instance
 # metadata endpoint. Rotate the password at first login (`passwd`) or set

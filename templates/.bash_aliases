@@ -57,7 +57,6 @@ if command -v fzf >/dev/null; then
   unset _f
 fi
 
-# History: bigger, timestamped, shared across terminals immediately.
 # Sourced after the stock .bashrc history block, so these settings win.
 HISTSIZE=100000
 HISTFILESIZE=200000
@@ -73,7 +72,7 @@ esac
 
 # Prompt: path + git branch with dirty state (* modified, + staged).
 # Overrides the stock PS1, which every stock .bashrc sets before sourcing this
-# file. Skipped when no git prompt helper is available.
+# file.
 if ! declare -F __git_ps1 >/dev/null; then
   [ -f /usr/lib/git-core/git-sh-prompt ] && . /usr/lib/git-core/git-sh-prompt
 fi

@@ -1,13 +1,8 @@
 # docker-compose.prod.yml template
 # Full production stack: app + DB + nginx reverse proxy + Let's Encrypt.
 #
-# Prerequisites:
-#   1. DNS A record pointing to the server IP
-#   2. .env file with DB credentials
-#   3. TLS certificate obtained (see scripts/prod-init.sh or guides/letsencrypt-docker.md)
-#
 # Usage:
-#   docker compose -f docker-compose.prod.yml up --build -d
+#   docker compose -p <project> -f docker-compose.prod.yml up --build -d
 
 # Cap container logs — the json-file driver grows unbounded otherwise and can
 # fill the server disk over time.
@@ -108,8 +103,6 @@ services:
     depends_on:
       reverse-proxy:
         condition: service_started
-    # CERT_PING_URL (optional) → a Better Stack cert-renewal heartbeat. Unset
-    # skips the ping; the renewal loop is unaffected. See guides/monitoring.md.
     environment:
       CERT_PING_URL: ${CERT_PING_URL:-}
     entrypoint: /bin/sh

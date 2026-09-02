@@ -14,7 +14,6 @@ indent_size = 2
 [*.go]
 indent_style = tab
 
-# Java, Python – 4-space convention
 [*.{java,py}]
 indent_size = 4
 
