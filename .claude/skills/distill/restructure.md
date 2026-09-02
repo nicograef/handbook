@@ -113,7 +113,7 @@ After merging, delete the source files and fix every inbound link.
 
 ## Naming
 
-- Lowercase, hyphenated, `.md`: `nginx-reverse-proxy.md`.
+- Lowercase, hyphenated, `.md`: `letsencrypt-docker.md`.
 - Name the **subject**, not the document type: `postgres-backup.md`, not
   `postgres-backup-guide.md` or `how-to-backup-postgres.md`.
 - Keep sibling names parallel so the directory listing reads as a menu.

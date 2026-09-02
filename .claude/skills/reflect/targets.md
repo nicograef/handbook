@@ -89,8 +89,8 @@ An event record is rewritten as its residue, then deleted with its `MEMORY.md` l
 Targets are **discovered, never assumed** — read what the repo actually has before proposing any
 write. Discover:
 
-- **Instructions surface** (rule items) — the first of `AGENTS.md`, `CLAUDE.md`,
-  `.github/copilot-instructions.md` that exists in the repo root.
+- **Instructions surface** (rule items) — the first of `AGENTS.md`, `CLAUDE.md` that exists
+  in the repo root.
 - **Docs layout** (documentation items) — `docs/` or another existing doc directory;
   `README.md` for small additions.
 - **Docs conventions** — follow the repo's own structure and index conventions.

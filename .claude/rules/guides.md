@@ -16,8 +16,8 @@ Step-by-step procedures a reader follows top-to-bottom (server provisioning, dep
 
 ## Stack-convention guides
 
-Reference guides that state coding conventions for a stack (`go.md`, `java-spring-boot.md`,
-`react.md`). They are heading-grouped rules and tables, not procedures.
+Reference guides that state coding conventions for a stack (`stack-conventions.md`). They are
+heading-grouped rules and tables, not procedures.
 
 - Group rules under `##`/`###` headings, or use tables; keep rationale to one line per rule.
 
@@ -30,4 +30,4 @@ Reference guides that state coding conventions for a stack (`go.md`, `java-sprin
 
 ## File naming
 
-`<topic>.md` — lowercase, hyphens, no numbering. Example: `docker-setup.md`.
+`<topic>.md` — lowercase, hyphens, no numbering. Example: `letsencrypt-docker.md`.

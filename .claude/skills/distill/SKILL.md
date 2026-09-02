@@ -257,7 +257,7 @@ Commit the distillation as one commit — `docs: distill <scope>`.
 - **Never delete legal or compliance content** — licences, third-party notices, security
   policies, attribution requirements — regardless of how boilerplate it reads.
 - **Never delete agent instruction surfaces** without per-file confirmation.
-- **Surfaces** — `AGENTS.md`, `CLAUDE.md`, `.claude/rules/*`, `.github/copilot-instructions.md`.
+- **Surfaces** — `AGENTS.md`, `CLAUDE.md`, `.claude/rules/*`.
 - **They read as restating the obvious** because that is their job; they are load-bearing contracts.
 - **Unverifiable is not false** — cannot check a claim from this session? FLAG it.
 - **Deleting what you failed to understand** is the main way this skill causes damage.

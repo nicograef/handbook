@@ -67,4 +67,3 @@ Personal skill paths (in `$HOME`, not committed) differ per surface:
 
 See also:
 - [templates/AGENTS.md](../templates/AGENTS.md) — agent instructions template
-- [templates/copilot-instructions.md](../templates/copilot-instructions.md) — copilot instructions template
