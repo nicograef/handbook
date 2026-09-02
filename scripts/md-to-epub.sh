@@ -102,12 +102,14 @@ PANDOC_ARGS=(
   --output "$OUT_FILE"
 )
 
-# Optional metadata: title, creator, lang. Without it pandoc guesses the title
-# from the first heading and leaves the language unset.
+# Optional metadata: title, creator, lang. Without meta.yml pandoc writes the
+# title UNTITLED (readers then show the filename) — it never reads the first
+# heading. dc:language falls back to $LANG as a BCP-47 tag (de_DE.UTF-8 →
+# de-DE), or en-US when LANG is unset.
 if [[ -f "$SRC_DIR/meta.yml" ]]; then
   PANDOC_ARGS+=(--metadata-file "$SRC_DIR/meta.yml")
 else
-  warn "no $SRC_DIR/meta.yml - title and language will be unset"
+  warn "no $SRC_DIR/meta.yml - title falls back to UNTITLED and language to \$LANG"
 fi
 
 # Optional cover: the reader shows it in the library grid.

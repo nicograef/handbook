@@ -25,7 +25,7 @@ SRC_DIR="${1:-}"
 [[ -d "$SRC_DIR" ]] || die "chapter directory not found: $SRC_DIR"
 
 TERMS_FILE="$SRC_DIR/terms.yml"
-[[ -f "$TERMS_FILE" ]] || die "no $TERMS_FILE — the skill writes it in step 6"
+[[ -f "$TERMS_FILE" ]] || die "no $TERMS_FILE — the skill writes it in step 7"
 
 # Chapters in reading order; the array index is the reading position.
 CHAPTERS=()

@@ -13,8 +13,8 @@
 #      base-branch copy stays stale by design until the run lands.
 #   4. Nudges once per branch tip. A run that stops committing goes quiet, so an
 #      abandoned branch can never trap the repo.
-#   5. Never nudges while the session has live background work — the harness
-#      re-invokes on completion, so that stop is safe.
+#   5. Never nudges while a top-level subagent, a workflow run, or a /tmp task
+#      is live — the harness re-invokes on completion, so that stop is safe.
 #   6. Opt out per repo: touch "$(git rev-parse --git-dir)/plan-run-guard-off".
 
 set -euo pipefail
@@ -45,6 +45,10 @@ session="$(printf '%s' "$payload" | jq -r '.session_id // "nosession"')"
 CONFIG_DIR="${CLAUDE_CONFIG_DIR:-$HOME/.claude}"
 IDLE_MIN="${PLAN_RUN_GUARD_IDLE_MIN:-10}"
 if [[ -n "$(find "$CONFIG_DIR/projects" -path "*/$session/subagents/agent-*.jsonl" \
+             -newermt "-$IDLE_MIN minutes" -print -quit 2>/dev/null)" ]]; then
+  allow
+fi
+if [[ -n "$(find "$CONFIG_DIR/projects" -path "*/$session/subagents/workflows/*/agent-*.jsonl" \
              -newermt "-$IDLE_MIN minutes" -print -quit 2>/dev/null)" ]]; then
   allow
 fi

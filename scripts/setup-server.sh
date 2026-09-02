@@ -95,9 +95,11 @@ run apt install -y \
 # ── 1b. Swap ────────────────────────────────────────────────────────────────
 # A stock VPS image ships with no swap, which leaves the kernel no reclaim path:
 # under memory pressure its only move is to kill the largest process. That is how
-# a box loses every session at once rather than one — the OOM killer lands on the
-# user manager's dbus, systemd stops user@.service, and every process in its slice
-# (every tmux server included) goes with it.
+# a box loses every session at once rather than one: user@.service runs with
+# OOMPolicy=continue, so a kill inside it does not stop the unit — but the
+# slice-wide wipe happens when the OOM killer takes systemd --user itself
+# (OOMScoreAdjust=100), after which KillMode=mixed SIGKILLs the rest of the
+# cgroup, every tmux server included.
 log "Configuring swap"
 if [[ "$SWAP_SIZE_GB" == "0" ]]; then
   echo "  SWAP_SIZE_GB=0 — skipping swap by request."
@@ -126,10 +128,11 @@ else
 fi
 
 # A tmpfs /tmp is RAM, and systemd's tmp.mount sizes it at half of it. Everything
-# written there — build caches, virtualenvs, git worktrees, downloads — is memory
-# that cannot be evicted, which on a CI or agent box is gigabytes. Report it and
-# leave it: moving /tmp to disk makes it survive a reboot, and that is a behaviour
-# change the operator should choose.
+# written there — build caches, virtualenvs, git worktrees, downloads — is
+# RAM- and swap-backed: it cannot be dropped like page cache, but the swapfile
+# above lets it be swapped out. Report it and leave it: moving /tmp to disk
+# makes it survive a reboot, and that is a behaviour change the operator should
+# choose.
 if findmnt -no FSTYPE /tmp 2>/dev/null | grep -q tmpfs; then
   echo "  NOTE: /tmp is a tmpfs — everything written there is RAM."
   echo "        For build or agent workloads: systemctl mask tmp.mount && reboot"
@@ -256,15 +259,15 @@ run apt install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin do
 run usermod -aG docker "$USERNAME"
 
 # ── 6b. Docker daemon config ────────────────────────────────────────────────
-# Every host gets container-log rotation (see guides/docker-setup.md — unbounded
-# json-file logs fill the disk). IPv6-only hosts additionally need IPv6 container
-# networking: without an IPv4 default route, the default bridge (IPv4 NAT only)
+# Every host gets container-log rotation (unbounded json-file logs fill the
+# disk). IPv6-only hosts additionally need IPv6 container networking:
+# without an IPv4 default route, the default bridge (IPv4 NAT only)
 # leaves containers with no egress at all. New networks (Compose) become
 # IPv6-only: keeping a dead IPv4 in the container makes RFC 6724 address
 # selection prefer it over a ULA source for dual-stack targets, so IPv4 must go
 # entirely. ULA subnets are NAT66-masqueraded by default. See guides/ipv6-only-vps.md.
 if [[ -f /etc/docker/daemon.json ]]; then
-  echo "  /etc/docker/daemon.json already exists — merge the log-rotation (and on IPv6-only hosts the IPv6) keys manually (see guides/docker-setup.md, guides/ipv6-only-vps.md)."
+  echo "  /etc/docker/daemon.json already exists — merge the log-rotation (and on IPv6-only hosts the IPv6) keys manually (see guides/ipv6-only-vps.md)."
 elif ! ip -4 route get 1.1.1.1 &>/dev/null; then
   log "No IPv4 route — enabling IPv6-only container networking + log rotation"
   write_file /etc/docker/daemon.json <<'EOF'
