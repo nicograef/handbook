@@ -7,7 +7,7 @@ Two gaps to close:
 - Docker's default bridge gives containers IPv4-only NAT.
   - No IPv4 route on the host means **no container egress at all**.
 
-So [provisioning](provision-server.md) itself runs without step 1.
+[Provisioning](provision-server.md) itself runs without step 1.
 
 ## Prerequisites
 
@@ -39,8 +39,8 @@ printf 'nameserver 2a01:4f9:c010:3f02::1\nnameserver 2a00:1098:2c::1\nnameserver
 - Container DNS goes through the host.
 - The DNS64 path from step 1 therefore covers IPv4-only registries and APIs inside containers too.
 - The **default bridge keeps IPv4** — Docker cannot disable it there.
-- Plain `docker run` without `--network` still hits the dead-IPv4 preference against dual-stack targets.
-- Use a user-defined network for anything real.
+- Plain `docker run` without `--network` still hits the dead-IPv4 preference against dual-stack targets. The step 6b comment in [setup-server.sh](../scripts/setup-server.sh) explains that preference.
+- Use a user-defined network for anything real; per network in Compose: `enable_ipv6: true` + `enable_ipv4: false`.
 - Source: <https://docs.docker.com/engine/daemon/ipv6/>
 
 ## Limits (no on-box workaround)

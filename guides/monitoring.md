@@ -52,7 +52,7 @@ echo 'HEALTH_PING_URL=<heartbeat-url>' | sudo tee -a /etc/default/report-health
 
 ### Inputs
 
-Only `<your-domain>` — the public HTTPS endpoint the uptime monitor checks. The three ping URLs come from the heartbeats and monitor created below.
+Only `<your-domain>` — the public HTTPS endpoint the uptime monitor checks. The three ping URLs come from the heartbeats in the ping-URL table above.
 
 ## Uptime monitor with SSL-expiry alert
 
