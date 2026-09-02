@@ -6,15 +6,6 @@ work links here instead of restating it.
 Verification is bought, and an unattended run pays in wall clock. Buy it where a
 defect found late costs more than the check costs now.
 
-- [The tier is what a late catch costs](#the-tier-is-what-a-late-catch-costs)
-- [Every layer consumes the one below](#every-layer-consumes-the-one-below)
-- [A finding carries its proof](#a-finding-carries-its-proof)
-- [A parallel stage costs its slowest member](#a-parallel-stage-costs-its-slowest-member)
-- [A review blocks only where its defects propagate](#a-review-blocks-only-where-its-defects-propagate)
-- [A finding that recurs becomes a gate](#a-finding-that-recurs-becomes-a-gate)
-- [Mechanise what is mechanical](#mechanise-what-is-mechanical)
-- [Anti-patterns](#anti-patterns)
-
 ## The tier is what a late catch costs
 
 | A defect found after this unit lands costs | Depth |
@@ -27,6 +18,7 @@ defect found late costs more than the check costs now.
 - A unit whose output an irreversible unit consumes inherits the irreversible tier.
 - Name every unit's tier in the run contract, before the run starts.
 - The tier is the estimate the human approves. Silently raising it spends their day.
+- `ultracode` deepens the tier it is handed. It never raises the tier.
 
 ## Every layer consumes the one below
 
@@ -84,14 +76,5 @@ defect found late costs more than the check costs now.
   - A mutation run whose suite is red for its own reasons marks every mutant caught.
   - It then reports perfect coverage over tests that never ran.
   - The same holds for any check that reads a failure as evidence.
-
-## Anti-patterns
-
-| Anti-pattern | What it costs | Instead |
-| --- | --- | --- |
-| One depth for every unit | Irreversible-tier price on free-to-redo work | Tier per unit |
-| A judge that verifies from scratch | A second full review, bought twice | The lead adjudicates |
-| The lead re-running a green gate | The implementer's run, paid again | Read the exit code |
-| An uncapped mutation probe | It alone sets its stage's wall clock | Rank, cap, report the cap |
-| A fresh agent to repair a review's findings | A cold read of files the author still holds | Resume the author |
-| Depth inherited from the fan-out default | `ultracode` deepens a tier, never raises it | Tier first, then fan out |
+- A fresh agent re-reading files the author still holds pays a cold read.
+  Resume the author instead.
