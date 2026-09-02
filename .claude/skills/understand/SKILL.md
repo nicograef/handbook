@@ -18,8 +18,6 @@ path first. Ask only when two candidates survive that search, per the
 
 ## Workflow
 
-The exploration itself is model-known. Two items are easy to miss.
-
 - **Cross-layer mapping** — for a DB table, find the repository, service, handler, and frontend
   touching it. Map the reverse direction too.
 - **ADRs / RFCs** — search `docs/` (and `docs/adrs/`, `docs/rfcs/`, `docs/decisions/`) for
