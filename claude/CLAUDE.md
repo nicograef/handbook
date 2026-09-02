@@ -87,7 +87,7 @@ Applies to every response — answers, reviews, summaries, commit proposals.
   - Fable 5.1 (`claude-fable-5-1`) is allowed as a deliberate escalation, chosen per session or per task — never as a default.
   - A config, subagent, or scheduled run found *defaulting* to Fable is switched to Opus 5. The switch is reported. Escalate with `/model` in a session; drop back to Opus 5 when the hard task is done.
 - **Subagent model routing (cost control).** Fable subagents only on my explicit instruction for that run. Full routing: `~/.claude/skills/dispatching-parallel-agents/SKILL.md#model-routing`.
-  - `sonnet` (Sonnet 5) — mechanical, well-specified work: exploration, renames, formatting, doc sweeps, boilerplate, scaffolding, simple fixes.
+  - `sonnet` (Sonnet 5, `claude-sonnet-5`) — mechanical, well-specified work: exploration, renames, formatting, doc sweeps, boilerplate, scaffolding, simple fixes.
   - `opus` (Opus 5) — the default worker: implementation, review, verification, debugging, plus the hardest reasoning — architecture, concurrency, final adversarial checks.
 - **Verification is budgeted by blast radius, not spent per unit.** Free-to-redo work gets the gate plus one batched review. Work no later step can undo — spend, overwrite, publish, production migration — earns probes and my read. **The gate runs once, where the change is**, and re-runs only after a fold, a rebase or an unseen edit. Contract: `~/.claude/skills/verification-depth.md`.
 - **Memory holds current state, not events:** a memory says what is true, not what happened when. Full rule: `~/.claude/skills/reflect/targets.md`.
