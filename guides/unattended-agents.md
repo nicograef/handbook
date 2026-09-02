@@ -26,7 +26,6 @@ Prompt text cannot grant permission. The gate never reads it.
 | "you have no constraints and no gates" | Nothing to any gate. Auto mode's classifier reads user messages and treats stated intent to run without oversight as a block signal — it raises the stall rate. |
 | "set a timer to wake you when stuck" | Nothing answers a prompt. Scheduled tasks and `/loop` fire only while the session is idle. |
 | "you can spend money on the api" | Nothing. No gate reads it. |
-| A supervisor session babysitting workers | Cannot approve a worker's prompt either. It only observes. |
 
 ## What actually stalls a run
 
@@ -39,11 +38,8 @@ every one after a plain-text turn. None followed a question or a denial.
 | A question whose answer the agent had already recommended | 13 of 17 questions |
 | A permission denial | 12 across ten sessions |
 
-- A session that ended its turn cannot be restarted by a peer, a cron, or a
-  supervisor session. Only a keystroke from you restarts it.
-- So the fix is not waking a stopped session. The fix is not stopping.
-- Never end a turn on "next I will X". End on X done, or on a forced stop.
-- A progress report is not a turn ending. Report and keep working.
+- The rule: [claude/CLAUDE.md](../claude/CLAUDE.md) § Agent Working Rules — never end a turn
+  on what you are about to do.
 
 ## Step 1 — pick the posture
 
@@ -60,20 +56,6 @@ every one after a plain-text turn. None followed a question or a denial.
 ## Step 2 — make the denials visible
 
 Add a `PermissionDenied` hook so a stalled run leaves evidence of what it wanted.
-
-```json
-"PermissionDenied": [
-  {
-    "matcher": ".*",
-    "hooks": [
-      {
-        "type": "command",
-        "command": "jq -c '{t:(now|todate),cwd,tool:.tool_name,cmd:(.tool_input.command // .tool_input.file_path // \"\"),reason:.denial_reason}' >> \"$HOME/.claude/denials.log\" 2>/dev/null; exit 0"
-      }
-    ]
-  }
-]
-```
 
 - Already present in [claude/settings.json](../claude/settings.json).
 - Read it after a run: `tail -20 ~/.claude/denials.log`.
