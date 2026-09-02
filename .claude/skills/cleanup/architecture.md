@@ -7,6 +7,7 @@
 
 **Flag when:**
 
+- Domain code imports a database client, ORM, framework or HTTP request/response type.
 - An entity's primary definition is its JSON tags, ORM decorators, or serialization annotations.
 
 ## Inversion of Control
@@ -73,4 +74,5 @@
 
 **Flag when:**
 
+- Business rules sit inside HTTP handlers, or a domain service imports a web framework, ORM or queue library.
 - Test setup for business logic requires booting infrastructure.
