@@ -109,11 +109,12 @@ Applies to every response — answers, reviews, summaries, commit proposals.
     the permission mode, and a container.
   - A scheduled wake-up cannot answer a permission prompt — never plan around one.
   - Recipe: `guides/unattended-agents.md` in the handbook.
-- **Never Fable:** Fable (`fable`, Fable 5, `claude-fable-5`) is off-limits.
-  - Applies to the session and every subagent, tool call, config file, and suggestion.
-  - Its cost is not worth the marginal quality here.
-  - Only two tiers are in use: Opus 5 (`claude-opus-5`) and Sonnet 5 (`claude-sonnet-5`).
-  - If a session or config is found running Fable, say so and switch it to Opus 5.
+- **Model tiers:** the default is Opus 5 (`claude-opus-5`) at high or xhigh effort.
+  - Fable 5 (`claude-fable-5`) is allowed as a deliberate escalation, chosen per session
+    or per task — never as a default.
+  - A config, subagent, or scheduled run found *defaulting* to Fable is switched to Opus 5.
+    The switch is reported.
+  - Escalate with `/model` in a session; drop back to Opus 5 when the hard task is done.
 - **Subagent model routing (cost control).** Keep using parallel agents, git worktrees, and
   ultracode/Workflow orchestration.
   - Worker/implementer/verifier/reviewer subagents must not silently inherit the session model.
@@ -121,12 +122,13 @@ Applies to every response — answers, reviews, summaries, commit proposals.
   - `sonnet` (Sonnet 5, `claude-sonnet-5`) — mechanical, well-specified work.
     - Exploration/searches, renames, formatting, doc sweeps, boilerplate, scaffolding, simple fixes.
     - Prefer this whenever the task is fully specified.
-  - `opus` (Opus 5, `claude-opus-5`) — the default worker and the top tier.
+  - `opus` (Opus 5, `claude-opus-5`) — the default worker.
     - Implementation, code review, verification, debugging.
     - Plus the hardest reasoning in the run.
     - Architecture/design decisions, subtle correctness or concurrency analysis.
     - Final adversarial verification of critical findings, cross-cutting synthesis.
-  - Mechanics — Agent tool: `model` parameter, `sonnet` or `opus` only.
+  - Fable subagents only on my explicit instruction for that run.
+  - Mechanics — Agent tool: `model` parameter, `sonnet` or `opus` unless I named Fable.
   - Workflow scripts: set `model` in the opts of every `agent()` call.
   - Omitting `model` inherits the session model; use `effort: 'low'` for cheap mechanical stages.
   - Forks (`subagent_type: "fork"`) always inherit the parent model.
