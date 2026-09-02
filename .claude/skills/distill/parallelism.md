@@ -35,10 +35,7 @@ Distill's per-stage refinement:
 
 ## The worker contract
 
-| Field | Content |
-| --- | --- |
-| **Criteria** | Instruct it to read [criteria.md](criteria.md) by path; never paraphrase the categories into the prompt |
-
+- **Criteria** — instruct it to read [criteria.md](criteria.md) by path; never paraphrase the categories into the prompt.
 - **A worker told nothing about the keep-bar** will silently assume an audience.
 
 ```
@@ -68,7 +65,7 @@ Then, for the whole group:
 
 ## Workflow mode
 
-1. **Merge and cluster in plain script code.**
+1. **A workflow dispatches one agent per group, then merges and clusters in plain script code.**
 2. **No agent** — clustering a list you hold is not a reasoning task worth delegating.
 3. **Return the merged evidence** — dispositions, the audience map, duplicate clusters, conflicts.
 4. **The workflow ends here**, at step 4.
