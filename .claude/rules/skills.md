@@ -15,7 +15,8 @@ required main definition; any number of optional reference files sit beside it.
 Every `SKILL.md` includes:
 
 1. **YAML frontmatter** — see the fields below.
-2. **Workflow section** — numbered steps the agent follows.
+2. **Workflow section** — numbered steps the agent follows. A skill whose procedure is
+   model-known keeps its constraints and artifact contract instead.
 3. **Constraints section** — guardrails, anti-patterns, or things to avoid.
 4. **Quality section** (only for skills that produce code or documents) — a `../quality.md`
    relative link to the shared verification contract. Process-only and review-only skills omit it.
