@@ -1,8 +1,8 @@
 # Set Up a New Project Repository
 
-- This is the "New project" path of [bootstrap.md](bootstrap.md).
+This is the "New project" path of [bootstrap.md](bootstrap.md).
 
-### Inputs
+## Inputs
 
 | Input | Description | Example |
 |-------|-------------|---------|
@@ -34,7 +34,7 @@ git init -b main <project-name> && cd <project-name>
 
 ## 2. Base files every repo gets
 
-Copy the universal files. Set `HANDBOOK` to your clone, then:
+Set `HANDBOOK` to your clone.
 
 ```bash
 HANDBOOK=<handbook>
