@@ -1,40 +1,8 @@
 # Protocol
 
-- [Where the bus lives](#where-the-bus-lives)
-- [Addressing a peer](#addressing-a-peer)
-- [Message kinds](#message-kinds)
-- [Resources](#resources)
-- [Acknowledgement](#acknowledgement)
-- [Delivery timing](#delivery-timing)
-- [Resolving a collision](#resolving-a-collision)
-- [Failure modes](#failure-modes)
-
-## Where the bus lives
-
-`$(git rev-parse --path-format=absolute --git-common-dir)/agent-bus`
-
-| Property | Consequence |
-| --- | --- |
-| Every worktree of a repo resolves it identically | No session has to propose a path |
-| It sits inside the git dir | Git never commits it, no branch carries it |
-| It is not tied to a worktree layout | `.worktrees/`, `.claude/worktrees/` and sibling dirs all work |
-| It is per-repo | Two repos never share a bus |
-
-Derived, not negotiated. That single property removes the whole class of
-channel-agreement failures.
-
-## Addressing a peer
-
-`send` accepts any of these, as long as it matches exactly one live peer:
-
-| Form | Example |
-| --- | --- |
-| Branch name | `vermutungsdurchgang` |
-| Session id prefix, 8 chars | `f2c8597d` |
-| Full session id | `f2c8597d-04d2-…` |
-| Worktree directory name | `plan-domain-graph` |
-
-Ambiguous input is rejected with the candidate list. Prefer the branch name.
+- The bus script (`agent-bus.sh`) must be in `permissions.allow`, or
+  coordination stalls silently.
+- Prefer the branch name when addressing a peer with `send`.
 
 ## Message kinds
 
@@ -60,10 +28,6 @@ Path claims cover git. Resource claims cover what git cannot see.
 - Containers, volumes and fixture datasets
 - Anything a test suite writes to outside the worktree
 
-A shared database is the collision git will never warn you about. A test run that
-falls through to a default port writes into a peer's cluster. Their measurements
-are corrupted while both worktrees stay clean.
-
 ## Acknowledgement
 
 - A message is delivered when the recipient drains it, which writes a receipt.
@@ -83,8 +47,6 @@ are corrupted while both worktrees stay clean.
 
 - Nothing polls. The hooks push.
 - A session that would go idle with mail waiting keeps working instead.
-- The wake budget caps consecutive deliveries, so two sessions cannot ping-pong
-  forever. It resets on every user prompt.
 
 ## Resolving a collision
 
@@ -96,16 +58,34 @@ are corrupted while both worktrees stay clean.
 4. Neither session edits a file the other has claimed. Send the diff instead.
 5. If both must write one file, one session owns it for the whole run.
 
-## Failure modes
+## Radar
 
-What this protocol exists to prevent, each observed in a real two-session run.
+What `agent-bus.sh radar` computes, and how to act on each result.
 
-| Failure | Prevention |
+| Result | Action |
 | --- | --- |
-| Two channels created independently, in different directories | The path is derived from the repo |
-| Both sessions adopt the other's channel and swap instead of converging | Nothing to adopt |
-| A tie-break invented under time pressure, on a false premise | No tie-break needed |
-| A correction sent and never confirmed as read | Receipts, and `UNREAD` in `sent` |
-| Polling, so the user has to prod both sides | Hooks push at turn end |
-| A peer's test run writing into the other's database | Resource claims and the radar |
-| Coordination stalling on an un-allowlisted command | The bus script is allowlisted |
+| `OVERLAP 0`, `MERGE clean` | Proceed |
+| `OVERLAP > 0`, `MERGE clean` | Proceed, but re-run before landing — clean now is not clean later |
+| `MERGE CONFLICT` | Send `conflict` and settle the rebase order before touching anything |
+| A lockfile or index file in `SHARED PATHS` | Treat as a conflict even when `clean` |
+| `RESOURCES` non-empty | Stop and settle ownership before running tests |
+| `(no live peer branch)` | You are alone on git; declared claims may still collide |
+
+Choke files deserve the extra caution: lockfiles, `go.mod`, `package.json`,
+`README.md` and any index, plus migration-sequence files. Two clean auto-merges
+of a lockfile still produce a broken tree.
+
+`merge-tree` writes an object, never a ref, an index or a working file — safe
+mid-rebase.
+
+### Limits
+
+| Limit | Consequence |
+| --- | --- |
+| A peer that never announced has no branch on record | It is invisible to the committed-collision table |
+| Uncommitted work is invisible to git | Only the peer's declared `paths` cover it |
+| `clean` is a prediction about the tips as they are now | Both tips move; re-run |
+| Liveness comes from the process table | A crashed session lingers until `sweep` |
+
+Run `agent-bus.sh sweep` when a peer row looks stale. It removes registry
+entries whose process is gone, and their queues with them.

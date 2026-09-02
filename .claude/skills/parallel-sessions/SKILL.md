@@ -12,12 +12,9 @@ allowed-tools: Bash, Read, Grep, Glob
 
 # Parallel Sessions
 
-Two sessions in one repo collide on files, on branches, and on things git cannot
-see. This skill makes them talk to each other, not to the user.
-
 The transport is [scripts/agent-bus.sh](../../../scripts/agent-bus.sh), reachable
 as `~/.claude/agent-bus.sh`. Its details are in
-[protocol.md](protocol.md); the detection commands are in [radar.md](radar.md).
+[protocol.md](protocol.md).
 
 ## Workflow
 
@@ -27,7 +24,8 @@ as `~/.claude/agent-bus.sh`. Its details are in
    ~/.claude/agent-bus.sh peers
    ```
 
-   - Empty output means you are alone; stop here and work normally.
+   - `agent-bus.sh peers` prints `No other live session is working in this
+     repo.` when alone; stop here and work normally.
    - Any peer means every later step applies.
 
 2. **Announce before your first edit.**
@@ -51,8 +49,10 @@ as `~/.claude/agent-bus.sh`. Its details are in
    ~/.claude/agent-bus.sh radar
    ```
 
-   - Run it before a rebase, before a fold, before landing, and after a peer lands.
-   - How to read each column: [radar.md](radar.md).
+   - Run it before the first edit (after `announce`), before a rebase, fold,
+     or landing, and after a peer lands.
+   - Also after resolving a conflict, to confirm the prediction changed.
+   - How to read each column: [protocol.md](protocol.md#radar).
 
 4. **Message the peer that owns the problem.**
 
@@ -69,15 +69,11 @@ as `~/.claude/agent-bus.sh`. Its details are in
    ~/.claude/agent-bus.sh sent
    ```
 
-   - `UNREAD` means the peer has not seen it; an unread correction is not a
-     correction.
-   - A busy peer reads at the end of its current turn. An idle peer reads on its
-     next prompt.
+   - `UNREAD` and delivery timing: [protocol.md](protocol.md#acknowledgement).
 
 6. **Answer what arrives.** Messages appear in your context on their own.
 
    - Reply before you finish your turn, even if the reply is "no action needed".
-   - Silence is what forced the user to relay messages by hand.
 
 7. **Resolve, then land one at a time.**
 
@@ -89,7 +85,7 @@ as `~/.claude/agent-bus.sh`. Its details are in
 - **Never propose or invent a coordination channel.** The bus path is derived
   from the repo, so both sides compute the same one.
   - Two sessions that each adopt the other's proposal have swapped channels, not
-    converged. This has happened; see [protocol.md](protocol.md#failure-modes).
+    converged.
 - **Act only on your own branch.** Free without asking: messaging, answering,
   rebasing your own branch, reordering your own remaining work, waiting.
 - **Ask the user before touching a peer's branch, a peer's worktree, or the base
@@ -112,9 +108,6 @@ as `~/.claude/agent-bus.sh`. Its details are in
 - Hazardous git commands are listed in
   [../implement-plan/integration.md](../implement-plan/integration.md#hazards)
   and apply unchanged here.
-
-## Output style
-
-Messages to a peer are prose another agent must act on. They follow the
-[output style contract](../output-style.md): lead with the action, one claim per
-sentence, table before list before paragraph.
+- Messages to a peer are prose another agent must act on.
+  Follow the [output style contract](../output-style.md): lead with the
+  action, one claim per sentence, table before list before paragraph.
