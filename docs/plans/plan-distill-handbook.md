@@ -15,11 +15,12 @@ Cut the prose corpus from 10,729 to roughly 6,900 Markdown lines (about −36%) 
   - L4 Copilot (every surface): `AGENTS.md`; never `.claude/rules`, never `claude/CLAUDE.md`, never `output-style.md`.
   - L5 project built from `templates/`: the copied `AGENTS.md` only.
   - L6 plugin consumer: `.claude/skills/**` and `.claude/agents/**` only, on demand.
-- **Canonical homes** (everything else links): caps + banned list + report shape → `.claude/skills/output-style.md`; ask gate → `.claude/skills/clarify/question-rules.md`; verification budget → `.claude/skills/verification-depth.md`; scope guard, verify-before-done, supersede check → `.claude/skills/quality.md`; memory rule → `.claude/skills/reflect/targets.md`; model routing → `.claude/skills/distill/parallelism.md` § Model routing; deep-module design checklist → `.claude/skills/write-prd/SKILL.md` step 5; worktree detection → `.claude/skills/using-git-worktrees/SKILL.md` steps 1-2; git hazards → `.claude/skills/implement-plan/integration.md` § Hazards; concurrent sessions → `.claude/skills/parallel-sessions/SKILL.md`.
+- **Canonical homes** (everything else links): caps + banned list + report shape → `.claude/skills/output-style.md`; ask gate → `.claude/skills/clarify/question-rules.md`; verification budget → `.claude/skills/verification-depth.md`; scope guard, verify-before-done, supersede check → `.claude/skills/quality.md`; memory rule → `.claude/skills/reflect/targets.md`; model routing → `.claude/skills/dispatching-parallel-agents/SKILL.md` § Model routing (distill and implement-plan keep their per-stage tables); deep-module design checklist → `.claude/skills/write-prd/SKILL.md` step 5; worktree detection → `.claude/skills/using-git-worktrees/SKILL.md` steps 1-2; git hazards → `.claude/skills/implement-plan/integration.md` § Hazards; concurrent sessions → `.claude/skills/parallel-sessions/SKILL.md`.
 - **Deliberate duplicates that stay** (a loader reaches nothing else): caps + tone + git rules in `AGENTS.md` (L3, L4), in `claude/CLAUDE.md` (L2), in `templates/AGENTS.md` (L5).
 - **Pointers from `claude/CLAUDE.md`** use `~/.claude/skills/<path>` — repo-relative paths resolve nowhere in L2.
 - **Comment beats doc**: where a script or template comment and a guide explain one mechanism, the guide section dies (`.claude/skills/distill/criteria.md` § Code and config comments).
 - **Line references** in this plan are pinned to commit `fad62ea` (`git show fad62ea:<path> | cat -n`). `AGENTS.md` and `templates/AGENTS.md` gained one Communication bullet after that commit — map those two by content.
+- **Changed after the pin by the upstream distill commit `d1967d6`** (diff `fad62ea..HEAD` before mapping): the five `.claude/rules/*.md`, `dispatching-parallel-agents/SKILL.md` (gained § Model routing), `distill/parallelism.md`, `implement-plan/SKILL.md`, `implement-plan/orchestration.md`, `guides/audiobook-pipeline.md`, `guides/copilot-agent-setup.md`, `guides/maintenance.md`.
 
 ## Inventory
 
@@ -62,7 +63,7 @@ Cut the prose corpus from 10,729 to roughly 6,900 Markdown lines (about −36%) 
   - `templates/Makefile`: prod targets lack `-p $(PROJECT)` that `scripts/prod-init.sh` uses; `db`/`db-shell` address a service `templates/docker-compose.yml` ships commented out; `check` passes on TODO echoes.
   - `templates/devcontainer.json` `postCreateCommand` runs `setup-dev-tools.sh`, which aborts without Go and Node and with an unreplaced `<project-go-version>`.
   - `.claude/skills/implement-plan/integration.md` landing mutex uses `git update-ref`, denied by `claude/settings.json`; git pin 2.47.3 there, in `using-git-worktrees/SKILL.md` and `finish-branch/SKILL.md` (installed: 2.53.0).
-  - `.claude/skills/prune/state-map.md`: pin 2.1.212 (installed 2.1.258; `file-history/`, `tasks/`, `debug/` absent); claims a `--days` default the script does not have.
+  - `.claude/skills/prune/state-map.md`: pin 2.1.224 (installed 2.1.258; `file-history/`, `tasks/`, `debug/` absent); claims a `--days` default the script does not have.
   - `guides/provision-server.md`: `--image debian-12` vs "Debian 13 `main`".
   - `guides/monitoring.md` free-plan SSL-expiry callout (unresolved assumption, kept).
   - `guides/postgresql-operations.md` § Verify checks `backup-*.dump` in the cwd while cron writes to `/opt/backups/postgres`; `guides/bootstrap.md` gates on it.
@@ -75,6 +76,7 @@ Cut the prose corpus from 10,729 to roughly 6,900 Markdown lines (about −36%) 
   - `.claude/skills/dispatching-parallel-agents/SKILL.md` cost figure is unsourced.
   - `.claude/skills/receiving-feedback/SKILL.md` names a stack (Go, React/TS, sqlc) the global context says is not yet provided.
   - Code strings (out of scope for a docs pass): `scripts/check-terms.sh` die() says "step 6" (skill says 7); `scripts/setup-server.sh` prints `guides/docker-setup.md` twice; `scripts/check-repo.sh` INDEX_DIRS keeps `cheatsheets` (stays valid); `scripts/agent-bus.sh` help path has no test assertion.
+- **Dissolved by this plan**: `d1967d6` reported a conflict between `cheatsheets/docker-compose.md` (`down -v` with a neutral comment) and `docker-setup.md`'s volume prohibition — Phase 6 deletes that Common Commands block and Phase 4 makes `guides/maintenance.md` the canonical prohibition.
 - **Risk**: anchors. `make links` never checks `#fragments`. Every phase that removes a heading greps the repo for the anchor and reports hits outside its files to Phase 15.
 
 ## Apply method (binding for every phase)
@@ -117,7 +119,7 @@ Cut the prose corpus from 10,729 to roughly 6,900 Markdown lines (about −36%) 
 
 | File | Action | Cut (pinned lines) | Keep / change |
 | --- | --- | --- | --- |
-| `claude/CLAUDE.md` | GUT → ~95 lines | L59-62 (banned-preamble stated twice → one bullet); L85-93 § Decide before you ask → trigger bullet + `~/.claude/skills/clarify/question-rules.md`; L103-111 § Autonomy → keep the levers bullet and the wake-up bullet, drop the rest; L112 drop "at high or xhigh effort"; L118-119 motivational sentence; L136-150 § Verification → two bullets (tier by blast radius; gate runs once) + `~/.claude/skills/verification-depth.md`; L151-156 § Memory → one bullet + `~/.claude/skills/reflect/targets.md`; L157-161 § Research → keep L159-160 verbatim, rest → `~/.claude/agents/web-researcher.md` pointer; L162-169 § Concurrent sessions → peers, announce, radar bullets + `~/.claude/skills/parallel-sessions/SKILL.md` | Keep in full: Who I am, Company context, Code Conventions incl. No shortcuts, Communication Style, Never end a turn (L94-102), Model tiers, Subagent routing (L120-135), No outbound. Corrections: L35 "never `--no-verify`" unscoped; L37 add `Claude-Session: …`; L163 replace the false "empty output means you are alone" with the verified banner text. |
+| `claude/CLAUDE.md` | GUT → ~95 lines | L59-62 (banned-preamble stated twice → one bullet); L85-93 § Decide before you ask → trigger bullet + `~/.claude/skills/clarify/question-rules.md`; L103-111 § Autonomy → keep the levers bullet and the wake-up bullet, drop the rest; L112 drop "at high or xhigh effort"; L118-119 motivational sentence; L136-150 § Verification → two bullets (tier by blast radius; gate runs once) + `~/.claude/skills/verification-depth.md`; L151-156 § Memory → one bullet + `~/.claude/skills/reflect/targets.md`; L157-161 § Research → keep L159-160 verbatim, rest → `~/.claude/agents/web-researcher.md` pointer; L162-169 § Concurrent sessions → peers, announce, radar bullets + `~/.claude/skills/parallel-sessions/SKILL.md` § Subagent routing L118-135 → the sonnet and opus one-liners, the Fable-only-on-explicit-instruction rule, and a pointer to `~/.claude/skills/dispatching-parallel-agents/SKILL.md#model-routing`; the mechanics bullets L132-135 go | Keep in full: Who I am, Company context, Code Conventions incl. No shortcuts, Communication Style, Never end a turn (L94-102), Model tiers, No outbound. Corrections: L35 "never `--no-verify`" unscoped; L37 add `Claude-Session: …`; L163 replace the false "empty output means you are alone" with the verified banner text. |
 | `AGENTS.md` | TRIM | L15 (agents-field note; `guides/claude-plugin.md` owns it); L19 self-falsifying meta line; L21 folded into L31 as "Read `README.md` first; update it after every add, remove or rename"; L44 "Keep files concise" | L33-34: keep the `grep -r` rule, add "`make links` checks file targets only". § Working rules "Ask instead of assuming" → decide-before-ask bullet linking `.claude/skills/clarify/question-rules.md`. § Language names three exception files. |
 | `CLAUDE.md` | KEEP | — | FLAG (compaction). |
 | `.github/copilot-instructions.md` | DELETE | whole file | Update `AGENTS.md` surface table row and `guides/copilot-agent-setup.md` layer table (Phase 3 owns that guide — report the hit). |
@@ -141,11 +143,11 @@ Cut the prose corpus from 10,729 to roughly 6,900 Markdown lines (about −36%) 
 | --- | --- | --- | --- |
 | `templates/AGENTS.md` | TRIM | § Boundaries: "Verify before claiming" and "Never guess" bullets → one; § Quality Principles L118-119 restated sentence; § Git Workflow L149 "Commit messages:" label → "Commit:" | § Boundaries "Ask instead of assuming" pair → one decide-before-ask bullet; § Quality Principles scope guard → `quality.md` wording; add one bullet: after `gh pr create`, re-read the PR body and strip an injected trailer. Keep the L60-61 comment ("Agents follow examples more reliably than written rules"). |
 | `templates/copilot-instructions.md` | DELETE | whole file | `guides/new-project.md` step 5 loses the `cp` line and the "delete if no deltas" bullet (Phase 5 owns it — report). README row goes (Phase 15). |
-| `.claude/rules/cheatsheets.md` | TRIM | L17-18 caps + contract link | — |
-| `.claude/rules/guides.md` | TRIM | L30-31 caps + link; L23 "Open by naming the file a stack-convention guide" | — |
-| `.claude/rules/scripts.md` | TRIM | L30 (`set -euo pipefail` repeats the header); L33-34 caps + link | L28: keep the quoting clause; append "`make lint` (shellcheck) catches a subset". |
-| `.claude/rules/skills.md` | TRIM | L12-17 ASCII tree; L55-59 caps (keep the L60 contract link); L67-69 → "`make skills` verifies the index in both directions" | — |
-| `.claude/rules/templates.md` | TRIM | L21-22 caps + link | — |
+| `.claude/rules/cheatsheets.md` | KEEP | — | caps already collapsed to one link by `d1967d6` |
+| `.claude/rules/guides.md` | TRIM | L23 "Open by naming the file a stack-convention guide" | caps already collapsed by `d1967d6` |
+| `.claude/rules/scripts.md` | TRIM | L30 (`set -euo pipefail` repeats the header) | L28: keep the quoting clause; append "`make lint` (shellcheck) catches a subset". |
+| `.claude/rules/skills.md` | TRIM | L12-17 ASCII tree; L67-69 → "`make skills` verifies the index in both directions" | caps already collapsed by `d1967d6` |
+| `.claude/rules/templates.md` | KEEP | — | caps already collapsed by `d1967d6` |
 | `.claude/skills/verification-depth.md` | TRIM | Anti-pattern rows L92-95 (restate the body); TOC L9-16 once the file is under 100 lines | Fold L96 ("resume the author") into § A finding that recurs / § Mechanise, and L97 ("`ultracode` deepens a tier, never raises it") into § The tier is what a late catch costs. |
 | `.claude/skills/clarify/SKILL.md` | TRIM | L17-18 (restates frontmatter); L32-33 (restates question-rules "Stop when resolved") | Keep L12-13 and L40-41. |
 | `.claude/agents/web-researcher.md` | TRIM | L7-8 motivational lines; L38-52 caps table, banned list, generic report shape | Replace the Output block with the research-specific rules only (counts line with verified/not-verified, per-claim sources, as-of date, open-questions section, target file, prose stays in the response) plus a link `../skills/output-style.md`. Fix the `tools:` grant to the two verified Context7 tool names. |
@@ -198,7 +200,7 @@ Cut the prose corpus from 10,729 to roughly 6,900 Markdown lines (about −36%) 
 | `guides/docker-setup.md` | DELETE | whole | Move the clause "Deleting a volume needs a human decision, never an agent's" into `guides/maintenance.md` § prune callout. Report inbound hits: README, `provision-server.md`, `ipv6-only-vps.md`, `docker-multi-stage-builds.md`, `.claude/rules/guides.md` naming example, `scripts/setup-server.sh` printed strings (FLAG). |
 | `guides/letsencrypt-docker.md` | GUT → ~55 | Steps 1-2 (transcription of `scripts/prod-init.sh`); L75-80 Auto-Renewal (compose comments own it); L88-93 preamble; L118-123 See also; L8 ports prerequisite (provisioning opens them); Inputs rows that restate their placeholder | Keep § Inputs anchor with the `<project-name>` and `CERT_PING_URL` rows, L55-57 shared `-p` rule, § Automation pointer to `prod-init.sh`, § Verify L86-105, L110-112 expiry check. FLAG `curl -4` untouched. |
 | `guides/nginx-reverse-proxy.md` | DELETE → new `templates/nginx-spa.conf` | whole guide | New template: header comment with the copy destination and the L5-6 why (the reverse-proxy template does not carry the SPA container's config), then the two config blocks verbatim. Report inbound hits: README, `letsencrypt-docker.md`, `bootstrap.md`. |
-| `guides/maintenance.md` | TRIM | L133-145 tmpfs diagnosis → pointer to the `setup-server.sh` comment; L225-230 → one line; L232-240 See also | L59-63 becomes the canonical `--volumes` callout plus the agent clause; L67-68, L175, L237 retarget "provision-server.md" attributions to `scripts/setup-server.sh`. |
+| `guides/maintenance.md` | TRIM | L133-145 tmpfs diagnosis → pointer to the `setup-server.sh` comment; L225-230 → one line; L232-240 See also | The prune callout (a link to `docker-setup.md` since `d1967d6`) is rebuilt as the canonical `--volumes` prohibition: carry `guides/docker-setup.md` § prune L16-19 (`fad62ea`) verbatim, including "needs a human decision, never an agent's"; L67-68, L175, L237 retarget "provision-server.md" attributions to `scripts/setup-server.sh`. |
 | `guides/monitoring.md` | GUT → ~85 | L54-58 vendor sign-up; UI click paths L67-68, L89, L106, L136; steps 3-5 prose (fold period/grace values into the ping-URL table as a column); L167-182 troubleshooting; L184-191 See also | Keep L9-23 dead-man model, L25-34 table, L44-47, L59-61, L74-83 callout (FLAG, kept verbatim), L108-116 grace rationale, § Verify L146-165. L133 → "pings only when `report-health.sh`'s three conditions hold". |
 
 ### Acceptance criteria
@@ -347,7 +349,7 @@ Cut the prose corpus from 10,729 to roughly 6,900 Markdown lines (about −36%) 
 | `distill/SKILL.md` | TRIM | L40-42; trailing rationale sentence of L164; L183 folded up; L271-277 → four bullets (keep 271, 272, 275, 276) | Keep L249-250. `audience-sensitive` → `audience_sensitive` at L90, L146, L170. |
 | `distill/criteria.md` | TRIM | L89-92; the enumeration after the link in L107-109; L21 merged into L20; the ranking in L128 | Keep L133. |
 | `distill/restructure.md` | TRIM | first clause of L18; L20-22; L100 | Keep L23 and all three table rows. |
-| `distill/parallelism.md` | TRIM → ~85 | L46, L50, L55 (restate dispatching); L72-76; L86-87 → cite dispatching's cap; L91-95 Workflow mechanics; L104 folded; L38-39 and L52-54 (restate SKILL.md) | Keep L31-32 and every `##` heading (foreign anchors). Return block gains `read_in_full: true|false`; `audience_sensitive` spelling. Drop TOC if under 100 lines. |
+| `distill/parallelism.md` | TRIM → ~85 | L46, L50, L55 (restate dispatching); L72-76; L86-87 → cite dispatching's cap; L91-95 Workflow mechanics; L104 folded; L38-39 and L52-54 (restate SKILL.md) | Keep the § Model routing lead-in (links dispatching since `d1967d6`), the per-stage table, and every `##` heading (foreign anchors). Return block gains `read_in_full: true|false`; `audience_sensitive` spelling. Drop TOC if under 100 lines. |
 | `verify-docs/SKILL.md` | TRIM | L140-141; L213-214 → link | Keep L33-35, L133-139. |
 | `verify-docs/sources.md` | TRIM | L77-78 → one bullet | — |
 
@@ -368,13 +370,13 @@ Cut the prose corpus from 10,729 to roughly 6,900 Markdown lines (about −36%) 
 | File | Action | Cut | Keep / change |
 | --- | --- | --- | --- |
 | `implement-plan/SKILL.md` | TRIM | L17; L71-72; L82-83; L84-85; L90; L113-119 → link `../output-style.md#report-shape`; L123-124; L195-196; L197-199 | Step 2 strips `origin/`. Keep L73-76 and L182-193. |
-| `implement-plan/orchestration.md` | GUT → ~115 | L38-42; L94-99 tier table; L113-116; L122-125; L144-151; L162-169 → link `../distill/parallelism.md#model-routing`; L176-228 and L239-245 (the bundled `workflow-authoring` skill is canonical) | Keep L34-37, L44-75, L77-87, L91, L101-103, L107-108, L127-143, L230-237, L246-247; fix TOC and in-file links. |
+| `implement-plan/orchestration.md` | GUT → ~115 | L38-42; L94-99 tier table; L113-116; L122-125; L144-151; L162-169 table (the link to dispatching above it, added by `d1967d6`, stays); L176-228 and L239-245 (the bundled `workflow-authoring` skill is canonical) | Keep L34-37, L44-75, L77-87, L91, L101-103, L107-108, L127-143, L230-237, L246-247; fix TOC and in-file links. |
 | `implement-plan/integration.md` | TRIM | L69 | FLAGs untouched. |
 | `implement-plan/recovery.md` | TRIM | L58-60; L110 | — |
 | `create-plan/SKILL.md` | TRIM | L21, L22, L29-30, L48-51, L102, L126; L93-98 → one line linking `../implement-plan/SKILL.md` step 10 | Keep L39-42, L46-47, L52-53. |
 | `finish-branch/SKILL.md` | TRIM | L13-14; L21; L38-44 → link `../using-git-worktrees/SKILL.md` steps 1-2 | Keep L18-19, L74-86, L96-107, L118-121. |
 | `using-git-worktrees/SKILL.md` | TRIM | L14-15; L83-88 | Keep L79-82. |
-| `dispatching-parallel-agents/SKILL.md` | TRIM | L14; L16-17; L40-43 | L39 stays with an anchor link to `../output-style.md#report-shape`. |
+| `dispatching-parallel-agents/SKILL.md` | TRIM | L14; L16-17; L40-43 | L39 stays with an anchor link to `../output-style.md#report-shape`; § Model routing (added by `d1967d6`) is the canonical home and stays. |
 
 ### Acceptance criteria
 
@@ -423,7 +425,7 @@ Cut the prose corpus from 10,729 to roughly 6,900 Markdown lines (about −36%) 
 | `audiobook/the-checkpoint.md` | DELETE after merge | whole | — |
 | `audiobook/german-narration.md` | TRIM | L3-8; four surplus gloss rows in L31-36 (keep one plain noun and the chunking row); L51-52; L57; L59; L71-73 → one bullet | — |
 | `audiobook/listenability.md` | TRIM | L3-7; L10-11; L20-22; L37-39; L56-57; L63-64 | Keep L58 ("Never trim, summarise, or merge chapters"). |
-| `guides/audiobook-pipeline.md` | GUT → ~70 | everything not listed | Keep L12-19, L21-36, L40, L115-119, L126, L130-135, L137-143, L153-160, L170, L182; the Verify filter path points at `templates/strip-visuals.lua` via the handbook checkout. |
+| `guides/audiobook-pipeline.md` | GUT → ~70 | everything not listed | Keep L12-19, L21-36, L40, L115-119, L126, L130-135, L137-143, L153-160, L170, L182; the Verify filter path points at `templates/strip-visuals.lua` via the handbook checkout. The link to `the-checkpoint.md` added by `d1967d6` dies with the GUT (the file is merged away in this phase). |
 | `tutor/SKILL.md` | TRIM | L17-18; L20; L21-23; L24-26 → one link `../output-style.md#named-prose-exceptions`; L144-145 | Constraints L120-126 stay. |
 | `tutor/session-state.md` | TRIM | L3; L84-86; L99-101 → link `question-design.md` | L106 keeps "rephrased (same concept, new surface)". |
 | `tutor/question-design.md` | TRIM | L4-5; L49; meaning column of L64-70; L72-74 | L12/L18 untouched (FLAG). |
