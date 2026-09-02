@@ -231,10 +231,10 @@ Cut the prose corpus from 10,729 to roughly 6,900 Markdown lines (about −36%) 
 
 ### Acceptance criteria
 
-- [ ] `guides/verification-drill.md` and `guides/github-actions-cicd.md` deleted; `templates/ci.yml` header names `actionlint`.
-- [ ] `cheatsheets/postgresql.md` contains "99%" and no `psql -h`; `guides/postgresql-operations.md` has no "Monitoring Queries" section and keeps "restore into the production database".
-- [ ] `guides/new-project.md` ≤ 105 lines with `## Inputs`, the stack matrix and `## Verify` intact; `guides/docker-multi-stage-builds.md` ≤ 60 lines with both `FROM` chains.
-- [ ] `scripts/check-repo.sh links` and `prose` clean for the phase's files; inbound hits reported.
+- [x] `guides/verification-drill.md` and `guides/github-actions-cicd.md` deleted; `templates/ci.yml` header names `actionlint`.
+- [x] `cheatsheets/postgresql.md` contains "99%" and no `psql -h`; `guides/postgresql-operations.md` has no "Monitoring Queries" section and keeps "restore into the production database".
+- [x] `guides/new-project.md` ≤ 105 lines with `## Inputs`, the stack matrix and `## Verify` intact; `guides/docker-multi-stage-builds.md` ≤ 60 lines with both `FROM` chains.
+- [x] `scripts/check-repo.sh links` and `prose` clean for the phase's files; inbound hits reported.
 
 ---
 
