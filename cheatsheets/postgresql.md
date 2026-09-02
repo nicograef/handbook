@@ -1,14 +1,5 @@
 # PostgreSQL
 
-## psql Connection
-
-```bash
-psql -U admin -d mydb                            # local connection
-psql -h host -p 5432 -U admin -d mydb            # remote connection
-psql "postgres://admin:pass@host:5432/mydb?sslmode=require"  # connection string
-PGPASSWORD=secret psql -U admin -d mydb          # password via env var
-```
-
 ## Query & Index Management
 
 ```sql
@@ -22,6 +13,11 @@ CREATE INDEX CONCURRENTLY idx_users_email ON users (email);
 -- missing index hints (sequential scans on large tables)
 SELECT relname, seq_scan, idx_scan
 FROM pg_stat_user_tables WHERE seq_scan > 1000 ORDER BY seq_scan DESC;
+
+-- should be > 99%
+SELECT
+  sum(heap_blks_hit) / nullif(sum(heap_blks_hit) + sum(heap_blks_read), 0) AS ratio
+FROM pg_statio_user_tables;
 ```
 
 For backup strategies and automation see [guides/postgresql-operations.md](../guides/postgresql-operations.md).

@@ -1,8 +1,5 @@
 # PostgreSQL Operations
 
-Practical runbook for PostgreSQL backup, restore, migrations, and monitoring
-in a Docker Compose stack.
-
 ## Prerequisites
 
 - Docker Compose stack with a `postgres` service (see [templates/docker-compose.prod.yml](../templates/docker-compose.prod.yml))
@@ -24,14 +21,6 @@ docker compose exec -T postgres sh -c \
   > "backup-$(date +%Y%m%d-%H%M).dump"
 ```
 
-### Plain SQL dump
-
-```bash
-docker compose exec -T postgres sh -c \
-  'pg_dump -U "$POSTGRES_USER" -d "$POSTGRES_DB"' \
-  > "backup-$(date +%Y%m%d-%H%M).sql"
-```
-
 ## 2. Restore
 
 ### From compressed dump
@@ -40,14 +29,6 @@ docker compose exec -T postgres sh -c \
 docker compose exec -T postgres sh -c \
   'pg_restore -U "$POSTGRES_USER" -d "$POSTGRES_DB" --clean --if-exists' \
   < backup-20260101-1200.dump
-```
-
-### From SQL dump
-
-```bash
-docker compose exec -T postgres sh -c \
-  'psql -U "$POSTGRES_USER" -d "$POSTGRES_DB"' \
-  < backup-20260101-1200.sql
 ```
 
 ### Into a fresh database
@@ -79,17 +60,10 @@ sudo mkdir -p /opt/backups/postgres
 0 3 * * * BACKUP_DIR=/opt/backups/postgres COMPOSE_DIR=/opt/myapp /opt/scripts/backup-postgres.sh >> /var/log/pg-backup.log 2>&1
 ```
 
-### Configuration
-
-- Set via env vars — names and defaults are at the top of the script.
-- It loads the Compose `.env` from `COMPOSE_DIR`, so `POSTGRES_USER` / `POSTGRES_DB` come
-  from there.
-
 > **Accepted risk — backups are on the same disk they protect.**
 > `BACKUP_DIR` lives on the server being backed up.
 > Losing the server loses the backups with it: disk failure, provider incident,
 > accidental deletion.
-> This is a deliberate, documented trade-off at the current scale.
 > The daily verified dump plus the quarterly restore drill covers the failure modes that
 > actually happen.
 > Those are bad migration, dropped table, and corruption.
@@ -100,11 +74,9 @@ sudo mkdir -p /opt/backups/postgres
 
 ## 4. Restore drill
 
-- Restore is only real once you have replayed a backup end-to-end.
 - Run this drill **quarterly**.
 - It proves the newest dump restores cleanly and that your row counts survive the
   round-trip.
-- It is also the exact checklist to follow under real data-loss stress.
 - For the live disaster case, restore into the production database instead.
 - Use the [full-restore commands](#2-restore), not the throwaway one below.
 - The drill restores into a **throwaway database** and never touches the live one.
@@ -173,13 +145,6 @@ curl -fsSL "https://github.com/golang-migrate/migrate/releases/download/v4.19.1/
 migrate create -ext sql -dir database/migrations -seq add_users_table
 ```
 
-This creates two files:
-
-```
-database/migrations/000001_add_users_table.up.sql
-database/migrations/000001_add_users_table.down.sql
-```
-
 ### Run migrations
 
 - The wrapper below shadows the binary installed above; that install serves the
@@ -202,41 +167,12 @@ migrate() {
 }
 
 migrate up                 # apply all pending
-migrate up 2               # apply next N
-migrate down 1             # rollback last batch
-migrate down -all          # rollback all
-migrate version            # check current version
-migrate force <version>    # force version (after fixing a dirty migration)
 ```
 
 > **Published-port form.** If the `postgres` service publishes `5432` to the host, you
 > can instead point a locally installed `migrate` binary at `@localhost:5432`.
 > Replace `@postgres:5432` with `@localhost:5432` in `DB_URL`, and drop the
 > `docker run` wrapper.
-
-### Migration file template
-
-```sql
--- 000001_add_users_table.up.sql
-CREATE TABLE IF NOT EXISTS users (
-    id         UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    email      TEXT NOT NULL UNIQUE,
-    created_at TIMESTAMPTZ NOT NULL DEFAULT now()
-);
-
--- 000001_add_users_table.down.sql
-DROP TABLE IF EXISTS users;
-```
-
-## 6. Monitoring Queries
-
-### Cache hit ratio (should be > 99%)
-
-```sql
-SELECT
-  sum(heap_blks_hit) / nullif(sum(heap_blks_hit) + sum(heap_blks_read), 0) AS ratio
-FROM pg_statio_user_tables;
-```
 
 ## Verify
 
@@ -260,14 +196,4 @@ docker compose exec postgres sh -c \
 # → check which version is dirty, fix the SQL, then force
 migrate version
 migrate force <last-good-version>
-
-# connection refused — check if container is healthy
-docker compose ps
-docker compose logs postgres | tail -20
 ```
-
----
-
-See also:
-- [cheatsheets/postgresql.md](../cheatsheets/postgresql.md) — quick-reference psql commands
-- [cheatsheets/docker-compose.md](../cheatsheets/docker-compose.md) — Compose commands
