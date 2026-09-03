@@ -21,7 +21,8 @@
   },
 
   // ── Post-create setup ─────────────────────────────────────────────────────
-  // Install project-specific tools.
+  // Install project-specific tools. Delete the setup-dev-tools.sh sections your
+  // stack does not use first: each hard-requires its runtime.
   "postCreateCommand": "bash scripts/setup-dev-tools.sh",
 
   "customizations": {
