@@ -44,7 +44,7 @@ fi
 # it clobbers git with plain path completion. bash-completion is idempotent, so
 # .bashrc's later load is a harmless no-op.
 if command -v fzf >/dev/null; then
-  if ! declare -F _completion_loader >/dev/null; then
+  if ! declare -F _comp_load >/dev/null && ! declare -F _completion_loader >/dev/null; then
     for _bc in /usr/share/bash-completion/bash_completion /etc/bash_completion; do
       [ -r "$_bc" ] && { . "$_bc"; break; }
     done
