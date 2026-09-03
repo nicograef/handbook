@@ -34,9 +34,9 @@ walk, rewrite it.
 | Spell out numbers that matter, skip the rest | "Version 17" yes, "v2.1.197" almost never |
 | Name a thing before you use it | The listener cannot jump to the definition |
 
-Paragraphs may run longer than the handbook prose cap
-([named exception](../output-style.md#named-prose-exceptions)). The ≤ 20-word
-sentence cap still applies.
+Sentences and paragraphs may run longer than the handbook prose caps
+([named exception](../output-style.md#named-prose-exceptions)). Spoken sentences of
+25 to 35 words read naturally.
 
 ## Chapter shape
 

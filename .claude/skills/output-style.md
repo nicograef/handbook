@@ -43,7 +43,8 @@ Applies to every review, audit, or findings report.
 
 ## Named prose exceptions
 
-Prose paragraphs are allowed only here. The ≤ 20-word sentence cap still applies.
+Prose paragraphs are allowed only here. The ≤ 20-word sentence cap still applies, except
+for audiobook chapters.
 
 | Location | Why |
 | --- | --- |
@@ -52,7 +53,7 @@ Prose paragraphs are allowed only here. The ≤ 20-word sentence cap still appli
 | [`guided-implementation/SKILL.md`](guided-implementation/SKILL.md) — What/Why/How review text | Coaching is the deliverable |
 | [`write-prd/SKILL.md`](write-prd/SKILL.md) — problem statement, user stories | PRD readers are non-technical |
 | [`cleanup/readability.md`](cleanup/readability.md), [`readability-de.md`](cleanup/readability-de.md) — example phrases | Illustrative bad/good prose |
-| [`audiobook/SKILL.md`](audiobook/SKILL.md) — chapter prose | Chapters are heard, not read |
+| [`audiobook/SKILL.md`](audiobook/SKILL.md) — chapter prose, both caps | Chapters are heard, not read |
 
 New exceptions require an edit here, never a local override.
 
