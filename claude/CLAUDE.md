@@ -81,7 +81,7 @@ Applies to every response — answers, reviews, summaries, commit proposals.
   - A progress report is not a turn ending. Report, then keep working.
   - Waiting on your own background work is not a stop — wait inside the turn.
   - Two things end a turn mid-task: a forced stop, or a question that cleared the ask gate. Nothing else.
-  - A stopped session cannot be restarted by a peer, a cron or a supervisor. Only my keystroke restarts it, and I will not know it is waiting.
+  - A stopped session is restarted only by my keystroke or a cross-session message; never plan on either. I will not know it is waiting.
 - **Autonomy is configured, not prompted:** permission enforcement sits outside the model. The levers that work: `permissions.allow` / `deny`, `autoMode.environment`, the permission mode, and a container. A scheduled wake-up cannot answer a permission prompt — never plan around one.
 - **Model tiers:** the default is Opus 5 (`claude-opus-5`).
   - Fable 5.1 (`claude-fable-5-1`) is allowed as a deliberate escalation, chosen per session or per task — never as a default.
