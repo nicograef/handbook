@@ -177,8 +177,8 @@ migrate up                 # apply all pending
 ## Verify
 
 ```bash
-# confirm backup file was created
-ls -lh backup-*.dump
+# confirm backup file was created (BACKUP_DIR from the cron line)
+ls -lh /opt/backups/postgres/backup-*.dump
 
 # check migration version (uses the migrate wrapper from section 5)
 migrate version

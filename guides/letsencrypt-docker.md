@@ -47,5 +47,5 @@ docker run --rm -v myapp_letsencrypt:/etc/letsencrypt alpine \
   cat /etc/letsencrypt/live/example.com/fullchain.pem | openssl x509 -noout -dates
 
 # common failure: DNS not pointing to this server
-curl -4 http://example.com/.well-known/acme-challenge/test
+curl http://example.com/.well-known/acme-challenge/test
 ```

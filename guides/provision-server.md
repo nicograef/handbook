@@ -22,7 +22,7 @@ also use placeholders not in that block:
 
   ```bash
   hcloud server create \
-    --name <name> --type <type> --image debian-12 \
+    --name <name> --type <type> --image debian-13 \
     --ssh-key <key-name> \
     --user-data-from-file cloud-init.yml
 
