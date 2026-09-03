@@ -1,5 +1,5 @@
 {
-  "includeCoAuthoredBy": false,
+  "attribution": { "commit": "", "pr": "", "sessionUrl": false },
   "extraKnownMarketplaces": {
     "nicograef": {
       "source": { "source": "github", "repo": "nicograef/handbook" }

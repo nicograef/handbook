@@ -39,7 +39,7 @@ steps (not verified).
 - **New file** — copy [`templates/claude-settings.json`](../templates/claude-settings.json)
   to the project as `.claude/settings.json`.
 - **Existing file** — merge its three keys into the existing content.
-- **The three keys** — `includeCoAuthoredBy`, `extraKnownMarketplaces.nicograef`, and
+- **The three keys** — `attribution`, `extraKnownMarketplaces.nicograef`, and
   `enabledPlugins."handbook@nicograef"`.
 
 ## Dev-machine opt-out
