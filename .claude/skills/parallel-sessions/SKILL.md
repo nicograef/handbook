@@ -99,8 +99,8 @@ as `~/.claude/agent-bus.sh`. Its details are in
   - Swept a peer's work already? Tell them what moved and under which sha.
   - Do not rewrite the commit to undo it: the content is safe, and only the
     message is wrong.
-- **Never clear another session's state**: its `index.lock`, its worktree, its
-  `refs/agent-lock/*`. Report and stop.
+- **Never clear another session's state**: its `index.lock` or its worktree. Report and
+  stop.
 - **A claim is not a lock.** It tells a peer where you will be, so they route
   around you.
 - Hazardous git commands are listed in

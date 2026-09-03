@@ -48,14 +48,10 @@ Re-run the verify command on the folded run branch before the next member.
 
 ```bash
 MAIN=$(git worktree list --porcelain | awk 'NR==1{print $2}')
-LOCK=refs/agent-lock/integrate
-
-git update-ref "$LOCK" "$(git rev-parse HEAD)" ""            # create-only mutex; exit 128 => another agent holds it, stop
 BEFORE=$(git -C "$MAIN" rev-parse refs/heads/<base>)         # pin; never pass the moving name to rebase
 git -C "$MAIN" merge-tree --write-tree --messages "$BEFORE" plan/<slug>
 git -C "$WT" -c rerere.enabled=false rebase --onto "$BEFORE" "$(git merge-base "$BEFORE" plan/<slug>)" plan/<slug>
 git -C "$MAIN" -c rerere.enabled=false merge --ff-only plan/<slug>
-git update-ref -d "$LOCK"
 ```
 
 - `--ff-only` is the race detector: a human commit to the base branch
@@ -71,7 +67,6 @@ git update-ref -d "$LOCK"
 
 - Re-pin `$BEFORE`, redo the `rebase --onto`, retry `--ff-only` once.
 - A second failure is a stop, not a third attempt.
-- Release the lock on every exit path, including the stop.
 
 ## rerere may be enabled
 

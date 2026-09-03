@@ -124,7 +124,7 @@ once committed and ticked — that is the unit of progress.
 - Proceeding would need anything on the [hazard list](integration.md#hazards), a
   push, a force-push, or `--no-verify`.
 - Proceeding would delete a branch, worktree or file the run did not create.
-- A worktree, branch, `index.lock` or `refs/agent-lock/*` the run does not own is
+- A worktree, branch or `index.lock` the run does not own is
   dirty, held, or mid-operation and blocks the path.
   - Report it; never clear another worktree's state.
 - A usage limit or a terminal API error.
