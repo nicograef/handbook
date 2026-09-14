@@ -5,17 +5,12 @@ This file governs maintaining this repo. To set up a VPS, dev machine or project
 ## Working rules
 
 - **Read the target directory**: learn existing content and style before editing or creating a file.
-- **Verify before claiming**: search the codebase before asserting anything about existing code,
-  structure, or behaviour. Read the actual source instead of guessing.
+- **Verify before claiming**: search the codebase before asserting anything about existing code, structure, or behaviour. Read the actual source instead of guessing.
 - **Decide before you ask**: a question is the last resort, not the opening move.
-  Full gate: [.claude/skills/clarify/question-rules.md](.claude/skills/clarify/question-rules.md).
-- **Web search for external knowledge**: when working with external tools, libraries, or specs,
-  consult authoritative sources. Use official docs and RFCs, not training data.
-- **Single source of truth**: never duplicate content across files. Reference a template, script,
-  or another doc with a relative link instead of copying it inline.
+- **Web search for external knowledge**: when working with external tools, libraries, or specs, consult authoritative sources. Use official docs and RFCs, not training data.
+- **Single source of truth**: never duplicate content across files. Reference a template, script, or another doc with a relative link instead of copying it inline.
 - **Read `README.md` first**; update it after every add, remove or rename.
-- **No dead links**: after renaming or deleting a file, `grep -r '<filename>' .` and update or
-  remove every reference. `make links` checks file targets only.
+- **No dead links**: after renaming or deleting a file, `grep -r '<filename>' .` and update or remove every reference. `make links` checks file targets only.
 - **Current state only**: docs, comments and instructions describe what is true now.
   - Git history is the archive, and the only record of a prior state.
   - A change that makes a statement false rewrites or deletes it in the same change.
@@ -23,12 +18,9 @@ This file governs maintaining this repo. To set up a VPS, dev machine or project
   - Banned in prose: dated change entries, "previously / formerly / used to", deprecation notes.
   - Exceptions: `CHANGELOG.md`, ADR files, git history.
   - **Delete, don't deprecate**: a redundant file is deleted, with every reference removed.
-- **Version consistency**: when a tool version changes, `grep` the whole repo and update every
-  occurrence.
+- **Version consistency**: when a tool version changes, `grep` the whole repo and update every occurrence.
 - **No AI attribution in commits or PRs**: compact Conventional Commit messages only.
-  - Never append `Co-Authored-By: Claude …`, `Claude-Session: …`, `🤖 Generated with …`, or similar
-    trailers/footers.
-- Ask before deleting or renaming a file (check for references first).
+  - Never append `Co-Authored-By: Claude …`, `Claude-Session: …`, `🤖 Generated with …`, or similar trailers/footers.
 
 ## Communication
 

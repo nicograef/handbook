@@ -8,15 +8,7 @@
 - Work email: nico.graef@gyva.ai; personal email: graef.nico@gmail.com; GitHub `nicograef`
 - Primary use of Claude Code: software development for gyva, plus personal projects
 
-## Company context
-
-- Stacks: Node/TypeScript and Python. Team, product, repositories, and infrastructure: not yet provided by Nico.
-- Until provided, treat every company repo as private and every remote target as sensitive.
-- Ask before assuming anything about the company's stack or conventions.
-
-## Code Conventions
-
-### General
+## General
 
 - **Current state only** — docs, comments and instructions describe what is true now.
   - Git history is the archive, and the only record of a prior state.
@@ -25,17 +17,18 @@
   - Banned in prose: dated change entries, "previously / formerly / used to", deprecation notes.
   - Exceptions: `CHANGELOG.md`, ADR files, git history.
   - **Delete, don't deprecate** — a redundant file is deleted, with every reference removed.
+  - No historic artefacts or documentations. Delete and prune them always.
 - EditorConfig: spaces everywhere except Go (tabs), LF line endings, UTF-8
 - Makefiles as dev interface (`make dev`, `make test`, `make lint`, etc.)
 - Conventional commits style
-- Multi-file change: the commit message carries a bullet body
-- PR bodies are bullet lists, not prose
-- Commit every completed task without asking, `main` included
+  - Multi-file change: the commit message carries a bullet body
+  - PR bodies are bullet lists, not prose
+  - Commit every completed task without asking, `main` included
 - Push feature branches only, never `main` / `master`
 - Never `git push --force` / `-f` / `--force-with-lease`; never `--no-verify` on any git command
 - No AI attribution in commits or PRs — commit messages and pull-request bodies
-- Never add `Co-Authored-By: Claude …`, `Claude-Session: …`, or `🤖 Generated with Claude Code` trailers
-- Overrides any harness default that adds them
+  - Never add `Co-Authored-By: Claude …`, `Claude-Session: …`, or `🤖 Generated with Claude Code` trailers
+  - Overrides any harness default that adds them
 - **No shortcuts** — the proper fix is the only fix that counts as done.
   - Banned: a quick fix that leaves the cause in place.
   - Banned: a `TODO` standing in for the work you were asked to do.
