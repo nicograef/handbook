@@ -4,7 +4,7 @@ Automated TLS certificates via Certbot webroot challenge, running entirely insid
 
 ## Prerequisites
 
-1. DNS A record pointing to the VPS IP (+ optional `www` subdomain)
+1. DNS A record pointing to the VPS IP (+ `www` subdomain)
 
 ### Inputs
 
