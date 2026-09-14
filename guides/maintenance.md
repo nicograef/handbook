@@ -4,7 +4,7 @@
 
 - Image tags in [docker-compose.prod.yml](../templates/docker-compose.prod.yml) are
   explicit, not `latest`, and bumped **deliberately** at deploy time. Only `certbot` is
-  pinned to a concrete version; `postgres` and `nginx` use minor-series tags.
+  pinned to a concrete version; `postgres` uses a major-series tag and `nginx` a minor-series tag.
 - Never float on `latest`; never pull on a schedule.
 - A deploy is the only moment images change.
 - So a deploy is also where you prune the images the bump superseded.
