@@ -80,4 +80,5 @@ List with `git diff --name-only --diff-filter=U`; classify by porcelain code. Ab
 | `branch -D` | Skips the merged check | `branch -d`; note the sha first |
 | `worktree remove --force` | Removes a worktree holding staged work | plain form; read its refusal |
 | Deleting a foreign `index.lock` | Staleness cannot be proven | report and stop |
-| Force-push, `--no-verify`, `push origin <base>` | Denied by settings | never |
+| Force-push, `--no-verify` | Denied by settings | never |
+| `push origin <base>` | Push, PR or discard is the user's call | never |
