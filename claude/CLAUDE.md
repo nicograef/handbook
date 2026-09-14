@@ -5,7 +5,7 @@ Nico Gräf, full-stack developer at gyva (AugRep GmbH, Freiburg), since 2026-09-
 ## Repo conventions
 
 - Current state only. Docs, comments and instructions describe what is true now; git holds the history. A change that makes a statement false rewrites or deletes it in the same change. No "previously", no deprecation notes, no dated entries outside `CHANGELOG.md` and ADRs. A redundant file is deleted with every reference to it.
-- Makefiles are the dev interface: `make dev`, `make test`, `make lint`.
+- Makefiles are the dev interface: `make up`, `make check`, `make help`.
 - EditorConfig: spaces except Go (tabs), LF, UTF-8.
 - Conventional Commits. A multi-file change gets a bullet body; PR bodies are bullet lists.
 - Commit every completed task without asking, `main` included. Push feature branches only.
