@@ -4,7 +4,6 @@
 | --- | --- |
 | [plan](plan/) | Write a phased plan or a PRD |
 | [implement-plan](implement-plan/) | Execute or resume a whole plan unattended |
-| [guide](guide/) | Coach a developer through implementing a story or phase |
 | [cleanup](cleanup/) | Review a diff, an area or a mobile frontend; apply picked fixes |
 | [testing](testing/) | Build test-first, or review and shrink a test suite |
 | [distill](distill/) | Radically shrink and restructure a repo's prose |
