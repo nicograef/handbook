@@ -26,24 +26,17 @@ INDEX_DIRS=(guides cheatsheets templates scripts)
 
 # Files allowed to contain German prose.
 LANG_ALLOW=(
-  ".claude/skills/cleanup/readability-de.md"
-  ".claude/skills/audiobook/german-narration.md"
+  ".claude/skills/audiobook/writing.md"
   "claude/CLAUDE.md"
   "cheatsheets/neovim.md"
 )
 
 # Files exempt from the paragraph cap only — the sentence cap still applies to them.
-# Source of truth: .claude/skills/output-style.md → Named prose exceptions.
 PARA_ALLOW=(
-  ".claude/skills/tutor/SKILL.md"
-  ".claude/skills/understand/SKILL.md"
-  ".claude/skills/guided-implementation/SKILL.md"
-  ".claude/skills/write-prd/SKILL.md"
-  ".claude/skills/cleanup/readability.md"
-  ".claude/skills/cleanup/readability-de.md"
+  ".claude/skills/audiobook/writing.md"
 )
 
-# Prose caps enforced by check_prose (see .claude/skills/output-style.md).
+# Prose caps enforced by check_prose; stated in AGENTS.md and claude/CLAUDE.md.
 PROSE_MAX_WORDS=20
 PROSE_MAX_PARA_LINES=3
 

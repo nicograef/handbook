@@ -1,284 +1,67 @@
 ---
 name: distill
-description: >-
-  Radically minimizes and restructures the prose of a whole repository —
-  Markdown, docs, READMEs, code and config comments. Re-derives the docs from a
-  blank slate instead of editing them: deletes what is historic, derivable,
-  generic, aspirational, or duplicated, then splits surviving monoliths into
-  small deduplicated files that humans and agents can load one at a time. Plans
-  first and applies nothing without explicit approval — or stops at a written
-  plan on request.
-  Triggers: "distill", "minimize the docs", "shrink the documentation",
-  "too much documentation", "split this doc up", "deduplicate the docs",
-  "radically reduce prose".
+description: Radically shrinks a repo's prose (Markdown, READMEs, code and config comments) by re-deriving it from a blank slate, then splits survivors into small files. Plans first, applies only after approval. Triggers: distill, too much documentation.
 argument-hint: "[path ...] [plan-only]"
-allowed-tools:
-  - Bash
-  - Read
-  - Grep
-  - Glob
-  - Edit
-  - Write
-  - AskUserQuestion
-  - Agent
+disable-model-invocation: true
 ---
 
 # Distill
 
-Reduce a repository's prose to what a reader cannot get anywhere else. Shape what
-survives into small files that load cheaply.
+Keep only what a reader cannot get anywhere else. Ask of every line: *if this repo had no docs, would I write this line today?* Keep is the exception that needs an argument.
 
-- **Scope** — the whole prose corpus; deletes by default.
-- **Deletes** whole files, whole sections, whole comment blocks.
-- **Not this skill** — sentence-level quality inside a diff or one area: use `/cleanup`.
-- **`/cleanup` owns** the per-comment rules ([../cleanup/code-smells.md](../cleanup/code-smells.md)).
-- **`/cleanup` owns** the prose-slop catalogue ([../cleanup/readability.md](../cleanup/readability.md)).
-- **Agent state** — sessions, memories, rules: use `/prune`.
+## Hard rules
 
-## The method: re-derive, do not edit
-
-- **Invert it** — suspend the existing structure, decisions and file boundaries.
-- **Ask the re-derivation question below** of each thing.
-- **Keep is the exception** that needs an argument, not the default.
-- **[criteria.md](criteria.md)** — the bar, what dies, what survives, the hard cases.
-- **[restructure.md](restructure.md)** — splitting, merging, index design.
-- **[parallelism.md](parallelism.md)** — fan-out design, model routing, the subagent return contract.
-
-> **If this repository had no documentation, would I write this line from scratch today?**
+- Clean working tree before starting; git is the only undo. No archive directories, no `.old` copies.
+- Nothing in the corpus changes before the user approves the plan. Silence is not approval.
+- Rewrite freely, but never invent, alter or "correct" a claim. Every fact, command, flag, path and version survives exactly as stated, or is deleted, or is flagged. A doc that is wrong is deleted or flagged, never rewritten from memory.
+- Deleting what you failed to understand is how this skill causes damage. A claim you cannot verify this session is FLAG, not DELETE.
+- Agent instruction surfaces (`AGENTS.md`, `CLAUDE.md`, `.claude/rules/*`, `.claude/agents/*`) read as restating the obvious because that is their job. Delete from them only with per-file confirmation.
+- Legal and compliance text stays. Generated docs are fixed at the generator. Code stays; only comments and docstrings are in scope.
+- Sentence-level quality inside a diff is `/cleanup`; agent state is `/prune`.
 
 ## Workflow
 
-### 1. Scope and safety
+1. Inventory: `git ls-files '*.md' '*.mdx' '*.rst' '*.txt' | xargs wc -l | sort -rn` plus comment-heavy sources in scope. Record per file the one-line question it answers; a purpose that takes more than one line is a finding. The total is the before-number.
+2. Per-file pass, reading each file once in full. ≤ 10 files inline. 11–40: one `opus` agent per directory-sized group of 5–10 files, all dispatched at once. More, or on request: a Workflow. Workers are read-only and get the criteria by reading this file. They return per file: disposition, sections affected, the audience it serves, and a reason naming what supersedes or duplicates it. They also return every substantive claim with file and line. A disposition that would flip for another audience is marked `audience_sensitive`.
 
-Arguments: `$ARGUMENTS`.
+   | Disposition | Meaning |
+   | --- | --- |
+   | DELETE | The whole file fails the bar |
+   | GUT | A small core survives |
+   | TRIM | Some sections fail |
+   | SPLIT | Earns its content but is too large or mixed to load as one unit |
+   | MERGE | Belongs inside another file |
+   | KEEP | Unchanged |
+   | FLAG | Cannot be verified from this session |
 
-- **Paths** limit the corpus to those directories or files.
-- **`plan-only`** pre-answers the mode question in step 5.
-- **Require a clean working tree** — `git status --porcelain` must be empty.
-- **Git is the only undo** for this skill. Dirty tree: stop and say so.
-- **Ask nothing yet** — the step-5 questions are worth far more grounded in real files.
-- **Asking twice** wastes the user's attention.
+3. Cross-file pass, yourself, after all workers return. Cluster identical and near-identical claims. Pick one canonical home per cluster, the file nearest the thing described; delete or link the rest. Two files that disagree are the highest-value finding; report both locations and let the user pick.
+4. Ask three questions in one round, grounded in the files found. Who reads which files: present the inferred audience map for correction; the audience sets the keep-bar. What is off-limits: a multi-select seeded with the DELETE candidates and entry points; excluded paths leave the plan entirely. Plan-only, or plan-then-apply.
+5. Plan: apply the confirmed keep-bar to every `audience_sensitive` disposition and drop exclusions. Design the target files for every SPLIT and MERGE (see below). List every index and inbound link each action invalidates. Plan-then-apply keeps the plan in memory. Plan-only writes `docs/plans/plan-distill-<scope>.md` with the plan skill's template and stops after committing it.
+6. Present the budget (`3,180 → 1,240 lines (-61%)`, files deleted, split, merged) and the roughly ten major changes. Major: whole-file deletes, splits, merges, anything touching an entry point. Then every conflict and every FLAG. Ask for approval as a multi-select grouped by disposition; approving nothing is valid.
+7. Apply in order: TRIM and GUT, `git rm` for DELETE, MERGE then SPLIT, indexes and inbound links last. Fan out stages 1–3 over a disjoint file partition. The lead owns indexes, entry points and any file receiving merged content.
+8. Verify: `grep -r` every deleted or renamed name and fix each hit. Re-read every index against disk, run the repo's checks (`make check`), re-read the largest survivor end to end. A file that is only a list of links means the split went too far; merge back. Report real before/after counts from `wc -l`.
+9. Commit as `docs: distill <scope>` with every FLAG in the body as `file:line`; the commit message is what the next session inherits. Name `/verify-docs` in a fresh session as the next step. This skill decided what to keep, not whether it is true, and a session cannot audit its own output.
 
-### 2. Inventory
+## What dies
 
-Enumerate the corpus and record the baseline you will be measured against:
-
-```bash
-git ls-files '*.md' '*.mdx' '*.rst' '*.txt' | xargs wc -l | sort -rn
-```
-
-- **Add** comment-heavy sources and configs in scope.
-- **Record per file** — path, line count, the one-line **question it answers**.
-- **A purpose you cannot state in one line** is a finding — that file is several files or none.
-- **Sum the lines** — that total is the before-number in the final report.
-- **The file count selects the execution mode** — inline, parallel subagents, or a `Workflow`.
-- **Per [parallelism.md](parallelism.md)** — decide here, state it in one line, never re-decide.
-
-### 3. Blank-slate pass — per file
-
-Run this pass in the execution mode chosen in step 2.
-
-- **Fan out** over file groups per [parallelism.md](parallelism.md) when it is not inline.
-- **Read each file once and in full** — never two passes, never a grep hit or headings alone.
-- **Return** the disposition below, the audience it appears to serve, and step 4's claim list.
-- **Workers are read-only** — they propose; they never edit or delete.
-- **Dispositions are provisional** — the keep-bar is not settled until step 5.
-- **Mark every disposition that would flip** under a different reader.
-- **Marker** — `audience_sensitive: would be KEEP for external users`.
-- **Audience-independent** — duplication, staleness, derivability.
-- **Audience-dependent** — "too obvious to document".
-- **Apply** the re-derivation question above and the categories in [criteria.md](criteria.md).
-- **Assign exactly one** disposition.
-
-| Disposition | Meaning |
+| Category | Examples |
 | --- | --- |
-| **DELETE** | The whole file fails the bar. |
-| **GUT** | A small core survives; most of the file goes. |
-| **TRIM** | Sound file, some sections fail. |
-| **SPLIT** | Earns its content but is too large or mixed to load as one unit. |
-| **MERGE** | Belongs inside another file. |
-| **KEEP** | Survives unchanged. |
-| **FLAG** | Cannot be verified from this session — needs the user, not a delete. |
+| Historic residue | "previously", completed migration guides, dated status tables, rationale nobody will revisit. Keep only a note that is still operative: a compatibility constraint or a documented reason an obvious change is forbidden |
+| Derivable | Directory listings, command inventories mirroring a Makefile or `--help`, config-option lists, API tables regenerable from signatures. Delete and link to the source |
+| Common knowledge for the audience | What Docker or git is, `npm install`, essays on why tests matter |
+| Aspirational | Roadmaps, docs for unbuilt features, placeholder sections |
+| Ceremonial | Table of contents on a one-screen file, Introduction/Overview/Summary sections, a first sentence restating the heading, badge walls, boilerplate CONTRIBUTING text |
+| Padding | Paragraphs introducing a code block, "as you can see", motivational framing, recaps of the previous section |
+| Comments | Banner blocks and file preambles repeating the module docs; `@param userId The user ID` on a typed parameter. Keep contracts the type cannot express: units, ownership, nullability, side effects. When a comment and a doc explain one mechanism, the comment wins |
 
-- **Record per file** — disposition, the lines or sections affected, a one-line reason.
-- **The reason** names what a reader will not miss.
-- **Not a reason** — "redundant" or "outdated"; name what it duplicates or what superseded it.
+## What survives
 
-### 4. Cross-file pass — deduplicate
+Non-derivable why, especially where the obvious alternative fails. Facts that exist nowhere else: where credentials live, who owns the upstream. Sharp edges and ordering dependencies. Exact command sequences for irreversible operations. Constraints and prohibitions. One short entry point. One worked example beats three paragraphs; delete further examples that vary nothing.
 
-Per-file review cannot see repetition. This pass is a barrier. Do not spawn agents here.
+## Splitting and merging
 
-1. **Wait** for all step-3 workers, then reason over the merged list yourself.
-2. **Merge** the **claims** returned by step 3, each with its file and line.
-3. **A claim** is a fact, command, path, version, convention, or instruction.
-4. **Cluster** identical and near-identical claims.
-5. **Pick the canonical home** for every cluster of two or more.
-6. **Canonical** — the file whose stated purpose it belongs to, nearest to the thing it describes.
-7. **Everything else is deleted**, or replaced by a relative link.
-8. **Link only** where the reader genuinely needs the pointer.
-9. **Conflicting duplicates are the highest-value finding** in this pass.
-10. **Two files that disagree** mean at least one is wrong, misleading readers today.
-11. **Never silently pick a winner** — report every conflict with both locations.
-12. **Let the user resolve** it.
-
-### 5. Ask — the three questions
-
-Analysis is done; nothing is decided. Ground every option in files you actually found.
-
-- **Ask all three in one round**, using a structured question tool if the surface has one.
-- **Fallback** — [../clarify/question-rules.md](../clarify/question-rules.md).
-
-**1. Who reads this repo, and which files serve which audience?**
-
-- **Never ask this abstractly.**
-- **Present the audience map** you inferred in step 3; ask the user to correct it:
-
-```
-README.md, guides/install.md   → external users
-guides/deploy.md, runbooks/    → operators (you and your agents)
-AGENTS.md, .claude/rules/      → agents
-docs/adr/                      → unclear — who reads these?
-```
-
-- **The audience sets the keep-bar** and decides every `audience_sensitive` marker from step 3.
-- **Name the consequence** — install instructions survive for external users, die in a private knowledge base.
-- **Anything left unclear stays FLAG** — never guess an audience into a deletion.
-
-**2. What is off-limits?**
-
-- **Offer a multi-select** of concrete exclusions.
-- **State the contract plainly** — **anything selected will not be touched.**
-- **Seed the options** with the files most worth protecting, plus a free-text path option.
-- **Most worth protecting** — files proposed for DELETE, entry points, instruction surfaces.
-- **Also** — anything hand-written recently, any directory the user may treat as an archive.
-- **Excluded paths are dropped from the plan entirely**, not merely reported as skipped.
-
-**3. Plan only, or plan then apply?**
-
-| Answer | Effect |
-| --- | --- |
-| **Plan then apply** | Continue to step 6 with the plan in memory. State the changes; apply on approval. |
-| **Plan only** | Write the plan to a file and stop. Nothing in the corpus changes this session. Pre-answered by the `plan-only` argument. |
-
-### 6. Plan
-
-Finalize first, then write the plan. Keep it short — an action list, not prose.
-
-- **Apply the confirmed keep-bar** to every `audience_sensitive` disposition from step 3.
-- **Drop** everything excluded in question 2.
-- **Design the target file set** for every SPLIT and MERGE per [restructure.md](restructure.md).
-- **Name** every new file, its source sections, and its projected line count.
-- **Three or more monoliths** — design them in parallel.
-- **The plan holds, in apply order**, everything step 8 needs without re-deriving anything.
-- **Every action** — file, disposition, exact sections or line ranges, one-line reason.
-- **The new file tree** for every split and merge, with source sections mapped.
-- **Every index and inbound link** that each action invalidates.
-- **The conflicts and FLAGs** — kept out of the action list.
-- **Where it lives** depends on the answer to question 3.
-- **Plan then apply** — keep it **in memory**; write no file.
-- **Why** — writing one would add a file to the corpus being distilled. The plan is consumed in the same turn.
-- **A deliberate exception** to the repo's plan-first `docs/plans/plan-<slug>.md` convention.
-- **Plan only** — write it to `docs/plans/plan-distill-<scope>.md`.
-- **Template** — [../create-plan/SKILL.md](../create-plan/SKILL.md), plus its placeholder-scan self-review.
-- **One phase** per directory or disposition group, each with its file list.
-- **Acceptance criteria** a later session can verify against — line counts, dead-link check, index matches disk.
-- **Record the keep-bar and the off-limits list** in *Resolved decisions*.
-- **Why** — a plan is worthless without the bar it was written against.
-
-### 7. State the major changes and get approval
-
-Do not dump the plan. State only what changes the user's answer, in this order.
-
-| # | Field | Content |
-| --- | --- | --- |
-| 1 | **The budget** | One line: `3,180 → 1,240 lines (-61%)`, plus the file count deleted, split, and merged |
-| 2 | **Major changes only** | Whole files deleted, splits, merges, and anything touching an entry point or instruction surface |
-| 3 | **Conflicts** | Every pair of docs that disagree, both locations |
-| 4 | **FLAGs** | What you could not verify and are therefore not proposing to touch |
-
-- **One line per major change** — file, action, reason; each opens with a bold keyword.
-- **Cap major changes at roughly ten** — aggregate the tail: `+14 TRIM edits across guides/`, listed on request.
-- **Conflicts need the user** whatever they decide about the rest.
-- **A field with nothing to report** — one line, no padding.
-- **Plan only** — state those four, name the plan file, commit it per step 10, and stop.
-- **Never ask for approval in plan-only** — asking invites yes to changes this mode will not make.
-- **Plan then apply** — ask for approval explicitly.
-- **Offer** approve everything, approve with named exclusions, or stop.
-- **Many actions** — use a multi-select grouped by disposition.
-- **Same question mechanism as step 5**, so exclusions are picked rather than typed.
-- **Approving nothing is a valid outcome.**
-
-### 8. Apply
-
-Plan-only runs never reach this step. Execute the in-memory plan in this order.
-Later stages depend on the file set the earlier ones produce.
-
-1. **TRIM and GUT** — shrink in place.
-2. **DELETE** — `git rm`, so the removal is staged as one reviewable diff.
-3. **MERGE, then SPLIT** — create the new files, remove the source.
-4. **Every index and every inbound link last**, when the file set is final.
-
-- **Stages 1–3 can fan out** over a disjoint file partition per [parallelism.md](parallelism.md).
-- **Stage 4 stays with the lead** — index and link edits converge on shared files.
-- **Apply only what was approved**; report excluded items as excluded.
-
-### 9. Verify
-
-- **Grep** `grep -r '<filename>'` for every deleted or renamed file; fix every hit.
-- **No dead links** — a repo rule, not an option.
-- **Re-read each index file** — its entries must match the files on disk.
-- **Run the repo's own checks** if they exist: `make check`, link linters, docs build.
-- **Re-read the largest surviving file** end to end.
-- **A list of links with no content of its own** means the split went too far — merge back.
-- **Report actual before/after line counts** — the delta from `git diff --stat`, totals from
-  re-running step 2's `wc -l` inventory.
-- **Delegate the mechanical half** to one `sonnet` agent — link sweep, index-vs-disk comparison.
-- **The judgment half stays with the lead** — did the split go too far.
-
-### 10. Commit, then hand off
-
-Commit the distillation as one commit — `docs: distill <scope>`.
-
-- **List every FLAG in the commit body**, one line each with its `file:line`.
-- **Why** — the commit message is the only thing that survives this session.
-- **The next session** is expected to settle them; a FLAG stated only in chat is discarded.
-- **End the run by naming the next step** — [/verify-docs](../verify-docs/SKILL.md), in a fresh session.
-- **Why** — this skill decided what to keep, never whether what it kept is *true*.
-- **And** — [a session cannot audit its own output](../verify-docs/SKILL.md#why-this-runs-in-its-own-session).
-- **Do not run it here**, and do not pre-empt its findings.
-- **Plan-only runs** commit the plan file and stop; there is nothing to verify yet.
-
-## Constraints
-
-- **Never apply anything without explicit approval.** Steps 1–7 write nothing to the corpus,
-  except the plan file that plan-only mode writes in step 6.
-- **Silence is not approval** — never commit mid-apply.
-- **Never delete outside version control** — clean tree before, `git diff` as the record after.
-- **No archive directory, no `.old` copies** — that is deprecating.
-- **Never accept a disposition from a worker** whose return does not show it read the file in full.
-- **Never delete legal or compliance content** — licences, third-party notices, security
-  policies, attribution requirements — regardless of how boilerplate it reads.
-- **Never delete agent instruction surfaces** without per-file confirmation.
-- **Surfaces** — `AGENTS.md`, `CLAUDE.md`, `.claude/rules/*`, `.claude/agents/*` (subagent
-  definitions).
-- **They read as restating the obvious** because that is their job; they are load-bearing contracts.
-- **Unverifiable is not false** — cannot check a claim from this session? FLAG it.
-- **Deleting what you failed to understand** is the main way this skill causes damage.
-- **Delete a line for looking wrong** only when it also fails the bar.
-- **Never fabricate replacement content** — delete or flag a wrong section.
-- **Never invent the corrected version.**
-- **Rewrite freely; never invent or alter a claim.**
-- **Allowed and usually the point** — restyling, condensing, merging, restructuring surviving prose.
-- **Surviving exactly as stated** — every fact, command, flag, path, version, name and constraint.
-- **Why** — that is what keeps the later verification sweep able to do its job.
-- **Never trade precision for brevity.** A short doc that lost the exact command, flag,
-  path, or version is worse than the long one it replaced.
-- **Never edit generated documentation.** Fix the generator or leave it.
-- **Never touch code** — comments and docstrings are in scope, the statements around them are not.
-- **A comment wrong only because the code is** — flag it.
-
-## Quality
-
-- Before presenting results, run the shared [self-review checklist](../quality.md).
-- Match the shared [output style contract](../output-style.md).
-- Surface issues in the chat only if found.
+- Split after deleting, never instead. Cut on the reader's question (`deploy.md`, `rollback.md`), never on document parts (`part-1.md`, `overview.md`); a `misc.md` in the plan means the boundary is wrong.
+- Leaf files 50–200 lines, hard ceiling ~500, floor ~30 (below it, merge into a sibling). A 600-line runbook of ordered commands stays one file. An index routes with one line per file and the question it answers; it holds nothing else.
+- Each leaf opens with one line of scope under the H1 and links back to the index. It depends on no reading order.
+- Deduplicate during the split by clustering claims first; a split that copies a duplicate turns one inconsistency into three.
+- Merge tiny files that are always read together, and directories that exist for symmetry with one file each.

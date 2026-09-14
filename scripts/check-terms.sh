@@ -11,7 +11,7 @@
 #   4. Fails when the declaring chapter does not contain the term at all.
 #
 # Matching is case-insensitive and substring-based: "index" matches "Indexes".
-# See guides/audiobook-pipeline.md and .claude/skills/audiobook/review-rounds.md.
+# See guides/audiobook-pipeline.md and .claude/skills/audiobook/writing.md.
 
 set -euo pipefail
 

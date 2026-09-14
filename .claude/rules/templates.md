@@ -1,25 +1,10 @@
 ---
-description: "Conventions for editing or creating config templates in the templates/ directory."
+description: "Conventions for config templates in templates/."
 paths: "templates/**"
 ---
 
-# Template Conventions
+# Template conventions
 
-## Requirements
-
-- **Functional as-is** — copy the file into a project and use it immediately.
-- Fill in clearly marked placeholders before use.
-- **Optional sections commented out** with a short explanation above each block.
-- **Placeholder values** use `<angle-bracket>` notation: `<your-domain>`, `<db-password>`.
-- **Cross-referenced** — link the template from, or link to, the guide that consumes it.
-
-## Style
-
-- Keep inline comments short — explain *why*, not *what*.
-- Group related settings with a section header comment (`# ── Section ──`).
-- Prefer sensible defaults over empty values.
-- Output caps and format order: [output-style.md](../skills/output-style.md).
-
-## File naming
-
-Use the real filename the template represents: `docker-compose.yml`, `Makefile`, `nginx-tls.conf`.
+- Functional as copied, after filling `<angle-bracket>` placeholders. Optional sections are commented out with one line saying when to enable them.
+- Sensible defaults over empty values; section headers as `# ── Section ──`; comments explain why, not what.
+- Use the real file name (`docker-compose.yml`, `Makefile`, `nginx-tls.conf`) and link the template from the guide that uses it.

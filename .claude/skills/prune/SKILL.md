@@ -1,115 +1,64 @@
 ---
 name: prune
-description: >-
-  Cleans accumulated agent state in two layers: an ungated mechanical sweep
-  that deletes session state older than a threshold (transcripts, session
-  caches, scratchpads) via a bundled allowlist-only script, and a gated
-  semantic review that proposes stale memories, outdated rules, and repo
-  leftovers for deletion or update with cited evidence. Deletion is hard — no
-  archive or trash; the chat report is the only record.
+description: Deletes agent state. A mechanical sweep removes session state older than a threshold via an allowlist-only script; a gated review proposes stale memories, outdated rules and repo leftovers with cited evidence. Hard deletion, no trash.
 argument-hint: "[all] [<N>d] [dry-run]"
-allowed-tools:
-  - Bash
-  - Read
-  - Grep
-  - Glob
-  - Edit
-  - Write
-  - AskUserQuestion
-  - Agent
+disable-model-invocation: true
 ---
 
 # Prune
 
-Retire agent state in two layers.
+Two layers. The mechanical sweep deletes without asking when the user invoked `/prune`; `dry-run` previews. The semantic review deletes nothing without a pick. Pruned transcripts are gone as `/reflect` evidence, so reflect first after a busy period.
 
-- **Mechanical** — for a user-invoked `/prune`, deletes aged session state without asking, by
-  explicit design. `dry-run` is the escape hatch.
-- **Semantic** — proposes judgment-based deletions behind a multi-select gate.
-
-## Workflow
-
-### 1. Parse arguments
-
-Argument: $ARGUMENTS — the parts combine freely:
+## Arguments
 
 | Argument | Meaning |
 | --- | --- |
-| (none) | current project, 7-day threshold, delete |
-| `all` | every project slug plus the global session-state classes |
-| `<N>d` (e.g. `30d`) | age-threshold override in days (minimum 1) |
-| `dry-run` | preview only, both layers: mechanical report without deleting, semantic findings without the apply step |
+| none | Current project, 7-day threshold, delete |
+| `all` | Every project slug plus the global classes |
+| `<N>d` | Age threshold in days, minimum 1 |
+| `dry-run` | Preview both layers; no deletion, no apply step |
 
-### 2. Resolve context
+## Mechanical sweep
 
-- **Live session id** — `$CLAUDE_CODE_SESSION_ID` from the session environment.
-- **If unset** — proceed without it.
+Run the bundled script from the skill's directory with an explicit interpreter; the plugin cache may drop the execute bit. Pass `--delete` unless `dry-run`:
 
-### 3. Mechanical sweep (ungated)
+```bash
+bash "${CLAUDE_SKILL_DIR}/prune-state.sh" --days <N> --scope <slug>|all [--exclude-session "$CLAUDE_CODE_SESSION_ID"] [--delete]
+```
 
-Run the bundled script via the skill's base directory with an explicit interpreter.
-Flags are in its own usage line (`prune-state.sh`, top of file).
+Never bypass it with ad-hoc `rm` on harness state. Its allowlist, verified against Claude Code 2.1.259:
 
-- Never use an absolute handbook path.
-- Never rely on the execute bit — the plugin cache may not preserve it.
-- Pass `--delete` unless `dry-run` was given — do not ask first, for a user-invoked `/prune`.
-- The mechanical classes are age-rule-decidable by design.
-- What the script may touch, and everything it never touches, is in [state-map.md](state-map.md).
-- If the machine's layout stops matching the state map, stop and re-verify per its drift rule
-  before trusting the sweep.
-- Never bypass the script with ad-hoc `rm` on harness state.
+| Class | Location | Scope |
+| --- | --- | --- |
+| `transcripts` | `~/.claude/projects/<slug>/<session-id>.jsonl` plus `<session-id>/`, deleted as one unit | project and `all` |
+| `scratchpads` | `/tmp/claude-<uid>/<slug>/<session-id>/` | project and `all` |
+| `file-history` | `~/.claude/file-history/<session-id>/` | `all` |
+| `session-env` | `~/.claude/session-env/<session-id>/` | `all` |
+| `tasks` | `~/.claude/tasks/<session-id>/` | `all` |
+| `shell-snapshots` | `~/.claude/shell-snapshots/snapshot-*.sh` | `all` |
+| `paste-cache` | `~/.claude/paste-cache/*.txt` | `all` |
+| `debug-logs` | `~/.claude/debug/<session-id>.txt` | `all` |
 
-### 4. Semantic review — collect findings
+Never touched: every `memory/` directory, settings and credentials, `plugins/`, `backups/`, `history.jsonl`, `sessions/`, and anything outside the table. The live session and the newest transcript per project are excluded. If the layout on this CLI version differs from the table, re-verify by listing the directories first. Drift degrades to "nothing deleted".
 
-Review the three classes per [criteria.md](criteria.md). Every finding carries class, target,
-cited evidence, and proposed action: delete or update.
+## Semantic review
 
-### 5. Gate — multi-select
+Content, not age. Every finding carries target, class, cited evidence and a proposed action (delete, or update with the new text).
 
-- Present all findings in one multi-select.
-- **Tool** — a structured question tool if the surface has one.
-- **Fallback** — the formatted options in
-  [../clarify/question-rules.md](../clarify/question-rules.md).
-- **Each option** shows class, target, evidence, and proposed action.
-- **Overflow** — batch across rounds grouped by class when findings exceed the tool's capacity.
-- **Zero picks** — selecting nothing stays a valid outcome in every round.
+| Class | Finding |
+| --- | --- |
+| Memory: orphaned-index, unindexed, duplicate, dead-reference | A `MEMORY.md` line without its file, a file without its line, two memories for one fact, `[[name]]` or paths that do not exist. No repo needed |
+| Memory: stale-claim | The repo (slug reversed to a path; ambiguous slugs are matched against the parent directory) contradicts the memory. Partially stale becomes an update, not a deletion |
+| Memory: expired-record | An event stored as a memory. Write its residue into a keeper first, then delete |
+| Rule | A rule the current repo contradicts, references deleted files or tools, duplicates another surface, or pins a stale version. Current repo only; propose per-rule edits, never a rewrite of a surface |
+| Repo leftover | Plan files with every box ticked, shipped PRDs, clean worktrees and local branches merged into the default branch, scratch files. Uncommitted work is never proposed |
 
-### 6. Apply picked items only
+With `all`, review other slugs that have a local repo through one `opus` subagent each. Slugs without a repo get the mechanical memory checks only.
 
-- **Memory deletion** — removes the file **and** its `MEMORY.md` index line together.
-- **Memory update** — edits the file in place.
-- **Rule updates/deletions** — edit the instructions surface.
-- **Leftover deletions** — land in the working tree only.
-- **Unpicked findings** — skipped and reported as such.
-- **Zero picks** — no semantic writes.
+Present all findings in one multi-select (batched by class when too many); apply only the picks. A memory deletion removes the file and its index line together. Repo-leftover deletions land in the working tree and are committed as one commit.
 
-### 7. Report
+## Report
 
-One chat report, in this order:
-
-1. **Mechanical** — a table, one row per class: files and bytes deleted, or would-be-deleted in
-   dry-run.
-2. **Kept and why** — live session (id or newest-mtime fallback), entries younger than the
-   threshold, memory directories (never touched).
-3. **Semantic** — one bullet per finding, bold keyword first: proposed, picked (applied), or
-   skipped.
-4. **Reflect pairing** — **pruned transcripts are gone as reflection evidence — run `/reflect`
-   before the first prune of a busy period.**
-
-## Constraints
-
-- Pruning is a deliberate, destructive ritual — never suggested mid-task.
-- The model may invoke this skill.
-- **Confirm intent** before the mechanical sweep when the user did not explicitly ask to prune.
-- That sweep deletes on its own.
-- Pruned transcripts cannot be recovered.
-- **Gated** — nothing judgment-based is deleted or updated without a pick in the multi-select.
-- **Uncommitted work** — never proposed for deletion.
-- **Commit the repo-leftover deletions** once applied — one commit, only the picked items.
-- **Agent-state deletions** live outside version control and leave nothing to commit.
-
-## Quality
-
-- Run the shared [self-review checklist](../quality.md) on every applied item before presenting
-  the result.
-- Format the report per the [output style contract](../output-style.md).
+1. Mechanical: one row per class with files and bytes deleted, or would-be-deleted.
+2. Kept: live session, entries under the threshold, memory directories.
+3. Semantic: one bullet per finding, marked proposed, applied or skipped.

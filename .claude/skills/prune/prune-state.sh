@@ -8,7 +8,7 @@
 #   PRUNE_SCRATCH_DIR  scratchpad root       (default: /tmp/claude-<uid>)
 #
 # What it does:
-#   1. Walks an explicit allowlist of known state locations (see state-map.md) and
+#   1. Walks an explicit allowlist of known state locations (see SKILL.md) and
 #      collects entries whose mtime is strictly older than --days days. A project
 #      slug as scope covers only that project's transcripts and scratchpads; "all"
 #      covers every slug plus the six global classes.

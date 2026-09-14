@@ -124,7 +124,7 @@ A live plan run must not yield the turn between phases. Two mechanisms hold it:
 
 | Stop | Recovery |
 | --- | --- |
-| Usage limit, terminal API error | Committed work survives. Resume from git — [recovery.md](../.claude/skills/implement-plan/recovery.md). |
+| Usage limit, terminal API error | Committed work survives. Resume from git — [implement-plan/git.md](../.claude/skills/implement-plan/git.md). |
 | Capacity 429 / 529 | `CLAUDE_CODE_RETRY_WATCHDOG=1` retries indefinitely. Documented for capacity errors only. |
 | Agent returned `null` | Its branch holds every criterion it committed. Re-dispatch from its last commit. |
 

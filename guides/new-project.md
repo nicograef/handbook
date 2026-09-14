@@ -83,7 +83,7 @@ cp "$HANDBOOK/templates/AGENTS.md" AGENTS.md
 printf '@AGENTS.md\n' > CLAUDE.md          # first line imports AGENTS.md
 ```
 
-- [templates/AGENTS.md](../templates/AGENTS.md) — Communication section carries the anti-sycophancy rules; see [anti-sycophancy.md](anti-sycophancy.md) for the rationale and full countermeasure map.
+- [templates/AGENTS.md](../templates/AGENTS.md) — fill the placeholders; its Communication section carries the tone rules.
 - Add deeper layers only when needed: contextual instructions, skills, agents, prompts.
 - See [copilot-agent-setup.md](copilot-agent-setup.md) for the layer table and when to add each.
 

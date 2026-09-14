@@ -95,18 +95,14 @@ dotfiles.
 | Item                       | File / Directory                                                       |
 | -------------------------- | ---------------------------------------------------------------------- |
 | Skills index               | [.claude/skills/README.md](.claude/skills/README.md)                   |
-| Anti-sycophancy agent setup | [guides/anti-sycophancy.md](guides/anti-sycophancy.md)                |
-| Output style contract      | [.claude/skills/output-style.md](.claude/skills/output-style.md)       |
-| Verification contract      | [.claude/skills/quality.md](.claude/skills/quality.md)                 |
-| Verification depth budget  | [.claude/skills/verification-depth.md](.claude/skills/verification-depth.md) |
 | Web research agent         | [.claude/agents/web-researcher.md](.claude/agents/web-researcher.md)   |
 | Plugin manifests           | [.claude-plugin/plugin.json](.claude-plugin/plugin.json), [.claude-plugin/marketplace.json](.claude-plugin/marketplace.json) |
 | Plugin install & adoption  | [guides/claude-plugin.md](guides/claude-plugin.md)                     |
 | Path-scoped rules (Claude) | `.claude/rules/`                                                        |
+| Repo agent rules           | [AGENTS.md](AGENTS.md)                                                 |
 | Global Claude instructions | [claude/CLAUDE.md](claude/CLAUDE.md)                                   |
 | Claude settings + hooks    | [claude/settings.json](claude/settings.json)                           |
 | Unattended run recipe      | [guides/unattended-agents.md](guides/unattended-agents.md)             |
-| Ask gate (decide vs. ask)  | [.claude/skills/clarify/question-rules.md](.claude/skills/clarify/question-rules.md) |
 | Status line script         | [claude/statusline.sh](claude/statusline.sh)                           |
 | Concurrent-session bus     | [scripts/agent-bus.sh](scripts/agent-bus.sh), [.claude/skills/parallel-sessions/SKILL.md](.claude/skills/parallel-sessions/SKILL.md) |
 | Repo self-check            | [Makefile](Makefile) (`make check`)                                    |

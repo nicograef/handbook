@@ -34,7 +34,7 @@ compose:
 plugin:
 	@scripts/check-repo.sh plugin
 
-## prose: verify Markdown meets the output-style caps (paragraph length, sentence length)
+## prose: verify Markdown meets the prose caps (sentence ≤ 20 words, paragraph ≤ 3 lines)
 prose:
 	@scripts/check-repo.sh prose
 

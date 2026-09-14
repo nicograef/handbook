@@ -1,84 +1,15 @@
 # Agents
 
-This file governs maintaining this repo. To set up a VPS, dev machine or project start at [guides/bootstrap.md](guides/bootstrap.md).
+Rules for maintaining this repo. Setting up a machine or project starts at [guides/bootstrap.md](guides/bootstrap.md). Communication and working rules: [claude/CLAUDE.md](claude/CLAUDE.md).
 
-## Working rules
-
-- **Read the target directory**: learn existing content and style before editing or creating a file.
-- **Verify before claiming**: search the codebase before asserting anything about existing code, structure, or behaviour. Read the actual source instead of guessing.
-- **Decide before you ask**: a question is the last resort, not the opening move.
-- **Web search for external knowledge**: when working with external tools, libraries, or specs, consult authoritative sources. Use official docs and RFCs, not training data.
-- **Single source of truth**: never duplicate content across files. Reference a template, script, or another doc with a relative link instead of copying it inline.
-- **Read `README.md` first**; update it after every add, remove or rename.
-- **No dead links**: after renaming or deleting a file, `grep -r '<filename>' .` and update or remove every reference. `make links` checks file targets only.
-- **Current state only**: docs, comments and instructions describe what is true now.
-  - Git history is the archive, and the only record of a prior state.
-  - A change that makes a statement false rewrites or deletes it in the same change.
-  - A superseded version never stands beside its replacement.
-  - Banned in prose: dated change entries, "previously / formerly / used to", deprecation notes.
-  - Exceptions: `CHANGELOG.md`, ADR files, git history.
-  - **Delete, don't deprecate**: a redundant file is deleted, with every reference removed.
-- **Version consistency**: when a tool version changes, `grep` the whole repo and update every occurrence.
-- **No AI attribution in commits or PRs**: compact Conventional Commit messages only.
-  - Never append `Co-Authored-By: Claude …`, `Claude-Session: …`, `🤖 Generated with …`, or similar trailers/footers.
-
-## Communication
-
-Full contract: [.claude/skills/output-style.md](.claude/skills/output-style.md).
-
-| Element | Cap |
-| --- | --- |
-| Sentence | ≤ 20 words, one claim |
-| Paragraph | ≤ 3 lines, ≤ 1 per section |
-| Bullet | ≤ 2 lines |
-| Table trigger | ≥ 3 items sharing ≥ 2 attributes |
-| List trigger | any enumerable set of ≥ 2 items |
-| Format order | table → list → paragraph |
-
-- **Compression removes words, never a rule, condition, exception or caveat.**
-- **Lead with the answer or the problem.** No preamble, no restating the question, no closing recap.
-- **Never open with praise.** No "Great question", "You're absolutely right"; skip validation and
-  compliment sandwiches — go straight to substance.
-- **Critical by default.** Name weaknesses, risks, and simpler alternatives unprompted.
-  - If the user is wrong, say so explicitly with evidence.
-  - Say "this is wrong because X", not "you might want to consider".
-- **Hold under pushback.** When the user challenges a verified claim, re-verify against the evidence.
-  - Change position only when the evidence changes, and name what changed.
-  - User doubt is not evidence.
-  - Settle checkable disagreements with a check (test, source, tool output), not a debate.
-- **"No issues found" is a valid answer.** Never manufacture criticism, nitpicks, or caveats to
-  appear rigorous — forced criticism is as sycophantic as forced praise.
-- **Objective and honest.** Separate fact from inference from guess and label them; "I don't know"
-  beats polite hedging. Shortest complete answer wins.
-
-## Language
-
-- All content is written in English.
-- Exception: the German example phrases in `.claude/skills/cleanup/readability-de.md` and
-  `.claude/skills/audiobook/german-narration.md`, and the German proper noun in `claude/CLAUDE.md`
-  and `claude/settings.json`.
-- Exception: the umlaut key names in `cheatsheets/neovim.md` and `templates/init.lua`
-  (German keyboard remaps).
-- Their explanatory prose stays English.
-
-## Plan-first workflow
-
-For multi-file changes:
-
-1. **Research**: read affected files; understand existing style and cross-references.
-2. **Plan**: create `docs/plans/plan-<slug>.md` with the goal, affected files, and a
-   step-by-step checklist. Do not make changes yet.
-3. **Execute**: work through the checklist; tick off each step (`- [x]`) as you complete it.
-4. **Verify**: check links, confirm `README.md` is up to date, re-read changed files.
-5. **Clean up**: delete `docs/plans/plan-<slug>.md` when done.
-
-- Trivial single-file changes (typo fix, adding one section): skip the plan, edit directly.
-
-## Git
-
-- Commit every completed task without asking, `main` included.
-- One commit per coherent unit, Conventional Commit message.
-- Multi-file changes get a bullet body in the commit message.
-- PR bodies are bullet lists, not prose.
-- Push feature branches freely, and open PRs from them.
-- Never `--force` / `-f` / `--force-with-lease` or `--no-verify`.
+- Read the target directory before editing and match its style. Per-directory conventions live in `.claude/rules/`.
+- Verify against the source before asserting anything about code, structure or behaviour.
+- For external tools and specs, read the official docs, not memory.
+- One source of truth: link to a template, script or doc instead of copying it.
+- `README.md` indexes every guide, cheatsheet, template and script. Update it after every add, remove or rename.
+- After renaming or deleting a file, `grep -r '<filename>' .` and fix every reference.
+- When a tool version changes, grep the repo and update every occurrence.
+- `make check` verifies links, shellcheck, both indexes, language, compose files and the plugin manifest. It also enforces the prose caps: sentence ≤ 20 words, paragraph ≤ 3 lines.
+- English only. Exceptions: German phrases in `.claude/skills/audiobook/writing.md`, umlaut key names in `cheatsheets/neovim.md` and `templates/init.lua`, the proper noun in `claude/CLAUDE.md` and `claude/settings.json`.
+- A multi-file change starts with `docs/plans/plan-<slug>.md` (goal, files, checklist), ticked as you go and deleted when done. A single-file edit skips the plan.
+- Commit each completed task: Conventional Commit, bullet body for multi-file changes, no AI attribution. No force-push, no `--no-verify`.

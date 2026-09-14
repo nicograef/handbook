@@ -1,198 +1,54 @@
 ---
 name: implement-plan
-description: >-
-  Executes an entire implementation plan end to end — phase by phase in
-  dedicated git worktrees, committing and ticking each acceptance criterion as
-  it is verified, then rebasing and merging its branches back onto the base
-  branch. Use when the user wants a whole plan implemented autonomously, or
-  wants to pick a plan run back up after a crash, a usage limit, or a stopped
-  workflow.
+description: Executes a docs/plans plan end to end with no human turn between phases: run worktree, commit per acceptance criterion, verified ticks, fold, land. Also resumes a stopped run. Use when the user wants a whole plan implemented or picked back up.
 argument-hint: "<path to plan file>"
+disable-model-invocation: true
 ---
 
 # Implement Plan
 
-Execute a whole plan without a human turn between phases. Work is durable only
-once committed and ticked — that is the unit of progress.
+Progress is durable only once committed and ticked. The run owns the turn: no human turn between phases, folds and landing. The Stop hook `plan-run-guard.sh` blocks a stop while `plan/<slug>` still has an unticked criterion.
+
+## Gotchas
+
+- `rerere.enabled` is on in `~/.gitconfig`. A repeat conflict comes back fully resolved with no markers while `git status` still shows `UU`. Run every merge and rebase with `-c rerere.enabled=false`.
+- `git stash` is repo-global across worktrees, so two agents pop each other's work. Commit instead.
+- The plan copy on the base branch is stale during the run by design. Read it in the run worktree.
+- Under `rebase`, `--ours` is the base side; under `merge` it is your branch. Read the conflict, do not assume.
+- Pass the plan file to a Workflow agent as a path. Pasted phase text changes the cache key on the first tick and forces every later `agent()` call to rerun.
+- Pin the base once, `BASE=$(git rev-parse refs/heads/<base>)`, and target the sha in every dry run, rebase and merge.
 
 ## Workflow
 
-1. **Resume before you start** — every invocation, including the first.
-   - Run the pickup sequence in [recovery.md](recovery.md): worktree list, state
-     scan, `## Run state`, commit log, reconcile.
-   - Finish or abort any half-open rebase/merge **in its owning worktree** first.
-   - Redoing finished work is the most expensive failure available.
-2. **Read the plan; pin the base.**
-   - Collect every phase with unmet `- [ ]` (plan anatomy:
-     [create-plan](../create-plan/SKILL.md)).
-   - Detect the base branch with
-     `git symbolic-ref --short refs/remotes/origin/HEAD`.
-   - Fall back to `git ls-remote --symref origin HEAD`.
-   - Strip the `origin/` prefix for the local branch name.
-   - If neither resolves, ask — do not assume `main`.
-   - Then pin it: `BASE=$(git rev-parse refs/heads/<base>)`.
-   - Every dry run, rebase and merge targets `$BASE`, never a moving branch name.
-3. **Review every unmet phase in one pass** — ambiguous criteria, missing
-   context files, conflicting instructions, criteria no command can verify.
-4. **Choose the shape** — execution mode and the concurrency test, both in
-   [orchestration.md](orchestration.md). Sequential is the default.
-   - Then set each phase's review tier per
-     [verification-depth.md](../verification-depth.md).
-5. **Present the run contract and get one go-ahead.** Contract:
-   - plan path, base branch and pinned sha
-   - the phase list with its grouping and each phase's review tier
-   - worktree paths and branch names
-   - the verification command, the stop conditions
-   - every question from step 3
-   - every shell command the agents need that is not already allowlisted — an
-     unattended run stalls on a permission prompt
+1. Resume first, on every invocation: run the pickup sequence in [git.md](git.md). Finish or abort a half-open rebase or merge in its owning worktree. Redoing finished work is the most expensive failure.
+2. Read the plan. Detect the base branch with `git symbolic-ref --short refs/remotes/origin/HEAD`, then `git ls-remote --symref origin HEAD`; ask if neither resolves. Pin it.
+3. Review every unmet phase in one pass: ambiguous criteria, missing files, criteria no command verifies, shell commands the allowlist lacks.
+4. Choose the shape. Sequential is the default; the concurrency test is in [git.md](git.md). Set each phase's review tier. Gate only for redoable work; one probe where a rerun is paid or slow. Probes plus a human read before anything irreversible.
+5. Present the run contract once: plan, base and sha, phases with grouping and tiers, worktrees and branches. Also the verify command, stop conditions, open questions and missing allowlist commands. This is the run's only planned human turn.
+6. Create `.worktrees/plan-<slug>` on branch `plan/<slug>` from `$BASE`. Confirm the verify command passes on unchanged code.
+7. Execute phases in order. Sequential phases run in the run worktree; a concurrent group gets one worktree, branch and agent per phase. No two agents write one file; only the lead writes the plan file.
+8. Commit per criterion that names its own change, then tick. Workers run targeted tests per criterion and the full gate once per phase, scoped to the languages touched. Tick a phase's criteria in one commit when it closes, and only what a tool result proves. Verification failing twice for one reason: debug root-cause first, then stop.
+9. Fold each group into `plan/<slug>` in phase order with the fold sequence in [git.md](git.md). Re-verify after each fold.
+10. Land `plan/<slug>` on the base with the landing sequence, then re-verify in the main checkout. Remove `## Run state` in its own commit before landing. `git rm` the plan file after landing only when every criterion is ticked. Remove the run's worktrees and `-d` its merged branches. Push, PR or discard is the user's call.
+11. Report: `3 phases — 2 complete, 1 blocked; 9 criteria ticked; 11 commits landed`, then phases, dropped agents, unticked items and the plan file's fate.
 
-   The run's only planned human turn. It is
-   [using-git-worktrees](../using-git-worktrees/SKILL.md) step 3's
-   confirm-before-creating, asked once instead of once per worktree.
-6. **Create the run worktree** `.worktrees/plan-<slug>` on branch `plan/<slug>`
-   from `$BASE`, per [using-git-worktrees](../using-git-worktrees/SKILL.md).
-   - Confirm a clean baseline there before the first edit: the verify command
-     passes on unchanged code.
-   - Later failures are then attributable.
-7. **Execute each unit in order.**
-   - Sequential phases run in the run worktree.
-   - A concurrency-eligible group gets one worktree, one branch and one agent
-     per phase.
-   - Dispatch per [orchestration.md](orchestration.md) and the
-     [delegation contract](../dispatching-parallel-agents/SKILL.md).
-   - No two agents ever write one file; no agent ever writes the plan file.
-8. **Commit per acceptance criterion that names its own change, then tick.**
-   - A criterion asserting only the gate, or restating a sibling's verification,
-     rides along with the change it describes. Never mint an empty commit for it.
-   - Implement one criterion at a time, so its commit is whatever the tree
-     already holds.
-   - Never write a phase broadly and then partition it into criteria.
-   - The phase's own worker runs the verification command: `make test` or
-     `make check` if the repo has a Makefile.
-   - Otherwise the language-appropriate default: `go test ./...`, `pnpm test`,
-     `mvn test`.
-   - Per criterion the worker runs only the targeted tests for what it changed.
-   - The full gate runs once per phase, before the phase reports.
-   - Scope even that gate to the languages the phase touched.
-   - A Python-only phase paying for a frontend build is waste times the criterion
-     count.
-   - Commit the change with the run trailer (Constraints).
-   - Tick the phase's criteria in **one** commit when the phase closes, not one
-     commit per box.
-   - The plan file is lead-owned, which is why the tick is a commit of its own.
-   - Tick only what a tool result from this session proves.
-   - If verification fails twice on one phase for the same reason, switch to
-     [systematic-debugging](../systematic-debugging/SKILL.md).
-   - If that does not resolve it, stop.
-9. **Fold each parallel group** into `plan/<slug>` in ascending phase order.
-   - Use the fold sequence in [integration.md](integration.md).
-   - Transcribe that phase's ticks as you go.
-   - Re-run verification after each fold — passing in isolation does not mean
-     passing together.
-10. **Land** `plan/<slug>` on the base branch with the landing sequence in
-    [integration.md](integration.md), then re-verify in the main checkout.
-    - Delete the `## Run state` block and commit that removal **before** landing.
-    - The base branch never receives it.
-    - Every acceptance criterion in the plan ticked: `git rm` the plan file in
-      the main checkout after landing.
-    - Commit that removal on the base branch as its own commit.
-    - Any unticked criterion keeps the file.
-    - Step 11 then reports the plan file as surviving.
-    - Then `git worktree remove` each worktree the run created.
-    - And `git branch -d` each merged branch.
-    - Push, PR or discard is [finish-branch](../finish-branch/SKILL.md)'s
-      decision, not yours.
-11. **Report**, per the [report shape](../output-style.md#report-shape).
-    - Counts line first, e.g. `3 phases — 2 complete, 1 blocked; 9 criteria
-      ticked; 11 commits landed`.
-    - Then phases, dropped agents, unticked items and the plan file's fate.
+## Stops
 
-## Stop and ask
+| Kind | Trigger | Action |
+| --- | --- | --- |
+| Forced | Any merge or rebase conflict | Abort in the owning worktree, report paths and classes, hand back |
+| Forced | Verification fails repeatedly for one reason after debugging | Stop |
+| Forced | A step needs a hazard command, a push, or a branch, worktree or file the run did not create | Stop |
+| Forced | A foreign dirty worktree or `index.lock` blocks the path | Report it; never clear another session's state |
+| Forced | Usage limit or terminal API error | Commit `## Run state`, report the verbatim string and reset time |
+| Judgment | A criterion is ambiguous or unverifiable | One reading survives: implement it, say so in the commit body. Otherwise ask |
+| Judgment | The plan would have to change | That is `plan`'s job: stop |
+| Judgment | A shell command is not allowlisted | Use an allowlisted equivalent, or stop and name the exact command |
 
-- A **forced stop** ends the run and hands back. There is no question to answer.
-- A **judgment call** runs the
-  [ask gate](../clarify/question-rules.md#the-ask-gate) first. Most resolve to a
-  single option and never reach the user.
+## Dispatch
 
-### Forced stops
-
-- Any merge or rebase conflict.
-  - Abort in the owning worktree, report the paths and their classes, hand back.
-  - Nothing is auto-resolved by content — see [integration.md](integration.md).
-- Verification fails repeatedly for the same reason after a debugging pass.
-- Proceeding would need anything on the [hazard list](integration.md#hazards), a
-  push, a force-push, or `--no-verify`.
-- Proceeding would delete a branch, worktree or file the run did not create.
-- A worktree, branch or `index.lock` the run does not own is
-  dirty, held, or mid-operation and blocks the path.
-  - Report it; never clear another worktree's state.
-- A usage limit or a terminal API error.
-  - Write and commit the `## Run state` block.
-  - Then report the verbatim failure string and any reset time it printed.
-  - Taxonomy in [recovery.md](recovery.md).
-
-### Judgment calls
-
-- A phase's criterion is ambiguous, unverifiable, or names something that does
-  not exist.
-  - Read the plan's `### Context`, the repo and its conventions first.
-  - One reading survives: implement it and say which reading you took in the
-    commit body. Two survive with no clear winner: stop and ask.
-- The plan would have to change.
-  - A different design, or a new phase, is
-    [create-plan](../create-plan/SKILL.md)'s job — stop.
-  - A criterion whose wording is wrong but whose intent is unambiguous is not a
-    plan change. Implement the intent; note the wording in the report.
-- A phase needs a shell command the allowlist does not cover.
-  - Reach the goal with an allowlisted command where one exists.
-  - None exists: stop, and name the exact command in the handoff.
-
-## Constraints
-
-- **Commit message**: Conventional Commit subject plus one trailer,
-  `Plan: <slug> phase <N> criterion <M>`.
-  - That trailer makes a dead agent's work findable after its branch is gone.
-  - No AI attribution trailers.
-- **The run owns the turn.** Between phases, folds and landings there is no
-  human turn — see the opening line.
-  - A phase report goes in the same turn as the next phase's first action.
-  - Waiting on a dispatched agent or workflow is waiting inside the turn.
-  - `scripts/plan-run-guard.sh` blocks a stop while `plan/<slug>` still has an
-    unticked criterion, so a yielded turn costs a round trip.
-- **One writer per file, always.** The lead is the sole writer of the plan file
-  for the whole run; subagents receive its path to read.
-  - Index files and entry points are lead-owned, as in
-    [distill/parallelism.md](../distill/parallelism.md#apply-stage-partitioning).
-- **Never `git stash`** — it is repo-global, not per-worktree, so two agents pop
-  each other's work. Commit instead.
-- **Never** run any of these:
-  - `git gc --prune=now`
-  - `git update-ref` on a branch
-  - `git rebase --update-refs`
-  - `git checkout -- .`
-  - `git restore .`
-  - `git clean -fd`
-  - `git reset --hard`
-  - `git branch -D`
-  - `git worktree remove --force`
-- What each destroys and its safe substitute are in
-  [integration.md](integration.md#hazards).
-- **Never push the base branch, never force-push, never `--no-verify`.**
-- If the user wants to write the code themselves, that is
-  [guided-implementation](../guided-implementation/SKILL.md).
-
-## Quality
-
-- After each phase lands on `plan/<slug>`, run the shared
-  [self-review checklist](../quality.md) on that phase's diff.
-- Review beyond that checklist is bought at the phase's tier —
-  [verification-depth.md](../verification-depth.md).
-- Defects a review returns go back to that phase's own worker, by `SendMessage`.
-  - A fresh fixer re-reads what that worker already holds; never dispatch one.
-  - Rule and mechanics:
-    [dispatching-parallel-agents](../dispatching-parallel-agents/SKILL.md).
-- Carry the defect *classes* into the next phase's worker prompt.
-  - Unnamed, the same class recurs in every later phase and is bought twice each time.
-- Surface issues in the chat only if found.
-- The final report follows the [output style contract](../output-style.md).
+- Commit subject Conventional Commit, trailer `Plan: <slug> phase <N> criterion <M>`, no AI attribution.
+- Give a worker: plan path (as a path), worktree path, branch, phase number, verify command, trailer format, plan-file write ban. Add: "commit each criterion as it verifies; at 30 minutes commit what verifies and return". A fully mechanical phase runs on `sonnet` with `effort: low`; the rest on `opus`.
+- A returned `null` is a phase that did not happen; its branch keeps its commits. Re-dispatch it to continue from `git log <branch>`, never from scratch.
+- A defect a review finds goes back to the phase's own worker via SendMessage. Carry the defect classes into the next phase's prompt.
+- Cap writers at 4 (one checkout, install and fold each); read-only scouts and reviewers at the runtime's cap. While phase N's writer works, a read-only scout may prepare phase N+1.

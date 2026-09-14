@@ -1,19 +1,19 @@
 ---
 name: prog
-description: Give a summary of this session's state or plan on what is done and what is still todo.  
-allowed-tools:
-  - Bash
-  - Read
-  - Grep
-  - Glob
+description: Summarises this session's state as a table: steps and phases done, open, blocked, plus every decision or question the user still owes. With "compact", also persists state to the scratchpad and memory and writes a resume prompt for after /compact.
+argument-hint: "[compact]"
+allowed-tools: Bash, Read, Grep, Glob
 ---
 
 # Prog
 
-Write a summary on the status and progress of this session in a table or list format.
-If this session is implementing a plan or executing a skill or multi-phase workflow:
-List all steps and phases of this session/plan and provide clear information on wether 
-that step is done or still open todo. For open steps, state what is blocking them.
-Also list all decisions and questions that are needed from the user/human to continue.
-No prose. Only summaries and structured information.
+Structured output only: tables and lists, no prose.
 
+1. List every step or phase of the current plan, skill run or workflow. Status per row: done, open, or blocked and by what.
+2. List every decision or question the user has to answer for the work to continue.
+3. List running subagents, workflows, background shells and monitors.
+
+With `compact`, also:
+
+4. Write the state above, the plan file path, worktree paths and open tasks to the scratchpad. Update the plan file and memory where they lag.
+5. Tell the user `/compact` is safe to run. Give them a short prompt to paste afterwards. It names the scratchpad file, the plan and the next step.

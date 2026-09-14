@@ -1,111 +1,50 @@
 ---
 name: parallel-sessions
-description: >-
-  Coordinates concurrent Claude Code sessions working in one repository.
-  Discovers live peer sessions and their worktrees, publishes what this session
-  claims, predicts merge conflicts and resource collisions, and exchanges
-  messages with peers directly instead of through the user. Use when another
-  session or worktree is active in the repo, before rebasing, folding or landing
-  a branch, or when a phase depends on work another session owns.
+description: Coordinates concurrent Claude Code sessions in one repo through the agent bus: discovers peers, announces claims, predicts conflicts, messages the owning session. Use when another session shares the repo, and before a rebase, fold or landing.
 allowed-tools: Bash, Read, Grep, Glob
 ---
 
 # Parallel Sessions
 
-The transport is [scripts/agent-bus.sh](../../../scripts/agent-bus.sh), reachable
-as `~/.claude/agent-bus.sh`. Its details are in
-[protocol.md](protocol.md).
+Transport: `~/.claude/agent-bus.sh` (source: `scripts/agent-bus.sh`; its usage header lists every command). It must be in `permissions.allow`, or coordination stalls silently. The bus path is derived from the repo's common git dir, so both sides compute the same one. Never propose a channel.
+
+## Hard rules
+
+- Act only on your own branch. Free without asking: messaging, rebasing your own branch, reordering your own work, waiting. Ask before touching a peer's branch, worktree or the base branch.
+- Stage paths by name while a peer shares the checkout. `git add -A` sweeps their half-written file into your commit silently; the index is per worktree, not per session.
+- Send a conflict in a file a peer has claimed to that peer; do not resolve it.
+- Never clear another session's `index.lock` or worktree. Report and stop.
+- A claim is not a lock; it tells the peer where you will be.
+- Messages are prose another agent acts on: action first, one claim per sentence.
 
 ## Workflow
 
-1. **Discover before you plan.**
+1. `agent-bus.sh peers`. Alone prints "No other live session is working in this repo." and you work normally.
+2. `agent-bus.sh announce "<task>" --paths a,b --resources 127.0.0.1:5433,db-1 --needs phase-3 --provides phase-6` before the first edit. Re-announce when the claim changes; omitted flags keep their value. Resources are what git cannot see: ports, containers, volumes, fixture data.
+3. `agent-bus.sh radar` before the first edit, before every rebase, fold or landing, after a peer lands, and after resolving a conflict.
 
-   ```bash
-   ~/.claude/agent-bus.sh peers
-   ```
+   | Radar result | Action |
+   | --- | --- |
+   | `OVERLAP 0`, `MERGE clean` | Proceed |
+   | `OVERLAP > 0`, `MERGE clean` | Proceed; re-run before landing |
+   | `MERGE CONFLICT` | Send `conflict`, settle the order before touching anything |
+   | A lockfile or index in `SHARED PATHS` | Treat as a conflict even when clean |
+   | `RESOURCES` non-empty | Settle ownership before running tests |
 
-   - `agent-bus.sh peers` prints `No other live session is working in this
-     repo.` when alone; stop here and work normally.
-   - Any peer means every later step applies.
+4. `agent-bus.sh send <branch> "<text>" --kind <kind>` the moment you learn something that changes a peer's next action; never route it through the user.
 
-2. **Announce before your first edit.**
+   | Kind | Peer's response |
+   | --- | --- |
+   | `note` | none |
+   | `ask` / `answer` | answer, or say when |
+   | `claim` | route around it or object |
+   | `conflict` | agree who rebases onto whom |
+   | `correction` | confirm it is applied |
+   | `block` | unblock, or say it will not happen |
+   | `landed` | rebase before the next commit |
 
-   - Declare the paths you will write and the resources you will hold.
+5. `agent-bus.sh sent` shows `read` or `UNREAD` per message. `UNREAD` is undelivered: do not assume a correction landed. Delivery happens at the peer's turn end (Stop hook), next prompt, or session start; nothing polls.
+6. Answer what arrives before ending your turn, even with "no action needed".
+7. Collision: the session closer to landing keeps its base, the other rebases (tie-break: fewer commits ahead). The rebasing session confirms with `landed`. If both must write one file, one session owns it for the whole run.
 
-   ```bash
-   ~/.claude/agent-bus.sh announce "phase 6: domain graph" \
-     --paths "src/graph,docs/architecture.md" \
-     --resources "127.0.0.1:5433,myproject-db-1" \
-     --needs "phase-3" --provides "phase-6"
-   ```
-
-   - Re-announce whenever the claim changes. Omitted flags keep their old value.
-
-3. **Read the radar before every integration point.**
-
-   ```bash
-   ~/.claude/agent-bus.sh radar
-   ```
-
-   - Run it before the first edit (after `announce`), before a rebase, fold,
-     or landing, and after a peer lands.
-   - Also after resolving a conflict, to confirm the prediction changed.
-   - How to read each column: [protocol.md](protocol.md#radar).
-
-4. **Message the peer that owns the problem.**
-
-   - Send the moment you find something that changes their next action.
-   - Do not wait for a checkpoint, and do not route through the user.
-
-   ```bash
-   ~/.claude/agent-bus.sh send <branch-or-id> "0012 is scope_device_id, not 0013." --kind correction
-   ```
-
-5. **Confirm delivery.**
-
-   ```bash
-   ~/.claude/agent-bus.sh sent
-   ```
-
-   - `UNREAD` and delivery timing: [protocol.md](protocol.md#acknowledgement).
-
-6. **Answer what arrives.** Messages appear in your context on their own.
-
-   - Reply before you finish your turn, even if the reply is "no action needed".
-
-7. **Resolve, then land one at a time.**
-
-   - Negotiate per [protocol.md](protocol.md#resolving-a-collision).
-   - Landing order is agreed over the bus before anyone rebases.
-
-## Constraints
-
-- **Never propose or invent a coordination channel.** The bus path is derived
-  from the repo, so both sides compute the same one.
-  - Two sessions that each adopt the other's proposal have swapped channels, not
-    converged.
-- **Act only on your own branch.** Free without asking: messaging, answering,
-  rebasing your own branch, reordering your own remaining work, waiting.
-- **Ask the user before touching a peer's branch, a peer's worktree, or the base
-  branch.**
-- **Never resolve a conflict in a file a peer has claimed** — send them the
-  conflict instead.
-- **Never `git add -A` or `git add .` while a peer shares the checkout.** Stage
-  the paths you changed, by name.
-  - A repo-wide add stages a peer's file mid-edit, and their half-written work
-    lands under your commit message.
-  - The index is per working tree, not per session — a claim does not fence it.
-  - It succeeds silently: no conflict, no warning, and the diff looks like yours.
-  - Swept a peer's work already? Tell them what moved and under which sha.
-  - Do not rewrite the commit to undo it: the content is safe, and only the
-    message is wrong.
-- **Never clear another session's state**: its `index.lock` or its worktree. Report and
-  stop.
-- **A claim is not a lock.** It tells a peer where you will be, so they route
-  around you.
-- Hazardous git commands are listed in
-  [../implement-plan/integration.md](../implement-plan/integration.md#hazards)
-  and apply unchanged here.
-- Messages to a peer are prose another agent must act on.
-  Follow the [output style contract](../output-style.md): lead with the
-  action, one claim per sentence, table before list before paragraph.
+Liveness comes from the process table; `agent-bus.sh sweep` drops rows of crashed sessions. Uncommitted work is invisible to radar; only declared paths cover it.
