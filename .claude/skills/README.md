@@ -29,5 +29,6 @@
 | Deleting stale agent state: old sessions, stale memories, outdated rules, repo leftovers | [Prune](prune/)                                              |
 | Running independent subagents in parallel                                                | [Dispatching Parallel Agents](dispatching-parallel-agents/)  |
 | Coordinating with other Claude Code sessions running concurrently in the same repo       | [Parallel Sessions](parallel-sessions/)                      |
+| Summaries session state and progress.                                                    | [Prog](prog/)
 
 See [.claude/rules/skills.md](../rules/skills.md) for format requirements.
