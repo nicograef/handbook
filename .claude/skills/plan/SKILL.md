@@ -31,6 +31,7 @@ Arguments: `$ARGUMENTS`. Output is a file, never code. `/plan <task or PRD path>
 3. Work out two or three approaches with effort, risk and reversibility; pick one and record why.
 4. Sketch the modules: deep modules behind small interfaces, dependencies injected, values returned instead of inputs mutated.
 5. Write the whole PRD in one pass. Problem Statement and User Stories are prose because their readers are non-technical; the rest follows the usual caps.
+6. Domain terms the PRD introduces go into `docs/UBIQUITOUS_LANGUAGE.md`: one table per topic with term, one-sentence definition, aliases to avoid. Pick one word per concept; skip module and class names unless they carry domain meaning.
 
 ## Plan template
 
