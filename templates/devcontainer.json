@@ -1,4 +1,3 @@
-// Dev Container configuration – copy to .devcontainer/devcontainer.json
 // Docs: https://containers.dev/implementors/json_reference/
 {
   "name": "my-project-dev", // TODO: rename to your project
@@ -21,8 +20,7 @@
   },
 
   // ── Post-create setup ─────────────────────────────────────────────────────
-  // Install project-specific tools. Delete the setup-dev-tools.sh sections your
-  // stack does not use first: each hard-requires its runtime.
+  // Install project-specific tools.
   "postCreateCommand": "bash scripts/setup-dev-tools.sh",
 
   "customizations": {

@@ -9,9 +9,6 @@
 
 - The `postgres` container already holds `POSTGRES_USER` / `POSTGRES_DB` in its
   environment.
-- Run `pg_dump` through `sh -c` with those vars **single-quoted**.
-- Single quotes expand them inside the container, not by your host shell.
-- `-T` disables the pseudo-TTY, so CR/LF translation cannot corrupt binary dumps.
 
 ### Compressed dump (recommended)
 

@@ -15,7 +15,6 @@ cd "$REPO_ROOT"
 
 FAILED=0
 
-# log() prints an error to stderr and marks the run as failed.
 log() {
   printf 'check-repo: %s\n' "$*" >&2
   FAILED=1
@@ -24,11 +23,10 @@ log() {
 # Content directories the README indexes as its file index.
 INDEX_DIRS=(guides cheatsheets templates scripts)
 
-# Files allowed to contain German prose.
 LANG_ALLOW=(
   ".claude/skills/audiobook/writing.md"
   "claude/CLAUDE.md"
-  "cheatsheets/neovim.md"
+  "guides/neovim.md"
 )
 
 # Files exempt from the paragraph cap only — the sentence cap still applies to them.
@@ -60,7 +58,6 @@ strip_code() {
   '
 }
 
-# 1. Link check
 check_links() {
   local file dir target path resolved
   while IFS= read -r file; do
@@ -84,7 +81,6 @@ check_links() {
   done < <(tracked_md)
 }
 
-# 2. Shellcheck
 check_shell() {
   if ! command -v shellcheck >/dev/null 2>&1; then
     log "shellcheck not installed"
@@ -101,7 +97,6 @@ check_shell() {
                         '.claude/skills/*/*.sh')
 }
 
-# 3. README index diff
 check_readme() {
   local readme="README.md" links file target path
   # All relative links the README points at (anchors stripped).
@@ -135,7 +130,6 @@ check_readme() {
   done <<< "$links"
 }
 
-# 4. Language check
 check_language() {
   local file allow
   while IFS= read -r file; do
@@ -148,7 +142,6 @@ check_language() {
   done < <(tracked_md)
 }
 
-# 5. Skills index diff
 check_skills() {
   local readme=".claude/skills/README.md" links skill dir
   # Skill directories the index links (form `](name/)`, trailing slash stripped).
@@ -173,7 +166,6 @@ check_skills() {
   done <<< "$links"
 }
 
-# 6. Compose templates
 check_compose() {
   if ! command -v docker >/dev/null 2>&1; then
     log "docker not installed"
@@ -189,7 +181,6 @@ check_compose() {
   done < <(git ls-files 'templates/docker-compose*.yml')
 }
 
-# 7. Plugin manifests
 check_plugin() {
   if ! command -v claude >/dev/null 2>&1; then
     log "claude not installed"
@@ -360,7 +351,6 @@ prose_scan() {
   ' "$1"
 }
 
-# 8. Prose caps
 check_prose() {
   local file allow violation para_exempt
   while IFS= read -r file; do

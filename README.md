@@ -13,7 +13,6 @@ Setting something up? Start at [guides/bootstrap.md](guides/bootstrap.md).
 | IPv6-only VPS (DNS64/NAT64, Docker) | [guides/ipv6-only-vps.md](guides/ipv6-only-vps.md)                       |
 | Docker multi-stage builds         | [guides/docker-multi-stage-builds.md](guides/docker-multi-stage-builds.md) |
 | Let's Encrypt with Docker Compose | [guides/letsencrypt-docker.md](guides/letsencrypt-docker.md)               |
-| GitHub Copilot Agent Mode setup   | [guides/copilot-agent-setup.md](guides/copilot-agent-setup.md)             |
 | Dotfiles for GitHub Codespaces    | [guides/dotfiles-codespaces.md](guides/dotfiles-codespaces.md)             |
 | Install the handbook plugin       | [guides/claude-plugin.md](guides/claude-plugin.md)                         |
 | PostgreSQL operations             | [guides/postgresql-operations.md](guides/postgresql-operations.md)         |
@@ -35,12 +34,9 @@ Heading-grouped rules and idioms per stack — reference material, not runbooks.
 
 | Topic                 | File                                                           |
 | --------------------- | -------------------------------------------------------------- |
-| Unix / shell commands | [cheatsheets/unix-commands.md](cheatsheets/unix-commands.md)   |
 | tmux                  | [cheatsheets/tmux.md](cheatsheets/tmux.md)                     |
-| Docker Compose        | [cheatsheets/docker-compose.md](cheatsheets/docker-compose.md) |
 | PostgreSQL            | [cheatsheets/postgresql.md](cheatsheets/postgresql.md)         |
 | Makefile              | [cheatsheets/makefile.md](cheatsheets/makefile.md)             |
-| Neovim                | [cheatsheets/neovim.md](cheatsheets/neovim.md)                 |
 
 ## Templates
 
@@ -64,7 +60,7 @@ Heading-grouped rules and idioms per stack — reference material, not runbooks.
 | [templates/ci.yml](templates/ci.yml)                                   | GitHub Actions CI workflow (Go, Node, integration tests)          |
 | [templates/dependabot.yml](templates/dependabot.yml)                   | Dependabot config (monthly, one grouped PR per ecosystem)         |
 | [templates/.env.example](templates/.env.example)                       | Standard env vars for Docker Compose templates                    |
-| [templates/AGENTS.md](templates/AGENTS.md)                             | Agent instructions template for Copilot Agent Mode                |
+| [templates/AGENTS.md](templates/AGENTS.md)                             | Agent instructions template, imported by a project's `CLAUDE.md`  |
 | [templates/vscode-settings.json](templates/vscode-settings.json)       | VS Code workspace settings for consistent formatting              |
 | [templates/claude-settings.json](templates/claude-settings.json)       | Project `.claude/settings.json` to adopt the handbook plugin      |
 | [templates/strip-visuals.lua](templates/strip-visuals.lua)             | Pandoc filter that removes what a narrator cannot speak           |
@@ -89,23 +85,16 @@ Heading-grouped rules and idioms per stack — reference material, not runbooks.
 
 ## Agent Setup
 
-Claude Code and GitHub Copilot config: instruction surface, skills, agents, path-scoped rules,
-dotfiles.
-
 | Item                       | File / Directory                                                       |
 | -------------------------- | ---------------------------------------------------------------------- |
 | Skills index               | [.claude/skills/README.md](.claude/skills/README.md)                   |
 | Web research agent         | [.claude/agents/web-researcher.md](.claude/agents/web-researcher.md)   |
 | Plugin manifests           | [.claude-plugin/plugin.json](.claude-plugin/plugin.json), [.claude-plugin/marketplace.json](.claude-plugin/marketplace.json) |
-| Plugin install & adoption  | [guides/claude-plugin.md](guides/claude-plugin.md)                     |
 | Path-scoped rules (Claude) | `.claude/rules/`                                                        |
 | Repo agent rules           | [AGENTS.md](AGENTS.md)                                                 |
 | Global Claude instructions | [claude/CLAUDE.md](claude/CLAUDE.md)                                   |
 | Claude settings + hooks    | [claude/settings.json](claude/settings.json)                           |
-| Unattended run recipe      | [guides/unattended-agents.md](guides/unattended-agents.md)             |
 | Status line script         | [claude/statusline.sh](claude/statusline.sh)                           |
-| Concurrent-session bus     | [scripts/agent-bus.sh](scripts/agent-bus.sh), [.claude/skills/parallel-sessions/SKILL.md](.claude/skills/parallel-sessions/SKILL.md) |
-| Repo self-check            | [Makefile](Makefile) (`make check`)                                    |
 | Dotfiles entrypoint        | [install.sh](install.sh)                                               |
 
 ## License

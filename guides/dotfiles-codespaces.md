@@ -13,7 +13,6 @@ Automatically apply your shell config to every new Codespace.
 
 ## Prerequisites
 
-- A GitHub account with Codespaces enabled.
 - This repository forked or cloned under your account.
 - `bash`, `git`, and `curl` on the target machine (all present in Codespaces).
 
@@ -25,9 +24,6 @@ Automatically apply your shell config to every new Codespace.
 
 Every new Codespace will now clone this repo and run `scripts/install-dotfiles.sh`.
 
-- Codespaces looks for an install script in the dotfiles repo root or common locations.
-- Those locations: `install.sh`, `install`, `bootstrap.sh`, `bootstrap`, `script/bootstrap`,
-  `setup.sh`, `setup`, `script/setup`.
 
 ## Manual run
 
@@ -47,7 +43,7 @@ source ~/.bashrc
 - Pulling the clone is the whole update:
 
 ```bash
-git -C ~/handbook pull
+git -C <clone> pull      # /workspaces/.codespaces/.persistedshare/dotfiles in a Codespace
 ```
 
 - Re-run `install.sh` only when [`scripts/install-dotfiles.sh`](../scripts/install-dotfiles.sh)
@@ -91,10 +87,3 @@ gh --version
 bash -i -c '_completion_loader git 2>/dev/null; complete -p git' | grep -q __git_wrap__git_main \
   && echo "git completion OK" || echo "git completion BROKEN (fzf clobbered it)"
 ```
-
----
-
-See also:
-- [templates/.bash_aliases](../templates/.bash_aliases) — shell aliases template
-- [templates/devcontainer.json](../templates/devcontainer.json) — Dev Container template
-- [scripts/install-dotfiles.sh](../scripts/install-dotfiles.sh) — dotfile bootstrap script

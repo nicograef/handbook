@@ -12,7 +12,6 @@ Progress is durable only once committed and ticked. The run owns the turn: no hu
 ## Gotchas
 
 - `rerere.enabled` is on in `~/.gitconfig`. A repeat conflict comes back fully resolved with no markers while `git status` still shows `UU`. Run every merge and rebase with `-c rerere.enabled=false`.
-- `git stash` is repo-global across worktrees, so two agents pop each other's work. Commit instead.
 - The plan copy on the base branch is stale during the run by design. Read it in the run worktree.
 - Under `rebase`, `--ours` is the base side; under `merge` it is your branch. Read the conflict, do not assume.
 - Pass the plan file to a Workflow agent as a path. Pasted phase text changes the cache key on the first tick and forces every later `agent()` call to rerun.
@@ -45,9 +44,35 @@ Progress is durable only once committed and ticked. The run owns the turn: no hu
 | Judgment | The plan would have to change | That is `plan`'s job: stop |
 | Judgment | A shell command is not allowlisted | Use an allowlisted equivalent, or stop and name the exact command |
 
+## Run state block
+
+Written into the plan file on a stop, committed to `plan/<slug>`, deleted in its own commit before landing.
+
+| Field | Value |
+| --- | --- |
+| `Base` | `<base-branch> <40-hex sha>` |
+| `Run branch` | `plan/<slug>` |
+| `Worktrees` | one row per member: `<path> -> <branch> -> phase <N>` |
+| `Next criterion` | `phase <N> criterion <M>` |
+| `Verify` | the verify command, verbatim |
+| `Workflow` | `scriptPath=<path>` and `runId=<id>` |
+| `Failure` | the verbatim failure string, only when the run died |
+
+## Failure strings
+
+| String | Response |
+| --- | --- |
+| `You've hit your session limit · resets <time>` or weekly limit | Stop, commit the handoff, name the reset time. Both windows are shared across models |
+| `You've hit your Opus limit · resets <time>` | `/model` escapes only this one; a `sonnet`-eligible mechanical phase may continue |
+| `Agent terminated early due to an API error` | That `agent()` returned `null`; re-dispatch from its last commit |
+| `Server is temporarily limiting requests` / 529 | Already retried with backoff. Stop, hand off |
+| `Server error mid-response` | Not retried by design; rerun the phase from its last commit |
+
+`CLAUDE_CODE_RETRY_WATCHDOG=1` retries 429 and 529 indefinitely and fails at once on spend-limit errors. Its behaviour on plan usage limits is unverified.
+
 ## Dispatch
 
-- Commit subject Conventional Commit, trailer `Plan: <slug> phase <N> criterion <M>`, no AI attribution.
+- Commit subject Conventional Commit, trailer `Plan: <slug> phase <N> criterion <M>`.
 - Give a worker: plan path (as a path), worktree path, branch, phase number, verify command, trailer format, plan-file write ban. Add: "commit each criterion as it verifies; at 30 minutes commit what verifies and return". A fully mechanical phase runs on `sonnet` with `effort: low`; the rest on `opus`.
 - A returned `null` is a phase that did not happen; its branch keeps its commits. Re-dispatch it to continue from `git log <branch>`, never from scratch.
 - A defect a review finds goes back to the phase's own worker via SendMessage. Carry the defect classes into the next phase's prompt.

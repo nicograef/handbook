@@ -39,31 +39,25 @@ also use placeholders not in that block:
 ## Verify
 
 ```bash
-# log in as the new user (root login is now disabled)
 ssh nico@<host>
 
-# firewall is active and rate-limiting SSH
 sudo ufw status verbose
 
-# fail2ban is running
 sudo systemctl is-active fail2ban
 
 # docker works without sudo
 docker run --rm hello-world
 
-# container-log rotation is configured
 cat /etc/docker/daemon.json
 
 # unattended-upgrades is configured (dry run applies no changes)
 sudo unattended-upgrade --dry-run --debug 2>&1 | grep -i 'allowed origins'
 
-# apt's periodic update/upgrade timers are active
 systemctl list-timers 'apt-daily*' --no-pager
 
 # swap is active, so the kernel has a reclaim path instead of only the OOM killer
 swapon --show
 
-# the daily health-ping cron entry is installed
 cat /etc/cron.d/report-health
 ```
 
@@ -96,5 +90,4 @@ cat /etc/cron.d/report-health
   ```
 
 - Work in a named tmux session: `tmux new -A -s <project>` — see
-  [cheatsheets/tmux.md](../cheatsheets/tmux.md). An ssh disconnect then only detaches
-  instead of killing running processes (Claude Code, builds).
+  [cheatsheets/tmux.md](../cheatsheets/tmux.md).

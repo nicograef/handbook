@@ -1,6 +1,6 @@
-<!-- Claude Code: create a sibling CLAUDE.md whose first line is `@AGENTS.md`
-     (or run `ln -s AGENTS.md CLAUDE.md`) so it loads the same rules as every
-     Copilot surface. Keep the rules in this one file. -->
+<!-- Claude Code reads CLAUDE.md, never AGENTS.md: create a sibling CLAUDE.md whose
+     first line is `@AGENTS.md` (or run `ln -s AGENTS.md CLAUDE.md`). Keep the rules
+     in this one file. -->
 
 # Agent Instructions — <project-name>
 

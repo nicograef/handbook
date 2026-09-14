@@ -1,7 +1,6 @@
 # tmux
 
-Prefix is `Ctrl-b` (press and release, then the key). Config:
-[templates/.tmux.conf](../templates/.tmux.conf).
+Config: [templates/.tmux.conf](../templates/.tmux.conf).
 
 ```bash
 tmux source-file ~/.tmux.conf     # apply config changes to the running server
@@ -26,12 +25,3 @@ loginctl show-user "$USER" -p Linger    # expect Linger=yes
 Lingering also bounds an out-of-memory kill. The kill lands on the user manager;
 a lingering one stays up instead of taking its slice down. Diagnosing one:
 [maintenance.md](../guides/maintenance.md#after-an-oom-kill).
-
-## Scrollback / copy mode
-
-| Key                | Action                                  |
-| ------------------ | --------------------------------------- |
-| Prefix + `[`       | Enter copy mode (then arrows/PgUp)      |
-| `Space` … `Enter` (vi) / `C-Space` … `M-w` (emacs) | Start selection … copy it |
-| Prefix + `]`       | Paste                                   |
-| `q`                | Leave copy mode                         |

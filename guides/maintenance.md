@@ -2,8 +2,6 @@
 
 ## Image updates (every deploy)
 
-**Rule: no auto-pull in production.**
-
 - Image tags in [docker-compose.prod.yml](../templates/docker-compose.prod.yml) are
   explicit, not `latest`, and bumped **deliberately** at deploy time. Only `certbot` is
   pinned to a concrete version; `postgres` and `nginx` use minor-series tags.
@@ -13,7 +11,6 @@
 
 ### Prerequisites
 
-- SSH access to the server, in the Compose project dir.
 - The tag change committed to the repo, so the running stack matches source.
 - Edit the Compose file in git, not on the box.
 
@@ -100,8 +97,7 @@
    ```
 
    Expected: every service is listed with `STATUS` `Up …`, and `postgres` shows
-   `(healthy)`. No service in `Restarting` or `Exit`. (Command reference:
-   [Docker Compose cheatsheet](../cheatsheets/docker-compose.md).)
+   `(healthy)`. No service in `Restarting` or `Exit`.
 
 4. **Confirm the site is reachable over HTTPS** from off the box:
 

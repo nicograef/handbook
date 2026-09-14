@@ -1,6 +1,4 @@
 #!/usr/bin/env bash
-# Claude Code status line for Nico
-#
 # This script intentionally omits `set -euo pipefail`: a status line should degrade
 # gracefully (print what it can) rather than crash the whole line on a missing field
 # or a failed subcommand.
@@ -29,9 +27,6 @@ cost=$(echo "$input" | jq -r '.cost.total_cost_usd // empty')
 added=$(echo "$input" | jq -r '.cost.total_lines_added // 0')
 removed=$(echo "$input" | jq -r '.cost.total_lines_removed // 0')
 
-# Colors: cyan for the model, dim for directory, percentage and cost,
-# green/yellow/red for the context bar, green/red for the +/- counts;
-# the branch alone is uncoloured.
 CYAN='\033[36m'
 DIM='\033[2m'
 GREEN='\033[32m'
@@ -39,7 +34,6 @@ YELLOW='\033[33m'
 RED='\033[31m'
 RESET='\033[0m'
 
-# Line 1
 if [[ -n "$branch" ]]; then
   printf "${CYAN}%s${RESET}  ${DIM}%s${RESET}  %s" "$short_model" "$dir" "$branch"
 else

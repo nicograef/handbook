@@ -14,10 +14,10 @@ marketplace.
 - **Namespaced components** — skills invoke as `/handbook:<skill>`, e.g. `/handbook:distill`.
   The bare `/distill` also works unless another command claims that name — as on a dev
   machine that also symlinks the skills.
+- **Skills index** — [.claude/skills/README.md](../.claude/skills/README.md).
 
 ## Prerequisites
 
-- Claude Code CLI installed and authenticated (`claude`).
 - Network access to `github.com/nicograef/handbook` (public repo).
 
 ## Install on a fresh machine
@@ -39,8 +39,6 @@ steps (not verified).
 - **New file** — copy [`templates/claude-settings.json`](../templates/claude-settings.json)
   to the project as `.claude/settings.json`.
 - **Existing file** — merge its three keys into the existing content.
-- **The three keys** — `attribution`, `extraKnownMarketplaces.nicograef`, and
-  `enabledPlugins."handbook@nicograef"`.
 
 ## Dev-machine opt-out
 
@@ -55,8 +53,6 @@ In each adopted repo, add a **gitignored** `.claude/settings.local.json`:
 - **Local scope overrides project scope** — skills never load twice on the dev machine.
 - **Cloud sessions** on the same repo stay enabled.
 - **Keep `.claude/settings.local.json`** out of version control — [templates/.gitignore](../templates/.gitignore) covers it.
-- **Codespaces** — created by [`scripts/install-dotfiles.sh`](../scripts/install-dotfiles.sh).
-- **Manual creation** is only needed on machines that don't use the dotfiles install.
 
 ## Update behavior
 
@@ -93,10 +89,3 @@ claude plugin details handbook   # one skill per .claude/skills/ dir, 1 agent, 0
 # after an update
 claude plugin list               # installed SHA matches the pushed commit
 ```
-
----
-
-See also:
-- [templates/claude-settings.json](../templates/claude-settings.json) — project adoption snippet
-- [guides/dotfiles-codespaces.md](dotfiles-codespaces.md) — local symlink tier
-- [.claude/skills/README.md](../.claude/skills/README.md) — skills index and consumption matrix

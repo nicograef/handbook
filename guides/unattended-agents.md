@@ -38,7 +38,7 @@ every one after a plain-text turn. None followed a question or a denial.
 | A question whose answer the agent had already recommended | 13 of 17 questions |
 | A permission denial | 12 across ten sessions |
 
-- The rule: [claude/CLAUDE.md](../claude/CLAUDE.md) § Agent Working Rules — never end a turn
+- The rule: [claude/CLAUDE.md](../claude/CLAUDE.md) § Working rules — never end a turn
   on what you are about to do.
 
 ## Step 1 — pick the posture
@@ -71,8 +71,6 @@ Add a `PermissionDenied` hook so a stalled run leaves evidence of what it wanted
 - `"$defaults"` must be present anywhere in the array — defaults splice in at its
   position; entries may go before or after it. Omitting it discards the built-ins.
 - Name your source-control org, repo visibility, trusted hosts and sensitive paths.
-- Confirm it took effect: `claude auto-mode config`.
-- Print the built-in rules to compare: `claude auto-mode defaults`.
 
 ## Step 4 — run unattended in the container
 
@@ -112,20 +110,16 @@ A live plan run must not yield the turn between phases. Two mechanisms hold it:
 | `outputStyle: "Proactive"` | Executes immediately, assumes instead of pausing on routine decisions. Main conversation only — subagents keep their own prompt. |
 | [scripts/plan-run-guard.sh](../scripts/plan-run-guard.sh) | Stop hook. Blocks the stop while `plan/<slug>` has an unticked criterion. |
 
-- It reads the plan from the run branch, never from the calling checkout. The
-  base-branch copy stays stale for the whole run, by design.
-- It nudges once per branch tip. A run that stops committing stops being nudged,
-  so an abandoned `plan/*` branch cannot trap the repo.
+- Where it reads the plan and when it nudges: the header of [scripts/plan-run-guard.sh](../scripts/plan-run-guard.sh).
 - `stop_hook_active` lets the next stop through, so a session can always end.
 - Disarm it per repo: `touch "$(git rev-parse --git-dir)/plan-run-guard-off"`.
-- Test it: `make test-plan-run-guard`.
 
 ## Step 7 — survive the stops you cannot prevent
 
 | Stop | Recovery |
 | --- | --- |
-| Usage limit, terminal API error | Committed work survives. Resume from git — [implement-plan/git.md](../.claude/skills/implement-plan/git.md). |
-| Capacity 429 / 529 | `CLAUDE_CODE_RETRY_WATCHDOG=1` retries indefinitely. Documented for capacity errors only. |
+| Usage limit, terminal API error | Committed work survives. Resume from git — [implement-plan/git.md](../.claude/skills/implement-plan/git.md); the failure strings are in [implement-plan/SKILL.md](../.claude/skills/implement-plan/SKILL.md). |
+| Capacity 429 / 529 | `CLAUDE_CODE_RETRY_WATCHDOG=1` — see [implement-plan/SKILL.md](../.claude/skills/implement-plan/SKILL.md). |
 | Agent returned `null` | Its branch holds every criterion it committed. Re-dispatch from its last commit. |
 
 - The durable record is the commits, never the session.

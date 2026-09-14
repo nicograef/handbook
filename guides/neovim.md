@@ -1,7 +1,6 @@
 # Neovim
 
 Minimal Neovim for prose, Markdown, YAML and JSON: one config file, no plugins, no IDE layer.
-Keys and learning path: [cheatsheets/neovim.md](../cheatsheets/neovim.md).
 
 - [templates/init.lua](../templates/init.lua) is the whole config; it sets only non-defaults.
 - [scripts/install-dotfiles.sh](../scripts/install-dotfiles.sh) links it to `~/.config/nvim/init.lua`.
@@ -13,9 +12,7 @@ Keys and learning path: [cheatsheets/neovim.md](../cheatsheets/neovim.md).
 - The latest Neovim release, from [github.com/neovim/neovim/releases](https://github.com/neovim/neovim/releases/latest).
   apt lags a major version behind (Debian 13 ships 0.10) and is not used.
 - The handbook cloned and [`install.sh`](../install.sh) run — [bootstrap.md](bootstrap.md#new-dev-machine).
-- A desktop clipboard needs `xclip` — also on Wayland, through XWayland. `wl-clipboard` opens a
-  hidden window per copy on GNOME, which steals focus and raises a notification each time.
-- Over SSH, Neovim uses OSC 52 by itself when the terminal supports it.
+- A desktop clipboard needs `xclip`; the clipboard comment in [templates/init.lua](../templates/init.lua) says why.
 
 ## Steps
 
@@ -36,11 +33,7 @@ Keys and learning path: [cheatsheets/neovim.md](../cheatsheets/neovim.md).
    The tarball does not refresh itself; the [release page](https://github.com/neovim/neovim/releases/latest)
    shows when a re-run is due. Source: [INSTALL.md](https://github.com/neovim/neovim/blob/master/INSTALL.md).
 
-2. **Link the config.** `install.sh` is idempotent; re-run it when the clone predates the link.
-
-   ```bash
-   ./install.sh                           # from the handbook clone
-   ```
+2. **Link the config.** Run `./install.sh` from the handbook clone; it is idempotent, so re-run it when the clone predates the link.
 
 3. **Check the providers.** A desktop lists `xclip`; a server reports no tool, which is expected.
 
@@ -48,7 +41,7 @@ Keys and learning path: [cheatsheets/neovim.md](../cheatsheets/neovim.md).
    nvim +'checkhealth vim.provider'
    ```
 
-4. **Start the tutorial.** It is interactive: an exercise flips from ✗ to ✓ when done.
+4. **Start the tutorial.**
 
    ```bash
    nvim +Tutor
@@ -56,14 +49,19 @@ Keys and learning path: [cheatsheets/neovim.md](../cheatsheets/neovim.md).
 
 ## German keyboard
 
-The `de` layout puts `[ ] { } /` behind AltGr or Shift; `^` and the backtick are dead keys.
-The config keeps the layout and remaps the free umlaut keys — the table is in the
-[cheatsheet](../cheatsheets/neovim.md#german-keyboard-xkb-de).
+`[ ] { } /` sit behind AltGr or Shift. The config moves them to the umlaut keys in Normal,
+Visual and Operator-pending mode. Insert mode and `f`, `t`, `r` still get the umlaut.
+The mechanism is the German-keyboard comment in [templates/init.lua](../templates/init.lua).
 
-- `'langmap'` translates the umlaut keys for built-in commands and text objects (`di[`).
-- The keymaps cover mapped commands such as `[<Space>`; `remap = true` makes them reach.
-- `f`, `t`, `r` and marks still take the literal umlaut; Insert mode is untouched.
-- Dead keys stay dead: use `0` or `_` for `^`, `'a` for a mark, `Ctrl-6` for `Ctrl-^`.
+| Press       | Acts as             | Example                                                   |
+| ----------- | ------------------- | --------------------------------------------------------- |
+| `ö` / `ä`   | `[` / `]`           | `diö` deletes inside brackets; `ö<Space>` adds a blank line above |
+| `Ö` / `Ä`   | `{` / `}`           | `Ä` jumps a paragraph down; `dÄ` deletes to the paragraph end |
+| `ß`         | `/`                 | `ßword` searches for word                                 |
+| `0` or `_`  | instead of `^`      | `^` is a dead key on `de`                                 |
+| `'a`        | instead of `` `a `` | the backtick is a dead key on `de`                        |
+| `Ctrl-6`    | `Ctrl-^`            | previous file                                             |
+| `K` in help | `Ctrl-]`            | follows the help tag under the cursor                     |
 
 Alternative — switch the layout to **German (US)**: the US layout with umlauts on AltGr+u/o/a
 and eszett on AltGr+s. Every Vim key then sits in its US position, dead keys included.

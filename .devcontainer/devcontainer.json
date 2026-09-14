@@ -1,6 +1,5 @@
 // Dev Container for the handbook repo itself — the proven specialization of
 // templates/devcontainer.json. Carries the toolchain make check needs.
-// Docs: https://containers.dev/implementors/json_reference/
 {
   "name": "handbook-dev",
 

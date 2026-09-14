@@ -5,7 +5,6 @@ Automated TLS certificates via Certbot webroot challenge, running entirely insid
 ## Prerequisites
 
 1. DNS A record pointing to the VPS IP (+ optional `www` subdomain)
-2. Docker + Compose installed
 
 ### Inputs
 
@@ -14,7 +13,6 @@ Collect these before starting:
 | Placeholder | Description | Example |
 | ----------- | ----------- | ------- |
 | `<project-name>` | Compose project name — the volume prefix set with `-p` (replaces `myapp`) | `myapp` |
-| `CERT_PING_URL` | Optional cert-renewal heartbeat — see [monitoring.md](monitoring.md) | — |
 
 > Volume names are prefixed with the Compose project name (e.g. `myapp_letsencrypt`).
 > Check with `docker volume ls | grep letsencrypt`. Use the **same** `-p myapp` for the

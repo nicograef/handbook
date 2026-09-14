@@ -18,17 +18,15 @@ workload needs.
 
 1. **Provision & harden** (always) — [provision-server.md](provision-server.md)
    via the cloud-init primary path.
-2. **IPv6-only box only** — [ipv6-only-vps.md](ipv6-only-vps.md): DNS64
-   resolvers for IPv4-only services (GitHub!) and Docker IPv6 networking. Skip
-   on dual-stack servers.
+2. **IPv6-only box only** — [ipv6-only-vps.md](ipv6-only-vps.md). Skip on dual-stack servers.
 3. **Install dotfiles on the server** (optional) —
    [After provisioning](provision-server.md#after-provisioning); only if you SSH
    in to work on the box.
 4. **Deploy TLS + reverse proxy** (web app only). Point DNS at the VPS first.
 
-   - Follow [letsencrypt-docker.md](letsencrypt-docker.md).
-   - First deploy: [templates/docker-compose.prod.yml](../templates/docker-compose.prod.yml)
-     and [scripts/prod-init.sh](../scripts/prod-init.sh).
+   - First deploy: [scripts/prod-init.sh](../scripts/prod-init.sh) with
+     [templates/docker-compose.prod.yml](../templates/docker-compose.prod.yml).
+   - Then [letsencrypt-docker.md](letsencrypt-docker.md) to verify and troubleshoot the certs.
 
 5. **External monitoring** — [monitoring.md](monitoring.md).
 
@@ -38,8 +36,7 @@ workload needs.
 6. **Backups** (app has a database) —
    [postgresql-operations.md](postgresql-operations.md) with
    [scripts/backup-postgres.sh](../scripts/backup-postgres.sh) on the daily cron.
-7. **Ongoing upkeep** — [maintenance.md](maintenance.md): image bumps, the
-   monthly reboot routine, disk checks, and the quarterly restore drill.
+7. **Ongoing upkeep** — [maintenance.md](maintenance.md).
 
 **Done when** these Verify sections pass:
 
@@ -49,9 +46,6 @@ workload needs.
 - [backups](postgresql-operations.md#verify)
 
 ## New Codespace
-
-One-time account setup that makes every future Codespace bootstrap your shell and
-Claude config automatically.
 
 **Gather first** — [dotfiles-codespaces.md#prerequisites](dotfiles-codespaces.md#prerequisites).
 
@@ -72,8 +66,6 @@ Claude config automatically.
 Codespace.
 
 ## New dev machine
-
-Two tiers — pick by what the machine is for. A machine can carry both.
 
 **Gather first** — [dotfiles-codespaces.md#prerequisites](dotfiles-codespaces.md#prerequisites)
 (symlink tier), [claude-plugin.md#prerequisites](claude-plugin.md#prerequisites) (plugin tier).

@@ -19,7 +19,7 @@ Transport: `~/.claude/agent-bus.sh` (source: `scripts/agent-bus.sh`; its usage h
 
 ## Workflow
 
-1. `agent-bus.sh peers`. Alone prints "No other live session is working in this repo." and you work normally.
+1. `agent-bus.sh peers`. Alone you work normally.
 2. `agent-bus.sh announce "<task>" --paths a,b --resources 127.0.0.1:5433,db-1 --needs phase-3 --provides phase-6` before the first edit. Re-announce when the claim changes; omitted flags keep their value. Resources are what git cannot see: ports, containers, volumes, fixture data.
 3. `agent-bus.sh radar` before the first edit, before every rebase, fold or landing, after a peer lands, and after resolving a conflict.
 

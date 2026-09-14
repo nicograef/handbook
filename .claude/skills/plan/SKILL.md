@@ -14,7 +14,6 @@ Arguments: `$ARGUMENTS`. Output is a file, never code. `/plan <task or PRD path>
 - Reference code as `path — symbol()`, not line numbers; lines drift while phases land.
 - Durable decisions (routes, schema shapes, model names, auth approach, third-party boundaries) go in the header. Volatile details (file names, function names) stay out of phase text.
 - Decide the granularity yourself. The finished file is the review surface; the user merges or splits phases there.
-- A plan file is transient: implement-plan deletes it once every criterion is ticked.
 
 ## Workflow
 

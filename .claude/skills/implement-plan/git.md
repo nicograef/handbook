@@ -1,6 +1,6 @@
 # Git sequences
 
-Verified at git 2.47.3. Every merge and rebase carries `-c rerere.enabled=false`.
+Verified at git 2.47.3.
 
 ## Pickup
 
@@ -66,33 +66,7 @@ git -C "$MAIN" -c rerere.enabled=false merge --ff-only plan/<slug>
 
 ## Conflicts
 
-List with `git diff --name-only --diff-filter=U`; classify by porcelain code: `AA` add/add, `UU` content, `UD`/`DU` modify-delete, `DD` both deleted. Abort with `git -C <wt> rebase --abort` from the owning worktree, report paths and classes, hand back. A declared `.gitattributes merge=` driver is the only automatic resolution. `git reflog show <branch>` is the undo ledger.
-
-## Run state block
-
-Written into the plan file on a stop, committed to `plan/<slug>`, deleted in its own commit before landing.
-
-| Field | Value |
-| --- | --- |
-| `Base` | `<base-branch> <40-hex sha>` |
-| `Run branch` | `plan/<slug>` |
-| `Worktrees` | one row per member: `<path> -> <branch> -> phase <N>` |
-| `Next criterion` | `phase <N> criterion <M>` |
-| `Verify` | the verify command, verbatim |
-| `Workflow` | `scriptPath=<path>` and `runId=<id>` |
-| `Failure` | the verbatim failure string, only when the run died |
-
-## Failure strings
-
-| String | Response |
-| --- | --- |
-| `You've hit your session limit · resets <time>` or weekly limit | Stop, commit the handoff, name the reset time. Both windows are shared across models |
-| `You've hit your Opus limit · resets <time>` | `/model` escapes only this one; a `sonnet`-eligible mechanical phase may continue |
-| `Agent terminated early due to an API error` | That `agent()` returned `null`; re-dispatch from its last commit |
-| `Server is temporarily limiting requests` / 529 | Already retried with backoff. Stop, hand off |
-| `Server error mid-response` | Not retried by design; rerun the phase from its last commit |
-
-`CLAUDE_CODE_RETRY_WATCHDOG=1` retries 429 and 529 indefinitely and fails at once on spend-limit errors. Its behaviour on plan usage limits is unverified.
+List with `git diff --name-only --diff-filter=U`; classify by porcelain code. Abort with `git -C <wt> rebase --abort` from the owning worktree, report paths and classes, hand back. A declared `.gitattributes merge=` driver is the only automatic resolution. `git reflog show <branch>` is the undo ledger.
 
 ## Hazards in a multi-worktree repo
 

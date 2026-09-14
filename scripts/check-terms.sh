@@ -11,7 +11,7 @@
 #   4. Fails when the declaring chapter does not contain the term at all.
 #
 # Matching is case-insensitive and substring-based: "index" matches "Indexes".
-# See guides/audiobook-pipeline.md and .claude/skills/audiobook/writing.md.
+# See .claude/skills/audiobook/writing.md.
 
 set -euo pipefail
 
@@ -74,7 +74,6 @@ while IFS= read -r line; do
     continue
   fi
 
-  # First chapter that mentions the term at all.
   first_pos=0
   first_file=""
   i=1
