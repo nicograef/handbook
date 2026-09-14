@@ -26,7 +26,7 @@ ENTRYPOINT ["java", "-jar", "/app/app.jar"]
 ## Node.js (pnpm + Vite → Nginx)
 
 ```dockerfile
-FROM node:24-alpine AS build
+FROM node:26-alpine AS build
 WORKDIR /app
 
 COPY package.json pnpm-lock.yaml ./
