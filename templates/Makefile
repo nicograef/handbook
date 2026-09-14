@@ -5,6 +5,10 @@
 # include .env
 # export
 
+# Compose project name: the prod targets and scripts/prod-init.sh must share it,
+# because it prefixes the cert volumes the stack mounts.
+PROJECT ?= myapp
+
 # ── Local Development (one terminal per target) ──
 
 .PHONY: db be fe
@@ -54,16 +58,16 @@ logs:          ## Follow logs
 .PHONY: prod-init prod-up prod-down prod-logs
 
 prod-init:     ## First-time prod setup (cert + stack)
-	./scripts/prod-init.sh
+	PROJECT=$(PROJECT) ./scripts/prod-init.sh
 
 prod-up:       ## Start production stack (HTTPS)
-	docker compose -f docker-compose.prod.yml up --build -d
+	docker compose -p $(PROJECT) -f docker-compose.prod.yml up --build -d
 
 prod-down:     ## Stop production stack
-	docker compose -f docker-compose.prod.yml down
+	docker compose -p $(PROJECT) -f docker-compose.prod.yml down
 
 prod-logs:     ## Follow production logs
-	docker compose -f docker-compose.prod.yml logs -f
+	docker compose -p $(PROJECT) -f docker-compose.prod.yml logs -f
 
 # ── Release ──
 
