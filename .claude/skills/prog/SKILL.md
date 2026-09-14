@@ -7,7 +7,7 @@ allowed-tools: Bash, Read, Grep, Glob
 
 # Prog
 
-Structured output only: tables and lists, no prose.
+Arguments: `$ARGUMENTS`. Structured output only: tables and lists, no prose.
 
 1. List every step or phase of the current plan, skill run or workflow. Status per row: done, open, or blocked and by what.
 2. List every decision or question the user has to answer for the work to continue.

@@ -6,7 +6,7 @@ argument-hint: "[paths | staged | last-commit | repo | ux]"
 
 # Cleanup
 
-Report first, change nothing until the user picks. Behaviour stays identical before and after every applied fix.
+Arguments: `$ARGUMENTS`. Report first, change nothing until the user picks. Behaviour stays identical before and after every applied fix.
 
 ## Scope
 

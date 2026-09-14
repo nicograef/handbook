@@ -6,7 +6,7 @@ argument-hint: "[prd] <task, PRD path, or problem description>"
 
 # Plan
 
-Output is a file, never code. `plan` writes `docs/plans/plan-<slug>.md`; `plan prd` writes `docs/prds/prd-<name>.md`.
+Arguments: `$ARGUMENTS`. Output is a file, never code. `/plan <task or PRD path>` writes `docs/plans/plan-<slug>.md`; `/plan prd <problem>` writes `docs/prds/prd-<name>.md`.
 
 ## Rules the templates depend on
 
