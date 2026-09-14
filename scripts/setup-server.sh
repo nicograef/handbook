@@ -267,7 +267,7 @@ run usermod -aG docker "$USERNAME"
 # selection prefer it over a ULA source for dual-stack targets, so IPv4 must go
 # entirely. ULA subnets are NAT66-masqueraded by default. See guides/ipv6-only-vps.md.
 if [[ -f /etc/docker/daemon.json ]]; then
-  echo "  /etc/docker/daemon.json already exists — merge the log-rotation (and on IPv6-only hosts the IPv6) keys manually (see guides/ipv6-only-vps.md)."
+  echo "  /etc/docker/daemon.json already exists — merge the log-rotation (and on IPv6-only hosts the IPv6) keys manually (the keys are in the daemon.json block below)."
 elif ! ip -4 route get 1.1.1.1 &>/dev/null; then
   log "No IPv4 route — enabling IPv6-only container networking + log rotation"
   write_file /etc/docker/daemon.json <<'EOF'

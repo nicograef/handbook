@@ -1,7 +1,7 @@
 -- init.lua – minimal Neovim for prose, Markdown, YAML and JSON. Latest Neovim release.
 -- scripts/install-dotfiles.sh links it to ~/.config/nvim/init.lua; guides/neovim.md
 -- covers install and use. Only non-defaults are set: `:help nvim-defaults` lists what
--- is already on (syntax, filetype detection, incsearch, hlsearch, mouse, wrap, editorconfig).
+-- is already on (syntax, filetype detection, incsearch, hlsearch, mouse, editorconfig).
 
 -- ── Editing ──────────────────────────────────────────────────────────────────
 vim.o.number = true

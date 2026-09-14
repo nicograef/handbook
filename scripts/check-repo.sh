@@ -196,8 +196,7 @@ check_plugin() {
 #
 # It strips YAML frontmatter, fenced code, HTML comments, table rows, inline code spans and
 # link URLs, then flags paragraphs over PROSE_MAX_PARA_LINES and sentences over
-# PROSE_MAX_WORDS. Sentence splitting keeps `e.g.`, `i.e.`, `etc.`, `vs.`, `cf.` and any
-# digit-preceded period intact.
+# PROSE_MAX_WORDS. Sentence splitting keeps `e.g.`, `i.e.`, `etc.`, `vs.` and `cf.` intact.
 prose_scan() {
   LC_ALL=C awk -v file="$1" -v maxwords="$PROSE_MAX_WORDS" -v maxpara="$PROSE_MAX_PARA_LINES" '
     # clean strips inline code, images, link URLs, autolinks and emphasis markers.

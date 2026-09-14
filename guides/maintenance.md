@@ -33,7 +33,7 @@
    ```
 
    Expected: `pull` reports `Pulled` (or `Already exists` for unchanged layers)
-   per image and exits 0; `build` ends with `Successfully tagged` / no error.
+   per image and exits 0; `build` ends with a `Built` line per service.
 
 3. **Recreate the stack** so containers run the new images:
 
@@ -41,7 +41,7 @@
    docker compose -f docker-compose.prod.yml up -d
    ```
 
-   Expected: only the changed services are recreated (`Recreating …` /
+   Expected: only the changed services are recreated (`Recreated` /
    `Started`); unchanged ones report `Running`.
 
 4. **Verify the stack is healthy** (see [reboot routine](#reboot-routine-monthly)

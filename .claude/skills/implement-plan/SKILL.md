@@ -68,7 +68,7 @@ Written into the plan file on a stop, committed to `plan/<slug>`, deleted in its
 | `Server is temporarily limiting requests` / 529 | Already retried with backoff. Stop, hand off |
 | `Server error mid-response` | Not retried by design; rerun the phase from its last commit |
 
-`CLAUDE_CODE_RETRY_WATCHDOG=1` retries 429 and 529 indefinitely and fails at once on spend-limit errors. Its behaviour on plan usage limits is unverified.
+`CLAUDE_CODE_RETRY_WATCHDOG=1` retries 429 and 529 up to 300 times instead of 10 and fails at once on spend-limit errors. Its behaviour on plan usage limits is unverified.
 
 ## Dispatch
 

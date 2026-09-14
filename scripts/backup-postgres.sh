@@ -6,7 +6,7 @@
 #   BACKUP_DIR=/opt/backups/postgres COMPOSE_DIR=/opt/myapp scripts/backup-postgres.sh
 #
 #   Intended for cron — see guides/postgresql-operations.md §3:
-#     0 3 * * * /opt/scripts/backup-postgres.sh >> /var/log/pg-backup.log 2>&1
+#     0 3 * * * BACKUP_DIR=/opt/backups/postgres COMPOSE_DIR=/opt/myapp /opt/scripts/backup-postgres.sh >> /var/log/pg-backup.log 2>&1
 #
 # What it does:
 #   1. Loads the Compose .env from COMPOSE_DIR.

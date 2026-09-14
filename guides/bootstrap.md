@@ -19,7 +19,7 @@ workload needs.
 1. **Provision & harden** (always) — [provision-server.md](provision-server.md)
    via the cloud-init primary path.
 2. **IPv6-only box only** — [ipv6-only-vps.md](ipv6-only-vps.md). Skip on dual-stack servers.
-3. **Install dotfiles on the server** (optional) —
+3. **Install the CLI tools the aliases expect** (optional) —
    [After provisioning](provision-server.md#after-provisioning); only if you SSH
    in to work on the box.
 4. **Deploy TLS + reverse proxy** (web app only). Point DNS at the VPS first.

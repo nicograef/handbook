@@ -75,10 +75,8 @@ claude plugin update handbook@nicograef       # repoint the install at the new S
 - **`plugin update`** moves the pin and prints `Restart to apply changes`.
 - **A running session** keeps the old copy.
 - **Verify with `claude plugin list`**, which prints the installed SHA.
-- **`claude plugin details handbook` does not verify an update.**
-- **It reports** what the marketplace currently offers, not what is installed.
-- **After `marketplace update` alone** it lists a newly pushed skill while the installed copy
-  still lacks it.
+- **`claude plugin details handbook` does not verify an update.** It reports the installed
+  copy, so after `marketplace update` alone it still lacks a newly pushed skill.
 
 ## Verify
 

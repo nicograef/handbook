@@ -21,7 +21,7 @@ EXPOSE 8080
 ENTRYPOINT ["java", "-jar", "/app/app.jar"]
 ```
 
-- `-DskipTests -B` → tests run in CI, not in Docker build
+- `-DskipTests -B` → no tests inside the Docker build
 
 ## Node.js (pnpm + Vite → Nginx)
 

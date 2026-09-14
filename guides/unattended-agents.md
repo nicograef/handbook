@@ -59,8 +59,7 @@ Add a `PermissionDenied` hook so a stalled run leaves evidence of what it wanted
 
 - Already present in [claude/settings.json](../claude/settings.json).
 - Read it after a run: `tail -20 ~/.claude/denials.log`.
-- Each line names the exact command to allowlist or the destination to add to
-  `autoMode.environment`.
+- Each line names the denied Bash command or file path to allowlist.
 
 ## Step 3 — teach the classifier your infrastructure
 

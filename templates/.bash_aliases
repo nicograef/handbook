@@ -41,8 +41,8 @@ fi
 # load bash-completion here first: fzf's completion.bash prefers _comp_load
 # (bash-completion ≥ 2.12), then __load_completion, then the legacy _completion_loader,
 # and only wraps an existing completion (e.g. git's) when one is defined — otherwise
-# it clobbers git with plain path completion. bash-completion is idempotent, so
-# .bashrc's later load is a harmless no-op.
+# it clobbers git with plain path completion. .bashrc's later load re-registers
+# bash-completion's default completer, so `**` works only where fzf bound a command.
 if command -v fzf >/dev/null; then
   if ! declare -F _comp_load >/dev/null && ! declare -F _completion_loader >/dev/null; then
     for _bc in /usr/share/bash-completion/bash_completion /etc/bash_completion; do

@@ -1,6 +1,6 @@
 # Git sequences
 
-Verified at git 2.47.3.
+Verified at git 2.53.0.
 
 ## Pickup
 

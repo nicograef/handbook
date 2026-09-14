@@ -80,8 +80,8 @@ shared across multiple pages.
 
 Prefer explicit return types on non-trivial functions. Validate data with Zod at API boundaries.
 
-Use **shadcn/ui** for complex interactive components, and the `cn()` helper (`clsx` +
-`tailwind-merge`) to conditionally combine Tailwind classes.
+Use **shadcn/ui** for complex interactive components, and the `cn()` helper from the `cn`
+package to conditionally combine Tailwind classes.
 
 Co-locate component-specific helpers, types, and sub-components — only extract when reused.
 

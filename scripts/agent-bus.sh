@@ -252,8 +252,8 @@ resolve_peer() {
     fi
   done
 
-  # A session that has not announced yet has no registry entry, but it is still
-  # live and still addressable. Fall back to the process list.
+  # A session whose SessionStart hook never ran here has no registry entry, but it
+  # is still live and still addressable. Fall back to the process list.
   if [[ "${#hits[@]}" -eq 0 ]]; then
     local l_sid _l_pid l_cwd l_name _l_status
     while IFS=$'\t' read -r l_sid _l_pid l_cwd l_name _l_status; do
