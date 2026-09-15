@@ -72,6 +72,7 @@ Heading-grouped rules and idioms per stack — reference material, not runbooks.
 | [scripts/report-health.sh](scripts/report-health.sh)       | Daily dead-man health ping (reboot-required + unattended-upgrades + OOM check) |
 | [scripts/install-dotfiles.sh](scripts/install-dotfiles.sh) | Symlink shell and Claude config on a dev machine; `install.sh`          |
 | [scripts/agent-bus.sh](scripts/agent-bus.sh)               | Coordination bus for concurrent Claude Code sessions in one repo        |
+| [scripts/check-agents.sh](scripts/check-agents.sh)         | Last activity of background agents, read off their task transcripts     |
 | [scripts/check-repo.sh](scripts/check-repo.sh)             | Repo self-check; `make check`                                          |
 | [scripts/test-prune.sh](scripts/test-prune.sh)             | Fixture test for the prune skill's `prune-state.sh`; `make test-prune`  |
 | [scripts/test-agent-bus.sh](scripts/test-agent-bus.sh)     | Fixture test for `agent-bus.sh`; `make test-agent-bus`                  |

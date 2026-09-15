@@ -62,7 +62,7 @@ Written into the plan file on a stop, committed to `plan/<slug>`, deleted in its
 | String | Response |
 | --- | --- |
 | `You've hit your session limit · resets <time>` or weekly limit | Stop, commit the handoff, name the reset time. Both windows are shared across models |
-| `You've hit your Opus limit · resets <time>` | `/model` escapes only this one; a `sonnet`-eligible mechanical phase may continue |
+| `You've hit your Opus limit · resets <time>` | Stop, commit the handoff, name the reset time. The user switches account; the run never switches model |
 | `Agent terminated early due to an API error` | That `agent()` returned `null`; re-dispatch from its last commit |
 | `Server is temporarily limiting requests` / 529 | Already retried with backoff. Stop, hand off |
 | `Server error mid-response` | Not retried by design; rerun the phase from its last commit |

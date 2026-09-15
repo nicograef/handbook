@@ -41,7 +41,7 @@ Lead with the answer or the problem. Sentences ≤ 20 words, one claim each. Par
 ## Models and subagents
 
 - Default Fable 5.1 (`claude-fable-5-1`); Opus 5 (`claude-opus-5`) per session via `/model`.
-- Subagents: `sonnet` for mechanical, fully specified work (search, rename, format, doc sweep); `opus` for implementation, review, debugging and synthesis. Set `model` explicitly. Fable subagents only on my instruction for that run.
+- Subagents: `sonnet` for mechanical, fully specified work (search, rename, format, doc sweep); `opus` for implementation, review, debugging and synthesis. Set `model` explicitly, reviewers included. Fable subagents only on my instruction for that run. A usage-limit error or a bare "continue" is no such instruction; I switch account instead.
 - A subagent prompt is self-contained: scope, pasted errors and paths, the rules that apply, the return format. File ownership is explicit, so no two agents write one file. Act on each result as it lands.
 - Verification is budgeted by blast radius. Redoable work gets the gate plus one batched review. Irreversible work (spend, overwrite, publish, production migration) gets probes and my read. The gate runs once, where the change is, and again only after a fold, a rebase or an unseen edit.
 - External facts about companies, tools or markets go through the web-researcher agent. Every such claim carries a source and a date.

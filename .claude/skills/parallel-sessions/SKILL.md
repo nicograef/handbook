@@ -46,5 +46,6 @@ Transport: `~/.claude/agent-bus.sh` (source: `scripts/agent-bus.sh`; its usage h
 5. `agent-bus.sh sent` shows `read` or `UNREAD` per message. `UNREAD` is undelivered: do not assume a correction landed. Delivery happens at the peer's turn end (Stop hook), next prompt, or session start; nothing polls.
 6. Answer what arrives before ending your turn, even with "no action needed".
 7. Collision: the session closer to landing keeps its base, the other rebases (tie-break: fewer commits ahead). The rebasing session confirms with `landed`. If both must write one file, one session owns it for the whole run.
+8. A session about to land a group sends `claim` on the base branch. A peer then commits to the base only after `landed`. A commit in between costs the lander a rebase and a re-gate.
 
 Liveness comes from the process table; `agent-bus.sh sweep` drops rows of crashed sessions. Uncommitted work is invisible to radar; only declared paths cover it.
