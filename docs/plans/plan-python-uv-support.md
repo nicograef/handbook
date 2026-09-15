@@ -228,7 +228,7 @@ A `## Python (uv, single stage)` section: the `ghcr.io/astral-sh/uv:<uv>-python<
 
 ### Acceptance criteria
 
-- [ ] Copying `templates/Makefile` and `templates/make-help.awk` into a scratch directory and running `make help` prints two titled sections and no `UNCLASSIFIED` entry
-- [ ] Adding an undocumented-class target to the scratch copy prints it under `UNCLASSIFIED`
-- [ ] `README.md` and step 2 name the script
-- [ ] `make check` is green
+- [x] Copying `templates/Makefile` and `templates/make-help.awk` into a scratch directory and running `make help` prints two titled sections and no `UNCLASSIFIED` entry
+- [x] Adding an undocumented-class target to the scratch copy prints it under `UNCLASSIFIED`
+- [x] `README.md` and step 2 name the script
+- [x] `make check` is green
