@@ -102,10 +102,10 @@ A `## Python` section in the same form as the others. Rules with one line of rat
 
 ### Acceptance criteria
 
-- [ ] `guides/stack-conventions.md` has a `## Python` heading with every rule above and one rationale line each
-- [ ] The section names no gyva marker, waiver or module
-- [ ] `README.md` lists Python in the stack-conventions row
-- [ ] `make check` is green
+- [x] `guides/stack-conventions.md` has a `## Python` heading with every rule above and one rationale line each
+- [x] The section names no gyva marker, waiver or module
+- [x] `README.md` lists Python in the stack-conventions row
+- [x] `make check` is green
 
 ## Phase 4: Python entries in the base templates
 
