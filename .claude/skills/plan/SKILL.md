@@ -13,6 +13,7 @@ Arguments: `$ARGUMENTS`. Output is a file, never code. `/plan <task or PRD path>
 - Every phase carries a `**Depends on**` line. Only phases without one are candidates for implement-plan's concurrency test.
 - Reference code as `path — symbol()`, not line numbers; lines drift while phases land.
 - Durable decisions (routes, schema shapes, model names, auth approach, third-party boundaries) go in the header. Volatile details (file names, function names) stay out of phase text.
+- Phase text holds what to build and how to verify it. No background, no restated PRD, no rationale the header already settled.
 - Decide the granularity yourself. The finished file is the review surface; the user merges or splits phases there.
 
 ## Workflow

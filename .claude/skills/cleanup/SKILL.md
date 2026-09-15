@@ -18,6 +18,7 @@ Named files or area, else staged changes, else unstaged, else the last commit, e
 | --- | --- |
 | Readability | Names that describe implementation instead of the concept, inconsistent names for one concept, clever code, deep nesting where a guard clause would flatten it |
 | Prose slop | Docs, comments and commit text that read machine-written: puffery, filler, trailing "ensuring that…" phrases, synonym cycling, collaborative residue ("as requested…"), comments narrating the line below |
+| Doc residue | Markdown files that record a session (summary, report, notes, walkthrough), docs restating the code or a commit, docstrings repeating a typed signature. Suggest deletion, not rewording |
 | Code slop | Defensive checks on values just constructed, type escape hatches (`as any`, `interface{}`, `@ts-ignore` without reason), single-use wrappers and one-implementation interfaces, config values that restate the tool default, template boilerplate the project does not use |
 | Principles | Knowledge duplication (not coincidental similarity), speculative extension points, functions with several reasons to change. Calibrate: 2–3 branches are fine; test setup repetition is fine |
 | Architecture | Domain code importing ORM, HTTP or framework types; infrastructure built inside domain functions; repositories returning rows instead of domain objects; external DTOs and SDK enums reaching domain code; modules reaching into another module's tables or internals |

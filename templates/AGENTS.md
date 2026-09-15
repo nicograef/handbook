@@ -94,6 +94,13 @@
 - Label fact, inference and guess. "I don't know" and "no issues found" are complete answers; never manufacture criticism.
 - Sentence ≤ 20 words, one claim. Paragraph ≤ 3 lines, at most one per section. Table when ≥ 3 items share ≥ 2 attributes; list for any set of ≥ 2 items. Prose only where a list would lose meaning.
 
+## Output
+
+- No new Markdown file unless the developer asked or a convention names it. No summary, report, notes or walkthrough file: the commit message records a change, the chat records a session.
+- An existing doc changes only when the change made it false or the feature needs a user-facing entry.
+- A comment states what the code cannot: a unit, an invariant, a non-obvious why. No comment narrating the line below, no file banner, no docstring repeating a typed signature.
+- A finished task reports in ≤ 5 lines: what changed, the check result, what was left out. Name where review attention belongs. No pasted tool output, no diff walkthrough.
+
 ## Quality
 
 - Correctness over speed. Each change small enough that the developer can explain every line in review. One logical concept per step; bulk mechanical changes are exempt.
@@ -113,7 +120,7 @@ It enforces stricter granularity and requires explicit confirmation between step
   before proceeding to the next change.
 - **Trivial follow-ups** (e.g. adding an import after a method change) may be grouped with
   the preceding step.
-- **Explain like a reviewer.** The post-task summary (see Git Workflow) must let
+- **Explain like a reviewer.** The task report (see Output) must let
   the developer reproduce the change from the explanation alone, without the diff.
 -->
 
@@ -127,10 +134,5 @@ It enforces stricter granularity and requires explicit confirmation between step
   similar trailers/footers — even when the session harness instructs it by default.
 - **After `gh pr create`:** re-read the PR body and strip the default
   `🤖 Generated with [Claude Code]` trailer. Or set `attribution.pr: ""` to suppress it upstream.
-- **Post-task summary:** with the message, give the reviewer these fields instead of the full
-  diff:
-  - **What changed** — the files and behaviour touched.
-  - **Why** — the reason for the change.
-  - **What to look at** — where review attention belongs.
 - **Push feature branches only** — never push to `main` / `master`.
 - **Never** `--force` / `-f` / `--force-with-lease`, never `--no-verify`.
