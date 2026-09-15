@@ -79,11 +79,11 @@ cp "$HANDBOOK/templates/dependabot.yml" .github/dependabot.yml
 ## 5. Agent setup
 
 ```bash
-cp "$HANDBOOK/templates/AGENTS.md" AGENTS.md
 printf '@AGENTS.md\n' > CLAUDE.md          # first line imports AGENTS.md
 ```
 
-- [templates/AGENTS.md](../templates/AGENTS.md) — fill the placeholders; its Communication section carries the tone rules.
+- Write `AGENTS.md` with only what the global [claude/CLAUDE.md](../claude/CLAUDE.md) cannot know: one line on what the project is, the `make` targets, project-only rules.
+- `/init` drafts it; cut everything that restates the global file or the repo layout.
 
 ## 6. Handbook plugin adoption
 

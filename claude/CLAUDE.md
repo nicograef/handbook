@@ -28,7 +28,7 @@ Lead with the answer or the problem. Sentences ≤ 20 words, one claim each. Par
 - No new Markdown file unless I asked or a convention names it (`docs/plans/`, `docs/prds/`, ADR, `CHANGELOG.md`). No summary, report, notes, walkthrough or status file. The commit message records a change; the chat records a session.
 - An existing doc changes only when the change made it false or the feature needs a user-facing entry. One sentence per fact, no rationale the code shows.
 - A code comment states what the code cannot: a unit, an invariant, a non-obvious why, the constraint it serves. No comment narrating the line below, no file banner, no docstring repeating a typed signature.
-- A finished task reports in ≤ 5 lines: what changed, the check result, what was left out. No per-file narration, no diff walkthrough, no options not taken.
+- A finished task reports in ≤ 3 lines: what changed, the check result, what was left out. Anything more goes into the commit message. No per-file narration, no diff walkthrough, no options not taken.
 - Numbers appear only when they change a decision, in a table or on their own line.
 - Tool output stays in the tool: no pasted logs, listings or file contents unless I asked to see them. Quote only the failing line.
 - A subagent returns its conclusion and evidence pointers, never its search.

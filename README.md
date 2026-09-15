@@ -60,7 +60,6 @@ Heading-grouped rules and idioms per stack — reference material, not runbooks.
 | [templates/ci.yml](templates/ci.yml)                                   | GitHub Actions CI workflow (Go, Node, integration tests)          |
 | [templates/dependabot.yml](templates/dependabot.yml)                   | Dependabot config (monthly, one grouped PR per ecosystem)         |
 | [templates/.env.example](templates/.env.example)                       | Standard env vars for Docker Compose templates                    |
-| [templates/AGENTS.md](templates/AGENTS.md)                             | Agent instructions template, imported by a project's `CLAUDE.md`  |
 | [templates/vscode-settings.json](templates/vscode-settings.json)       | VS Code workspace settings for consistent formatting              |
 | [templates/claude-settings.json](templates/claude-settings.json)       | Project `.claude/settings.json` to adopt the handbook plugin      |
 | [templates/strip-visuals.lua](templates/strip-visuals.lua)             | Pandoc filter that removes what a narrator cannot speak           |
