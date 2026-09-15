@@ -207,9 +207,9 @@ A `## Python (uv, single stage)` section: the `ghcr.io/astral-sh/uv:<uv>-python<
 
 ### Acceptance criteria
 
-- [ ] The Python section exists with the listed elements and no gyva directory names
-- [ ] `templates/.dockerignore` exists, is indexed in `README.md` and copied in step 3
-- [ ] `make check` is green
+- [x] The Python section exists with the listed elements and no gyva directory names
+- [x] `templates/.dockerignore` exists, is indexed in `README.md` and copied in step 3
+- [x] `make check` is green
 
 ## Phase 9: Grouped `make help`
 
