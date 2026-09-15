@@ -34,8 +34,29 @@ updates:
         patterns:
           - "*"
 
+  # ── Python (uv: pyproject.toml + uv.lock) ──
+  - package-ecosystem: "uv"
+    directory: "/"
+    schedule:
+      interval: "monthly"
+    groups:
+      uv:
+        patterns:
+          - "*"
+
+  # ── Docker Compose service images ──
+  # The docker ecosystem parses Dockerfiles only, so compose image tags need this entry.
+  - package-ecosystem: "docker-compose"
+    directory: "/"
+    schedule:
+      interval: "monthly"
+    groups:
+      docker-compose:
+        patterns:
+          - "*"
+
   # ── Docker base images ──
-  # Covers Dockerfiles and Kubernetes manifests — compose image pins need a separate package-ecosystem: docker-compose entry.
+  # Covers Dockerfiles and Kubernetes manifests; enable when a Dockerfile pins a base image.
   # - package-ecosystem: "docker"
   #   directory: "/<backend-dir>" # one entry per directory containing a Dockerfile
   #   schedule:
