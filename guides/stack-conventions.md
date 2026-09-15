@@ -1,6 +1,6 @@
 # Stack Conventions
 
-Heading-grouped rules for the three stacks this handbook builds on — not a runbook.
+Heading-grouped rules for the four stacks this handbook builds on — not a runbook.
 
 ## Go
 
@@ -88,3 +88,39 @@ Co-locate component-specific helpers, types, and sub-components — only extract
 Hooks orchestrate calls through the service layer; no raw `fetch` in components or hooks.
 
 Use **Vitest** + **@testing-library/react**; test utility setup goes in `src/test/`.
+
+## Python
+
+Start every project with `uv init --package --python <version>`. It writes `pyproject.toml`,
+`.python-version` and the `src/<package>/` layout, so no layout is invented by hand.
+
+`requires-python` in `pyproject.toml` and `.python-version` name the same version. CI and the image
+then resolve the interpreter from one fact.
+
+Commit `uv.lock`. `uv sync --frozen` in CI and in the image installs the set the tree pins and never
+re-resolves one of its own.
+
+Dev tools live in the `dev` dependency group: `pytest`, `ruff`, `ty`. Nothing is installed globally,
+so a fresh checkout and CI run the same versions.
+
+Lint and format with ruff, extending its default rule set:
+
+```toml
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+
+[tool.ruff.lint]
+# extend-select adds to the default set; a bump that adds rules surfaces as a finding, not a silent pass.
+extend-select = ["I", "B", "UP", "N"]
+```
+
+Type-check with ty, not mypy. Keep `[tool.ty.src] exclude = []`: an excluded module is checked by nothing.
+
+Configure pytest in `pyproject.toml`: `testpaths = ["tests"]`, and every marker registered under `markers`.
+An opt-in marker names a real backend or a paid provider. `addopts = ["-m", "not <marker>"]` deselects it,
+so the gate stays offline by default.
+
+The gate runs in this order: `ruff check .`, `ruff format --check .`, `ty check .`, `pytest`,
+`uv lock --check`, `uv audit`. `uv lock --check` catches a dependency edit with no matching lock.
+`uv audit` runs last because it is the only step that reaches the network.

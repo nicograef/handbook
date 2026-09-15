@@ -26,7 +26,7 @@ Heading-grouped rules and idioms per stack — reference material, not runbooks.
 
 | Topic                             | File                                                                       |
 | --------------------------------- | -------------------------------------------------------------------------- |
-| Go, Java/Spring Boot, React conventions | [guides/stack-conventions.md](guides/stack-conventions.md)          |
+| Go, Java/Spring Boot, React, Python conventions | [guides/stack-conventions.md](guides/stack-conventions.md)  |
 
 ## Cheatsheets
 
