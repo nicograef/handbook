@@ -43,7 +43,7 @@ Phases i and j may run concurrently only if all hold:
 3. Every symbol j names already resolves at `$BASE` (`git grep -n <symbol> $BASE`).
 4. Neither writes a choke file: the plan, `README.md` or another index, lockfiles, `go.mod` / `package.json`, migration-sequence files.
 5. `git merge-tree --write-tree --messages "$BASE" <branch>` exits 0 for each, and the two branches merge into each other cleanly. Exit 1 is a conflict; read the exit code, not the oid.
-6. The gate survives two concurrent runs: derived database names, ports and temp paths; `.worktrees/` excluded from lint and type scans.
+6. The gate survives two concurrent runs: derived database names, ports and temp paths.
 
 ## Fold a phase branch into the run branch
 

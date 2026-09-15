@@ -34,7 +34,7 @@ Lead with the answer or the problem. Sentences ≤ 20 words, one claim each. Par
 - Debugging: name the root cause before the fix, and change one thing at a time. After three failed fixes, question the design instead of trying a fourth patch.
 - Review feedback: verify each item against the code before implementing it. Push back with the specific reason when a suggestion is wrong. Reply to inline PR comments in their thread.
 - A finished branch: run the tests, then offer merge, PR, keep or discard. Delete a branch only after merge or discard.
-- Isolated work lives in `.worktrees/<branch>` via EnterWorktree or `git worktree add`, excluded through `.git/info/exclude`.
+- Isolated work lives in `../<repo>-wt/<branch>` via `git worktree add`. A sibling directory keeps linters that walk `.` out of the lanes.
 - Other sessions may share the repo. `~/.claude/agent-bus.sh peers` lists them; with a peer present, follow the parallel-sessions skill.
 - No autonomous outbound actions: no emails, posts or external submissions; drafts stay drafts. Committing and pushing a feature branch are exempt.
 
