@@ -184,11 +184,11 @@ Every `uses:` is pinned to the full commit SHA of its current release, with the 
 
 ### Acceptance criteria
 
-- [ ] `grep -n 'uses:' templates/ci.yml` shows only `@<40-hex-sha> # v<tag>` forms
-- [ ] Every SHA resolves through `gh api repos/<owner>/<repo>/git/ref/tags/<tag>` to the commented tag
-- [ ] `on.push.branches` is `['**']` and every job has `timeout-minutes`
-- [ ] The Python job exists with the steps above, `uv audit` last
-- [ ] `make check` is green
+- [x] `grep -n 'uses:' templates/ci.yml` shows only `@<40-hex-sha> # v<tag>` forms
+- [x] Every SHA resolves through `gh api repos/<owner>/<repo>/git/ref/tags/<tag>` to the commented tag
+- [x] `on.push.branches` is `['**']` and every job has `timeout-minutes`
+- [x] The Python job exists with the steps above, `uv audit` last
+- [x] `make check` is green
 
 ## Phase 8: Python image and `.dockerignore`
 
