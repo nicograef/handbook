@@ -1,11 +1,22 @@
 # All jobs are active. Delete the ones you don't need.
 # Search for <angle-bracket> placeholders and adapt to your project.
 # Validate locally before pushing: actionlint .github/workflows/ci.yml
+#
+# Every `uses:` is pinned to a full commit SHA, with the release it stood for in the
+# trailing comment. A tag is mutable: whoever controls the upstream repository can
+# repoint it and every run picks that up silently. Dependabot's github-actions group
+# rewrites SHA and comment together, so the pins still get bumped.
+#
+# `timeout-minutes` on every job: GitHub's default is six hours. The values here are
+# placeholders; read the real figure off `gh run view <id> --json jobs` and set each
+# well above it.
 name: CI
 
+# Every push on any branch: a feature branch is measured while it is still a branch,
+# and `main` is never pushed to directly.
 on:
   push:
-    branches: [main]
+    branches: ['**']
   pull_request:
     branches: [main]
 
@@ -22,14 +33,15 @@ jobs:
   # ── Change Detection ───────────────────────────────────────────────────────
   changes:
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     outputs:
       backend: ${{ steps.changes.outputs.backend }}
       frontend: ${{ steps.changes.outputs.frontend }}
       database: ${{ steps.changes.outputs.database }}
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - name: Check for changes
-        uses: dorny/paths-filter@v4
+        uses: dorny/paths-filter@ceb8a2b8f2d89434be7ff52d3de7ec3738c5cc9d # v4.0.3
         id: changes
         with:
           filters: |
@@ -45,12 +57,18 @@ jobs:
     needs: changes
     if: ${{ needs.changes.outputs.backend == 'true' }}
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     defaults:
       run:
         working-directory: ./<backend-dir>  # e.g. ./backend
     steps:
-      - uses: actions/checkout@v7
-      - uses: actions/setup-go@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        # Only for a diff-scoped lint (one that reads `git diff <base>..HEAD`): a shallow
+        # clone carries no merge base, the diff reads as empty, and the gate is green for
+        # the one reason a gate may never be green.
+        # with:
+        #   fetch-depth: 0
+      - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
         with:
           go-version: "1.26"  # match your go.mod version
 
@@ -94,17 +112,18 @@ jobs:
     needs: changes
     if: ${{ needs.changes.outputs.backend == 'true' }}
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     defaults:
       run:
         working-directory: ./<backend-dir>
     steps:
-      - uses: actions/checkout@v7
-      - uses: actions/setup-go@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
         with:
           go-version: "1.26"
 
       - name: golangci-lint
-        uses: golangci/golangci-lint-action@v9
+        uses: golangci/golangci-lint-action@ba0d7d2ec06a0ea1cb5fa41b2e4a3ab91d21278a # v9.3.0
         with:
           version: v2.11.4  # keep in sync with scripts/setup-dev-tools.sh
           working-directory: ./<backend-dir>
@@ -114,18 +133,19 @@ jobs:
     needs: changes
     if: ${{ needs.changes.outputs.frontend == 'true' }}
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     defaults:
       run:
         working-directory: ./<frontend-dir>  # e.g. ./frontend
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
-      - uses: pnpm/action-setup@v6
+      - uses: pnpm/action-setup@ea17c68df8912ef543352723c149a84f56e3d413 # v6.1.0
         with:
           version: 12  # match your packageManager field in package.json
           run_install: false
 
-      - uses: actions/setup-node@v6
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
           node-version: 24  # match your .node-version or package.json engines
           cache: "pnpm"
@@ -146,11 +166,51 @@ jobs:
       - name: Build
         run: pnpm run build
 
+  # ── Python Backend (uv) ───────────────────────────────────────────────────
+  backend-python-ci:
+    needs: changes
+    if: ${{ needs.changes.outputs.backend == 'true' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    defaults:
+      run:
+        working-directory: ./<backend-dir>  # e.g. ./backend, or . for a root pyproject.toml
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      # setup-uv publishes no floating tag since v8, so an exact release or a SHA is the only pin.
+      - uses: astral-sh/setup-uv@bec219d24cd3e171d82865faccec33120bb574f4 # v10.1.0
+
+      # --frozen installs the set uv.lock pins and never re-resolves one of its own.
+      - name: Sync dependencies
+        run: uv sync --frozen
+
+      - name: Lint
+        run: uv run ruff check .
+
+      - name: Check format
+        run: uv run ruff format --check .
+
+      - name: Typecheck
+        run: uv run ty check .
+
+      - name: Test
+        run: uv run pytest
+
+      # Fails if pyproject.toml changed without a matching `uv lock`.
+      - name: Verify lockfile
+        run: uv lock --check
+
+      # Last: the only step that queries a remote advisory service.
+      - name: Audit
+        run: uv audit
+
   # ── Integration Tests (Go + PostgreSQL) ────────────────────────────────────
   backend-integration-tests:
     needs: changes
     if: ${{ (needs.changes.outputs.backend == 'true') || (needs.changes.outputs.database == 'true') }}
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     services:
       postgres:
         image: postgres:17
@@ -169,8 +229,8 @@ jobs:
       run:
         working-directory: ./<backend-dir>
     steps:
-      - uses: actions/checkout@v7
-      - uses: actions/setup-go@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
         with:
           go-version: "1.26"
 
