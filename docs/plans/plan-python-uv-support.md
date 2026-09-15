@@ -64,10 +64,10 @@ The global rule states `../<repo>-wt/<branch>` via `git worktree add` and the re
 
 ### Acceptance criteria
 
-- [ ] `grep -rn '\.worktrees' claude .claude guides templates` returns nothing
-- [ ] `claude/CLAUDE.md` names the sibling path and the linter reason in one bullet
-- [ ] `claude/settings.json` parses with `jq` and its environment names the sibling path
-- [ ] `make check` is green
+- [x] `grep -rn '\.worktrees' claude .claude guides templates` returns nothing
+- [x] `claude/CLAUDE.md` names the sibling path and the linter reason in one bullet
+- [x] `claude/settings.json` parses with `jq` and its environment names the sibling path
+- [x] `make check` is green
 
 ## Phase 2: uv permissions
 
