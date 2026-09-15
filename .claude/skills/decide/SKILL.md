@@ -10,7 +10,7 @@ Everything the user needs lives inside the AskUserQuestion call. The chat gets n
 
 ## Sweep
 
-1. Collect from the whole session, oldest to newest: questions the user left unanswered, assumptions you named, assumptions you made silently, deferred decisions, ambiguous requests, conflicting instructions, choices with no clear winner, and blockers only the user can lift.
+1. Collect from the whole session, oldest to newest. Sources: questions the user left unanswered, assumptions you named, assumptions you made silently, deferred decisions. Also ambiguous requests, conflicting instructions, choices with no clear winner, and blockers only the user can lift.
 2. Drop items the session settled later, and items a stated constraint settles on its own.
 3. Order the rest. An item whose answer changes another item's options comes first. Group the remainder by topic.
 4. Nothing left: say so in one line and stop.
@@ -31,6 +31,6 @@ Use multi-select only when the choices combine.
 
 ## Follow up
 
-Each answer can open a new question: an "Other" that needs detail, a pick whose sub-choices are now live, or a dependent item from the sweep. Ask those in the next round. Stop when no item remains.
+Each answer can open a new question. An "Other" needs detail; a pick makes its sub-choices live; a dependent item from the sweep is now askable. Ask those in the next round. Stop when no item remains.
 
 Then record every decision where the work is tracked: the plan file, the task, or memory when it crosses sessions. Continue the work.
