@@ -83,8 +83,8 @@ The allow-list gains `Bash(uv sync:*)`, `Bash(uv lock:*)`, `Bash(uv audit:*)`, `
 
 ### Acceptance criteria
 
-- [ ] `jq '.permissions.allow[]' claude/settings.json | grep uv` lists the six new entries and no mypy
-- [ ] `make check` is green
+- [x] `jq '.permissions.allow[]' claude/settings.json | grep uv` lists the six new entries and no mypy
+- [x] `make check` is green
 
 ## Phase 3: Python section in the stack conventions
 
