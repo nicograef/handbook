@@ -146,9 +146,9 @@ The Inputs table gains `<project-python-version>`. The matrix gains "Python serv
 
 ### Acceptance criteria
 
-- [ ] The matrix row, the input and the `.python-version` step exist and link to `stack-conventions.md#python`
-- [ ] Step 5 states the `docs/README.md` rule in at most two sentences
-- [ ] `make check` is green
+- [x] The matrix row, the input and the `.python-version` step exist and link to `stack-conventions.md#python`
+- [x] Step 5 states the `docs/README.md` rule in at most two sentences
+- [x] `make check` is green
 
 ## Phase 6: Dependabot covers uv and Compose
 
