@@ -126,10 +126,10 @@ A `## Python` section in the same form as the others. Rules with one line of rat
 
 ### Acceptance criteria
 
-- [ ] Each of the five templates carries its Python or invariant addition in the file's own style
-- [ ] `shellcheck templates/setup-dev-tools.sh` passes
-- [ ] `jq . templates/vscode-settings.json` parses
-- [ ] `make check` is green
+- [x] Each of the five templates carries its Python or invariant addition in the file's own style
+- [x] `shellcheck templates/setup-dev-tools.sh` passes
+- [x] `jq . templates/vscode-settings.json` parses
+- [x] `make check` is green
 
 ## Phase 5: Python row in the new-project guide
 
