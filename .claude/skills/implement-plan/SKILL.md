@@ -2,7 +2,6 @@
 name: implement-plan
 description: Executes a docs/plans plan end to end with no human turn between phases: run worktree, commit per acceptance criterion, verified ticks, fold, land. Also resumes a stopped run. Use when the user wants a whole plan implemented or picked back up.
 argument-hint: "<path to plan file>"
-disable-model-invocation: true
 ---
 
 # Implement Plan
