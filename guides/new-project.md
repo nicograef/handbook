@@ -16,6 +16,7 @@ This is the "New project" path of [bootstrap.md](bootstrap.md).
 | `<database-dir>` | Migrations directory (`ci.yml`) — db-backed stacks only | `database` |
 | `<database-name>` | Postgres database name (`ci.yml`) — db-backed stacks only | `myapp` |
 | `<project-go-version>` | `go` directive from `go.mod` (`setup-dev-tools.sh`) — Go stacks only | `1.26.5` |
+| `<project-python-version>` | Interpreter for `uv init` and `.python-version` — Python stacks only | `3.12` |
 
 ## 1. Create the repository
 
@@ -54,6 +55,7 @@ service in the Compose file and copy `.env.example`.
 | Full-stack Go + React | `docker-compose.yml` + `.env.example` (`db`) | Go + Node + Docker-in-Docker | backend + frontend | [stack-conventions.md#go](stack-conventions.md#go) + [#react](stack-conventions.md#react) |
 | Go service only | `docker-compose.yml` + `.env.example` (`db`) | Go + Docker-in-Docker | backend | [stack-conventions.md#go](stack-conventions.md#go) |
 | Java Spring Boot service | `docker-compose.yml` + `.env.example` (`db`) | `java` (add — not pre-listed) + Docker-in-Docker | backend | [stack-conventions.md#java](stack-conventions.md#java) |
+| Python service (uv) | `docker-compose.yml` + `.env.example` (`db`) | Python + Docker-in-Docker | backend | [stack-conventions.md#python](stack-conventions.md#python) |
 | React frontend only | `docker-compose.yml` (app only, no `db`) | Node | frontend | [stack-conventions.md#react](stack-conventions.md#react) |
 | Docs-only | — | — | — | — |
 
@@ -62,11 +64,12 @@ cp "$HANDBOOK/templates/docker-compose.yml" .          # skip for docs-only
 cp "$HANDBOOK/templates/.env.example" .                # only shapes with a db
 mkdir -p .devcontainer && cp "$HANDBOOK/templates/devcontainer.json" .devcontainer/devcontainer.json
 mkdir -p scripts && cp "$HANDBOOK/templates/setup-dev-tools.sh" scripts/setup-dev-tools.sh
+uv init --package --python <project-python-version>   # Python only: pyproject.toml, .python-version, src/
 ```
 
 - **Dockerfiles** — one per built tier, following [docker-multi-stage-builds.md](docker-multi-stage-builds.md); Java and Node examples there.
 - A Go backend uses the same two-stage pattern: compile a static binary into a minimal runtime image.
-- Then follow the linked **stack guide(s)** for source layout and conventions.
+- Then follow the linked **stack guide(s)** for source layout and conventions. A Python project adds the ruff, ty and pytest tables from there.
 
 ## 4. CI and dependency updates
 
@@ -84,6 +87,7 @@ printf '@AGENTS.md\n' > CLAUDE.md          # first line imports AGENTS.md
 
 - Write `AGENTS.md` with only what the global [claude/CLAUDE.md](../claude/CLAUDE.md) cannot know: one line on what the project is, the `make` targets, project-only rules.
 - `/init` drafts it; cut everything that restates the global file or the repo layout.
+- Create `docs/README.md` as a table with one row per page. The second column is the question that page answers.
 
 ## Verify
 
@@ -91,4 +95,5 @@ printf '@AGENTS.md\n' > CLAUDE.md          # first line imports AGENTS.md
 make help                                        # lists the stack's make targets
 head -1 CLAUDE.md                                # -> @AGENTS.md
 git symbolic-ref --short HEAD                    # -> main
+uv lock --check                                  # Python only: uv.lock matches pyproject.toml
 ```
