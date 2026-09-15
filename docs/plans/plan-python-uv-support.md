@@ -165,9 +165,9 @@ A `uv` ecosystem entry at `/`, monthly, grouped, in the same shape as `gomod`. A
 
 ### Acceptance criteria
 
-- [ ] The template has active `github-actions`, `gomod`, `npm`, `uv` and `docker-compose` entries
-- [ ] `python3 -c 'import yaml,sys; yaml.safe_load(open("templates/dependabot.yml"))'` succeeds
-- [ ] `make check` is green
+- [x] The template has active `github-actions`, `gomod`, `npm`, `uv` and `docker-compose` entries
+- [x] `python3 -c 'import yaml,sys; yaml.safe_load(open("templates/dependabot.yml"))'` succeeds
+- [x] `make check` is green
 
 ## Phase 7: CI template defaults
 
