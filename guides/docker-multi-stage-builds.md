@@ -45,7 +45,40 @@ CMD ["nginx", "-g", "daemon off;"]
 
 - `npm install -g pnpm`, not Corepack: Node 25+ images no longer ship Corepack.
 
-- Use a `.dockerignore` to exclude `node_modules/`, `.git/`, etc.
+- Copy [templates/.dockerignore](../templates/.dockerignore): the context is sent before any instruction runs.
+
+## Python (uv, single stage)
+
+One stage suffices here: the base image already carries the interpreter and the resolver.
+
+```dockerfile
+# Both versions literal: `latest` or `python3.12` alone would move under a frozen lockfile.
+FROM ghcr.io/astral-sh/uv:0.9.30-python3.12-bookworm-slim
+
+# Compile bytecode once at build time; copy instead of hardlink across the cache boundary.
+ENV UV_COMPILE_BYTECODE=1 \
+    UV_LINK_MODE=copy \
+    PATH=/app/.venv/bin:$PATH
+
+WORKDIR /app
+
+# Dependencies alone, keyed on the two files that pin them: a source edit rebuilds nothing here.
+COPY pyproject.toml uv.lock ./
+RUN uv sync --frozen --no-dev --no-install-project
+
+COPY src ./src
+RUN uv sync --frozen --no-dev
+
+# Created after the sync, so the venv is owned by root and only read by the service.
+RUN useradd --create-home --uid 10001 app
+USER app
+
+EXPOSE 8080
+CMD ["uvicorn", "--factory", "<package>.api:app", "--host", "0.0.0.0", "--port", "8080"]
+```
+
+- `--frozen` installs what `uv.lock` pins and never re-resolves; `--no-dev` leaves pytest, ruff and ty out.
+- `0.0.0.0` inside the container; the `127.0.0.1:` in the Compose port mapping is what keeps it off the internet.
 
 ## Troubleshooting
 

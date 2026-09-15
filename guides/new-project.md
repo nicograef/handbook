@@ -67,7 +67,7 @@ mkdir -p scripts && cp "$HANDBOOK/templates/setup-dev-tools.sh" scripts/setup-de
 uv init --package --python <project-python-version>   # Python only: pyproject.toml, .python-version, src/
 ```
 
-- **Dockerfiles** — one per built tier, following [docker-multi-stage-builds.md](docker-multi-stage-builds.md); Java and Node examples there.
+- **Dockerfiles** — one per built tier, following [docker-multi-stage-builds.md](docker-multi-stage-builds.md); Java, Node and Python examples there. Copy `templates/.dockerignore` beside each.
 - A Go backend uses the same two-stage pattern: compile a static binary into a minimal runtime image.
 - Then follow the linked **stack guide(s)** for source layout and conventions. A Python project adds the ruff, ty and pytest tables from there.
 

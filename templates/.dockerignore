@@ -1,0 +1,22 @@
+# The build context is sent to the daemon before any instruction runs, so a directory
+# left in here is copied on every build whether the Dockerfile names it or not.
+
+# ── Version control and CI ──
+.git/
+.github/
+
+# ── Secrets: Compose hands them in at run time ──
+.env
+.env.*
+
+# ── Host toolchains and caches: built against the host, useless in the image ──
+node_modules/
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+.ruff_cache/
+
+# ── Not served: the gate runs on a checkout, not in the image ──
+tests/
+docs/
