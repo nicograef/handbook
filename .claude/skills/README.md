@@ -14,5 +14,6 @@
 | [tutor](tutor/) | Quiz sessions with scaffolded hints and cross-session progress |
 | [audiobook](audiobook/) | Research, write and render an explanatory audiobook |
 | [prog](prog/) | Session status table; with `compact`, a compaction handoff |
+| [decide](decide/) | Put every open question of the session to the user, with context and trade-offs |
 
 Conventions: [.claude/rules/skills.md](../rules/skills.md).
