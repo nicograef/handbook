@@ -85,19 +85,10 @@ printf '@AGENTS.md\n' > CLAUDE.md          # first line imports AGENTS.md
 - Write `AGENTS.md` with only what the global [claude/CLAUDE.md](../claude/CLAUDE.md) cannot know: one line on what the project is, the `make` targets, project-only rules.
 - `/init` drafts it; cut everything that restates the global file or the repo layout.
 
-## 6. Handbook plugin adoption
-
-```bash
-mkdir -p .claude && cp "$HANDBOOK/templates/claude-settings.json" .claude/settings.json
-```
-
 ## Verify
 
 ```bash
 make help                                        # lists the stack's make targets
 head -1 CLAUDE.md                                # -> @AGENTS.md
 git symbolic-ref --short HEAD                    # -> main
-grep -Eo 'extraKnownMarketplaces|enabledPlugins' .claude/settings.json
-# -> extraKnownMarketplaces
-# -> enabledPlugins
 ```

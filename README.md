@@ -13,8 +13,6 @@ Setting something up? Start at [guides/bootstrap.md](guides/bootstrap.md).
 | IPv6-only VPS (DNS64/NAT64, Docker) | [guides/ipv6-only-vps.md](guides/ipv6-only-vps.md)                       |
 | Docker multi-stage builds         | [guides/docker-multi-stage-builds.md](guides/docker-multi-stage-builds.md) |
 | Let's Encrypt with Docker Compose | [guides/letsencrypt-docker.md](guides/letsencrypt-docker.md)               |
-| Dotfiles for GitHub Codespaces    | [guides/dotfiles-codespaces.md](guides/dotfiles-codespaces.md)             |
-| Install the handbook plugin       | [guides/claude-plugin.md](guides/claude-plugin.md)                         |
 | PostgreSQL operations             | [guides/postgresql-operations.md](guides/postgresql-operations.md)         |
 | External monitoring (Better Stack)| [guides/monitoring.md](guides/monitoring.md)                               |
 | Server maintenance & upkeep       | [guides/maintenance.md](guides/maintenance.md)                             |
@@ -36,7 +34,6 @@ Heading-grouped rules and idioms per stack — reference material, not runbooks.
 | --------------------- | -------------------------------------------------------------- |
 | tmux                  | [cheatsheets/tmux.md](cheatsheets/tmux.md)                     |
 | PostgreSQL            | [cheatsheets/postgresql.md](cheatsheets/postgresql.md)         |
-| Makefile              | [cheatsheets/makefile.md](cheatsheets/makefile.md)             |
 
 ## Templates
 
@@ -61,7 +58,6 @@ Heading-grouped rules and idioms per stack — reference material, not runbooks.
 | [templates/dependabot.yml](templates/dependabot.yml)                   | Dependabot config (monthly, one grouped PR per ecosystem)         |
 | [templates/.env.example](templates/.env.example)                       | Standard env vars for Docker Compose templates                    |
 | [templates/vscode-settings.json](templates/vscode-settings.json)       | VS Code workspace settings for consistent formatting              |
-| [templates/claude-settings.json](templates/claude-settings.json)       | Project `.claude/settings.json` to adopt the handbook plugin      |
 | [templates/strip-visuals.lua](templates/strip-visuals.lua)             | Pandoc filter that removes what a narrator cannot speak           |
 
 ## Scripts
@@ -72,7 +68,7 @@ Heading-grouped rules and idioms per stack — reference material, not runbooks.
 | [scripts/prod-init.sh](scripts/prod-init.sh)               | First-time production deploy (cert request + stack start)              |
 | [scripts/backup-postgres.sh](scripts/backup-postgres.sh)   | Verified, retained PostgreSQL backups for a Compose stack (cron)        |
 | [scripts/report-health.sh](scripts/report-health.sh)       | Daily dead-man health ping (reboot-required + unattended-upgrades + OOM check) |
-| [scripts/install-dotfiles.sh](scripts/install-dotfiles.sh) | Bootstrap shell config in a new Codespace or VM                        |
+| [scripts/install-dotfiles.sh](scripts/install-dotfiles.sh) | Symlink shell and Claude config on a dev machine; `install.sh`          |
 | [scripts/agent-bus.sh](scripts/agent-bus.sh)               | Coordination bus for concurrent Claude Code sessions in one repo        |
 | [scripts/check-repo.sh](scripts/check-repo.sh)             | Repo self-check; `make check`                                          |
 | [scripts/test-prune.sh](scripts/test-prune.sh)             | Fixture test for the prune skill's `prune-state.sh`; `make test-prune`  |
@@ -88,7 +84,6 @@ Heading-grouped rules and idioms per stack — reference material, not runbooks.
 | -------------------------- | ---------------------------------------------------------------------- |
 | Skills index               | [.claude/skills/README.md](.claude/skills/README.md)                   |
 | Web research agent         | [.claude/agents/web-researcher.md](.claude/agents/web-researcher.md)   |
-| Plugin manifests           | [.claude-plugin/plugin.json](.claude-plugin/plugin.json), [.claude-plugin/marketplace.json](.claude-plugin/marketplace.json) |
 | Path-scoped rules (Claude) | `.claude/rules/`                                                        |
 | Repo agent rules           | [AGENTS.md](AGENTS.md)                                                 |
 | Global Claude instructions | [claude/CLAUDE.md](claude/CLAUDE.md)                                   |

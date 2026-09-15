@@ -1,9 +1,7 @@
 #!/usr/bin/env bash
 # install-dotfiles.sh – bootstrap shell config in a new environment
 #
-# Called automatically by GitHub Codespaces when this repo is set as
-# your dotfiles repository (Settings → Codespaces → Dotfiles).
-# Can also be run manually after cloning the repo:
+# Run after cloning the repo:
 #   git clone https://github.com/nicograef/handbook.git && cd handbook && ./install.sh
 #
 # What it does:
@@ -11,13 +9,10 @@
 #   2. Symlinks Claude Code config (global CLAUDE.md, settings, agents, skills,
 #      agent-bus.sh and plan-run-guard.sh — the global hooks in settings.json
 #      call them by those paths)
-#   3. Creates the handbook-plugin opt-out in adopted /workspaces repos
-#   4. Sets git config defaults (pull.rebase, push.autoSetupRemote, etc.)
-#   5. Installs gh CLI if missing (binary to ~/.local/bin, no sudo)
+#   3. Sets git config defaults (pull.rebase, push.autoSetupRemote, etc.)
+#   4. Installs gh CLI if missing (binary to ~/.local/bin, no sudo)
 #
-# Note: We intentionally do NOT replace .bashrc. The Codespaces default
-# already includes a git-branch prompt, color support, and sources
-# ~/.bash_aliases automatically. Overwriting it would lose those features.
+# .bashrc is left alone: the Ubuntu default sources ~/.bash_aliases.
 set -euo pipefail
 
 DOTFILES_DIR="$(cd "$(dirname "$0")/.." && pwd)"
@@ -82,28 +77,7 @@ else
   echo "SKIP: $DOTFILES_DIR/.claude/skills not found"
 fi
 
-# ── Handbook plugin opt-out (Codespaces) ────────────────────────────────────
-# See guides/claude-plugin.md → "Dev-machine opt-out". Codespaces clones
-# the workspace repo before dotfiles run, so create the machine-local opt-out
-# here. No-op outside Codespaces (no /workspaces) and on already-opted-out repos.
-for settings in /workspaces/*/.claude/settings.json; do
-  [[ -f "$settings" ]] || continue
-  grep -Eq '"handbook@nicograef"[[:space:]]*:[[:space:]]*true' "$settings" || continue
-  repo_dir="$(dirname "$(dirname "$settings")")"
-  local_settings="$repo_dir/.claude/settings.local.json"
-  if [[ -f "$local_settings" ]]; then
-    log "Plugin opt-out already present: $local_settings"
-  else
-    printf '{ "enabledPlugins": { "handbook@nicograef": false } }\n' > "$local_settings"
-    log "Created plugin opt-out: $local_settings"
-  fi
-  if ! git -C "$repo_dir" check-ignore -q .claude/settings.local.json 2>/dev/null; then
-    echo "WARN: $repo_dir does not gitignore .claude/settings.local.json — add it there."
-  fi
-done
-
 # ── Git config defaults ─────────────────────────────────────────────────────
-# user.name / user.email are set automatically by Codespaces.
 log "Setting git config defaults…"
 git config --global init.defaultBranch main
 git config --global pull.rebase true
@@ -118,7 +92,7 @@ git config --global delta.navigate true
 git config --global delta.line-numbers true
 
 # ── GitHub CLI ──────────────────────────────────────────────────────────────
-# Pre-installed in Codespaces; install on local machines if missing.
+# Installed to ~/.local/bin if missing.
 if command -v gh >/dev/null 2>&1; then
   log "gh already installed: $(gh --version | head -1)"
 else

@@ -45,46 +45,12 @@ workload needs.
 - [monitoring](monitoring.md#verify)
 - [backups](postgresql-operations.md#verify)
 
-## New Codespace
-
-**Gather first** — [dotfiles-codespaces.md#prerequisites](dotfiles-codespaces.md#prerequisites).
-
-1. **Enable account-level dotfiles** (one-time) —
-   [dotfiles-codespaces.md → Setup](dotfiles-codespaces.md#setup-one-time).
-
-   - Afterwards every new Codespace clones the repo and runs the installer
-     automatically.
-   - The handbook-plugin opt-out is written for you in each adopted repo.
-
-2. **Verify in a fresh Codespace** — run the
-   [Verify block](dotfiles-codespaces.md#verify) in a newly created Codespace.
-3. **Per-project tooling** — copy
-   [templates/devcontainer.json](../templates/devcontainer.json) into the
-   project's `.devcontainer/` and uncomment the Dev Container Features it needs.
-
-**Done when** the [Verify block](dotfiles-codespaces.md#verify) passes in a new
-Codespace.
-
 ## New dev machine
 
-**Gather first** — [dotfiles-codespaces.md#prerequisites](dotfiles-codespaces.md#prerequisites)
-(symlink tier), [claude-plugin.md#prerequisites](claude-plugin.md#prerequisites) (plugin tier).
+1. Clone the handbook and run [`install.sh`](../install.sh). It symlinks the shell dotfiles, the Claude config and the shared skills into `$HOME`.
+2. **Editor** — [neovim.md](neovim.md) installs Neovim; `install.sh` has already linked its config.
 
-1. **Machines you develop on (symlink tier)** — clone the handbook and run
-   [`install.sh`](../install.sh); it symlinks shell + Claude config and the
-   shared skills. See [dotfiles-codespaces.md](dotfiles-codespaces.md) for what
-   the installer does.
-2. **Machines that only need the skills (plugin tier)** — no clone; two commands
-   install the plugin. See [claude-plugin.md](claude-plugin.md).
-3. **Both tiers on one machine** — add the
-   [dev-machine opt-out](claude-plugin.md#dev-machine-opt-out) in each adopted
-   repo so the skills don't load twice.
-
-**Editor** — [neovim.md](neovim.md) installs Neovim; `install.sh` has already linked its config.
-
-**Done when** the symlink tier's [Verify block](dotfiles-codespaces.md#verify)
-passes, or (plugin tier) `claude plugin details handbook` lists the skills
-([Verify](claude-plugin.md#verify)).
+**Done when** `ls -l ~/.claude/CLAUDE.md ~/.bash_aliases` shows both as symlinks into the clone.
 
 ## New project
 

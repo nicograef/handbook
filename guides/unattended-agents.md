@@ -82,8 +82,8 @@ devcontainer up --workspace-folder .
 devcontainer exec --workspace-folder . claude --permission-mode bypassPermissions
 ```
 
-- The [dev container](../.devcontainer/devcontainer.json) runs Claude Code as a
-  non-root user; `bypassPermissions` refuses to start as root or under `sudo`.
+- A container from [templates/devcontainer.json](../templates/devcontainer.json) runs as the
+  image's non-root user; `bypassPermissions` refuses to start as root or under `sudo`.
 - Accept the responsibility dialog once, interactively, before any `--bg` run.
 - `deny` rules still apply in this mode. That is what makes it usable: the
   destructive git set in [claude/settings.json](../claude/settings.json) stays

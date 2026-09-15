@@ -20,7 +20,7 @@ Two layers. The mechanical sweep deletes without asking when the user invoked `/
 
 ## Mechanical sweep
 
-Run the bundled script from the skill's directory with an explicit interpreter; the plugin cache may drop the execute bit. Pass `--delete` unless `dry-run`:
+Run the bundled script from the skill's directory. Pass `--delete` unless `dry-run`:
 
 ```bash
 bash "${CLAUDE_SKILL_DIR}/prune-state.sh" --days <N> --scope <slug>|all [--exclude-session "$CLAUDE_CODE_SESSION_ID"] [--delete]

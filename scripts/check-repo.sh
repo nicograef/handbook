@@ -181,17 +181,6 @@ check_compose() {
   done < <(git ls-files 'templates/docker-compose*.yml')
 }
 
-check_plugin() {
-  if ! command -v claude >/dev/null 2>&1; then
-    log "claude not installed"
-    return
-  fi
-  if ! claude plugin validate . >/dev/null 2>&1; then
-    log "plugin validate failed"
-    claude plugin validate . >&2 || true
-  fi
-}
-
 # prose_scan prints one violation per line for a single Markdown file.
 #
 # It strips YAML frontmatter, fenced code, HTML comments, table rows, inline code spans and
@@ -372,10 +361,9 @@ case "$STAGE" in
   language) check_language ;;
   skills)   check_skills ;;
   compose)  check_compose ;;
-  plugin)   check_plugin ;;
   prose)    check_prose ;;
-  all)      check_links; check_shell; check_readme; check_language; check_skills; check_compose; check_plugin; check_prose ;;
-  *)        printf 'usage: %s [links|lint|readme|language|skills|compose|plugin|prose|all]\n' "$0" >&2; exit 2 ;;
+  all)      check_links; check_shell; check_readme; check_language; check_skills; check_compose; check_prose ;;
+  *)        printf 'usage: %s [links|lint|readme|language|skills|compose|prose|all]\n' "$0" >&2; exit 2 ;;
 esac
 
 if [[ "$FAILED" -ne 0 ]]; then

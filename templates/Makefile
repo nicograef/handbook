@@ -1,5 +1,8 @@
 # Makefile template — Full-Stack Project
 # Usage: copy to project root and adapt targets
+#
+# In a recipe, $$ escapes the $ so the shell expands it, not make. A make variable
+# holding shell output needs $(shell ...); `VAR := $$(cmd)` stores the literal text.
 
 # Load .env variables (DB credentials etc.) for all targets.
 # include .env

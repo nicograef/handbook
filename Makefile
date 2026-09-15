@@ -1,8 +1,8 @@
 # Handbook dev interface.
 
-.PHONY: check links lint readme language skills compose plugin prose test-prune test-agent-bus test-plan-run-guard help
+.PHONY: check links lint readme language skills compose prose test-prune test-agent-bus test-plan-run-guard help
 
-## check: run the full repo self-check (links, shellcheck, README index, language, skills, compose, plugin, prose)
+## check: run the full repo self-check (links, shellcheck, README index, language, skills, compose, prose)
 check:
 	@scripts/check-repo.sh all
 
@@ -29,10 +29,6 @@ skills:
 ## compose: verify every templates/docker-compose*.yml passes `docker compose config -q`
 compose:
 	@scripts/check-repo.sh compose
-
-## plugin: verify the plugin manifests pass `claude plugin validate .`
-plugin:
-	@scripts/check-repo.sh plugin
 
 ## prose: verify Markdown meets the prose caps (sentence ≤ 20 words, paragraph ≤ 3 lines)
 prose:

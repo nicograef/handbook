@@ -24,17 +24,6 @@
   "postCreateCommand": "bash scripts/setup-dev-tools.sh",
 
   "customizations": {
-    // ── Multi-repo access (Codespaces only) ─────────────────────────────────
-    // "codespaces": {
-    //   "repositories": {
-    //     "your-org/other-repo": {
-    //       "permissions": {
-    //         "contents": "write"
-    //       }
-    //     }
-    //   }
-    // },
-
     "vscode": {
       "settings": {
         "terminal.integrated.defaultProfile.linux": "bash"
