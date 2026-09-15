@@ -46,6 +46,7 @@ Heading-grouped rules and idioms per stack — reference material, not runbooks.
 | [templates/.gitignore](templates/.gitignore)                           | Universal .gitignore (OS, IDE, env, build artifacts, logs, Claude local settings) |
 | [templates/devcontainer.json](templates/devcontainer.json)             | Dev Container config with commented feature blocks per stack      |
 | [templates/Makefile](templates/Makefile)                               | Full-stack Makefile (dev, prod, checks, release)                  |
+| [templates/make-help.awk](templates/make-help.awk)                     | Renders `make help` by target class; `scripts/make-help.awk`     |
 | [templates/docker-compose.yml](templates/docker-compose.yml)           | Compose starter (local dev, no TLS)                               |
 | [templates/.dockerignore](templates/.dockerignore)                     | Build-context excludes: VCS, secrets, host toolchains, tests, docs |
 | [templates/docker-compose.prod.yml](templates/docker-compose.prod.yml) | Production Compose (reverse proxy + Let's Encrypt)                |

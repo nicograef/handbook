@@ -93,7 +93,21 @@ db-shell:      ## Open psql shell in running PostgreSQL container (needs the .en
 # ssh-prod:    ## SSH into production server
 # 	ssh user@your-server-ip
 
-help:          ## Show this help
-	@grep -hE '^[a-zA-Z_-]+:.*##' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*## "} {printf "  \033[36m%-15s\033[0m %s\n", $$1, $$2}'
+# ── Help ──
+
+# Every documented target stands in exactly one CLASS_* list, and `make help` prints the
+# lists as its sections. A target in none prints under UNCLASSIFIED.
+CLASS_developer := db be fe be-check fe-check check up down logs db-shell help
+CLASS_production := prod-init prod-up prod-down prod-logs prod-release
+
+# Column the help text wraps at.
+HELP_WIDTH ?= 96
+
+# `$(firstword $(MAKEFILE_LIST))`, not the whole list: `include .env` would put `.env` in it.
+help:          ## Show every target, by class (HELP_WIDTH=<n> moves the wrap column)
+	@grep -hE '^[a-zA-Z_-]+:.*##' $(firstword $(MAKEFILE_LIST)) \
+	  | awk -v width=$(HELP_WIDTH) \
+	        -v developer='$(CLASS_developer)' -v production='$(CLASS_production)' \
+	        -f scripts/make-help.awk
 
 .DEFAULT_GOAL := help

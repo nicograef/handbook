@@ -43,6 +43,7 @@ cp "$HANDBOOK/templates/.editorconfig" .
 cp "$HANDBOOK/templates/.gitignore" .
 mkdir -p .vscode && cp "$HANDBOOK/templates/vscode-settings.json" .vscode/settings.json
 cp "$HANDBOOK/templates/Makefile" .
+mkdir -p scripts && cp "$HANDBOOK/templates/make-help.awk" scripts/make-help.awk   # renders `make help`
 ```
 
 ## 3. Stack scaffolding
