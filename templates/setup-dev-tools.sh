@@ -83,6 +83,23 @@ else
   npm install -g pnpm@12
 fi
 
+# ── Python / uv ─────────────────────────────────────────────────────────────
+# Delete this whole section on a project without a Python package.
+
+# The official installer, because no devcontainer feature ships uv and pip
+# would tie it to one interpreter.
+info "Ensuring uv..."
+if command -v uv >/dev/null 2>&1; then
+  info "uv already installed: $(uv --version)"
+else
+  curl -LsSf https://astral.sh/uv/install.sh | sh
+  export PATH="$HOME/.local/bin:$PATH"
+fi
+
+# --frozen: the lockfile is the contract; a setup never rewrites it.
+info "Syncing Python dependencies..."
+uv sync --frozen
+
 # ── Frontend dependencies ───────────────────────────────────────────────────
 # Uncomment if your project has a frontend/ directory with pnpm.
 
@@ -96,6 +113,7 @@ info "Setup complete."
 echo "  go:             $(go version)"
 echo "  node:           $(node --version)"
 echo "  pnpm:           $(pnpm --version)"
+echo "  uv:             $(uv --version)"
 echo "  goimports:      $(goimports -V 2>/dev/null || echo 'installed')"
 echo "  golangci-lint:  $(golangci-lint --version | head -n 1)"
 # echo "  sqlc:           $(sqlc version)"

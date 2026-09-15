@@ -15,6 +15,10 @@
     // "ghcr.io/devcontainers/features/node:1": {
     //   "version": "24"  // TODO: set your Node version
     // },
+    // -- Python (uv itself comes from scripts/setup-dev-tools.sh) --
+    // "ghcr.io/devcontainers/features/python:1": {
+    //   "version": "3.12"  // TODO: match .python-version
+    // },
     // -- Docker-in-Docker (for docker compose in dev) --
     // "ghcr.io/devcontainers/features/docker-in-docker:2": {}
   },
@@ -35,6 +39,9 @@
         // -- Node / TypeScript / React --
         // "dbaeumer.vscode-eslint",
         // "esbenp.prettier-vscode",
+
+        // -- Python --
+        // "charliermarsh.ruff",
 
         // -- General --
         "editorconfig.editorconfig"
