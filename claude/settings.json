@@ -219,6 +219,7 @@
       }
     ]
   },
+  "enableArtifact": false,
   "enableWorkflows": true,
   "statusLine": {
     "type": "command",
@@ -235,6 +236,7 @@
     "gopls-lsp@claude-plugins-official": true
   },
   "outputStyle": "Proactive",
+  "feedbackDrafts": "off",
   "effortLevel": "xhigh",
   "modelSettings": {
     "claude-fable-5-1": {
@@ -247,6 +249,7 @@
   "tui": "fullscreen",
   "skipWorkflowUsageWarning": true,
   "theme": "auto",
+  "preferredNotifChannel": "auto",
   "fileCheckpointingEnabled": false,
   "showTurnDuration": true,
   "remoteControlAtStartup": false,
