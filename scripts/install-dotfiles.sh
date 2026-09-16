@@ -68,6 +68,14 @@ for src in "${!CLAUDE_LINKS[@]}"; do
   fi
 done
 
+# ~/.claude.json holds machine state (auth, project list), so it is merged, not linked.
+# It carries the /config choices that have no settings.json key.
+CLAUDE_JSON="$HOME/.claude.json"
+[[ -f "$CLAUDE_JSON" ]] || echo '{}' > "$CLAUDE_JSON"
+tmp="$(mktemp)"
+jq '. + {leftArrowOpensAgents: false}' "$CLAUDE_JSON" > "$tmp" && mv "$tmp" "$CLAUDE_JSON"
+log "Merged /config prefs into $CLAUDE_JSON"
+
 # Copilot CLI reads ~/.agents/skills, not ~/.claude/skills — mirror the skills there.
 mkdir -p "$HOME/.agents"
 if [[ -d "$DOTFILES_DIR/.claude/skills" ]]; then

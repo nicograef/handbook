@@ -236,6 +236,7 @@
     "gopls-lsp@claude-plugins-official": true
   },
   "outputStyle": "Proactive",
+  "workflowSizeGuideline": "medium",
   "feedbackDrafts": "off",
   "effortLevel": "xhigh",
   "modelSettings": {
