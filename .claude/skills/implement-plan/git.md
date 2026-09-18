@@ -17,6 +17,7 @@ git worktree list --porcelain | awk '/^worktree /{print $2}' | while read -r w; 
 done
 awk '/^## Phase /{p=$0} /^- \[ \]/{print p" -> "$0; exit}' <plan>   # first unmet criterion
 git log --oneline --all --grep='Plan: <slug> phase'                 # what was committed
+~/.claude/plan-run-guard.sh claim <slug>                            # this session owns the run now
 ```
 
 - Read the plan inside the run worktree, including `## Run state`. If the worktree is gone, use `git branch --list 'plan/*'` plus the log grep; branches are the durable artifact.

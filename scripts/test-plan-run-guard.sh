@@ -162,6 +162,62 @@ git -C "$REPO" branch plan/orphan
 out="$(run false sessE)"
 if [[ -n "$out" ]]; then fail "orphan branch: expected allow, got: $out"; else log "branch without a plan file -> allow"; fi
 
+# 11. A claimed run nudges the session that claimed it and no bystander.
+git -C "$REPO" checkout -q -b plan/owned main
+cat > "$REPO/docs/plans/plan-owned.md" <<'EOF'
+# Plan: owned
+- [ ] Owned criterion
+EOF
+git -C "$REPO" add -A && git -C "$REPO" commit -q -m "owned run"
+git -C "$REPO" checkout -q main
+claim() { # claim <session_id> <slug>
+  (cd "$REPO" && CLAUDE_CODE_SESSION_ID="$1" bash "$GUARD" claim "$2")
+}
+claim sessOwner owned
+out="$(run false sessBystander)"
+if [[ -n "$out" ]]; then fail "bystander of a claimed run: expected allow, got: $out"; else log "claimed run, bystander -> allow"; fi
+out="$(run false sessOwner)"
+if [[ "$(jq -r '.decision' <<< "$out" 2>/dev/null)" != "block" ]]; then
+  fail "owner of a claimed run: expected block, got: $out"
+else
+  log "claimed run, owner -> block"
+fi
+
+# 12. A session that picks the run up claims it, and the nudge moves with the claim.
+claim sessResumer owned
+git -C "$REPO" checkout -q plan/owned
+echo progress >> "$REPO/docs/plans/plan-owned.md"
+git -C "$REPO" add -A && git -C "$REPO" commit -q -m "owned run progress"
+git -C "$REPO" checkout -q main
+out="$(run false sessOwner)"
+if [[ -n "$out" ]]; then fail "former owner: expected allow, got: $out"; else log "re-claimed run, former owner -> allow"; fi
+out="$(run false sessResumer)"
+if [[ "$(jq -r '.decision' <<< "$out" 2>/dev/null)" != "block" ]]; then
+  fail "new owner: expected block, got: $out"
+else
+  log "re-claimed run, new owner -> block"
+fi
+
+# 13. A claim outlives the day-old marker sweep, and goes when its branch goes.
+touch -d '3 days ago' "$REPO/.git/plan-run-guard/owner-owned"
+out="$(run false sessBystander)"
+if [[ -n "$out" ]]; then fail "old claim: expected allow for a bystander, got: $out"; else log "claim older than the sweep -> still holds"; fi
+git -C "$REPO" branch -q -D plan/owned
+run false sessBystander > /dev/null
+if [[ -e "$REPO/.git/plan-run-guard/owner-owned" ]]; then fail "claim of a deleted branch was kept"; else log "branch gone -> claim gone"; fi
+
+# 14. A claim that names no session or no run is refused.
+if (cd "$REPO" && env -u CLAUDE_CODE_SESSION_ID bash "$GUARD" claim owned) 2>/dev/null; then
+  fail "claim without a session id: expected a refusal"
+else
+  log "claim without a session id -> refused"
+fi
+if (cd "$REPO" && CLAUDE_CODE_SESSION_ID=sessOwner bash "$GUARD" claim) 2>/dev/null; then
+  fail "claim without a slug: expected a refusal"
+else
+  log "claim without a slug -> refused"
+fi
+
 if [[ "$FAILED" -eq 0 ]]; then
   log "all plan-run-guard checks passed"
 else

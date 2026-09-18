@@ -6,7 +6,7 @@ argument-hint: "<path to plan file>"
 
 # Implement Plan
 
-Progress is durable only once committed and ticked. The run owns the turn: no human turn between phases, folds and landing. The Stop hook `plan-run-guard.sh` blocks a stop while `plan/<slug>` still has an unticked criterion.
+Progress is durable only once committed and ticked. The run owns the turn: no human turn between phases, folds and landing. The Stop hook `plan-run-guard.sh` blocks a stop while `plan/<slug>` still has an unticked criterion, for the session that claimed the run. Claim it with `~/.claude/plan-run-guard.sh claim <slug>` once the run branch exists, and again on every pickup. An unclaimed run nudges every session in the repo.
 
 ## Gotchas
 

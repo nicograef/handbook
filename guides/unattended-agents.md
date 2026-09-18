@@ -107,7 +107,7 @@ A live plan run must not yield the turn between phases. Two mechanisms hold it:
 | Mechanism | Effect |
 | --- | --- |
 | `outputStyle: "Proactive"` | Executes immediately, assumes instead of pausing on routine decisions. Main conversation only — subagents keep their own prompt. |
-| [scripts/plan-run-guard.sh](../scripts/plan-run-guard.sh) | Stop hook. Blocks the stop while `plan/<slug>` has an unticked criterion. |
+| [scripts/plan-run-guard.sh](../scripts/plan-run-guard.sh) | Stop hook. Blocks the stop of the session that claimed `plan/<slug>` while it has an unticked criterion. |
 
 - Where it reads the plan and when it nudges: the header of [scripts/plan-run-guard.sh](../scripts/plan-run-guard.sh).
 - `stop_hook_active` lets the next stop through, so a session can always end.
