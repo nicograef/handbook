@@ -12,6 +12,8 @@ vim.o.linebreak = true           -- wrap at word boundaries
 vim.o.breakindent = true         -- wrapped lines keep their indent
 vim.o.ignorecase = true
 vim.o.smartcase = true
+vim.o.grepprg = "rg --vimgrep"
+vim.o.grepformat = "%f:%l:%c:%m"
 vim.o.undofile = true            -- undo history survives closing the file
 
 -- ── Indentation: two spaces, as in .editorconfig ─────────────────────────────
