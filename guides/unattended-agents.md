@@ -3,13 +3,18 @@
 Run a long session without it stopping for a prompt nobody answers. Applies to an
 [implement-plan](../.claude/skills/implement-plan/SKILL.md) run, a distill, or a migration.
 
-Source: [Permission modes](https://code.claude.com/docs/en/permission-modes),
-[Configure auto mode](https://code.claude.com/docs/en/auto-mode-config),
-[Hooks](https://code.claude.com/docs/en/hooks).
+Sources:
+
+- [Permission modes](https://code.claude.com/docs/en/permission-modes)
+- [Configure auto mode](https://code.claude.com/docs/en/auto-mode-config)
+- [Hooks](https://code.claude.com/docs/en/hooks)
+- [Scheduled tasks](https://code.claude.com/docs/en/scheduled-tasks)
+- [Wait for a usage limit to reset](https://code.claude.com/docs/en/interactive-mode#wait-for-a-usage-limit-to-reset)
+- [Errors](https://code.claude.com/docs/en/errors)
 
 ## Prerequisites
 
-- Claude Code v2.1.212 or later (`claude --version`).
+- Claude Code v2.1.234 or later (`claude --version`).
 - `~/.claude/settings.json` — this repo's [claude/settings.json](../claude/settings.json).
 - Docker, for the container posture.
 
@@ -118,6 +123,8 @@ A live plan run must not yield the turn between phases. Two mechanisms hold it:
 | Stop | Recovery |
 | --- | --- |
 | Usage limit, terminal API error | Committed work survives. Resume from git — [implement-plan/git.md](../.claude/skills/implement-plan/git.md); the failure strings are in [implement-plan/SKILL.md](../.claude/skills/implement-plan/SKILL.md). |
+| Session or weekly limit, session left open | `autoContinueAtUsageLimit` continues at the reset, at most twice in a row. The lead's hourly recovery job covers the rest — [programme § Lead upkeep](../.claude/skills/programme/SKILL.md#lead-upkeep). |
+| Fable limit | No session switches its own model. Run `/model claude-opus-5` at its terminal; the lead continues on Opus 5. |
 | Capacity 429 / 529 | `CLAUDE_CODE_RETRY_WATCHDOG=1` — see [implement-plan/SKILL.md](../.claude/skills/implement-plan/SKILL.md). |
 | Agent returned `null` | Its branch holds every criterion it committed. Re-dispatch from its last commit. |
 

@@ -15,5 +15,5 @@ Arguments: `$ARGUMENTS`. Structured output only: tables and lists, no prose.
 
 With `compact`, also:
 
-4. Write the state above, the plan file path, worktree paths and open tasks to the scratchpad. Update the plan file and memory where they lag.
+4. Write the state above, the plan file path, worktree paths and open tasks to the scratchpad. Hold each row against its source first: git, `CronList`, the tasks directory. Update the plan file and memory where they lag.
 5. Tell the user `/compact` is safe to run. Give them a short prompt to paste afterwards. It names the scratchpad file, the plan and the next step.

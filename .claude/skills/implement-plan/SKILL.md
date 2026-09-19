@@ -61,8 +61,9 @@ Written into the plan file on a stop, committed to `plan/<slug>`, deleted in its
 
 | String | Response |
 | --- | --- |
-| `You've hit your session limit · resets <time>` or weekly limit | Stop, commit the handoff, name the reset time. Both windows are shared across models |
-| `You've hit your Opus limit · resets <time>` | Stop, commit the handoff, name the reset time. The user switches account; the run never switches model |
+| `You've hit your session limit · resets <time>` or weekly limit | Commit the handoff, name the reset time. Both windows span all models, so no model switch helps. Auto-continue resumes at the reset, or the user switches account |
+| `You've hit your Opus limit · resets <time>` | It stops `opus` workers, and a lead on Opus 5. Commit the handoff, name the reset time. A worker never changes model |
+| Fable usage-credits consent prompt, or `Fable limit reached · … nothing was sent` | The lead gets no turn and cannot switch itself. The user runs `/model claude-opus-5`; the lead then continues on Opus 5 at once |
 | `Agent terminated early due to an API error` | That `agent()` returned `null`; re-dispatch from its last commit |
 | `Server is temporarily limiting requests` / 529 | Already retried with backoff. Stop, hand off |
 | `Server error mid-response` | Not retried by design; rerun the phase from its last commit |
@@ -73,6 +74,7 @@ Written into the plan file on a stop, committed to `plan/<slug>`, deleted in its
 
 - Commit subject Conventional Commit, trailer `Plan: <slug> phase <N> criterion <M>`.
 - Give a worker: plan path (as a path), worktree path, branch, phase number, verify command, trailer format, plan-file write ban. Add: "commit each criterion as it verifies; at 30 minutes commit what verifies and return". A fully mechanical phase runs on `sonnet` with `effort: low`; the rest on `opus`.
+- A lead with background agents or a workflow arms the jobs of [programme § Lead upkeep](../programme/SKILL.md#lead-upkeep). The plan file takes the programme file's place.
 - A returned `null` is a phase that did not happen; its branch keeps its commits. Re-dispatch it to continue from `git log <branch>`, never from scratch.
 - A defect a review finds goes back to the phase's own worker via SendMessage. Carry the defect classes into the next phase's prompt.
 - Cap writers at 4 (one checkout, install and fold each); read-only scouts and reviewers at the runtime's cap. While phase N's writer works, a read-only scout may prepare phase N+1.
