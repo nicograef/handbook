@@ -23,6 +23,7 @@ Arguments: `$ARGUMENTS`. Output is a file, never code. `/plan <task or PRD path>
 3. Fix the durable decisions.
 4. Slice into tracer-bullet phases: each a thin, complete path through every layer (schema, API, UI, tests), demoable on its own. Many thin slices beat few thick ones. A refactor or config change is one phase.
 5. Self-review the file for placeholders: TBD, "add appropriate validation", "similar to phase N". Flag names that appear in one phase only. Fix inline.
+6. Self-review again specifically for simplifications, over-engineering, complexity and try to find KISS and YAGNI violations. Explain finings and propose changes to the user. Let the user decide (via /decide skill or ask user question tool).
 
 ## PRD mode
 
@@ -32,6 +33,7 @@ Arguments: `$ARGUMENTS`. Output is a file, never code. `/plan <task or PRD path>
 4. Sketch the modules: deep modules behind small interfaces, dependencies injected, values returned instead of inputs mutated.
 5. Write the whole PRD in one pass. Problem Statement and User Stories are prose because their readers are non-technical; the rest follows the usual caps.
 6. Domain terms the PRD introduces go into `docs/UBIQUITOUS_LANGUAGE.md`: one table per topic with term, one-sentence definition, aliases to avoid. Pick one word per concept; skip module and class names unless they carry domain meaning.
+7. Self-review specifically for simplifications, over-engineering, complexity and try to find KISS and YAGNI violations. Explain finings and propose changes to the user. Let the user decide (via /decide skill or ask user question tool).
 
 ## Plan template
 
