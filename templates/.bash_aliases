@@ -13,8 +13,9 @@ alias gfp='git fetch --prune && git pull'
 alias gct='git checkout test'
 alias gcm='git checkout main || git checkout master'
 alias gbv='git branch -vv'
-alias glo='git log --oneline'
-alias glg='git log --graph --pretty=oneline --abbrev-commit --branches'
+alias gbvv='git branch -vva'
+alias glo="git log --pretty=format:'%C(yellow)%h%C(reset) %C(green)(%ar)%C(reset) %s'"
+alias glg="git log --graph --all --pretty=format:'%C(yellow)%h%C(reset) %C(auto)%d%C(reset) %s %C(green)(%ar)%C(reset)'"
 alias p='pnpm'
 alias m='make'
 alias puli='pnpm update --latest --interactive'
