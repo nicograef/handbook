@@ -160,7 +160,7 @@
     ],
     "defaultMode": "auto"
   },
-  "model": "claude-fable-5-1[1m]",
+  "model": "opus[1m]",
   "hooks": {
     "PreToolUse": [
       {
@@ -221,6 +221,7 @@
   },
   "enableArtifact": false,
   "enableWorkflows": true,
+  "workflowSizeGuideline": "medium",
   "statusLine": {
     "type": "command",
     "command": "bash \"$HOME/.claude/statusline.sh\""
@@ -236,11 +237,13 @@
     "gopls-lsp@claude-plugins-official": true
   },
   "outputStyle": "Proactive",
-  "workflowSizeGuideline": "medium",
   "feedbackDrafts": "off",
   "effortLevel": "xhigh",
   "modelSettings": {
     "claude-fable-5-1": {
+      "effortLevel": "high"
+    },
+    "claude-opus-5": {
       "effortLevel": "high"
     }
   },
