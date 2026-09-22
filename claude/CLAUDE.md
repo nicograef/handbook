@@ -39,6 +39,7 @@ Lead with the answer or the problem. Sentences ≤ 20 words, one claim each. Par
 - No autonomous outbound actions: no emails, posts or external submissions; drafts stay drafts. Committing and pushing a feature branch are exempt.
 - Keep documentation to a minimum. Only the most important information should be kept.
 - Keep code comments to a minimum. Max 2 sentences allowed as comment.
+- Focus on small and fast unit tests. Only add integration tests where necessary and make sure they are efficient. Keep the test time fast.
 
 ## Models and subagents
 
