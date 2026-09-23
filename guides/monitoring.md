@@ -55,7 +55,7 @@ sudo chmod 600 /etc/default/report-health
 
 ### Inputs
 
-Only `<your-domain>` — the public HTTPS endpoint the uptime monitor checks. The three ping URLs come from the heartbeats in the ping-URL table above.
+Only `<your-domain>` — the public HTTPS endpoint the uptime monitor checks. The four ping URLs come from the heartbeats in the ping-URL table above.
 
 ## Uptime monitor
 
