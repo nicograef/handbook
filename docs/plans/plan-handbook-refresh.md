@@ -108,12 +108,12 @@ Every confirmed or corrected finding lands, and so does every consider item the 
 
 ### Acceptance criteria
 
-- [ ] `shellcheck scripts/setup-server.sh scripts/report-health.sh` passes.
-- [ ] `grep -n 'sshd-session' scripts/setup-server.sh guides/provision-server.md` hits both files.
-- [ ] `grep -rn '51unattended-upgrades-security\|SECURITY_ORIGIN\|ufw allow ssh\|dist-upgrade\|2a00:1098:2b::1' scripts guides templates` returns nothing.
-- [ ] Neither script echoes the heartbeat URL; `grep -n 'chmod 600 /etc/default/report-health' scripts/setup-server.sh` hits.
-- [ ] `guides/monitoring.md` has no open "record the decision" callout, and its thresholds say 7 days.
-- [ ] `make check` passes.
+- [x] `shellcheck scripts/setup-server.sh scripts/report-health.sh` passes.
+- [x] `grep -n 'sshd-session' scripts/setup-server.sh guides/provision-server.md` hits both files.
+- [x] `grep -rn '51unattended-upgrades-security\|SECURITY_ORIGIN\|ufw allow ssh\|dist-upgrade\|2a00:1098:2b::1' scripts guides templates` returns nothing.
+- [x] Neither script echoes the heartbeat URL; `grep -n 'chmod 600 /etc/default/report-health' scripts/setup-server.sh` hits.
+- [x] `guides/monitoring.md` has no open "record the decision" callout, and its thresholds say 7 days.
+- [x] `make check` passes.
 
 ## Phase 2: Postgres and Compose
 
@@ -155,11 +155,11 @@ Every confirmed or corrected finding lands, and so does every consider item the 
 
 ### Acceptance criteria
 
-- [ ] `docker compose -f templates/docker-compose.yml config -q` and the prod file both pass.
+- [x] `docker compose -f templates/docker-compose.yml config -q` and the prod file both pass.
 - [ ] `grep -rn 'postgres:17\|/var/lib/postgresql/data\|certbot:v5\.[0-7]\|pg_restore --list' templates scripts guides` returns nothing.
-- [ ] `shellcheck scripts/backup-postgres.sh` passes, and the script has no `source`/`.` of `.env`.
-- [ ] Optional: a local truncated dump makes the check fail.
-- [ ] `make check` passes.
+- [x] `shellcheck scripts/backup-postgres.sh` passes, and the script has no `source`/`.` of `.env`.
+- [x] Optional: a local truncated dump makes the check fail.
+- [x] `make check` passes.
 
 ## Phase 3: TLS, nginx and certbot bootstrap
 
@@ -193,11 +193,11 @@ Every confirmed or corrected finding lands, and so does every consider item the 
 
 ### Acceptance criteria
 
-- [ ] `nginx -t` passes for both confs in an `nginx:stable` container.
-- [ ] Optional: a local SPA container serves `/assets/x.js` with the immutable header and `/` with `no-cache`.
-- [ ] `grep -rn 'preload\|ssl-config.mozilla\|ssl_session_tickets\|proxy_cache_bypass' templates` returns nothing.
-- [ ] `shellcheck scripts/prod-init.sh` passes, and the script runs to issuance with EMAIL unset.
-- [ ] `make check` passes.
+- [x] `nginx -t` passes for both confs in an `nginx:stable` container.
+- [x] Optional: a local SPA container serves `/assets/x.js` with the immutable header and `/` with `no-cache`.
+- [x] `grep -rn 'preload\|ssl-config.mozilla\|ssl_session_tickets\|proxy_cache_bypass' templates` returns nothing.
+- [x] `shellcheck scripts/prod-init.sh` passes, and the script runs to issuance with EMAIL unset.
+- [x] `make check` passes.
 
 ## Phase 4: Docker build guide and stack conventions
 
@@ -313,10 +313,10 @@ Every confirmed or corrected finding lands, and so does every consider item the 
 
 ### Acceptance criteria
 
-- [ ] `shellcheck scripts/install-dotfiles.sh templates/.bash_aliases` passes.
-- [ ] Run twice against a temp `HOME` with a real file and a real directory at link targets. Both end as symlinks with `.bak` copies, without nesting.
-- [ ] Without `id_ed25519.pub` in that `HOME`, no signing keys are set.
-- [ ] `make check` passes.
+- [x] `shellcheck scripts/install-dotfiles.sh templates/.bash_aliases` passes.
+- [x] Run twice against a temp `HOME` with a real file and a real directory at link targets. Both end as symlinks with `.bak` copies, without nesting.
+- [x] Without `id_ed25519.pub` in that `HOME`, no signing keys are set.
+- [x] `make check` passes.
 
 ## Phase 7: Claude Code configuration and git guard
 
