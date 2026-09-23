@@ -12,7 +12,7 @@ model=$(echo "$input" | jq -r '.model.display_name // .model.id // "unknown"')
 cwd=$(echo "$input" | jq -r '.workspace.current_dir // .cwd // ""')
 dir=$(basename "$cwd")
 
-short_model=$(echo "$model" | grep -oiE 'opus|sonnet|haiku' | head -1)
+short_model=$(echo "$model" | grep -oiE 'opus|sonnet' | head -1)
 if [[ -z "$short_model" ]]; then
   short_model="$model"
 fi

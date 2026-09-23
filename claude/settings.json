@@ -160,6 +160,7 @@
     ],
     "defaultMode": "auto"
   },
+  "model": "claude-opus-5-5",
   "hooks": {
     "PreToolUse": [
       {
@@ -237,12 +238,7 @@
   },
   "outputStyle": "Proactive",
   "feedbackDrafts": "off",
-  "effortLevel": "xhigh",
-  "modelSettings": {
-    "claude-opus-5": {
-      "effortLevel": "medium"
-    }
-  },
+  "effortLevel": "high",
   "promptSuggestionEnabled": false,
   "awaySummaryEnabled": false,
   "autoUpdatesChannel": "latest",

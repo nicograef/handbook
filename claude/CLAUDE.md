@@ -43,7 +43,7 @@ Lead with the answer or the problem. Sentences ≤ 20 words, one claim each. Par
 
 ## Models and subagents
 
-- Default model: Opus 5.5, the Claude Code default; `settings.json` sets no `model`.
+- Default model: Opus 5.5 (`claude-opus-5-5`), effort `high`.
 - Subagents: `sonnet` for mechanical, fully specified work (search, rename, format, doc sweep, checking a named finding). `opus` for implementation, review, debugging and synthesis. Review means finding and synthesising, never re-checking a finding somebody already stated. Set `model` explicitly, reviewers included.
 - Review workflows: finders on `opus`, one per lens, few. Verifying a finding is a fully specified check (claim, evidence, command) and runs on `sonnet`. One verifier per critical or major finding. Minor and cleanup findings go unverified to the fixer, who holds each against the code before applying it. The fixer runs on `opus`, the gate on `sonnet` at low effort. Verify agents never exceed three times the finders; beyond that, verify by severity and batch the rest ten per agent. More votes per finding only on my instruction for that run.
 - A session with background agents, a workflow or lanes is a lead. Before the first dispatch it arms a 15-minute check-in (`/loop 15m`) and an hourly recovery job (`CronCreate`). Both are fixed-interval: a self-paced loop dies with the turn a limit kills. Mechanics: the programme skill, § Lead upkeep.
