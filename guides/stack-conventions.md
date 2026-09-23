@@ -97,7 +97,8 @@ decorators fail at load; `erasableSyntaxOnly` makes `tsc` reject them first:
 }
 ```
 
-Node never type-checks. `tsc` does, as its own gate step.
+Node never type-checks. `tsc -b` does, as its own gate step. Plain `tsc` checks nothing under
+Vite's solution-style tsconfig.
 
 Pin TypeScript to `~6.0`. typescript-eslint supports `>=4.8.4 <6.1.0`, so TypeScript 7 breaks the linter
 ([dependency versions](https://typescript-eslint.io/users/dependency-versions/)).
@@ -110,7 +111,7 @@ fails instead of re-resolving.
 
 Test with Vitest: it runs TypeScript without a build step.
 
-The gate runs in this order: `pnpm install --frozen-lockfile`, format check, `eslint .`, `tsc`,
+The gate runs in this order: `pnpm install --frozen-lockfile`, format check, `eslint .`, `tsc -b`,
 `vitest run`.
 
 ## React
