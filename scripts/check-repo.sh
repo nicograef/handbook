@@ -111,7 +111,7 @@ check_readme() {
   local index_globs=()
   for d in "${INDEX_DIRS[@]}"; do index_globs+=("$d/*"); done
   while IFS= read -r file; do
-    if ! printf '%s\n' "$links" | grep -qxF "$file"; then
+    if ! grep -qxF "$file" <<<"$links"; then
       log "not indexed in README.md: $file"
     fi
   done < <(git ls-files "${index_globs[@]}")
@@ -155,7 +155,7 @@ check_skills() {
   # Every directory with a SKILL.md must appear in the skills index.
   while IFS= read -r skill; do
     dir="$(basename "$(dirname "$skill")")"
-    if ! printf '%s\n' "$links" | grep -qxF "$dir"; then
+    if ! grep -qxF "$dir" <<<"$links"; then
       log "skill not indexed in .claude/skills/README.md: $dir"
     fi
   done < <(git ls-files '.claude/skills/*/SKILL.md')
