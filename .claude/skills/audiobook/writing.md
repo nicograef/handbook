@@ -21,9 +21,9 @@ Prose is heard once, in order, with no way to scroll back. Read each sentence al
 
 - Repeat the core claim at the start and end of a chapter; a listener drifts.
 - Signpost transitions in words ("more on that shortly"); there is no visual structure.
-- Full sentences of 25 to 35 words read naturally; telegram style sounds rushed.
+- Short full sentences, one idea each, few subordinate clauses; telegram fragments sound rushed.
 - Active voice, concrete subjects. Name a thing before you use it; the listener cannot jump to a definition.
-- Spell out numbers that matter ("version 17"), skip the rest ("v2.1.197").
+- Round figures and relate them ("rund ein Drittel", "doppelt so schnell"). Speak symbols as words ("Prozent", not "%"). Skip version strings ("v2.1.197").
 - Open a chapter with the question it answers; close with what the listener can now decide or do. One concept per chapter.
 - Anti-patterns: reading the existing doc aloud, theory with no anchor in the project, a project tour with no theory. Also API reference as narration, and a bare back-reference instead of restating the point in one clause.
 

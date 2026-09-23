@@ -17,6 +17,7 @@ The [Chrome extension](https://elevenreader.io/text-to-speech-chrome-extension) 
 | --- | --- |
 | Max per file | 500 pages, then split |
 | Library sync | Web, iOS, Android share one account |
+| Pricing | Free plan: 10 h audio/month; Ultra: unlimited (24 h/day fair-use cap) |
 
 The reader does not reliably skip URLs, code blocks, formulas, or image alt text. Whatever
 reaches the EPUB gets narrated, so the filtering happens before upload, not in the app.
@@ -26,7 +27,11 @@ Source: [ElevenLabs docs on adding content](https://elevenlabs.io/docs/help-cent
 
 ## Prerequisites
 
-- `pandoc` 3.0 or newer.
+`pandoc` 3.0 or newer:
+
+```bash
+sudo apt install pandoc
+```
 
 ## Step 1 — Render the EPUB
 
@@ -36,6 +41,7 @@ STRICT=1 FILTER=<handbook>/templates/strip-visuals.lua \
 ```
 
 Drop `STRICT=1` only for hand-written chapters, where warnings are a to-do list.
+Each finding names its chapter, not a line: search that chapter for the element.
 
 ## Step 2 — Load it into ElevenReader
 
@@ -58,9 +64,7 @@ Expected: plain text reads as continuous prose, both counts equal.
 ## Troubleshooting
 
 ```bash
-# "pandoc 3.0 or newer required" → Debian 12 and older ship pandoc 2.x.
-# Debian 13 ships 3.1, new enough. Needed only on Debian 12 or older:
-# install the release binary from github.com/jgm/pandoc/releases.
+# "pandoc 3.0 or newer required" → apt ships 2.x; install the .deb from github.com/jgm/pandoc/releases.
 
 # A YAML error in meta.yml aborts the render instead.
 pandoc --metadata-file audiobook/meta.yml -f markdown -t plain /dev/null   # exit 0 = valid
