@@ -94,7 +94,7 @@ check_shell() {
       shellcheck "$script" >&2 || true
     fi
   done < <(git ls-files 'scripts/*.sh' 'install.sh' 'claude/*.sh' 'templates/*.sh' \
-                        '.claude/skills/*/*.sh')
+                        'templates/.bash_aliases' '.claude/skills/*/*.sh')
 }
 
 check_readme() {
