@@ -39,7 +39,7 @@ Use the standard `testing` package: `t.Fatalf` for setup failures, `t.Errorf` fo
 
 Start every project from [start.spring.io](https://start.spring.io):
 
-- **Language:** Java 21
+- **Language:** Java 25
 - **Build:** Maven
 - **Dependencies:** Spring Web, Spring Data JPA, PostgreSQL Driver, Flyway Migration, Validation
 - **Wrapper:** commit `mvnw` so any environment can build without a local Maven install
@@ -57,10 +57,17 @@ Manage schema with Flyway. Never modify existing migrations — only add new one
 
 | Layer | Tool | What it tests |
 | ----- | ---- | ------------- |
-| Controller | `@WebMvcTest` + `MockMvc` | HTTP contract: status codes, JSON shape, validation |
+| Controller | `@WebMvcTest` + `MockMvcTester`, `@MockitoBean` for the service | HTTP contract: status codes, JSON shape, validation |
 | Service | Mockito (`@ExtendWith(MockitoExtension.class)`) | Business logic in isolation |
-| Value Object | Plain JUnit 5 | Pure logic, normalization |
+| Repository | `@DataJpaTest` + Testcontainers `@ServiceConnection` | Queries and mappings against real Postgres |
+| Value Object | Plain JUnit | Pure logic, normalization |
 | HTTP Client | `MockRestServiceServer` | Outbound calls without a real network |
+
+`@MockitoBean` belongs in slice tests only. A service test builds its mocks with plain Mockito and
+starts no Spring context.
+
+`@DataJpaTest` keeps a `@ServiceConnection` container. Boot 4 replaces only a non-test DataSource
+([`Replace.NON_TEST`](https://docs.spring.io/spring-boot/api/java/org/springframework/boot/jdbc/test/autoconfigure/AutoConfigureTestDatabase.Replace.html)).
 
 A controller never talks to a repository. A repository never contains business logic.
 
@@ -99,18 +106,17 @@ Start every project with `uv init --package --python <version>`. It writes `pypr
 `requires-python` in `pyproject.toml` and `.python-version` name the same version. CI and the image
 then resolve the interpreter from one fact.
 
-Commit `uv.lock`. `uv sync --frozen` in CI and in the image installs the set the tree pins and never
-re-resolves one of its own.
+Commit `uv.lock`. CI runs `uv sync --locked`, which fails when the lock no longer matches
+`pyproject.toml`. The image runs `uv sync --frozen`: it installs the lock as is, unchecked.
 
 Dev tools live in the `dev` dependency group: `pytest`, `ruff`, `ty`. Nothing is installed globally,
 so a fresh checkout and CI run the same versions.
 
-Lint and format with ruff, extending its default rule set:
+Lint and format with ruff, extending its default rule set. Ruff reads the target version from `requires-python`:
 
 ```toml
 [tool.ruff]
 line-length = 100
-target-version = "py312"
 
 [tool.ruff.lint]
 # extend-select adds to the default set; a bump that adds rules surfaces as a finding, not a silent pass.
@@ -119,10 +125,23 @@ extend-select = ["I", "B", "UP", "N"]
 
 Type-check with ty, not mypy. Keep `[tool.ty.src] exclude = []`: an excluded module is checked by nothing.
 
-Configure pytest in `pyproject.toml`: `testpaths = ["tests"]`, and every marker registered under `markers`.
-An opt-in marker names a real backend or a paid provider. `addopts = ["-m", "not <marker>"]` deselects it,
-so the gate stays offline by default.
+Configure pytest in `pyproject.toml` with the native `[tool.pytest]` table (pytest 9):
 
-The gate runs in this order: `ruff check .`, `ruff format --check .`, `ty check .`, `pytest`,
-`uv lock --check`, `uv audit`. `uv lock --check` catches a dependency edit with no matching lock.
-`uv audit` runs last because it is the only step that reaches the network.
+```toml
+[tool.pytest]
+testpaths = ["tests"]
+strict = true
+markers = ["<marker>: needs a real backend or a paid provider"]
+addopts = ["-m", "not <marker>"]
+```
+
+`strict = true` turns unregistered markers and unknown config keys into errors. `uv.lock` pins pytest,
+so new strictness options arrive only with a bump.
+
+An opt-in marker names a real backend or a paid provider. `addopts` deselects it, so the gate stays
+offline by default.
+
+The gate runs in this order: `uv sync --locked`, `ruff check .`, `ruff format --check .`, `ty check .`,
+`pytest`, `uv audit`. `uv audit` runs last because it depends on an outside vulnerability service.
+
+`uv audit` is a preview feature and prints an experimental warning; its output may change.
