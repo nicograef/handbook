@@ -9,10 +9,10 @@
 #     0 3 * * * BACKUP_DIR=/opt/backups/postgres COMPOSE_DIR=/opt/myapp /opt/scripts/backup-postgres.sh >> /var/log/pg-backup.log 2>&1
 #
 # What it does:
-#   1. Loads the Compose .env from COMPOSE_DIR.
+#   1. Reads BACKUP_PING_URL from the Compose .env in COMPOSE_DIR, without sourcing it.
 #   2. Dumps the DB (custom format) via `docker compose exec -T` to a TEMP file.
-#   3. Verifies the fresh dump with `pg_restore --list` (run in the container —
-#      the host is not assumed to have postgresql-client installed).
+#   3. Verifies the fresh dump by restoring it to /dev/null with `pg_restore`
+#      (run in the container — the host is not assumed to have postgresql-client).
 #   4. Renames the temp file to the final timestamped name ONLY after verification,
 #      so BACKUP_DIR never holds an unverified dump.
 #   5. Prunes dumps older than RETENTION_DAYS.
@@ -20,6 +20,8 @@
 #      skips with a notice when unset. Any failure → non-zero exit, no ping.
 
 set -euo pipefail
+# Dumps hold every row of the database; keep them owner-only.
+umask 077
 
 # ── Configuration (env-var overridable) ──
 BACKUP_DIR="${BACKUP_DIR:-/opt/backups/postgres}"
@@ -36,23 +38,24 @@ log()   { echo -e "${GREEN}[INFO]${NC}  $*"; }
 warn()  { echo -e "${YELLOW}[WARN]${NC}  $*"; }
 error() { echo -e "${RED}[ERROR]${NC} $*" >&2; exit 1; }
 
-# ── Load the Compose .env (cron runs with a bare environment) ──
-# Loads BACKUP_PING_URL (and the POSTGRES_* values) into this script's environment;
-# the container's own POSTGRES_* come from Compose at container creation, and
-# `docker compose` finds the project from the working directory set below.
+# ── Read BACKUP_PING_URL from the Compose .env (cron runs with a bare environment) ──
+# Only this one key is parsed; sourcing would execute the file as shell code.
 [[ -d "$COMPOSE_DIR" ]] || error "COMPOSE_DIR not found: $COMPOSE_DIR"
 [[ -f "$COMPOSE_DIR/.env" ]] || error ".env not found in COMPOSE_DIR: $COMPOSE_DIR/.env"
-set -a
-# shellcheck disable=SC1091
-. "$COMPOSE_DIR/.env"
-set +a
+if [[ -z "$BACKUP_PING_URL" ]]; then
+  BACKUP_PING_URL="$(grep -E '^BACKUP_PING_URL=' "$COMPOSE_DIR/.env" | tail -n 1 | cut -d= -f2-)" || true
+  BACKUP_PING_URL="${BACKUP_PING_URL%$'\r'}"
+  BACKUP_PING_URL="${BACKUP_PING_URL#[\"\']}"
+  BACKUP_PING_URL="${BACKUP_PING_URL%[\"\']}"
+fi
 
 command -v docker >/dev/null 2>&1      || error "docker is not installed."
 docker compose version >/dev/null 2>&1 || error "docker compose plugin is not installed."
 
 mkdir -p "$BACKUP_DIR"
 
-# Run compose from COMPOSE_DIR so it picks up the project's compose file and .env.
+# docker compose reads COMPOSE_FILE and COMPOSE_PROJECT_NAME from COMPOSE_DIR/.env,
+# so `exec` reaches the production stack (see templates/.env.example).
 cd "$COMPOSE_DIR"
 
 timestamp="$(date +%Y%m%d-%H%M)"
@@ -70,10 +73,10 @@ docker compose exec -T postgres sh -c \
   'pg_dump -U "$POSTGRES_USER" -d "$POSTGRES_DB" -Fc' \
   > "$temp_file"
 
-# pg_restore --list parses the archive's table of contents; a truncated or corrupt
-# dump fails here. Run it in the container so the host needs no postgresql-client.
-log "Verifying dump with pg_restore --list…"
-if ! docker compose exec -T postgres pg_restore --list < "$temp_file" >/dev/null 2>&1; then
+# Restoring to /dev/null reads every data block, so a truncated or corrupt dump fails
+# here. Run it in the container so the host needs no postgresql-client.
+log "Verifying dump by restoring it to /dev/null…"
+if ! docker compose exec -T postgres pg_restore -f /dev/null < "$temp_file" >/dev/null 2>&1; then
   error "Dump verification failed — corrupt or truncated archive. Not keeping it."
 fi
 
