@@ -16,11 +16,14 @@ also use placeholders not in that block:
 
 - **cloud-init** (preferred, Hetzner Cloud) — the server provisions itself on first
   boot. Copy [`templates/cloud-init.yml`](../templates/cloud-init.yml), fill the
-  `<angle-bracket>` placeholders (`<ssh-public-key>`, `<username>`, `<user-password>`,
-  `<health-ping-url>`; adjust `EXTRA_UFW_PORTS`), then create the server with it — via
+  `<angle-bracket>` placeholders (`<ssh-public-key>`, `<username>`, `<user-password-hash>`,
+  `<heartbeat-url>`; adjust `EXTRA_UFW_PORTS`), then create the server with it — via
   the console **Cloud config** field, or:
 
   ```bash
+  # <user-password-hash>: prompts for the password (mkpasswd ships in the whois package)
+  mkpasswd -m yescrypt
+
   hcloud server create \
     --name <name> --type <type> --image debian-13 \
     --ssh-key <key-name> \

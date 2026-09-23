@@ -2,7 +2,8 @@
 # setup-server.sh – provision a fresh Debian / Ubuntu VPS
 #
 # Usage (run as root on the new server, passing config inline over SSH):
-#   ssh root@host "SSH_PUBLIC_KEY='ssh-ed25519 AAAA...' USERNAME=nico bash -s" < setup-server.sh
+#   HASH="$(mkpasswd -m yescrypt)"   # prompts for the password; mkpasswd ships in the whois package
+#   ssh root@host "SSH_PUBLIC_KEY='ssh-ed25519 AAAA...' USERNAME=nico USER_PASSWORD_HASH='$HASH' bash -s" < setup-server.sh
 #   ssh root@host "SSH_PUBLIC_KEY='ssh-ed25519 AAAA...' bash -s -- --dry-run" < setup-server.sh   # preview only
 #   Hands-off alternative: templates/cloud-init.yml fetches and runs this script at first boot.
 #
@@ -23,7 +24,7 @@ USERNAME="${USERNAME:-nico}"
 SSH_PUBLIC_KEY="${SSH_PUBLIC_KEY:-}"              # paste your pubkey here or export before running
 EXTRA_UFW_PORTS="${EXTRA_UFW_PORTS:-80/tcp 443/tcp}"  # space-separated
 PASSWORDLESS_SUDO="${PASSWORDLESS_SUDO:-false}"  # "true" grants NOPASSWD sudo (convenience over prompts)
-USER_PASSWORD="${USER_PASSWORD:-}"               # required unless PASSWORDLESS_SUDO=true; enables sudo prompts
+USER_PASSWORD_HASH="${USER_PASSWORD_HASH:-}"     # `mkpasswd -m yescrypt` output; required unless PASSWORDLESS_SUDO=true
 HEALTH_PING_URL="${HEALTH_PING_URL:-}"           # optional: daily dead-man health-ping URL (e.g. a Better Stack heartbeat)
 SWAP_SIZE_GB="${SWAP_SIZE_GB:-auto}"             # swapfile size in GB; "auto" = RAM capped at 8; "0" skips swap
 DRY_RUN="${DRY_RUN:-false}"                      # set to "true" or pass --dry-run
@@ -76,9 +77,16 @@ fi
 
 # Password-prompted sudo needs an account password; abort now, before any writes,
 # if the operator opted out of NOPASSWD but did not supply one.
-if [[ "$PASSWORDLESS_SUDO" != "true" && -z "$USER_PASSWORD" ]]; then
-  echo "ERROR: USER_PASSWORD is not set. Set it, or pass PASSWORDLESS_SUDO=true for NOPASSWD sudo." >&2
-  exit 1
+if [[ "$PASSWORDLESS_SUDO" != "true" ]]; then
+  if [[ -z "$USER_PASSWORD_HASH" ]]; then
+    echo "ERROR: USER_PASSWORD_HASH is not set. Set it, or pass PASSWORDLESS_SUDO=true for NOPASSWD sudo." >&2
+    exit 1
+  fi
+  # chpasswd -e stores the value verbatim, so plaintext would leave an unusable password.
+  if [[ "$USER_PASSWORD_HASH" != \$* ]]; then
+    echo "ERROR: USER_PASSWORD_HASH is not a crypt hash. Generate it with: mkpasswd -m yescrypt" >&2
+    exit 1
+  fi
 fi
 
 # ── 1. System update & base packages ────────────────────────────────────────
@@ -154,9 +162,9 @@ else
   # Default: password-prompted sudo. Set the account password so prompts work
   # (adduser --disabled-password leaves it unset, which locks sudo out).
   if [[ "$DRY_RUN" == "true" ]]; then
-    printf '  \033[0;33m[DRY-RUN]\033[0m set password for %s via chpasswd\n' "$USERNAME"
+    printf '  \033[0;33m[DRY-RUN]\033[0m set password hash for %s via chpasswd -e\n' "$USERNAME"
   else
-    echo "$USERNAME:$USER_PASSWORD" | chpasswd
+    printf '%s:%s\n' "$USERNAME" "$USER_PASSWORD_HASH" | chpasswd -e
   fi
 fi
 

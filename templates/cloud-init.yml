@@ -3,24 +3,24 @@
 #
 # Fetches and runs scripts/setup-server.sh from the handbook (single source of truth).
 #
-# SECURITY: user-data (incl. USER_PASSWORD) stays readable from the instance
-# metadata endpoint. Rotate the password at first login (`passwd`) or set
-# PASSWORDLESS_SUDO=true and omit USER_PASSWORD.
+# SECURITY: user-data (incl. USER_PASSWORD_HASH) stays readable from the instance
+# metadata endpoint. A weak password falls to an offline attack on the hash, so
+# use a strong one, or set PASSWORDLESS_SUDO=true and omit USER_PASSWORD_HASH.
 
 runcmd:
   # ── Provision ──
   # Env vars are consumed by setup-server.sh on the server; see the script's
   # Configuration block for the full interface. Optional vars are commented out:
   # EXTRA_UFW_PORTS='80/tcp 443/tcp' (already the script default) and
-  # HEALTH_PING_URL='<health-ping-url>' (move into the command below to enable).
+  # HEALTH_PING_URL='<heartbeat-url>' (move into the command below to enable).
   - >-
     SSH_PUBLIC_KEY='<ssh-public-key>'
     USERNAME='<username>'
-    USER_PASSWORD='<user-password>'
+    USER_PASSWORD_HASH='<user-password-hash>'
     bash -c "curl -fsSL https://raw.githubusercontent.com/nicograef/handbook/main/scripts/setup-server.sh | bash -s"
 
   # ── Passwordless-sudo variant ──
-  # Use this instead of the block above to skip USER_PASSWORD: sudo never prompts
+  # Use this instead of the block above to skip USER_PASSWORD_HASH: sudo never prompts
   # (any process running as the user can escalate). Comment out the block above.
   # - >-
   #     SSH_PUBLIC_KEY='<ssh-public-key>'
