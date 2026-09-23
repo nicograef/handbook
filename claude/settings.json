@@ -121,7 +121,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "payload=$(cat); cmd=$(printf '%s' \"$payload\" | jq -r '.tool_input.command // empty' 2>/dev/null); [ -z \"$cmd\" ] && cmd=\"$payload\"; if printf '%s' \"$cmd\" | grep -Eq 'git[[:space:]]+push' && printf '%s' \"$cmd\" | grep -Eq -- '(--force-with-lease|--force|--no-verify|(^|[[:space:]])-f($|[[:space:]]))'; then echo 'Blocked: git push with --force/-f/--force-with-lease/--no-verify is not allowed.' >&2; exit 2; fi; exit 0"
+            "command": "payload=$(cat); cmd=$(printf '%s' \"$payload\" | jq -r '.tool_input.command // empty' 2>/dev/null); [ -z \"$cmd\" ] && cmd=\"$payload\"; segs=$(printf '%s' \"$cmd\" | jq -Rrs 'gsub(\"\\\"[^\\\"]*\\\"\"; \"\") | ([39] | implode) as $q | gsub($q + \"[^\" + $q + \"]*\" + $q; \"\")' | tr ';&|()' '\\n\\n\\n\\n\\n'); g='(^|[[:space:]])git([[:space:]]+-[Cc][[:space:]]+[^[:space:]]+|[[:space:]]+-[^[:space:]]+)*[[:space:]]+'; if printf '%s\\n' \"$segs\" | grep -E \"${g}push([[:space:]]|$)\" | grep -Eq -- '(^|[[:space:]])(--force[^[:space:]]*|--mirror|--no-verify|-[46nquv]*f[^[:space:]]*|\\+[^[:space:]]+)'; then echo 'Blocked: git push with force, +refspec, --mirror or --no-verify is not allowed.' >&2; exit 2; fi; if printf '%s\\n' \"$segs\" | grep -E \"${g}commit([[:space:]]|$)\" | grep -Eq -- '(^|[[:space:]])(--no-verify|-[aeiopqsvz]*n[^[:space:]]*)'; then echo 'Blocked: git commit with -n or --no-verify is not allowed.' >&2; exit 2; fi; exit 0"
           }
         ]
       }
