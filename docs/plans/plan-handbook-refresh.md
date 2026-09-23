@@ -236,9 +236,9 @@ Every confirmed or corrected finding lands, and so does every consider item the 
 
 ### Acceptance criteria
 
-- [ ] `grep -rn 'temurin:21\|uv:0\.9\|bookworm\|dependency:resolve\|-tags=unit\|target-version' guides` returns nothing.
-- [ ] The Go and React trees agree with the rules stated under them.
-- [ ] `make check` passes, including the prose caps and the README index.
+- [x] `grep -rn 'temurin:21\|uv:0\.9\|bookworm\|dependency:resolve\|-tags=unit\|target-version' guides` returns nothing.
+- [x] The Go and React trees agree with the rules stated under them.
+- [x] `make check` passes, including the prose caps and the README index.
 
 ## Phase 5: Repo and CI templates
 
