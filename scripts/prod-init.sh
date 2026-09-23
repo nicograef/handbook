@@ -3,12 +3,12 @@
 #
 # Automates: prerequisite checks → certificate request → full stack start.
 #
-# Usage (DOMAIN is required; EMAIL is prompted if unset):
+# Usage (DOMAIN is required; EMAIL is optional and only receives account notices):
 #   DOMAIN=example.com make prod-init
 #   DOMAIN=example.com EMAIL=you@example.com make prod-init
 #
-# Not checked below: a DNS A record for DOMAIN must already point at this server's IP,
-# or the ACME challenge in step 2 fails (see guides/letsencrypt-docker.md).
+# Not checked below: the DNS A record for DOMAIN, and any AAAA record, must already
+# point at this server, or the ACME challenge in step 2 fails (see guides/letsencrypt-docker.md).
 set -euo pipefail
 
 # ── Configuration ──
@@ -50,13 +50,12 @@ docker compose version >/dev/null 2>&1 || error "docker compose plugin is not in
 
 [[ -n "$DOMAIN" ]] || error "DOMAIN is required. Set it via 'DOMAIN=example.com make prod-init'."
 
-if [[ -z "$EMAIL" ]]; then
-  read -rp "$(echo -e "${YELLOW}Enter email for Let's Encrypt notifications:${NC} ")" EMAIL
-  [[ -n "$EMAIL" ]] || error "Email is required for Let's Encrypt registration."
-fi
+# Without --email, certbot registers the ACME account with no contact address.
+EMAIL_ARGS=()
+[[ -z "$EMAIL" ]] || EMAIL_ARGS=(--email "$EMAIL")
 
 log "Domain:  $DOMAIN"
-log "Email:   $EMAIL"
+log "Email:   ${EMAIL:-none}"
 log "Project: $PROJECT"
 echo ""
 
@@ -92,14 +91,12 @@ done
 log "Nginx is ready."
 
 log "Step 2/3 — Requesting Let's Encrypt certificate…"
-if ! docker run --rm \
-  -v "${PROJECT}_certbot-challenges:/var/www/certbot" \
-  -v "${PROJECT}_letsencrypt:/etc/letsencrypt" \
-  certbot/certbot:v5.6.0 \
+# The prod certbot service supplies the image pin and volumes; --no-deps keeps its proxy down.
+if ! $COMPOSE_PROD run --rm --no-deps --entrypoint certbot certbot \
   certonly \
     --webroot -w /var/www/certbot \
     -d "$DOMAIN" -d "www.$DOMAIN" \
-    --email "$EMAIL" \
+    "${EMAIL_ARGS[@]}" \
     --agree-tos \
     --non-interactive; then
   $COMPOSE_CERT down
