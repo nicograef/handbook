@@ -220,10 +220,11 @@ run systemctl enable ufw
 log "Configuring fail2ban"
 write_file /etc/fail2ban/jail.local <<'EOF'
 [sshd]
-backend  = systemd
-enabled  = true
-maxretry = 5
-bantime  = 3600
+backend      = systemd
+journalmatch = _SYSTEMD_UNIT=ssh.service + _COMM=sshd + _COMM=sshd-session
+enabled      = true
+maxretry     = 5
+bantime      = 3600
 EOF
 
 run systemctl enable fail2ban

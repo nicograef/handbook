@@ -44,6 +44,7 @@ ssh nico@<host>
 sudo ufw status verbose
 
 sudo systemctl is-active fail2ban
+sudo fail2ban-client get sshd journalmatch
 
 # docker works without sudo
 docker run --rm hello-world
@@ -66,6 +67,7 @@ cat /etc/cron.d/report-health
 | SSH login | Succeeds as `nico`, fails as `root` |
 | `ufw status verbose` | `Status: active` with `22/tcp (LIMIT)` |
 | `fail2ban` | Reports `active` |
+| `fail2ban-client get sshd journalmatch` | Includes `_COMM=sshd-session` |
 | `hello-world` | Prints the Docker confirmation message |
 | `daemon.json` | Contains `"max-size": "10m"`, plus the IPv6 keys on IPv6-only hosts |
 | `unattended-upgrade` dry run | Lists an `Allowed origins` line containing `-security` |
