@@ -27,10 +27,18 @@ Source: [ElevenLabs docs on adding content](https://elevenlabs.io/docs/help-cent
 
 ## Prerequisites
 
-`pandoc` 3.0 or newer:
+`pandoc` 3.1.10 or newer, the first release that parses GitHub alerts.
+Debian 13 and Ubuntu 25.04 or newer ship it:
 
 ```bash
 sudo apt install pandoc
+```
+
+Ubuntu 24.04 (3.1.3) and Debian 12 (2.17) ship older releases.
+There, install the `.deb` from [pandoc releases](https://github.com/jgm/pandoc/releases):
+
+```bash
+sudo apt install ./pandoc-<version>-1-amd64.deb
 ```
 
 ## Step 1 — Render the EPUB
@@ -64,7 +72,7 @@ Expected: plain text reads as continuous prose, both counts equal.
 ## Troubleshooting
 
 ```bash
-# "pandoc 3.0 or newer required" → apt ships 2.x; install the .deb from github.com/jgm/pandoc/releases.
+# "pandoc 3.1.10 or newer required" → apt pandoc is too old; install the release .deb (Prerequisites).
 
 # A YAML error in meta.yml aborts the render instead.
 pandoc --metadata-file audiobook/meta.yml -f markdown -t plain /dev/null   # exit 0 = valid

@@ -39,10 +39,12 @@ OUT_FILE="${2:-book.epub}"
 command -v pandoc >/dev/null 2>&1 || die "pandoc is not installed"
 [[ -f "$FILTER" ]] || die "lua filter not found: $FILTER (override with FILTER=)"
 
-# --split-level replaced --epub-chapter-level in pandoc 3.0.
-PANDOC_MAJOR="$(pandoc --version | head -1 | sed -E 's/^[^0-9]*([0-9]+).*/\1/')"
-if ! [[ "$PANDOC_MAJOR" =~ ^[0-9]+$ ]] || [[ "$PANDOC_MAJOR" -lt 3 ]]; then
-  die "pandoc 3.0 or newer required, found: $(pandoc --version | head -1)"
+# gfm alerts (> [!WARNING] parsed as a Div) arrived in pandoc 3.1.10.
+PANDOC_MIN="3.1.10"
+PANDOC_VERSION="$(pandoc --version | head -1 | sed -E 's/^[^0-9]*([0-9][0-9.]*).*/\1/')"
+if ! [[ "$PANDOC_VERSION" =~ ^[0-9]+(\.[0-9]+)*$ ]] \
+  || ! printf '%s\n' "$PANDOC_MIN" "$PANDOC_VERSION" | sort -V -C; then
+  die "pandoc $PANDOC_MIN or newer required, found: $(pandoc --version | head -1)"
 fi
 
 CHAPTERS=()
