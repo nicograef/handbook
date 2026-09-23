@@ -3,12 +3,13 @@
 
 services:
   app:
-    image: node:24-slim
+    image: node:26-slim
     # build: .
     # replace with your dev server command, e.g. "npm run dev"
     command: sleep infinity
+    # Loopback only: Docker-published ports bypass the host firewall.
     ports:
-      - "3000:3000"
+      - "127.0.0.1:3000:3000"
     volumes:
       - .:/app
     working_dir: /app
@@ -21,16 +22,16 @@ services:
   # Service name matches docker-compose.prod.yml, so the Makefile's `db` and
   # `db-shell` targets address the same service in both stacks.
   # postgres:
-  #   image: postgres:17
+  #   image: postgres:18
   #   restart: unless-stopped
   #   environment:
   #     POSTGRES_USER: ${POSTGRES_USER}
   #     POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
   #     POSTGRES_DB: ${POSTGRES_DB}
   #   volumes:
-  #     - pgdata:/var/lib/postgresql/data
+  #     - pgdata:/var/lib/postgresql
   #   ports:
-  #     - "5432:5432"
+  #     - "127.0.0.1:5432:5432"
 
 # volumes:
 #   pgdata:

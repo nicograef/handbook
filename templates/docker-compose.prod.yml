@@ -15,15 +15,19 @@ x-logging: &default-logging
 services:
   # ── Database ──
   postgres:
-    image: postgres:17
+    image: postgres:18
     restart: unless-stopped
     logging: *default-logging
+    # Docker's 64 MB /dev/shm default is too small for parallel queries.
+    shm_size: 128mb
+    # Time for a clean shutdown checkpoint before Docker sends SIGKILL.
+    stop_grace_period: 1m
     environment:
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
       POSTGRES_DB: ${POSTGRES_DB}
     volumes:
-      - postgres-data:/var/lib/postgresql/data
+      - postgres-data:/var/lib/postgresql
     networks:
       - db-network
     healthcheck:
@@ -94,7 +98,7 @@ services:
 
   # ── Certbot (Let's Encrypt auto-renewal) ──
   certbot:
-    image: certbot/certbot:v5.6.0
+    image: certbot/certbot:v5.8.0
     restart: unless-stopped
     logging: *default-logging
     volumes:
