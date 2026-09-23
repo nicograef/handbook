@@ -13,11 +13,10 @@
 name: CI
 
 # Every push on any branch, so a feature branch is measured while it is still a branch.
+# No pull_request trigger: it would run a second time on the same commit.
 on:
   push:
     branches: ['**']
-  pull_request:
-    branches: [main]
 
 # Least-privilege token; a job that needs more (e.g. OIDC deploy) requests
 # its scopes at job level (id-token: write, contents: read).
@@ -39,6 +38,8 @@ jobs:
       database: ${{ steps.changes.outputs.database }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
       - name: Check for changes
         uses: dorny/paths-filter@ceb8a2b8f2d89434be7ff52d3de7ec3738c5cc9d # v4.0.3
         id: changes
@@ -62,11 +63,12 @@ jobs:
         working-directory: ./<backend-dir>  # e.g. ./backend
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-        # Only for a diff-scoped lint (one that reads `git diff <base>..HEAD`): a shallow
-        # clone carries no merge base, the diff reads as empty, and the gate is green for
-        # the one reason a gate may never be green.
-        # with:
-        #   fetch-depth: 0
+        with:
+          persist-credentials: false
+          # Only for a diff-scoped lint (one that reads `git diff <base>..HEAD`): a shallow
+          # clone carries no merge base, the diff reads as empty, and the gate is green for
+          # the one reason a gate may never be green.
+          # fetch-depth: 0
       - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
         with:
           go-version: "1.26"  # match your go.mod version
@@ -81,12 +83,13 @@ jobs:
       - name: Verify go.mod/go.sum are tidy
         run: go mod tidy -diff
 
+      # goimports is a go.mod tool: `go get -tool golang.org/x/tools/cmd/goimports`.
       - name: Check format
         run: |
-          go install golang.org/x/tools/cmd/goimports@latest
-          if [ "$(goimports -l . | wc -l)" -gt 0 ]; then
+          UNFORMATTED="$(go tool goimports -l .)"
+          if [ -n "$UNFORMATTED" ]; then
             echo "Code is not properly formatted:"
-            goimports -l .
+            echo "$UNFORMATTED"
             exit 1
           fi
 
@@ -97,7 +100,7 @@ jobs:
         run: go build -v ./...
 
       - name: Test
-        run: go test -tags=unit -v -race -coverprofile=coverage.out ./...
+        run: go test -v -race -coverprofile=coverage.out ./...
 
       # Reports only — add a threshold comparison here to make it a gate.
       - name: Report test coverage
@@ -117,6 +120,8 @@ jobs:
         working-directory: ./<backend-dir>
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
       - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
         with:
           go-version: "1.26"
@@ -124,7 +129,7 @@ jobs:
       - name: golangci-lint
         uses: golangci/golangci-lint-action@ba0d7d2ec06a0ea1cb5fa41b2e4a3ab91d21278a # v9.3.0
         with:
-          version: v2.11.4  # keep in sync with scripts/setup-dev-tools.sh
+          version: v2.13.2  # keep in sync with scripts/setup-dev-tools.sh
           working-directory: ./<backend-dir>
 
   # ── Node / pnpm Frontend ──────────────────────────────────────────────────
@@ -138,15 +143,18 @@ jobs:
         working-directory: ./<frontend-dir>  # e.g. ./frontend
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
 
       - uses: pnpm/action-setup@ea17c68df8912ef543352723c149a84f56e3d413 # v6.1.0
         with:
-          version: 12  # match your packageManager field in package.json
+          # pnpm reads its version from the packageManager field.
+          package_json_file: <frontend-dir>/package.json  # relative to the repo root
           run_install: false
 
       - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
-          node-version: 24  # match your .node-version or package.json engines
+          node-version: 26  # match your .node-version or package.json engines
           cache: "pnpm"
           cache-dependency-path: <frontend-dir>/pnpm-lock.yaml  # e.g. frontend/pnpm-lock.yaml
 
@@ -158,6 +166,9 @@ jobs:
 
       - name: Run lint
         run: pnpm run lint
+
+      - name: Typecheck
+        run: pnpm exec tsc
 
       - name: Run tests
         run: pnpm run test
@@ -176,13 +187,17 @@ jobs:
         working-directory: ./<backend-dir>  # e.g. ./backend, or . for a root pyproject.toml
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
 
       # setup-uv publishes no floating tag since v8, so an exact release or a SHA is the only pin.
       - uses: astral-sh/setup-uv@bec219d24cd3e171d82865faccec33120bb574f4 # v10.1.0
+        with:
+          version: "0.12.18"
 
-      # --frozen installs the set uv.lock pins and never re-resolves one of its own.
+      # --locked fails when uv.lock no longer matches pyproject.toml.
       - name: Sync dependencies
-        run: uv sync --frozen
+        run: uv sync --locked
 
       - name: Lint
         run: uv run ruff check .
@@ -196,10 +211,6 @@ jobs:
       - name: Test
         run: uv run pytest
 
-      # Fails if pyproject.toml changed without a matching `uv lock`.
-      - name: Verify lockfile
-        run: uv lock --check
-
       # Last: the only step that queries a remote advisory service.
       - name: Audit
         run: uv audit
@@ -212,7 +223,7 @@ jobs:
     timeout-minutes: 10
     services:
       postgres:
-        image: postgres:17
+        image: postgres:18
         env:
           POSTGRES_USER: admin
           POSTGRES_PASSWORD: admin
@@ -229,6 +240,8 @@ jobs:
         working-directory: ./<backend-dir>
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
       - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
         with:
           go-version: "1.26"
@@ -236,10 +249,13 @@ jobs:
       - name: Download dependencies
         run: go mod download
 
+      # The digest is the release's sha256sum.txt entry; update it together with the version.
       - name: Install golang-migrate
+        working-directory: ${{ runner.temp }}
         run: |
-          curl -fsSL "https://github.com/golang-migrate/migrate/releases/download/v4.19.1/migrate.linux-amd64.tar.gz" \
-            | tar -xz -C /usr/local/bin
+          curl -fsSLo migrate.tar.gz "https://github.com/golang-migrate/migrate/releases/download/v4.20.1/migrate.linux-amd64.tar.gz"
+          echo "b1e13121d4178b7804a9fb29dca62d57b732390f7e5ae33f2cd65e9b192e1bd4  migrate.tar.gz" | sha256sum -c -
+          sudo tar -xzf migrate.tar.gz -C /usr/local/bin migrate
 
       - name: Run database migrations up
         working-directory: ./<database-dir>  # e.g. ./database
