@@ -2,7 +2,7 @@
 name: prog
 description: Summarises this session's state as a table: steps and phases done, open, blocked, plus every decision or question the user still owes. With "compact", also persists state to the scratchpad and memory and writes a resume prompt for after /compact.
 argument-hint: "[compact]"
-allowed-tools: Bash, Read, Grep, Glob
+allowed-tools: Bash(git *), Read, Grep, Glob
 ---
 
 # Prog
