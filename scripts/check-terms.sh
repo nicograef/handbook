@@ -10,7 +10,8 @@
 #   3. Fails when a term appears before the chapter that explains it.
 #   4. Fails when the declaring chapter does not contain the term at all.
 #
-# Matching is case-insensitive and substring-based: "index" matches "Indexes".
+# Matching is whole-word and case-insensitive: "API" matches "api", not
+# "Kapitel" or "APIs".
 # See .claude/skills/audiobook/writing.md.
 
 set -euo pipefail
@@ -78,7 +79,7 @@ while IFS= read -r line; do
   first_file=""
   i=1
   for chapter in "${CHAPTERS[@]}"; do
-    if grep -qiF -- "$term" "$SRC_DIR/$chapter"; then
+    if grep -qiP -- "\b\Q${term}\E\b" "$SRC_DIR/$chapter"; then
       first_pos="$i"
       first_file="$chapter"
       break
