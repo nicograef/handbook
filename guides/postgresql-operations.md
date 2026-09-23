@@ -7,6 +7,7 @@
 - On the server, `.env` also sets `COMPOSE_FILE` and `COMPOSE_PROJECT_NAME` (see
   [templates/.env.example](../templates/.env.example)).
   Plain `docker compose` then targets the production stack.
+  `COMPOSE_PROJECT_NAME` must equal `PROJECT` in the Makefile (default `myapp`).
 
 ## 1. Manual Backup
 
