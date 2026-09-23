@@ -317,10 +317,12 @@ else
 fi
 
 # Persist HEALTH_PING_URL so the cron job finds it; the script+cron install either way.
+# The URL is a secret: anyone holding it can fake a healthy ping.
 if [[ -n "$HEALTH_PING_URL" ]]; then
   write_file /etc/default/report-health <<EOF
 HEALTH_PING_URL="$HEALTH_PING_URL"
 EOF
+  run chmod 600 /etc/default/report-health
 else
   echo "  HEALTH_PING_URL not set — installing script + cron, but no URL persisted; set /etc/default/report-health later to enable pings."
 fi
@@ -351,7 +353,7 @@ echo "  fail2ban: active"
 echo "  Docker:   $(docker --version 2>/dev/null || echo 'not installed (dry-run)')"
 echo "  Upgrades: unattended (distro stock origins, no auto-reboot)"
 if [[ -n "$HEALTH_PING_URL" ]]; then
-  echo "  Health:   daily ping to $HEALTH_PING_URL"
+  echo "  Health:   daily ping (URL in /etc/default/report-health)"
 else
   echo "  Health:   daily check installed (no ping URL — set /etc/default/report-health to enable)"
 fi

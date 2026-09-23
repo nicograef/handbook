@@ -3,7 +3,7 @@
 #
 # Usage (installed as /usr/local/bin/report-health, run by cron):
 #   report-health
-#   DEFAULTS_FILE=/dev/null HEALTH_PING_URL=https://hc-ping.com/<uuid> report-health   # ad-hoc override; the env value only applies when the defaults file is absent or leaves HEALTH_PING_URL unset
+#   DEFAULTS_FILE=/dev/null HEALTH_PING_URL=<heartbeat-url> report-health   # ad-hoc override; the env value only applies when the defaults file is absent or leaves HEALTH_PING_URL unset
 #
 # What it does:
 #   1. Reads HEALTH_PING_URL from /etc/default/report-health (env is the fallback).
@@ -87,5 +87,5 @@ if [[ -z "$HEALTH_PING_URL" ]]; then
   exit 0
 fi
 
-log "Healthy — pinging $HEALTH_PING_URL"
+log "Healthy — pinging the heartbeat URL"
 curl -fsS --max-time 10 --retry 3 "$HEALTH_PING_URL" >/dev/null
