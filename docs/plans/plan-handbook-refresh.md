@@ -52,7 +52,7 @@ Every confirmed or corrected finding lands, and so does every consider item the 
 ## Open questions / Risks
 
 - **Human**: in phase 6, install gh from its apt repo on this laptop, then `rm ~/.local/bin/gh`.
-- **Human**: phase 9 needs sudo for bubblewrap, socat and the AppArmor profile.
+- **Human**: phase 9 needs the bwrap AppArmor profile (sudo). bubblewrap and socat are installed; the stock `bwrap-userns-restrict` profile fails with `apply-seccomp … setgroups … Permission denied`.
 - **Risk**: the git guard hook is a guardrail, not a security boundary. `/usr/bin/git` and `sh -c` bypass it; only the sandbox closes that gap. So it stays inline, with no script.
 - **Risk**: Postgres 18 refuses the old mount path, so the image tag and the volume path change in one commit.
 
