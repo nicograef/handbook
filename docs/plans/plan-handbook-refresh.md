@@ -156,7 +156,7 @@ Every confirmed or corrected finding lands, and so does every consider item the 
 ### Acceptance criteria
 
 - [x] `docker compose -f templates/docker-compose.yml config -q` and the prod file both pass.
-- [ ] `grep -rn 'postgres:17\|/var/lib/postgresql/data\|certbot:v5\.[0-7]\|pg_restore --list' templates scripts guides` returns nothing.
+- [x] `grep -rn 'postgres:17\|/var/lib/postgresql/data\|certbot:v5\.[0-7]\|pg_restore --list' templates scripts guides` returns nothing.
 - [x] `shellcheck scripts/backup-postgres.sh` passes, and the script has no `source`/`.` of `.env`.
 - [x] Optional: a local truncated dump makes the check fail.
 - [x] `make check` passes.
@@ -277,9 +277,9 @@ Every confirmed or corrected finding lands, and so does every consider item the 
 
 ### Acceptance criteria
 
-- [ ] `actionlint templates/ci.yml` passes if actionlint is present; otherwise `yq` parses the file.
-- [ ] `grep -rn 'golangci-lint.*v1\|v2\.[0-9]\.\|@latest\|postgres:17\|pull_request\|ubuntu26\|version: 12' templates` returns nothing, except in deliberate comments.
-- [ ] `make check` passes.
+- [x] `actionlint templates/ci.yml` passes if actionlint is present; otherwise `yq` parses the file.
+- [x] `grep -rn 'golangci-lint.*v1\|v2\.[0-9]\.\|@latest\|postgres:17\|pull_request\|ubuntu26\|version: 12' templates` returns nothing, except in deliberate comments.
+- [x] `make check` passes.
 
 ## Phase 6: Workstation and dotfiles
 
@@ -392,8 +392,8 @@ Every confirmed or corrected finding lands, and so does every consider item the 
 
 ### Acceptance criteria
 
-- [ ] `make check` passes, including the new description-length check against every skill.
-- [ ] `grep -rn 'disable-model-invocation' .claude/skills/decide` and `grep -rn 'finings\|stays blocked even here' .` return nothing.
+- [x] `make check` passes, including the new description-length check against every skill.
+- [x] `grep -rn 'disable-model-invocation' .claude/skills/decide` and `grep -rn 'finings\|stays blocked even here' .` return nothing.
 
 ## Phase 9: Sandbox trial for unattended runs
 
@@ -452,8 +452,8 @@ Every confirmed or corrected finding lands, and so does every consider item the 
 
 ### Acceptance criteria
 
-- [ ] `shellcheck scripts/md-to-epub.sh scripts/check-terms.sh` passes.
-- [ ] A fixture chapter with a table, a code block and a `> [!WARNING]` alert gives three stderr lines.
-- [ ] The warning text appears in the EPUB, and `STRICT=1` exits non-zero.
-- [ ] `check-terms.sh` no longer matches "API" inside "Kapitel".
-- [ ] `make check` passes.
+- [x] `shellcheck scripts/md-to-epub.sh scripts/check-terms.sh` passes.
+- [x] A fixture chapter with a table, a code block and a `> [!WARNING]` alert gives three stderr lines.
+- [x] The warning text appears in the EPUB, and `STRICT=1` exits non-zero.
+- [x] `check-terms.sh` no longer matches "API" inside "Kapitel".
+- [x] `make check` passes.
