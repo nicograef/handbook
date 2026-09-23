@@ -114,6 +114,11 @@
     "defaultMode": "auto"
   },
   "model": "claude-opus-5-5",
+  "availableModels": [
+    "claude-opus-5-5",
+    "claude-sonnet-5"
+  ],
+  "enforceAvailableModels": true,
   "hooks": {
     "PreToolUse": [
       {
@@ -174,7 +179,6 @@
   },
   "enableArtifact": false,
   "enableWorkflows": true,
-  "workflowSizeGuideline": "medium",
   "statusLine": {
     "type": "command",
     "command": "bash \"$HOME/.claude/statusline.sh\""
