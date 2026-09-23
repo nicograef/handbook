@@ -4,6 +4,9 @@
 
 - Docker Compose stack with a `postgres` service (see [templates/docker-compose.prod.yml](../templates/docker-compose.prod.yml))
 - `.env` file with `POSTGRES_USER`, `POSTGRES_PASSWORD`, `POSTGRES_DB`
+- On the server, `.env` also sets `COMPOSE_FILE` and `COMPOSE_PROJECT_NAME` (see
+  [templates/.env.example](../templates/.env.example)).
+  Plain `docker compose` then targets the production stack.
 
 ## 1. Manual Backup
 
@@ -22,11 +25,20 @@ docker compose exec -T postgres sh -c \
 
 ### From compressed dump
 
+Stop the backend so no session holds the database open.
+`--single-transaction` rolls the whole restore back on any error.
+
 ```bash
+docker compose stop backend
 docker compose exec -T postgres sh -c \
-  'pg_restore -U "$POSTGRES_USER" -d "$POSTGRES_DB" --clean --if-exists' \
+  'pg_restore -U "$POSTGRES_USER" -d "$POSTGRES_DB" --clean --if-exists --single-transaction' \
   < backup-20260101-1200.dump
+docker compose exec postgres sh -c \
+  'vacuumdb -U "$POSTGRES_USER" -d "$POSTGRES_DB" --analyze-in-stages'
+docker compose start backend
 ```
+
+`pg_restore` restores no planner statistics, so `vacuumdb` rebuilds them.
 
 ### Into a fresh database
 
@@ -47,7 +59,7 @@ documents each step. Set up the `BACKUP_PING_URL` heartbeat in
 
 ```bash
 sudo install -m 0755 scripts/backup-postgres.sh /opt/scripts/backup-postgres.sh
-sudo mkdir -p /opt/backups/postgres
+sudo install -d -m 0700 /opt/backups/postgres
 ```
 
 ### Cron line
@@ -66,7 +78,7 @@ sudo mkdir -p /opt/backups/postgres
 > Those are bad migration, dropped table, and corruption.
 > **Upgrade path when this stops being acceptable:** push the verified dumps offsite with
 > [restic](https://restic.net/).
-> Target object storage, e.g. a Hetzner Storage Box.
+> Target a Hetzner Storage Box over SFTP, or Object Storage over S3.
 > Backup survival then no longer depends on the server surviving.
 
 ## 4. Restore drill
@@ -77,10 +89,13 @@ sudo mkdir -p /opt/backups/postgres
 - For the live disaster case, restore into the production database instead.
 - Use the [full-restore commands](#2-restore), not the throwaway one below.
 - The drill restores into a **throwaway database** and never touches the live one.
+- Run it as root: the backup directory is root-only.
 
-Set the two env vars to your server's values (same as the backup script):
+Open a root shell and set the two env vars to your server's values (same as the backup
+script):
 
 ```bash
+sudo -i
 export BACKUP_DIR=/opt/backups/postgres    # where scripts/backup-postgres.sh writes
 export COMPOSE_DIR=/opt/myapp              # Compose project dir (its .env is used)
 cd "$COMPOSE_DIR"
@@ -99,7 +114,7 @@ cd "$COMPOSE_DIR"
    ```bash
    docker compose exec postgres sh -c 'createdb -U "$POSTGRES_USER" restore_drill'
    docker compose exec -T postgres sh -c \
-     'pg_restore -U "$POSTGRES_USER" -d restore_drill' < "$DUMP"
+     'pg_restore -U "$POSTGRES_USER" -d restore_drill --exit-on-error' < "$DUMP"
    ```
 
 3. **Spot-check** that known tables came back with the expected row counts.
@@ -127,13 +142,60 @@ cd "$COMPOSE_DIR"
    docker compose exec postgres sh -c 'dropdb -U "$POSTGRES_USER" restore_drill'
    ```
 
-## 5. Migrations with golang-migrate
+## 5. Major upgrade
+
+- A new major version (18 → 19) cannot read the old data directory.
+- Move the data with a dump and restore onto a fresh volume.
+- Run the steps as root in the Compose directory, since the backup directory is root-only.
+
+```bash
+sudo -i
+cd /opt/myapp
+```
+
+1. **Stop the backend and take a verified dump** with the
+   [backup script](#3-automated-backup-cron):
+
+   ```bash
+   docker compose stop backend
+   BACKUP_DIR=/opt/backups/postgres COMPOSE_DIR=/opt/myapp /opt/scripts/backup-postgres.sh
+   ```
+
+2. **Stop the stack**, then bump the `postgres` image tag in the Compose file.
+
+   ```bash
+   docker compose down
+   ```
+
+3. **Point the service at a fresh volume.** Rename the volume in the Compose file,
+   e.g. `postgres-data` to `postgres19-data`, so the old one stays as a fallback.
+
+4. **Start only the database** and restore the dump into it:
+
+   ```bash
+   docker compose up -d postgres
+   DUMP="$(ls -t /opt/backups/postgres/backup-*.dump | head -1)"
+   docker compose exec -T postgres sh -c \
+     'pg_restore -U "$POSTGRES_USER" -d "$POSTGRES_DB" --single-transaction' < "$DUMP"
+   ```
+
+5. **Rebuild planner statistics**, then start the rest of the stack:
+
+   ```bash
+   docker compose exec postgres sh -c \
+     'vacuumdb -U "$POSTGRES_USER" -d "$POSTGRES_DB" --analyze-in-stages'
+   docker compose up -d
+   ```
+
+6. **Remove the old volume** once the app runs correctly on the new version.
+
+## 6. Migrations with golang-migrate
 
 ### Install
 
 ```bash
-curl -fsSL "https://github.com/golang-migrate/migrate/releases/download/v4.19.1/migrate.linux-amd64.tar.gz" \
-  | tar -xz -C /usr/local/bin
+curl -fsSL "https://github.com/golang-migrate/migrate/releases/download/v4.20.1/migrate.linux-amd64.tar.gz" \
+  | sudo tar -xz -C /usr/local/bin migrate
 ```
 
 ### Create a migration
@@ -159,7 +221,7 @@ migrate() {
   docker run --rm \
     --network <project>_db-network \
     -v "$PWD/database/migrations:/migrations" \
-    migrate/migrate \
+    migrate/migrate:v4.20.1 \
     -path /migrations -database "$DB_URL" "$@"
 }
 
@@ -177,18 +239,13 @@ migrate up                 # apply all pending
 # confirm backup file was created (BACKUP_DIR from the cron line)
 ls -lh /opt/backups/postgres/backup-*.dump
 
-# check migration version (uses the migrate wrapper from section 5)
+# check migration version (uses the migrate wrapper from section 6)
 migrate version
 ```
 
 ## Troubleshooting
 
 ```bash
-# "database is being accessed by other users" when restoring
-# → terminate other connections first
-docker compose exec postgres sh -c \
-  'psql -U "$POSTGRES_USER" -d "$POSTGRES_DB" -c "SELECT pg_terminate_backend(pid) FROM pg_stat_activity WHERE datname = current_database() AND pid <> pg_backend_pid();"'
-
 # "dirty database version" after failed migration
 # → check which version is dirty, fix the SQL, then force
 migrate version
