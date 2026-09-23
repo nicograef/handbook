@@ -70,13 +70,12 @@ cat /etc/cron.d/report-health
 | `fail2ban-client get sshd journalmatch` | Includes `_COMM=sshd-session` |
 | `hello-world` | Prints the Docker confirmation message |
 | `daemon.json` | Contains `"max-size": "10m"`, plus the IPv6 keys on IPv6-only hosts |
-| `unattended-upgrade` dry run | Lists an `Allowed origins` line containing `-security` |
+| `unattended-upgrade` dry run | Lists the stock `Allowed origins`, one containing `-security` |
 | `systemctl list-timers` | `apt-daily.timer` and `apt-daily-upgrade.timer` appear |
 | `/etc/cron.d/report-health` | Prints the `0 8 * * * root /usr/local/bin/report-health` line |
 
-- **Debian only** — the dry run also carries `label=Debian` stable origins from
-  the stock `50unattended-upgrades` `Origins-Pattern`.
-- Expected: our drop-in extends that `Origins-Pattern` rather than replacing it.
+- The stock `50unattended-upgrades` origins apply; the script adds none.
+- On Debian they also include `label=Debian` stable point releases.
 
 ## After provisioning
 

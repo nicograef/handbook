@@ -14,7 +14,7 @@
 #   4. UFW firewall
 #   5. fail2ban
 #   6. Docker + Compose, container-log rotation (IPv6 networking auto-enabled on IPv6-only hosts)
-#   7. Unattended security upgrades + daily health ping
+#   7. Unattended upgrades (stock distro origins) + daily health ping
 
 set -euo pipefail
 
@@ -84,8 +84,7 @@ fi
 # ── 1. System update & base packages ────────────────────────────────────────
 log "Updating system"
 run apt update -y
-run apt upgrade -y
-run apt dist-upgrade -y
+run apt full-upgrade -y
 run apt install -y \
   curl wget git make vim unzip \
   ca-certificates gnupg \
@@ -206,7 +205,6 @@ run systemctl restart ssh
 log "Configuring UFW"
 run ufw default deny incoming
 run ufw default allow outgoing
-run ufw allow ssh
 run ufw limit ssh
 
 for port in $EXTRA_UFW_PORTS; do
@@ -298,35 +296,15 @@ EOF
 fi
 
 # ── 7. Unattended upgrades & health ping ─────────────────────────────────────
-log "Configuring unattended security upgrades"
+log "Configuring unattended upgrades"
 run apt install -y unattended-upgrades
 
-# Run apt's update + unattended-upgrade steps every day.
+# Run apt's update + unattended-upgrade steps every day. The stock
+# 50unattended-upgrades origins apply; there is no Automatic-Reboot, so reboots
+# stay manual and the health ping surfaces a pending one.
 write_file /etc/apt/apt.conf.d/20auto-upgrades <<'EOF'
 APT::Periodic::Update-Package-Lists "1";
 APT::Periodic::Unattended-Upgrade "1";
-EOF
-
-# Add the security origin for the detected distro. This extends (not replaces)
-# the stock Origins-Pattern list — Debian's 50unattended-upgrades also enables
-# stable point-release updates by default, so Debian boxes auto-apply those too.
-# $ID is already resolved from /etc/os-release by the Docker step above. Debian
-# and Ubuntu name their security suite differently, so branch on the distro.
-# The ${distro_id}/${distro_codename} placeholders are apt-config variables, not
-# shell ones — they must land in the file verbatim, hence single quotes.
-# shellcheck disable=SC2016
-case "$ID" in
-  ubuntu)  SECURITY_ORIGIN='"${distro_id}:${distro_codename}-security";' ;;
-  debian)  SECURITY_ORIGIN='"${distro_id}:${distro_codename}-security";
-        "${distro_id}Security:${distro_codename}-security";' ;;
-  *)       echo "ERROR: unsupported distro for unattended-upgrades: $ID" >&2; exit 1 ;;
-esac
-
-# No Automatic-Reboot — reboots stay manual; the health ping surfaces the pending one.
-write_file /etc/apt/apt.conf.d/51unattended-upgrades-security <<EOF
-Unattended-Upgrade::Allowed-Origins {
-    $SECURITY_ORIGIN
-};
 EOF
 
 log "Installing daily health ping"
@@ -371,7 +349,7 @@ fi
 echo "  Firewall: UFW active (ssh + ${EXTRA_UFW_PORTS:-no extra ports})"
 echo "  fail2ban: active"
 echo "  Docker:   $(docker --version 2>/dev/null || echo 'not installed (dry-run)')"
-echo "  Upgrades: unattended (security origin + distro stock defaults, no auto-reboot)"
+echo "  Upgrades: unattended (distro stock origins, no auto-reboot)"
 if [[ -n "$HEALTH_PING_URL" ]]; then
   echo "  Health:   daily ping to $HEALTH_PING_URL"
 else

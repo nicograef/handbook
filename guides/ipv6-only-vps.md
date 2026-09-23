@@ -23,7 +23,7 @@ synthesize AAAA records for IPv4-only hosts and relay traffic through a NAT64
 gateway:
 
 ```bash
-printf 'nameserver 2a01:4f9:c010:3f02::1\nnameserver 2a00:1098:2c::1\nnameserver 2a00:1098:2b::1\n' \
+printf 'nameserver 2a01:4f9:c010:3f02::1\nnameserver 2a01:4f8:c2c:123f::1\nnameserver 2a00:1098:2b::1\n' \
   | sudo tee /etc/resolv.conf
 ```
 
@@ -64,7 +64,7 @@ docker network rm v6check > /dev/null
 
 Expected:
 
-- The three `2a01:4f9...`/`2a00:1098...` nameservers.
+- The three nameservers from the `printf` in step 1.
 - `HTTP/2 200`.
 - `container-net-ok` — the container reached a dual-stack host from an IPv6-only user-defined network.
 - That network is the same shape Compose creates.
