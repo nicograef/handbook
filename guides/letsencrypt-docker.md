@@ -5,6 +5,7 @@ Automated TLS certificates via Certbot webroot challenge, running entirely insid
 ## Prerequisites
 
 1. DNS A record pointing to the VPS IP (+ `www` subdomain)
+2. Any AAAA record for either name points to this server or is removed, since Let's Encrypt prefers IPv6
 
 ### Inputs
 
@@ -31,10 +32,7 @@ docker run --rm -v myapp_letsencrypt:/etc/letsencrypt alpine \
 
 # staging dry-run against the running stack — must print
 # "Congratulations, all simulated renewals succeeded"
-docker run --rm \
-  -v myapp_certbot-challenges:/var/www/certbot \
-  -v myapp_letsencrypt:/etc/letsencrypt \
-  certbot/certbot:v5.6.0 renew --dry-run
+docker compose -p myapp -f docker-compose.prod.yml exec certbot certbot renew --dry-run
 ```
 
 ## Troubleshooting
