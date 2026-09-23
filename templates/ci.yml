@@ -12,8 +12,7 @@
 # well above it.
 name: CI
 
-# Every push on any branch: a feature branch is measured while it is still a branch,
-# and `main` is never pushed to directly.
+# Every push on any branch, so a feature branch is measured while it is still a branch.
 on:
   push:
     branches: ['**']

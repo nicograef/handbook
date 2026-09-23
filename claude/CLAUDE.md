@@ -8,8 +8,8 @@ Nico Gräf, full-stack developer at gyva (AugRep GmbH, Freiburg), since 2026-09-
 - Makefiles are the dev interface: `make up`, `make check`, `make help`.
 - EditorConfig: spaces except Go (tabs), LF, UTF-8.
 - Conventional Commits. A multi-file change gets a bullet body; PR bodies are bullet lists.
-- Commit every completed task without asking, `main` included. Push feature branches only.
-- Never force-push (`--force`, `-f`, `--force-with-lease`), never `--no-verify`, never push `main`.
+- Commit every completed task without asking, `main` included. Push feature branches and `main`.
+- Never force-push (`--force`, `-f`, `--force-with-lease`), never `--no-verify`.
 - No AI attribution in commits or PRs: no `Co-Authored-By: Claude`, no "Generated with" trailers.
 - The proper fix is the only fix. No quick fix that leaves the cause, no TODO in place of asked work. No test weakened or skipped to go green. No workaround without naming and fixing what forced it. A real problem found mid-task gets fixed in its own commit. Too large for that: finish the task, then report it with evidence.
 
@@ -36,7 +36,7 @@ Lead with the answer or the problem. Sentences ≤ 20 words, one claim each. Par
 - A finished branch: run the tests, then offer merge, PR, keep or discard. Delete a branch only after merge or discard.
 - Isolated work lives in `../<repo>-wt/<branch>` via `git worktree add`. A sibling directory keeps linters that walk `.` out of the lanes.
 - Other sessions may share the repo. `~/.claude/agent-bus.sh peers` lists them; with a peer present, follow the parallel-sessions skill.
-- No autonomous outbound actions: no emails, posts or external submissions; drafts stay drafts. Committing and pushing a feature branch are exempt.
+- No autonomous outbound actions: no emails, posts or external submissions; drafts stay drafts. Committing and pushing are exempt.
 - Keep documentation to a minimum. Only the most important information should be kept.
 - Keep code comments to a minimum. Max 2 sentences allowed as comment.
 - Focus on small and fast unit tests. Only add integration tests where necessary and make sure they are efficient. Keep the test time fast.

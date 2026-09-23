@@ -269,7 +269,7 @@
       "Sensitive data locations & audiences: /home/nico/.claude holds session transcripts and credentials. Company source code and data are confidential. None of it leaves this machine except through the company's own git remotes, and none belongs in a PR body, paste, or third-party service.",
       "Sensitive remote targets: not yet provided. An agent session never deploys anywhere.",
       "Protected IaC scopes: not yet provided. An agent session never runs an infrastructure deploy or destroy command.",
-      "Additional context: single-user company laptop, no CI secrets held locally. Agent sessions work in git worktrees under ../<repo>-wt/ and land on feature branches; they never deploy and never push to main."
+      "Additional context: single-user company laptop, no CI secrets held locally. Agent sessions work in git worktrees under ../<repo>-wt/ and land on feature branches; they never deploy."
     ]
   }
 }
