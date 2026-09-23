@@ -5,14 +5,11 @@
   "[javascript]": {
     "editor.defaultFormatter": "esbenp.prettier-vscode"
   },
-  "[vue]": {
-    "editor.defaultFormatter": "esbenp.prettier-vscode"
-  },
   "[typescript]": {
     "editor.defaultFormatter": "esbenp.prettier-vscode"
   },
   "[json]": {
-    "editor.defaultFormatter": "vscode.json-language-features"
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
   },
   "[jsonc]": {
     "editor.defaultFormatter": "esbenp.prettier-vscode"
@@ -31,15 +28,10 @@
   "[css]": {
     "editor.defaultFormatter": "vscode.css-language-features"
   },
-  "go.buildTags": "integration,unit",
+  "go.buildTags": "integration",
   "go.formatTool": "gofumpt",
   "go.toolsManagement.autoUpdate": true,
-  "go.lintTool": "golangci-lint",
-  "editor.renderWhitespace": "all",
-  "[php]": {
-    "editor.defaultFormatter": "bmewburn.vscode-intelephense-client"
-  },
-  "editor.minimap.enabled": false,
+  "go.lintTool": "golangci-lint-v2",
   "[typescriptreact]": {
     "editor.defaultFormatter": "esbenp.prettier-vscode"
   },

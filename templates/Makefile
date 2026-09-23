@@ -20,12 +20,12 @@ db:            ## Start database container
 	docker compose up postgres
 
 be:            ## Start backend (adapt command to your stack)
-	@echo "TODO: add backend start command"
+	@echo "TODO: add backend start command" >&2; exit 1
 	# cd backend && ./mvnw spring-boot:run -Dspring-boot.run.profiles=dev
 	# cd backend && npm run dev
 
 fe:            ## Start frontend dev server
-	@echo "TODO: add frontend start command"
+	@echo "TODO: add frontend start command" >&2; exit 1
 	# cd frontend && pnpm dev
 	# cd frontend && npm run dev
 
@@ -34,11 +34,11 @@ fe:            ## Start frontend dev server
 .PHONY: be-check fe-check check
 
 be-check:      ## Backend: lint + test
-	@echo "TODO: add backend checks"
+	@echo "TODO: add backend checks" >&2; exit 1
 	# cd backend && ./mvnw verify -B
 
 fe-check:      ## Frontend: lint + test
-	@echo "TODO: add frontend checks"
+	@echo "TODO: add frontend checks" >&2; exit 1
 	# cd frontend && pnpm lint && pnpm test
 
 check: be-check fe-check  ## Run all checks

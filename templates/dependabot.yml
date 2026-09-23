@@ -36,7 +36,7 @@ updates:
 
   # ── Python (uv: pyproject.toml + uv.lock) ──
   - package-ecosystem: "uv"
-    directory: "/"
+    directory: "/<backend-dir>" # e.g. /backend, or / for a root pyproject.toml
     schedule:
       interval: "monthly"
     groups:

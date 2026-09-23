@@ -2,7 +2,7 @@
 {
   "name": "my-project-dev", // TODO: rename to your project
 
-  "image": "mcr.microsoft.com/devcontainers/base:ubuntu-24.04",
+  "image": "mcr.microsoft.com/devcontainers/base:ubuntu24.04",
 
   // ── Dev Container Features ────────────────────────────────────────────────
   // Uncomment the stacks you need. Full list: https://containers.dev/features
@@ -13,11 +13,7 @@
     // },
     // -- Node --
     // "ghcr.io/devcontainers/features/node:1": {
-    //   "version": "24"  // TODO: set your Node version
-    // },
-    // -- Python (uv itself comes from scripts/setup-dev-tools.sh) --
-    // "ghcr.io/devcontainers/features/python:1": {
-    //   "version": "3.12"  // TODO: match .python-version
+    //   "version": "26"  // TODO: set your Node version
     // },
     // -- Docker-in-Docker (for docker compose in dev) --
     // "ghcr.io/devcontainers/features/docker-in-docker:2": {}

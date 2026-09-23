@@ -40,18 +40,11 @@ ensure_cmd go "Install Go (see .devcontainer/devcontainer.json features)."
 GO_BIN_PATH="$(go env GOPATH)/bin"
 export PATH="$GO_BIN_PATH:$PATH"
 
-info "Ensuring goimports..."
-if command -v goimports >/dev/null 2>&1; then
-  info "goimports already installed"
-else
-  go install golang.org/x/tools/cmd/goimports@latest
-fi
-
 # Pin to the version your CI uses. Built from source because golangci-lint can
 # only analyze Go versions <= the Go version it was built with (prebuilt
 # binaries often lag behind), and GitHub release downloads are blocked behind
 # some proxies (e.g. Claude Code cloud sessions).
-GOLANGCI_LINT_VERSION="v2.11.4"
+GOLANGCI_LINT_VERSION="v2.13.2"
 GO_TOOLCHAIN="go<project-go-version>" # the `go` directive from your go.mod, e.g. 1.26.5
 
 info "Ensuring golangci-lint ($GOLANGCI_LINT_VERSION)..."
@@ -63,12 +56,8 @@ else
   hash -r
 fi
 
-# info "Ensuring sqlc..."
-# if command -v sqlc >/dev/null 2>&1; then
-#   info "sqlc already installed: $(sqlc version)"
-# else
-#   go install github.com/sqlc-dev/sqlc/cmd/sqlc@latest
-# fi
+# goimports and sqlc are go.mod tools, pinned in go.mod and run as `go tool <name>`:
+# go get -tool golang.org/x/tools/cmd/goimports github.com/sqlc-dev/sqlc/cmd/sqlc
 
 # ── Node / pnpm ─────────────────────────────────────────────────────────────
 # Delete this whole section on a project without a Node frontend.
@@ -92,7 +81,7 @@ info "Ensuring uv..."
 if command -v uv >/dev/null 2>&1; then
   info "uv already installed: $(uv --version)"
 else
-  curl -LsSf https://astral.sh/uv/install.sh | sh
+  curl -LsSf https://astral.sh/uv/0.12.18/install.sh | sh  # match the uv pin in ci.yml
   export PATH="$HOME/.local/bin:$PATH"
 fi
 
@@ -114,8 +103,6 @@ echo "  go:             $(go version)"
 echo "  node:           $(node --version)"
 echo "  pnpm:           $(pnpm --version)"
 echo "  uv:             $(uv --version)"
-echo "  goimports:      $(goimports -V 2>/dev/null || echo 'installed')"
 echo "  golangci-lint:  $(golangci-lint --version | head -n 1)"
-# echo "  sqlc:           $(sqlc version)"
 
 info "Next step: make check"
