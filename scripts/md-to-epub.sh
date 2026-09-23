@@ -9,8 +9,9 @@
 # Markdown in that directory (PLAN.md, sources.md) is ignored.
 #
 # What it does:
-#   1. Lints every chapter for elements a narrator cannot speak (file:line).
-#   2. Renders the chapters with pandoc and templates/strip-visuals.lua.
+#   1. Runs each chapter through templates/strip-visuals.lua; every element
+#      the filter strips is a finding, prefixed with the chapter name.
+#   2. Renders the chapters with pandoc and the same filter.
 #   3. Splits one EPUB chapter per H1 and builds a depth-1 table of contents.
 #   4. Reports words and estimated listening time, per chapter and total.
 #
@@ -23,7 +24,7 @@ REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 # ── Configuration (env-var defaults) ─────────────────────────────────────────
 FILTER="${FILTER:-$REPO_ROOT/templates/strip-visuals.lua}"
 WPM="${WPM:-150}"          # narration speed used for the time estimate
-STRICT="${STRICT:-0}"      # 1 = abort on any lint finding
+STRICT="${STRICT:-0}"      # 1 = abort on any finding
 
 log() { printf '\033[1;34m▸ %s\033[0m\n' "$1"; }
 warn() { printf '\033[1;33m! %s\033[0m\n' "$1" >&2; }
@@ -51,44 +52,37 @@ done < <(find "$SRC_DIR" -maxdepth 1 -name '[0-9][0-9]-*.md' | sort)
 
 [[ ${#CHAPTERS[@]} -gt 0 ]] || die "no NN-slug.md chapters in $SRC_DIR"
 
-# ── 1. Lint ──────────────────────────────────────────────────────────────────
-# Reports the source line, not the rendered output: the fix belongs in the
-# chapter. The filter still strips these at render time.
-log "Linting ${#CHAPTERS[@]} chapter(s) for unspeakable elements"
+# ── 1. Findings and word count ───────────────────────────────────────────────
+# One pandoc run per chapter: stderr holds the filter's findings, stdout the
+# spoken text. The fix belongs in the chapter; the filter strips them anyway.
+log "Checking ${#CHAPTERS[@]} chapter(s) for unspeakable elements"
+
+TMP_DIR="$(mktemp -d)"
+trap 'rm -rf "$TMP_DIR"' EXIT
 
 FINDINGS=0
+WORDS=()
 for file in "${CHAPTERS[@]}"; do
+  name="$(basename "$file")"
+  if ! STRIP_VISUALS_QUIET=0 pandoc "$file" --from gfm --to plain --lua-filter "$FILTER" \
+    >"$TMP_DIR/plain.txt" 2>"$TMP_DIR/stderr.txt"; then
+    cat "$TMP_DIR/stderr.txt" >&2
+    die "pandoc failed on $name"
+  fi
+  WORDS+=("$(wc -w <"$TMP_DIR/plain.txt")")
   while IFS= read -r finding; do
-    [[ -z "$finding" ]] && continue
-    warn "$finding"
+    warn "$name: $finding"
     FINDINGS=$((FINDINGS + 1))
-  done < <(awk -v f="$file" '
-    /^[[:space:]]*(```|~~~)/ {
-      fence = !fence
-      if (fence) printf "%s:%d: code block - say what it does instead\n", f, NR
-      next
-    }
-    fence { next }
-    /^[[:space:]]*\|/ {
-      if (!intable) printf "%s:%d: table - linearise it in prose\n", f, NR
-      intable = 1
-      next
-    }
-    { intable = 0 }
-    /!\[[^]]+\]/ { printf "%s:%d: image alt text - describe the mechanism in prose\n", f, NR }
-    /\[\^/ { printf "%s:%d: footnote - fold it into the sentence\n", f, NR }
-    /\$\$/ { printf "%s:%d: math block - write the formula in words\n", f, NR }
-    /(^|[[:space:]])https?:\/\// { printf "%s:%d: bare URL - drop it or name the source\n", f, NR }
-  ' "$file")
+  done <"$TMP_DIR/stderr.txt"
 done
 
 if [[ "$FINDINGS" -gt 0 ]]; then
-  warn "$FINDINGS lint finding(s); the filter strips them from the EPUB"
+  warn "$FINDINGS finding(s); the filter strips them from the EPUB"
   if [[ "$STRICT" == "1" ]]; then
-    die "STRICT=1 and the lint is not clean"
+    die "STRICT=1 and the chapters are not clean"
   fi
 else
-  log "Lint clean"
+  log "No findings"
 fi
 
 # ── 2. Render ────────────────────────────────────────────────────────────────
@@ -120,18 +114,19 @@ for cover in "$SRC_DIR/cover.jpg" "$SRC_DIR/cover.png"; do
   fi
 done
 
+# Step 1 already reported the findings; quiet the filter's repeat of them.
 log "Rendering $OUT_FILE"
-pandoc "${CHAPTERS[@]}" "${PANDOC_ARGS[@]}"
+STRIP_VISUALS_QUIET=1 pandoc "${CHAPTERS[@]}" "${PANDOC_ARGS[@]}"
 
 # ── 3. Listening time ────────────────────────────────────────────────────────
-# Counted on the filtered plain text, so the estimate matches what is spoken.
+# Counted on the filtered plain text from step 1, so it matches what is spoken.
 log "Estimated listening time at ${WPM} words per minute"
 
 TOTAL_WORDS=0
-for file in "${CHAPTERS[@]}"; do
-  words=$(pandoc "$file" --from gfm --to plain --lua-filter "$FILTER" | wc -w)
+for i in "${!CHAPTERS[@]}"; do
+  words="${WORDS[$i]}"
   TOTAL_WORDS=$((TOTAL_WORDS + words))
-  printf '  %-40s %6d words  %4d min\n' "$(basename "$file")" "$words" "$((words / WPM))"
+  printf '  %-40s %6d words  %4d min\n' "$(basename "${CHAPTERS[$i]}")" "$words" "$((words / WPM))"
 done
 
 printf '  %-40s %6d words  %4d min\n' "TOTAL" "$TOTAL_WORDS" "$((TOTAL_WORDS / WPM))"
