@@ -12,9 +12,10 @@ vim.o.linebreak = true           -- wrap at word boundaries
 vim.o.breakindent = true         -- wrapped lines keep their indent
 vim.o.ignorecase = true
 vim.o.smartcase = true
-vim.o.grepprg = "rg --vimgrep"
-vim.o.grepformat = "%f:%l:%c:%m"
 vim.o.undofile = true            -- undo history survives closing the file
+if vim.fn.executable('rg') == 1 then
+  vim.o.grepprg = 'rg --vimgrep'   -- the default adds -uu, which searches ignored files
+end
 
 -- ── Indentation: two spaces, as in .editorconfig ─────────────────────────────
 vim.o.expandtab = true
@@ -35,7 +36,8 @@ vim.g.loaded_ruby_provider = 0
 -- y and p use the system clipboard. On GNOME Wayland the tool is xclip through
 -- XWayland: wl-copy must open a hidden window there, which steals focus and raises
 -- a "wl-clipboard is ready" notification on every yank. Over SSH, Neovim picks
--- OSC 52 by itself, but only while 'clipboard' stays unset.
+-- OSC 52 by itself, but only while 'clipboard' stays unset. Ptyxis ignores OSC 52,
+-- so a yank over SSH from Ptyxis never reaches the desktop clipboard.
 if vim.env.DISPLAY and vim.fn.executable('xclip') == 1 then
   vim.g.clipboard = 'xclip'
   vim.o.clipboard = 'unnamedplus'

@@ -94,7 +94,7 @@ git clone https://github.com/tris203/precognition.nvim "$P/precognition.nvim"   
 git clone https://github.com/MunifTanjim/nui.nvim      "$P/nui.nvim"            # hardtime dependency
 git clone https://github.com/m4xshen/hardtime.nvim     "$P/hardtime.nvim"       # blocks key repeats
 
-git -C "$P/precognition.nvim" pull                                              # update
+for d in "$P"/*/; do git -C "$d" pull; done                                     # update all
 ```
 
 ## Verify
