@@ -351,11 +351,11 @@ Every confirmed or corrected finding lands, and so does every consider item the 
 
 ### Acceptance criteria
 
-- [ ] Piping hook payloads into the hook command blocks `git -C . push --force`, `git push +main`, `git push --mirror` and `git commit -n`.
-- [ ] The same check allows `git push -n` and `git push origin main`.
-- [ ] `jq . claude/settings.json` parses, and the allow list holds none of the deleted entries.
-- [ ] `echo '<sample status JSON>' | claude/statusline.sh` prints the effort and rate limits, and degrades cleanly when they are absent.
-- [ ] `make check` passes.
+- [x] Piping hook payloads into the hook command blocks `git -C . push --force`, `git push +main`, `git push --mirror` and `git commit -n`.
+- [x] The same check allows `git push -n` and `git push origin main`.
+- [x] `jq . claude/settings.json` parses, and the allow list holds none of the deleted entries.
+- [x] `echo '<sample status JSON>' | claude/statusline.sh` prints the effort and rate limits, and degrades cleanly when they are absent.
+- [x] `make check` passes.
 
 ## Phase 8: Agent orchestration skills and guide
 
