@@ -1,6 +1,6 @@
 # Stack Conventions
 
-Heading-grouped rules for the four stacks this handbook builds on — not a runbook.
+Heading-grouped rules for the five stacks this handbook builds on — not a runbook.
 
 ## Go
 
@@ -72,6 +72,46 @@ starts no Spring context.
 A controller never talks to a repository. A repository never contains business logic.
 
 Always use constructor injection, never `@Autowired` field injection. Constructor injection is what makes unit tests work without Spring.
+
+## Node/TypeScript
+
+Applies to every TypeScript package; React adds its own rules below.
+
+Run Node 26. It executes `.ts` files directly: [type stripping](https://nodejs.org/api/typescript.html)
+is stable and on by default.
+
+Type stripping erases types and nothing else. Enums, runtime namespaces, parameter properties and
+decorators fail at load; `erasableSyntaxOnly` makes `tsc` reject them first:
+
+```json
+{
+  "compilerOptions": {
+    "noEmit": true,
+    "target": "esnext",
+    "module": "nodenext",
+    "rewriteRelativeImportExtensions": true,
+    "erasableSyntaxOnly": true,
+    "verbatimModuleSyntax": true,
+    "strict": true
+  }
+}
+```
+
+Node never type-checks. `tsc` does, as its own gate step.
+
+Pin TypeScript to `~6.0`. typescript-eslint supports `>=4.8.4 <6.1.0`, so TypeScript 7 breaks the linter
+([dependency versions](https://typescript-eslint.io/users/dependency-versions/)).
+
+Lint with ESLint and typescript-eslint's `recommendedTypeChecked`. Rules like `no-floating-promises`
+need type information.
+
+Use pnpm and commit `pnpm-lock.yaml`. CI and the image run `pnpm install --frozen-lockfile`, which
+fails instead of re-resolving.
+
+Test with Vitest: it runs TypeScript without a build step.
+
+The gate runs in this order: `pnpm install --frozen-lockfile`, format check, `eslint .`, `tsc`,
+`vitest run`.
 
 ## React
 
