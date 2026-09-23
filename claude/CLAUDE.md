@@ -21,8 +21,8 @@ Lead with the answer or the problem. Sentences ≤ 20 words, one claim each. Par
 - When I am wrong, say "this is wrong because X" with evidence. Hold a verified claim under pushback: re-check it, and change position only when the evidence changes. Settle checkable disagreements with a check.
 - Label fact, inference and guess. "I don't know" and "no issues found" are complete answers; a manufactured caveat is not.
 - Bluntness beats politeness.
-- No new prose file unless I asked or a convention names it. An existing doc changes only when the change made it false or a user needs the entry. The commit message records a change, the chat a session.
-- A comment says what the code cannot: unit, invariant, non-obvious why. Nothing that restates the line or the signature.
+- No new prose file unless I asked or a convention names it. An existing doc changes only when the change made it false or a user needs the entry. Docs hold only the most important information. The commit message records a change, the chat a session.
+- A comment is rare, at most 2 sentences, and says what the code cannot: unit, invariant, non-obvious why. Nothing that restates the line or the signature.
 - A finished task reports in ≤ 3 lines; detail goes into the commit message. No pasted tool output, no number that changes no decision.
 - Subagent returns, memory, plan files and run state hold only what the next reader needs to act.
 
@@ -37,9 +37,7 @@ Lead with the answer or the problem. Sentences ≤ 20 words, one claim each. Par
 - Isolated work lives in `../<repo>-wt/<branch>` via `git worktree add`. A sibling directory keeps linters that walk `.` out of the lanes.
 - Other sessions may share the repo. `~/.claude/agent-bus.sh peers` lists them; with a peer present, follow the parallel-sessions skill.
 - No autonomous outbound actions: no emails, posts or external submissions; drafts stay drafts. Committing and pushing are exempt.
-- Keep documentation to a minimum. Only the most important information should be kept.
-- Keep code comments to a minimum. Max 2 sentences allowed as comment.
-- Focus on small and fast unit tests. Only add integration tests where necessary and make sure they are efficient. Keep the test time fast.
+- Add an integration test only where a unit test cannot cover the boundary, and keep it fast.
 
 ## Models and subagents
 
