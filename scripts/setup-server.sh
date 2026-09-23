@@ -87,7 +87,7 @@ run apt update -y
 run apt full-upgrade -y
 run apt install -y \
   curl wget git make vim unzip \
-  ca-certificates gnupg \
+  ca-certificates \
   jq lsof \
   ufw fail2ban
 
@@ -181,12 +181,13 @@ SSHD_DROPIN="/etc/ssh/sshd_config.d/00-hardening.conf"
 
 # sshd uses first-obtained-value semantics; cloud images ship 50-cloud-init.conf,
 # so the 00- prefix guarantees our hardening wins. Ensure the main config actually
-# includes the drop-in dir — some minimal images omit the Include directive.
+# includes the drop-in dir — some minimal images omit the Include directive. It goes
+# on line 1, so the drop-ins precede every directive in the main config.
 INCLUDE_LINE="Include /etc/ssh/sshd_config.d/*.conf"
 if [[ "$DRY_RUN" == "true" ]]; then
-  printf '  \033[0;33m[DRY-RUN]\033[0m ensure %s contains "%s"\n' "$SSHD_CONFIG" "$INCLUDE_LINE"
+  printf '  \033[0;33m[DRY-RUN]\033[0m ensure %s starts with "%s"\n' "$SSHD_CONFIG" "$INCLUDE_LINE"
 elif ! grep -qxF "$INCLUDE_LINE" "$SSHD_CONFIG"; then
-  printf '%s\n' "$INCLUDE_LINE" >> "$SSHD_CONFIG"
+  sed -i "1i $INCLUDE_LINE" "$SSHD_CONFIG"
 fi
 
 run install -m 0755 -d /etc/ssh/sshd_config.d
@@ -198,10 +199,13 @@ KbdInteractiveAuthentication no
 EOF
 run chmod 644 "$SSHD_DROPIN"
 
+# Validate first: a broken config would lock SSH out on restart.
 # The canonical service unit is 'ssh' on Debian/Ubuntu; 'sshd' is only an alias.
+run sshd -t
 run systemctl restart ssh
 
 # ── 4. UFW firewall ─────────────────────────────────────────────────────────
+# Docker-published ports bypass UFW, so only the reverse proxy may publish ports.
 log "Configuring UFW"
 run ufw default deny incoming
 run ufw default allow outgoing
@@ -237,20 +241,23 @@ log "Installing Docker"
 . /etc/os-release
 REPO_URL="https://download.docker.com/linux/${ID}"
 
+# Drop the one-line list and dearmored key a legacy setup may have left behind.
+run rm -f /etc/apt/sources.list.d/docker.list /etc/apt/keyrings/docker.gpg
 run install -m 0755 -d /etc/apt/keyrings
 
-if [[ ! -f /etc/apt/keyrings/docker.gpg ]]; then
-  if [[ "$DRY_RUN" == "true" ]]; then
-    printf '  \033[0;33m[DRY-RUN]\033[0m fetch %s/gpg and write /etc/apt/keyrings/docker.gpg\n' "$REPO_URL"
-  else
-    curl -fsSL "$REPO_URL/gpg" \
-      | gpg --dearmor -o /etc/apt/keyrings/docker.gpg
-    chmod a+r /etc/apt/keyrings/docker.gpg
-  fi
+if [[ ! -f /etc/apt/keyrings/docker.asc ]]; then
+  run curl -fsSL "$REPO_URL/gpg" -o /etc/apt/keyrings/docker.asc
+  run chmod a+r /etc/apt/keyrings/docker.asc
 fi
 
-DOCKER_LIST="deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] ${REPO_URL} ${VERSION_CODENAME} stable"
-write_file /etc/apt/sources.list.d/docker.list <<< "$DOCKER_LIST"
+write_file /etc/apt/sources.list.d/docker.sources <<EOF
+Types: deb
+URIs: ${REPO_URL}
+Suites: ${VERSION_CODENAME}
+Components: stable
+Architectures: $(dpkg --print-architecture)
+Signed-By: /etc/apt/keyrings/docker.asc
+EOF
 
 run apt update -y
 run apt install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin

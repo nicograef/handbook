@@ -43,6 +43,12 @@ ssh nico@<host>
 
 sudo ufw status verbose
 
+# listening sockets: only 22, 80 and 443 may be public
+sudo ss -tlnp
+
+# sshd hardening is effective
+sudo sshd -T | grep -E '^(passwordauthentication|permitrootlogin|kbdinteractiveauthentication) '
+
 sudo systemctl is-active fail2ban
 sudo fail2ban-client get sshd journalmatch
 
@@ -66,6 +72,8 @@ cat /etc/cron.d/report-health
 | --- | --- |
 | SSH login | Succeeds as `nico`, fails as `root` |
 | `ufw status verbose` | `Status: active` with `22/tcp (LIMIT)` |
+| `ss -tlnp` | Only 22, 80 and 443 on `0.0.0.0`/`[::]`; everything else on loopback |
+| `sshd -T` | `no` three times: password, root login, keyboard-interactive |
 | `fail2ban` | Reports `active` |
 | `fail2ban-client get sshd journalmatch` | Includes `_COMM=sshd-session` |
 | `hello-world` | Prints the Docker confirmation message |
