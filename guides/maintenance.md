@@ -20,8 +20,8 @@
    not a moving tag:
 
    ```diff
-   -    image: postgres:17
-   +    image: postgres:17.6
+   -    image: postgres:18
+   +    image: postgres:18.6
    ```
 
 2. **Fetch the new pinned images** (`pull` also tries `build:` services, reporting
@@ -62,26 +62,33 @@
 
 ## Reboot routine (monthly)
 
-- Unattended-upgrades installs security patches but **never auto-reboots**
+- Unattended-upgrades installs patches but **never auto-reboots**
   (see [`setup-server.sh`](../scripts/setup-server.sh)).
 - Kernel and libc updates only take effect on the next reboot.
-- The health-ping heartbeat alerts when a reboot is pending; this routine clears it.
+- On Debian only kernel updates set `/var/run/reboot-required`, so the reboot is unconditional.
+- The health-ping heartbeat alerts while that flag is set; this routine clears it.
 - Run it in a low-traffic maintenance window — a reboot drops all connections
   for ~1 min.
 
 ### Steps
 
-1. **Check whether a reboot is actually pending.** [`report-health.sh`](../scripts/report-health.sh)
-   already surfaces this, but confirm on the box:
+1. **Apply every pending upgrade**, including held-back ones:
 
    ```bash
-   test -f /var/run/reboot-required && echo "reboot required" || echo "no reboot needed"
+   sudo apt update && sudo apt full-upgrade
    ```
 
-   Expected: `no reboot needed` on a patched box, or `reboot required` after a
-   kernel/libc upgrade landed. If the latter, continue.
+   Expected: apt lists the upgrades and asks to continue, or reports `0 upgraded`.
 
-2. **Reboot inside the maintenance window:**
+2. **Note whether the flag is set.** This is informational; the reboot follows either way:
+
+   ```bash
+   test -f /var/run/reboot-required && echo "reboot required" || echo "no flag set"
+   ```
+
+   Expected: `reboot required` after a kernel upgrade, otherwise `no flag set`.
+
+3. **Reboot inside the maintenance window:**
 
    ```bash
    sudo reboot
@@ -89,7 +96,7 @@
 
    Expected: the SSH session drops; the host is back in ~30–60 s. Reconnect.
 
-3. **Verify the stack came back.** Containers have `restart: unless-stopped`, so
+4. **Verify the stack came back.** Containers have `restart: unless-stopped`, so
    they should start on their own:
 
    ```bash
@@ -99,7 +106,7 @@
    Expected: every service is listed with `STATUS` `Up …`, and `postgres` shows
    `(healthy)`. No service in `Restarting` or `Exit`.
 
-4. **Confirm the site is reachable over HTTPS** from off the box:
+5. **Confirm the site is reachable over HTTPS** from off the box:
 
    ```bash
    curl -sI https://<your-domain> | head -1
