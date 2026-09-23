@@ -90,9 +90,9 @@ devcontainer exec --workspace-folder . claude --permission-mode bypassPermission
 - A container from [templates/devcontainer.json](../templates/devcontainer.json) runs as the
   image's non-root user; `bypassPermissions` refuses to start as root or under `sudo`.
 - Accept the responsibility dialog once, interactively, before any `--bg` run.
-- `deny` rules still apply in this mode. That is what makes it usable: the
-  destructive git set in [claude/settings.json](../claude/settings.json) stays
-  blocked even here.
+- `deny` rules still apply, but only to Claude's usual command form. `Bash(git push *)`
+  matches `git push origin main`, not `git -C . push origin main`.
+- They are no security boundary around the program; the container is.
 
 ## Step 5 — do not supervise with a second session
 
