@@ -1,3 +1,4 @@
+# shellcheck shell=bash
 alias ll='ls -la'
 alias la='ls -A'
 # Start ssh-agent only if none is reachable (ssh-add -l exit code 2 = no
@@ -9,7 +10,6 @@ sss() {
   fi
   ssh-add
 }
-alias gfp='git fetch --prune && git pull'
 alias gct='git checkout test'
 alias gcm='git checkout main || git checkout master'
 alias gbv='git branch -vv'
@@ -47,16 +47,12 @@ fi
 if command -v fzf >/dev/null; then
   if ! declare -F _comp_load >/dev/null && ! declare -F _completion_loader >/dev/null; then
     for _bc in /usr/share/bash-completion/bash_completion /etc/bash_completion; do
+      # shellcheck source=/dev/null
       [ -r "$_bc" ] && { . "$_bc"; break; }
     done
     unset _bc
   fi
-  for _f in /usr/share/doc/fzf/examples/key-bindings.bash \
-            /usr/share/bash-completion/completions/fzf \
-            "$HOME/.fzf/shell/key-bindings.bash"; do
-    [ -f "$_f" ] && source "$_f"
-  done
-  unset _f
+  eval "$(fzf --bash)"
 fi
 
 # Sourced after the stock .bashrc history block, so these settings win.
@@ -76,9 +72,11 @@ esac
 # Overrides the stock PS1, which every stock .bashrc sets before sourcing this
 # file.
 if ! declare -F __git_ps1 >/dev/null; then
+  # shellcheck source=/dev/null
   [ -f /usr/lib/git-core/git-sh-prompt ] && . /usr/lib/git-core/git-sh-prompt
 fi
 if declare -F __git_ps1 >/dev/null; then
+  # shellcheck disable=SC2034  # read by __git_ps1
   GIT_PS1_SHOWDIRTYSTATE=1
   PS1='\[\e[32m\]\w\[\e[33m\]$(__git_ps1 " (%s)")\[\e[0m\] \$ '
   # terminal window title: path only
