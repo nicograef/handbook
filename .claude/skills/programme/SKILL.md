@@ -11,7 +11,7 @@ The orchestrating session plans, dispatches, reviews and lands; it writes no pha
 ## Gotchas
 
 - Every subagent dispatch sets `model: opus` (`sonnet` for mechanical work), reviewers included. A subagent never changes model on a limit.
-- A limit is answered from [implement-plan's failure strings](../implement-plan/SKILL.md#failure-strings). Only the lead moves to Opus 5, and only through the user's `/model`.
+- A limit is answered from [implement-plan's failure strings](../implement-plan/SKILL.md#failure-strings).
 - A session cannot switch its own model. A scheduled `/model` arrives as plain text, and `settings.json` is read once at start.
 - A lane agent stops where its plan's phases end unless the brief says the group is the unit. Say it, and resume a stopped agent by SendMessage with the same sentence.
 - Lane agents are off the bus. The orchestrator reserves migration numbers in landing order, names each in its lane's brief, and announces the lanes.
@@ -30,7 +30,7 @@ Arm both jobs before the first dispatch. Both are fixed-interval `CronCreate` jo
 | Recovery | `CronCreate` at `7 * * * *` | Assume the last turn died. Rebuild state from the scratchpad and verify it. Resume or re-dispatch each dead lane from its last commit. Re-arm a missing job |
 
 - Both prompts name the scratchpad file and `docs/plans/programme.md` by path, so a fire needs no context.
-- The scratchpad holds what git does not. Its first line is the resume action, `/model claude-opus-5` included. A Fable limit leaves no last turn, so the scratchpad is the handoff.
+- The scratchpad holds what git does not. Its first line is the resume action. A limit leaves no last turn, so the scratchpad is the handoff.
 - Its rows: agent id per lane, the tasks directory, job ids, unit names, open owner items, the next step.
 - Verify before trusting. Hold each row against its source: `git worktree list`, branch tips, `CronList`, `systemctl --user`, the tasks directory. Rewrite the row that lies.
 - Memory changes when state changes, a landed wave or a ruling. Check that every path and flag it names still exists.

@@ -124,7 +124,6 @@ A live plan run must not yield the turn between phases. Two mechanisms hold it:
 | --- | --- |
 | Usage limit, terminal API error | Committed work survives. Resume from git — [implement-plan/git.md](../.claude/skills/implement-plan/git.md); the failure strings are in [implement-plan/SKILL.md](../.claude/skills/implement-plan/SKILL.md). |
 | Session or weekly limit, session left open | `autoContinueAtUsageLimit` continues at the reset, at most twice in a row. The lead's hourly recovery job covers the rest — [programme § Lead upkeep](../.claude/skills/programme/SKILL.md#lead-upkeep). |
-| Fable limit | No session switches its own model. Run `/model claude-opus-5` at its terminal; the lead continues on Opus 5. |
 | Capacity 429 / 529 | `CLAUDE_CODE_RETRY_WATCHDOG=1` — see [implement-plan/SKILL.md](../.claude/skills/implement-plan/SKILL.md). |
 | Agent returned `null` | Its branch holds every criterion it committed. Re-dispatch from its last commit. |
 
