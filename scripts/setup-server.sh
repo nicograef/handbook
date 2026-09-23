@@ -209,6 +209,8 @@ run chmod 644 "$SSHD_DROPIN"
 
 # Validate first: a broken config would lock SSH out on restart.
 # The canonical service unit is 'ssh' on Debian/Ubuntu; 'sshd' is only an alias.
+# Socket-activated ssh (Ubuntu 24.04+) creates /run/sshd only on start; sshd -t needs it.
+run install -d -m 0755 /run/sshd
 run sshd -t
 run systemctl restart ssh
 
