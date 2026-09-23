@@ -34,6 +34,8 @@ Every confirmed or corrected finding lands, and so does every consider item the 
 - Dropped sub-change: removing tmux `escape-time` (`workstation-6`).
 - Accepted by the owner: fold the duplicated CLAUDE.md lines, enforce the two models, automate SSH signing and add a Node/TypeScript section.
 - Accepted as verified: `claude-config-7`, `tls-nginx-11`, `server-11` (hash part), `server-6`, `repo-ci-8`, `repo-ci-13`, `stacks-10` and `audiobook-6`.
+- Better Stack SSL-expiry checks are paid only, so the fixed openssl fallback stays as the documented path.
+- Phase 9 runs last, after the owner's sudo steps.
 - Audiobook alert callouts are unwrapped to plain prose with a stderr note, never deleted.
 - Skipped:
   - `monitoring-1`: grace periods already bound detection.
@@ -49,7 +51,6 @@ Every confirmed or corrected finding lands, and so does every consider item the 
 
 ## Open questions / Risks
 
-- **Human**: in phase 1, check whether Better Stack's SSL-expiry toggle is on your plan (Monitor → Configure → Advanced).
 - **Human**: in phase 6, install gh from its apt repo on this laptop, then `rm ~/.local/bin/gh`.
 - **Human**: phase 9 needs sudo for bubblewrap, socat and the AppArmor profile.
 - **Risk**: the git guard hook is a guardrail, not a security boundary. `/usr/bin/git` and `sh -c` bypass it; only the sandbox closes that gap. So it stays inline, with no script.
@@ -102,8 +103,8 @@ Every confirmed or corrected finding lands, and so does every consider item the 
 - **Cert monitoring (`monitoring-2`, `monitoring-4`)**:
   - Renewal wording: "one third of remaining lifetime, or earlier per ARI".
   - The expiry threshold is 7 days.
-  - The callout is replaced with the owner's toggle result.
-  - If the toggle is free, delete the openssl fallback. Otherwise use `openssl s_client … -servername … | openssl x509 -noout -checkend $((7*86400)) && curl -fsS -m 10 <ping-url>`.
+  - The callout is replaced with the resolved decision: SSL-expiry checks are paid only.
+  - The openssl fallback becomes `openssl s_client … -servername … | openssl x509 -noout -checkend $((7*86400)) && curl -fsS -m 10 <ping-url>`.
 
 ### Acceptance criteria
 
