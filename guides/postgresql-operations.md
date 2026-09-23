@@ -174,7 +174,7 @@ cd /opt/myapp
 4. **Start only the database** and restore the dump into it:
 
    ```bash
-   docker compose up -d postgres
+   docker compose up -d --wait postgres
    DUMP="$(ls -t /opt/backups/postgres/backup-*.dump | head -1)"
    docker compose exec -T postgres sh -c \
      'pg_restore -U "$POSTGRES_USER" -d "$POSTGRES_DB" --single-transaction' < "$DUMP"
