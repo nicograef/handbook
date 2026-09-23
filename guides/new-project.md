@@ -53,11 +53,11 @@ service in the Compose file and copy `.env.example`.
 
 | Project shape | Compose + env | devcontainer features | Dockerfiles | Stack guide |
 |---------------|---------------|-----------------------|-------------|-------------|
-| Full-stack Go + React | `docker-compose.yml` + `.env.example` (`db`) | Go + Node + Docker-in-Docker | backend + frontend | [stack-conventions.md#go](stack-conventions.md#go) + [#react](stack-conventions.md#react) |
+| Full-stack Go + React | `docker-compose.yml` + `.env.example` (`db`) | Go + Node + Docker-in-Docker | backend + frontend | [stack-conventions.md#go](stack-conventions.md#go) + [#nodetypescript](stack-conventions.md#nodetypescript) + [#react](stack-conventions.md#react) |
 | Go service only | `docker-compose.yml` + `.env.example` (`db`) | Go + Docker-in-Docker | backend | [stack-conventions.md#go](stack-conventions.md#go) |
 | Java Spring Boot service | `docker-compose.yml` + `.env.example` (`db`) | `java` (add — not pre-listed) + Docker-in-Docker | backend | [stack-conventions.md#java](stack-conventions.md#java) |
-| Python service (uv) | `docker-compose.yml` + `.env.example` (`db`) | Python + Docker-in-Docker | backend | [stack-conventions.md#python](stack-conventions.md#python) |
-| React frontend only | `docker-compose.yml` (app only, no `db`) | Node | frontend | [stack-conventions.md#react](stack-conventions.md#react) |
+| Python service (uv) | `docker-compose.yml` + `.env.example` (`db`) | Docker-in-Docker | backend | [stack-conventions.md#python](stack-conventions.md#python) |
+| React frontend only | `docker-compose.yml` (app only, no `db`) | Node | frontend | [stack-conventions.md#nodetypescript](stack-conventions.md#nodetypescript) + [#react](stack-conventions.md#react) |
 | Docs-only | — | — | — | — |
 
 ```bash
@@ -70,6 +70,7 @@ uv init --package --python <project-python-version>   # Python only: pyproject.t
 
 - **Dockerfiles** — one per built tier, following [docker-multi-stage-builds.md](docker-multi-stage-builds.md); Java, Node and Python examples there. Copy `templates/.dockerignore` beside each.
 - A Go backend uses the same two-stage pattern: compile a static binary into a minimal runtime image.
+- A Go backend adds goimports as a module tool: `go get -tool golang.org/x/tools/cmd/goimports`. CI runs `go tool goimports`.
 - Then follow the linked **stack guide(s)** for source layout and conventions. A Python project adds the ruff, ty and pytest tables from there.
 
 ## 4. CI and dependency updates
@@ -78,6 +79,12 @@ uv init --package --python <project-python-version>   # Python only: pyproject.t
 mkdir -p .github/workflows
 cp "$HANDBOOK/templates/ci.yml" .github/workflows/ci.yml
 cp "$HANDBOOK/templates/dependabot.yml" .github/dependabot.yml
+```
+
+Require SHA-pinned actions, so a tag reference fails the run. gh fills `{owner}` and `{repo}` from the current repo:
+
+```bash
+gh api -X PUT /repos/{owner}/{repo}/actions/permissions -F enabled=true -F sha_pinning_required=true
 ```
 
 ## 5. Agent setup
