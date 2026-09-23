@@ -65,6 +65,9 @@ end
 -- cleared so nothing spurious gets narrated.
 
 function Image(el)
+  if #el.caption > 0 or el.title ~= "" then
+    report("image alt text cleared - say in the prose what it shows")
+  end
   el.caption = {}
   el.title = ""
   return el
