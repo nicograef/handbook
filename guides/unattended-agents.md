@@ -123,7 +123,7 @@ A live plan run must not yield the turn between phases. Two mechanisms hold it:
 | Stop | Recovery |
 | --- | --- |
 | Usage limit, terminal API error | Committed work survives. Resume from git — [implement-plan/git.md](../.claude/skills/implement-plan/git.md); the failure strings are in [implement-plan/SKILL.md](../.claude/skills/implement-plan/SKILL.md). |
-| Session or weekly limit, session left open | `autoContinueAtUsageLimit` continues at the reset, at most twice in a row. The lead's hourly recovery job covers the rest — [programme § Lead upkeep](../.claude/skills/programme/SKILL.md#lead-upkeep). |
+| Session or weekly limit, interactive session left open | `autoContinueAtUsageLimit` continues at the reset, at most twice in a row. It needs an interactive session, a claude.ai login and a reset within 24 h. A later reset, a `--bg`/`-p` run or a teammate session falls to the watchdog or the lead's hourly recovery job — [programme § Lead upkeep](../.claude/skills/programme/SKILL.md#lead-upkeep). |
 | Capacity 429 / 529 | `CLAUDE_CODE_RETRY_WATCHDOG=1` — see [implement-plan/SKILL.md](../.claude/skills/implement-plan/SKILL.md). |
 | Agent returned `null` | Its branch holds every criterion it committed. Re-dispatch from its last commit. |
 

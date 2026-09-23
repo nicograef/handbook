@@ -63,11 +63,12 @@ Written into the plan file on a stop, committed to `plan/<slug>`, deleted in its
 | --- | --- |
 | `You've hit your session limit · resets <time>` or weekly limit | Commit the handoff, name the reset time. Both windows span all models, so no model switch helps. Auto-continue resumes at the reset, or the user switches account |
 | `You've hit your Opus limit · resets <time>` | It stops `opus` workers and the lead. Commit the handoff, name the reset time. A worker never changes model |
+| `You've hit your Sonnet limit · resets <time>` | It stops `sonnet` workers. Commit the handoff, name the reset time. A worker never changes model |
 | `Agent terminated early due to an API error` | That `agent()` returned `null`; re-dispatch from its last commit |
 | `Server is temporarily limiting requests` / 529 | Already retried with backoff. Stop, hand off |
 | `Server error mid-response` | Not retried by design; rerun the phase from its last commit |
 
-`CLAUDE_CODE_RETRY_WATCHDOG=1` retries 429 and 529 up to 300 times instead of 10 and fails at once on spend-limit errors. Its behaviour on plan usage limits is unverified.
+`CLAUDE_CODE_RETRY_WATCHDOG=1` retries `429`/`529` capacity errors indefinitely instead of failing after `CLAUDE_CODE_MAX_RETRIES` (default 10). It fails at once on a spend-limit or exhausted-credits `429`. It raises the retry budget for other transient errors to 300, roughly three hours. On a usage limit that carries a reset time, it waits out the window. Set it for `-p`/`--bg` runs.
 
 ## Dispatch
 
