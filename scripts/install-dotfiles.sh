@@ -10,8 +10,9 @@
 #   2. Symlinks Claude Code config (global CLAUDE.md, settings, agents, skills,
 #      agent-bus.sh and plan-run-guard.sh — the global hooks in settings.json
 #      call them by those paths)
-#   3. Sets git config defaults (pull.rebase, push.autoSetupRemote, etc.)
-#   4. Installs gh CLI if missing (binary to ~/.local/bin, no sudo)
+#   3. Sets git config defaults (pull.rebase, fetch.prune, etc.)
+#   4. Sets up SSH commit signing when ~/.ssh/id_ed25519.pub exists
+#   5. Points to the gh install docs if gh is missing
 #
 # .bashrc is left alone: the Ubuntu default sources ~/.bash_aliases.
 set -euo pipefail
@@ -74,6 +75,8 @@ git config --global init.defaultBranch main
 git config --global pull.rebase true
 git config --global push.autoSetupRemote true
 git config --global rerere.enabled true
+git config --global fetch.prune true
+git config --global rebase.autoStash true
 git config --global core.editor nano
 git config --global merge.conflictStyle zdiff3
 # delta as pager if installed, else fall back (safe on machines without delta)
@@ -82,26 +85,31 @@ git config --global interactive.diffFilter 'delta --color-only || cat'
 git config --global delta.navigate true
 git config --global delta.line-numbers true
 
+# ── Commit signing ──────────────────────────────────────────────────────────
+SIGNING_KEY="$HOME/.ssh/id_ed25519.pub"
+if [[ -f "$SIGNING_KEY" ]]; then
+  ALLOWED_SIGNERS="$HOME/.config/git/allowed-signers"
+  git config --global gpg.format ssh
+  git config --global user.signingkey "$SIGNING_KEY"
+  git config --global commit.gpgsign true
+  git config --global tag.gpgsign true
+  git config --global gpg.ssh.allowedSignersFile "$ALLOWED_SIGNERS"
+  email="$(git config --global user.email || true)"
+  key="$(cut -d' ' -f1,2 "$SIGNING_KEY")"
+  if [[ -n "$email" ]] && ! grep -qF "$key" "$ALLOWED_SIGNERS" 2>/dev/null; then
+    mkdir -p "$(dirname "$ALLOWED_SIGNERS")"
+    echo "$email $key" >> "$ALLOWED_SIGNERS"
+  fi
+  log "Commits and tags are SSH-signed with $SIGNING_KEY"
+else
+  log "SKIP: $SIGNING_KEY not found, commit signing not configured"
+fi
+
 # ── GitHub CLI ──────────────────────────────────────────────────────────────
-# Installed to ~/.local/bin if missing.
 if command -v gh >/dev/null 2>&1; then
   log "gh already installed: $(gh --version | head -1)"
 else
-  GH_VERSION="$(curl -fsSL https://api.github.com/repos/cli/cli/releases/latest | grep '"tag_name"' | sed 's/.*"v\(.*\)".*/\1/')" || true
-  GH_ARCH="$(dpkg --print-architecture)"   # amd64 or arm64 on Debian/Ubuntu
-  if [[ -n "${GH_VERSION:-}" ]]; then
-    log "Installing gh ${GH_VERSION} (linux_${GH_ARCH}) to ~/.local/bin…"
-    mkdir -p "$HOME/.local/bin"
-    TMP="$(mktemp -d)"
-    curl -fsSL "https://github.com/cli/cli/releases/download/v${GH_VERSION}/gh_${GH_VERSION}_linux_${GH_ARCH}.tar.gz" \
-      | tar -xz -C "$TMP"
-    mv "$TMP/gh_${GH_VERSION}_linux_${GH_ARCH}/bin/gh" "$HOME/.local/bin/gh"
-    chmod +x "$HOME/.local/bin/gh"
-    rm -rf "$TMP"
-    log "gh ${GH_VERSION} installed. Run 'gh auth login' to authenticate."
-  else
-    log "SKIP: Could not determine latest gh version (no curl or no network)."
-  fi
+  log "gh missing: install it from its apt repo, https://github.com/cli/cli/blob/trunk/docs/install_linux.md"
 fi
 
 log "Done – restart your shell or run: source ~/.bashrc"
