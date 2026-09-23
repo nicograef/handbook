@@ -8,23 +8,28 @@ Organise code by domain, not by layer:
 
 ```
 backend/
-  domain/        # pure business logic — no external dependencies
-    order/
-    product/
-    user/
-  repository/    # database access (implements domain interfaces)
-  api/           # HTTP handlers and request/response types
-  app/           # application services / use-case orchestration
-  config/        # environment and config loading
-  main.go
+  cmd/
+    <name>/
+      main.go      # wiring only: config, stores, services, handlers, server
+  internal/
+    config/        # environment and config loading
+    <domain>/      # one package per domain, e.g. order/
+      handler.go   # HTTP handlers and request/response types
+      service.go   # business rules
+      store.go     # database access
 ```
 
-Keep `domain/` packages free of framework or infrastructure imports — business rules live here and
-are tested in isolation.
+Each domain package owns its handler, service and store. `internal/` keeps them unimportable from
+other modules.
 
-Separate unit and integration tests with one build tag per file (`//go:build unit` /
-`//go:build integration`); `templates/ci.yml` runs both `-tags=unit` and `-tags=integration` as
-separate jobs.
+`service.go` depends on a store interface it declares, so business rules are tested without a database.
+
+Unit tests carry no build tag; only integration test files start with `//go:build integration`.
+gopls loads untagged files by default, so a tagged unit test loses editor support
+([gopls settings](https://go.dev/gopls/settings#buildflags)).
+
+`go test ./...` runs the unit tests. CI runs `go test -tags=integration ./...` as a separate job
+with a database.
 
 Write migrations in `database/migrations/` and sqlc queries in `sqlc/queries/`.
 
@@ -67,25 +72,22 @@ Organise by feature, not by type:
 
 ```
 src/
-  components/    # shared, reusable UI components
-  pages/         # one file per route
-  hooks/         # custom hooks (data fetching, local state)
-  service/       # API calls and data-access abstractions
-  lib/           # utility functions, formatters, helpers
-  test/          # shared test utilities and setup
+  features/
+    <name>/      # components, hooks, API calls and tests of one feature
+  components/    # shared UI, used by two or more features
+  lib/           # shared utilities, API client, formatters
+  test/          # shared test setup and utilities
 ```
 
-Feature-specific components live next to the page that owns them; move to `components/` only when
-shared across multiple pages.
+Code leaves a feature folder only when a second feature uses it. Until then, helpers, types and
+sub-components stay next to their one user.
 
 Prefer explicit return types on non-trivial functions. Validate data with Zod at API boundaries.
 
 Use **shadcn/ui** for complex interactive components, and the `cn()` helper from the `cn`
 package to conditionally combine Tailwind classes.
 
-Co-locate component-specific helpers, types, and sub-components — only extract when reused.
-
-Hooks orchestrate calls through the service layer; no raw `fetch` in components or hooks.
+Components call their feature's API functions; no raw `fetch` in components or hooks.
 
 Use **Vitest** + **@testing-library/react**; test utility setup goes in `src/test/`.
 
