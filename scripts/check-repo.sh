@@ -38,6 +38,9 @@ PARA_ALLOW=(
 PROSE_MAX_WORDS=20
 PROSE_MAX_PARA_LINES=3
 
+# Skill description cap enforced by check_skills; stated in .claude/rules/skills.md.
+SKILL_MAX_DESC=250
+
 tracked_md() {
   git ls-files '*.md'
 }
@@ -164,6 +167,23 @@ check_skills() {
       log ".claude/skills/README.md indexes a missing skill: $dir"
     fi
   done <<< "$links"
+
+  # Every description stays within the cap in .claude/rules/skills.md.
+  local desc len
+  while IFS= read -r skill; do
+    desc="$(awk 'NR == 1 && /^---/ { fm = 1; next } fm && /^---/ { exit }
+      fm && sub(/^description:[ \t]*/, "") { print; exit }' "$skill")"
+    desc="${desc#[\"\']}"
+    desc="${desc%[\"\']}"
+    if [[ -z "$desc" ]]; then
+      log "skill has no description: $skill"
+      continue
+    fi
+    len="$(printf '%s' "$desc" | LC_ALL=C.UTF-8 wc -m)"
+    if (( len > SKILL_MAX_DESC )); then
+      log "skill description of $len characters (cap $SKILL_MAX_DESC): $skill"
+    fi
+  done < <(git ls-files '.claude/skills/*/SKILL.md')
 }
 
 check_compose() {

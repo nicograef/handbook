@@ -1,6 +1,6 @@
 ---
 name: programme
-description: Runs several docs/plans plans at once as one programme: intersects them into waves and lanes, writes lane briefs, spawns one Opus agent per lane in a worktree with its own store, checks in, reviews, lands each wave on the base and cleans up. Use when two or more plans share files and the user wants them run in parallel.
+description: Runs several docs/plans plans as one programme: intersects them into waves and lanes, spawns one Opus agent per lane in its own worktree, reviews and lands each wave. Use when two or more plans share files and the user wants them run in parallel.
 argument-hint: "<plan paths>"
 ---
 
