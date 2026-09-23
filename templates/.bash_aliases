@@ -52,7 +52,8 @@ if command -v fzf >/dev/null; then
     done
     unset _bc
   fi
-  eval "$(fzf --bash)"
+  # fzf < 0.48 (Ubuntu 24.04 ships 0.44) lacks --bash; skip it silently there.
+  eval "$(fzf --bash 2>/dev/null)"
 fi
 
 # Sourced after the stock .bashrc history block, so these settings win.
