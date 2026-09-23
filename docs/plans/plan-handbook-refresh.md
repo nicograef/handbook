@@ -95,7 +95,7 @@ Every confirmed or corrected finding lands, and so does every consider item the 
   - The reboot becomes unconditional; `reboot-required` is informational.
   - State that on Debian only kernels set that flag.
   - The Postgres example becomes 18 → 18.6.
-- **IPv6-only (`server-8`)**: the resolver `2a00:1098:2c::1` becomes `2a01:4f8:c2c:123f::1`. The "Expected" line points to the printf instead of repeating addresses.
+- **IPv6-only (`server-8`)**: the resolvers are exactly the three on nat64.net's home page. `2a00:1098:2b::1` becomes `2a01:4f8:c2c:123f::1`. The "Expected" line points to the printf instead of repeating addresses.
 - **Heartbeat secrecy (`monitoring-5`, `monitoring-6`)**:
   - Neither script logs the heartbeat URL.
   - `setup-server.sh` runs `chmod 600 /etc/default/report-health`, and the guide shows `sudo chmod 600`.
@@ -110,7 +110,7 @@ Every confirmed or corrected finding lands, and so does every consider item the 
 
 - [ ] `shellcheck scripts/setup-server.sh scripts/report-health.sh` passes.
 - [ ] `grep -n 'sshd-session' scripts/setup-server.sh guides/provision-server.md` hits both files.
-- [ ] `grep -rn '51unattended-upgrades-security\|SECURITY_ORIGIN\|ufw allow ssh\|dist-upgrade\|2a00:1098:2c::1' scripts guides templates` returns nothing.
+- [ ] `grep -rn '51unattended-upgrades-security\|SECURITY_ORIGIN\|ufw allow ssh\|dist-upgrade\|2a00:1098:2b::1' scripts guides templates` returns nothing.
 - [ ] Neither script echoes the heartbeat URL; `grep -n 'chmod 600 /etc/default/report-health' scripts/setup-server.sh` hits.
 - [ ] `guides/monitoring.md` has no open "record the decision" callout, and its thresholds say 7 days.
 - [ ] `make check` passes.
