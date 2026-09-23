@@ -1,7 +1,6 @@
 ---
 name: decide
-description: Sweeps the session's state and history for open questions, unstated assumptions and pending decisions, orders them by dependency, and puts each to the user through AskUserQuestion with the context, trade-offs and consequences needed to decide.
-disable-model-invocation: true
+description: Sweeps the session for open questions, unstated assumptions and pending decisions, orders them by dependency, and asks each through AskUserQuestion with context, trade-offs and consequences. Use when choices pile up or a skill routes one to the user.
 ---
 
 # Decide
