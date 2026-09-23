@@ -13,7 +13,7 @@ argument-hint: "[tdd <feature> | review <paths>]"
 - A hand-rolled mock implements the whole interface or is replaced by a real in-memory fake. Partial mocks hide integration gaps.
 - No test-only methods on production classes; build state through test helpers.
 - Assert on error type, code or sentinel, not on the full message string.
-- Integration-style tests stay even when slow; they are the most valuable tests in a suite.
+- Add an integration test only where a unit test cannot cover the boundary, and keep it fast.
 - A test nobody has watched fail is not a test: confirm red for the expected reason before green.
 
 ## TDD
