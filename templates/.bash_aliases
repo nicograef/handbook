@@ -10,6 +10,7 @@ sss() {
   fi
   ssh-add
 }
+alias gfp='git fetch --prune && git pull'
 alias gct='git checkout test'
 alias gcm='git checkout main || git checkout master'
 alias gbv='git branch -vv'
