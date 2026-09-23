@@ -18,7 +18,7 @@ Single quotes keep `$POSTGRES_*` for the container's shell; `-T` avoids a pseudo
 SELECT pg_cancel_backend(<pid>);    -- graceful
 SELECT pg_terminate_backend(<pid>); -- force
 
--- build without blocking writes; not inside a transaction, a failed build leaves an INVALID index
+-- does not block writes; not inside a transaction; on failure DROP the INVALID index and retry
 CREATE INDEX CONCURRENTLY idx_users_email ON users (email);
 
 -- missing index hints (sequential scans on large tables)
