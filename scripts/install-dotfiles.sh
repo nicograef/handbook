@@ -5,7 +5,8 @@
 #   git clone https://github.com/nicograef/handbook.git && cd handbook && ./install.sh
 #
 # What it does:
-#   1. Symlinks .bash_aliases, .tmux.conf and the Neovim init.lua into $HOME
+#   1. Symlinks .bash_aliases, .tmux.conf and the Neovim init.lua into $HOME;
+#      a real file or directory in the way is moved to <name>.bak
 #   2. Symlinks Claude Code config (global CLAUDE.md, settings, agents, skills,
 #      agent-bus.sh and plan-run-guard.sh — the global hooks in settings.json
 #      call them by those paths)
@@ -26,47 +27,38 @@ if [[ ! -f "$DOTFILES_DIR/templates/.bash_aliases" ]]; then
   exit 1
 fi
 
-# ── Symlink dotfiles ────────────────────────────────────────────────────────
-declare -A FILES=(
-  ["templates/.bash_aliases"]=".bash_aliases"
-  ["templates/.tmux.conf"]=".tmux.conf"
-  ["templates/init.lua"]=".config/nvim/init.lua"
-)
-
-for src in "${!FILES[@]}"; do
-  dest="$HOME/${FILES[$src]}"
-  origin="$DOTFILES_DIR/$src"
-  if [[ -f "$origin" ]]; then
-    mkdir -p "$(dirname "$dest")"
-    ln -sf "$origin" "$dest"
-    log "Linked $dest → $origin"
-  else
+# Moves a real file or directory at the destination to .bak, then links it.
+link() {
+  local origin="$DOTFILES_DIR/$1" dest="$HOME/$2"
+  if [[ ! -e "$origin" ]]; then
     echo "SKIP: $origin not found"
+    return
   fi
-done
+  if [[ -e "$dest" && ! -L "$dest" ]]; then
+    mv -T --backup=numbered "$dest" "$dest.bak"
+    log "Moved $dest to $dest.bak"
+  fi
+  mkdir -p "$(dirname "$dest")"
+  ln -sfnT "$origin" "$dest"
+  log "Linked $dest → $origin"
+}
+
+# ── Symlink dotfiles ────────────────────────────────────────────────────────
+link templates/.bash_aliases .bash_aliases
+link templates/.tmux.conf .tmux.conf
+link templates/init.lua .config/nvim/init.lua
 
 # ── Claude Code config ──────────────────────────────────────────────────────
 # settings.local.json stays machine-local and is intentionally NOT linked.
-mkdir -p "$HOME/.claude"
-declare -A CLAUDE_LINKS=(
-  ["claude/CLAUDE.md"]=".claude/CLAUDE.md"
-  ["claude/settings.json"]=".claude/settings.json"
-  ["claude/statusline.sh"]=".claude/statusline.sh"
-  ["scripts/agent-bus.sh"]=".claude/agent-bus.sh"
-  ["scripts/plan-run-guard.sh"]=".claude/plan-run-guard.sh"
-  [".claude/agents"]=".claude/agents"
-  [".claude/skills"]=".claude/skills"
-)
-for src in "${!CLAUDE_LINKS[@]}"; do
-  origin="$DOTFILES_DIR/$src"
-  dest="$HOME/${CLAUDE_LINKS[$src]}"
-  if [[ -e "$origin" ]]; then
-    ln -sfn "$origin" "$dest"
-    log "Linked $dest → $origin"
-  else
-    echo "SKIP: $origin not found"
-  fi
-done
+link claude/CLAUDE.md .claude/CLAUDE.md
+link claude/settings.json .claude/settings.json
+link claude/statusline.sh .claude/statusline.sh
+link scripts/agent-bus.sh .claude/agent-bus.sh
+link scripts/plan-run-guard.sh .claude/plan-run-guard.sh
+link .claude/agents .claude/agents
+link .claude/skills .claude/skills
+# Copilot CLI reads ~/.agents/skills, not ~/.claude/skills.
+link .claude/skills .agents/skills
 
 # ~/.claude.json holds machine state (auth, project list), so it is merged, not linked.
 # It carries the /config choices that have no settings.json key.
@@ -75,15 +67,6 @@ CLAUDE_JSON="$HOME/.claude.json"
 tmp="$(mktemp)"
 jq '. + {leftArrowOpensAgents: false}' "$CLAUDE_JSON" > "$tmp" && mv "$tmp" "$CLAUDE_JSON"
 log "Merged /config prefs into $CLAUDE_JSON"
-
-# Copilot CLI reads ~/.agents/skills, not ~/.claude/skills — mirror the skills there.
-mkdir -p "$HOME/.agents"
-if [[ -d "$DOTFILES_DIR/.claude/skills" ]]; then
-  ln -sfn "$DOTFILES_DIR/.claude/skills" "$HOME/.agents/skills"
-  log "Linked $HOME/.agents/skills → $DOTFILES_DIR/.claude/skills"
-else
-  echo "SKIP: $DOTFILES_DIR/.claude/skills not found"
-fi
 
 # ── Git config defaults ─────────────────────────────────────────────────────
 log "Setting git config defaults…"
