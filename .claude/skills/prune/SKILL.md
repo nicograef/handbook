@@ -6,11 +6,11 @@ argument-hint: "[all] [dry-run]"
 
 # Prune
 
-A user asking "all cleaned up?", "all pruned?" or "can I close this session?" invokes this skill. Three steps: persist, sweep, review. The answer ends with a close verdict.
+A user asking "all cleaned up?", "all pruned?" or "can I close this session?" invokes this skill. Three steps: persist, sweep, review. Nothing is asked; every finding is applied. The answer ends with a close verdict.
 
 - Never delete uncommitted work, unpushed commits, stashes or a dirty worktree. Git's own refusals are the guard; never force them.
 - Skip every branch and worktree that this session or a live peer holds. `~/.claude/agent-bus.sh peers` lists the peers.
-- Aged harness state under `~/.claude` belongs to the harness and its retention setting. Delete there only memory files the review picked.
+- Aged harness state under `~/.claude` belongs to the harness and its retention setting. Delete there only memory files the review flagged.
 - Hard deletion, no trash. `dry-run` lists what each step would remove and applies nothing.
 
 Scope: the current project and repo by default; `all` covers every project's memory and every repo under `~/r`. Docker is machine-wide in both.
@@ -30,12 +30,12 @@ Runs without asking. Everything here is a cache, regenerable or already dead:
 
 ## 3. Review
 
-Content, not age. Every finding carries target, cited evidence and a proposed action: delete, or update with the new text.
+Content, not age. Every finding carries target, cited evidence and its action: delete, or update with the new text.
 
 | Class | Finding |
 | --- | --- |
 | Memory | Index and files out of sync, duplicates, dead references. Claims the repo contradicts: partly true becomes an update. Events stored as memories: keep the residue, drop the event |
-| Rule | Contradicted by the repo, names deleted files or tools, duplicates another surface, pins a stale version. Current repo only; propose per-rule edits |
+| Rule | Contradicted by the repo, names deleted files or tools, duplicates another surface, pins a stale version. Current repo only; edit per rule |
 | Scratchpad | Other sessions' leftover directories. In this session, only files the agent wrote |
 | Plan, PRD | Every box ticked, or the PRD shipped. One commit for all |
 | Branch | Merged into the default branch, or squash-merged with the merged PR as evidence. Remote copies too |
@@ -47,9 +47,9 @@ Content, not age. Every finding carries target, cited evidence and a proposed ac
 
 With `all`, review each other project that has a local repo through one `opus` subagent. Projects without a repo get the memory index checks only.
 
-Present all findings in one multi-select, one option per class batch listing its targets. Apply only the picks. A memory deletion removes the file and its index line together.
+Apply every finding without asking. A memory deletion removes the file and its index line together.
 
-A blocked pick goes to the user as [prog](../prog/SKILL.md) step 7 says, never worked around. Once the user ran them, re-check every target and update the verdict.
+A blocked action goes to the user as [prog](../prog/SKILL.md) step 7 says, never worked around. Once the user ran them, re-check every target and update the verdict.
 
 ## 4. Close verdict
 
@@ -62,6 +62,6 @@ The session may close when all of these hold:
 ## Report
 
 1. Sweep: one row per target with items and space freed, or would-be-freed.
-2. Review: one bullet per finding, marked applied, skipped or kept.
+2. Review: one bullet per finding, marked applied or blocked.
 3. Blocked: the `! <command>` lines, plus the bash block for a separate terminal.
 4. Verdict: "Safe to close", or "Not yet" with each blocking item.
