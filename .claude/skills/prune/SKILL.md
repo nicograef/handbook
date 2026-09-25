@@ -49,6 +49,8 @@ With `all`, review each other project that has a local repo through one `opus` s
 
 Present all findings in one multi-select, one option per class batch listing its targets. Apply only the picks. A memory deletion removes the file and its index line together.
 
+A picked action the harness or a permission rule blocks is handed over, never worked around. Give each as a `! <command>` line the user pastes into the session. `sudo` has no TTY there: give those commands as a bash block for a separate terminal. Once they ran, re-check every target and update the verdict.
+
 ## 4. Close verdict
 
 The session may close when all of these hold:
@@ -61,4 +63,5 @@ The session may close when all of these hold:
 
 1. Sweep: one row per target with items and space freed, or would-be-freed.
 2. Review: one bullet per finding, marked applied, skipped or kept.
-3. Verdict: "Safe to close", or "Not yet" with each blocking item.
+3. Blocked: the `! <command>` lines, plus the bash block for a separate terminal.
+4. Verdict: "Safe to close", or "Not yet" with each blocking item.
