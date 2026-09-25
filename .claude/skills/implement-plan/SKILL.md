@@ -27,7 +27,7 @@ Progress is durable only once committed and ticked. The run owns the turn: no hu
 7. Execute phases in order. Sequential phases run in the run worktree; a concurrent group gets one worktree, branch and agent per phase. No two agents write one file; only the lead writes the plan file.
 8. Commit per criterion that names its own change, then tick. Workers run targeted tests per criterion and the full gate once per phase, scoped to the languages touched. Tick a phase's criteria in one commit when it closes, and only what a tool result proves. Verification failing twice for one reason: debug root-cause first, then stop.
 9. Fold each group into `plan/<slug>` in phase order with the fold sequence in [git.md](git.md). Re-verify after each fold.
-10. Land `plan/<slug>` on the base with the landing sequence, then re-verify in the main checkout. Remove `## Run state` in its own commit before landing. `git rm` the plan file after landing only when every criterion is ticked. Remove the run's worktrees and `-d` its merged branches. Push, PR or discard is the user's call.
+10. Land `plan/<slug>` on the base with the landing sequence, then re-verify in the main checkout and push the base. Remove `## Run state` in its own commit before landing. `git rm` the plan file after landing only when every criterion is ticked. Remove the run's worktrees and `-d` its merged branches.
 11. Report: `3 phases — 2 complete, 1 blocked; 9 criteria ticked; 11 commits landed`, then phases, dropped agents, unticked items and the plan file's fate.
 
 ## Stops
@@ -36,7 +36,7 @@ Progress is durable only once committed and ticked. The run owns the turn: no hu
 | --- | --- | --- |
 | Forced | Any merge or rebase conflict | Abort in the owning worktree, report paths and classes, hand back |
 | Forced | Verification fails repeatedly for one reason after debugging | Stop |
-| Forced | A step needs a hazard command, a push, or a branch, worktree or file the run did not create | Stop |
+| Forced | A step needs a hazard command, or a branch, worktree or file the run did not create | Stop |
 | Forced | A foreign dirty worktree or `index.lock` blocks the path | Report it; never clear another session's state |
 | Forced | Usage limit or terminal API error | Commit `## Run state`, report the verbatim string and reset time |
 | Judgment | A criterion is ambiguous or unverifiable | One reading survives: implement it, say so in the commit body. Otherwise ask |

@@ -71,7 +71,7 @@ Cut waves by file ownership: a phase waits only for phases it depends on. Lanes 
 2. Rebase the lane onto the base. A rebase that brings a lower migration number re-initialises the lane's store. A rebase that brings code means a full re-gate. Docs only means the lints plus the suites naming the changed directory.
 3. The gate runs on the lane, detached under `systemd-run --user`, against the lane's own store, under the host-wide lock. Green means a complete run.
 4. One review of the group's diff on `opus`; findings verified before any is applied.
-5. `git merge --ff-only` on the base and `landed` on the bus. The same commit flips the status rows with the sha and the migration numbers taken.
+5. `git merge --ff-only` on the base, push it, and send `landed` on the bus. The same commit flips the status rows with the sha and the migration numbers taken.
 6. `git worktree remove` the lane, `git branch -d` it, stop its store. A base that moved under a peer's commit means one more rebase; the ff-only refusal is the detector.
 
 ## Report

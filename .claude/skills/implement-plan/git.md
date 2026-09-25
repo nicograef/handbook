@@ -61,9 +61,10 @@ BEFORE=$(git -C "$MAIN" rev-parse refs/heads/<base>)
 git -C "$MAIN" merge-tree --write-tree --messages "$BEFORE" plan/<slug>
 git -C "$WT" -c rerere.enabled=false rebase --onto "$BEFORE" "$(git merge-base "$BEFORE" plan/<slug>)" plan/<slug>
 git -C "$MAIN" -c rerere.enabled=false merge --ff-only plan/<slug>
+git -C "$MAIN" push origin <base>                                  # after the re-verify
 ```
 
-`--ff-only` is the race detector: a human commit on the base mid-sequence fails it cleanly (exit 128, refs untouched). If the base moved, re-pin, redo the rebase, retry once; a second failure is a stop.
+`--ff-only` is the race detector: a human commit on the base mid-sequence fails it cleanly (exit 128, refs untouched). If the base moved, re-pin, redo the rebase, retry once; a second failure is a stop. A rejected push means the remote moved: fetch, land again, retry once.
 
 ## Conflicts
 
@@ -82,4 +83,3 @@ List with `git diff --name-only --diff-filter=U`; classify by porcelain code. Ab
 | `worktree remove --force` | Removes a worktree holding staged work | plain form; read its refusal |
 | Deleting a foreign `index.lock` | Staleness cannot be proven | report and stop |
 | Force-push, `--no-verify` | Denied by settings | never |
-| `push origin <base>` | Push, PR or discard is the user's call | never |
