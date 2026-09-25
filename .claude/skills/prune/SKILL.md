@@ -10,7 +10,7 @@ A user asking "all cleaned up?", "all pruned?" or "can I close this session?" in
 
 - Never delete uncommitted work, unpushed commits, stashes or a dirty worktree. Git's own refusals are the guard; never force them.
 - Skip every branch and worktree that this session or a live peer holds. `~/.claude/agent-bus.sh peers` lists the peers.
-- Aged harness state under `~/.claude` belongs to the harness: `cleanupPeriodDays` sweeps it at launch. Delete there only memory files the review picked.
+- Aged harness state under `~/.claude` belongs to the harness and its retention setting. Delete there only memory files the review picked.
 - Hard deletion, no trash. `dry-run` lists what each step would remove and applies nothing.
 
 Scope: the current project and repo by default; `all` covers every project's memory and every repo under `~/r`. Docker is machine-wide in both.
@@ -36,7 +36,7 @@ Content, not age. Every finding carries target, cited evidence and a proposed ac
 | --- | --- |
 | Memory | Index and files out of sync, duplicates, dead references. Claims the repo contradicts: partly true becomes an update. Events stored as memories: keep the residue, drop the event |
 | Rule | Contradicted by the repo, names deleted files or tools, duplicates another surface, pins a stale version. Current repo only; propose per-rule edits |
-| Scratchpad | Other sessions' leftover directories. In this session, only files the agent wrote: the harness writes tool output into the session directory |
+| Scratchpad | Other sessions' leftover directories. In this session, only files the agent wrote |
 | Plan, PRD | Every box ticked, or the PRD shipped. One commit for all |
 | Branch | Merged into the default branch, or squash-merged with the merged PR as evidence. Remote copies too |
 | Worktree | Clean, and its branch qualifies as a branch finding |
@@ -49,13 +49,13 @@ With `all`, review each other project that has a local repo through one `opus` s
 
 Present all findings in one multi-select, one option per class batch listing its targets. Apply only the picks. A memory deletion removes the file and its index line together.
 
-A picked action the harness or a permission rule blocks is handed over, never worked around. Give each as a `! <command>` line the user pastes into the session. `sudo` has no TTY there: give those commands as a bash block for a separate terminal. Once they ran, re-check every target and update the verdict.
+A blocked pick goes to the user as [prog](../prog/SKILL.md) step 7 says, never worked around. Once the user ran them, re-check every target and update the verdict.
 
 ## 4. Close verdict
 
 The session may close when all of these hold:
 
-- `repo-status` lists nothing, or only work the user chose to keep.
+- No repo in scope holds uncommitted, unpushed or stashed work (`repo-status` lists it), or only work the user chose to keep.
 - No job of this session is still running.
 - Plan files and memory hold every open step and durable fact.
 

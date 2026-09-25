@@ -14,7 +14,7 @@ A deliberate ritual the user starts; never run it mid-task. The report lives in 
 | Scope | Source |
 | --- | --- |
 | none (default) | The current conversation, already in context. Do not read its transcript file |
-| `last N sessions` | `~/.claude/projects/<slug>/*.jsonl`, newest first, excluding the live session. One `sonnet` subagent per transcript returns the four sections below; more than 5 needs confirmation. Read JSONL line by line, keep user and assistant text, tolerate unparseable lines. Never load a raw transcript into the main context |
+| `last N sessions` | The project's past session transcripts, newest first, excluding the live session. One `sonnet` subagent per transcript returns the four sections below; more than 5 needs confirmation. Parse line by line, keep user and assistant text, tolerate unparseable lines. Never load a raw transcript into the main context |
 | `last N commits`, `<rev>..<rev>` | `git log --stat`: reverts, fixups, repeated touches of one file, "fix"/"actually"/"again" wording. Chunks of 10–20 commits per subagent |
 
 ## Workflow
@@ -24,7 +24,7 @@ A deliberate ritual the user starts; never run it mid-task. The report lives in 
 
    | Category | When | Target |
    | --- | --- | --- |
-   | memory | A session-crossing fact about the user or project not derivable from the repo | `~/.claude/projects/<slug>/memory/` plus its `MEMORY.md` line; only if the directory exists |
+   | memory | A session-crossing fact about the user or project not derivable from the repo | The project's auto-memory directory plus its index line; only if the directory exists |
    | rule | A convention for agent behaviour | `AGENTS.md` or `CLAUDE.md` (repo-wide), `.claude/rules/<topic>.md` (path-scoped) |
    | skill | A repeatable multi-step workflow | `.claude/skills/<name>/`, only where that directory already exists |
    | documentation | Human-facing knowledge someone will look up | The repo's docs layout, plus its index |

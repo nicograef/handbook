@@ -16,15 +16,13 @@ Everything the user needs lives inside the AskUserQuestion call. The chat gets n
 
 ## Ask
 
-One AskUserQuestion call per round, up to four questions per call. Dependents wait for a later round.
+One AskUserQuestion call per round, as many questions as the tool takes. Dependents wait for a later round.
 
 Per question:
 
-- `header`: the topic, ≤ 12 characters.
-- `question`: the issue in plain words. State what is undecided and where it came from: the message, file or step. State why it matters now and what happens if it stays open. A reader who skipped the session must understand it from this field alone.
-- `options`: two to four distinct choices. `label`: the choice in ≤ 5 words. `description`: what picking it means, its pros, its cons, and the consequences for the work and for the other open items. Same depth for every option.
-- A recommendation, if you have one, goes first with "(Recommended)" in its label and the reason in its description.
-- The tool appends an "Other" option to every question. Do not add a second one.
+- The question text states what is undecided and where it came from: the message, file or step. It says why it matters now and what happens if it stays open. A reader who skipped the session must understand it from this field alone.
+- Each option's description gives what picking it means, its pros and cons, and its effect on other items. Same depth for every option.
+- A recommendation, if you have one, goes first, marked as recommended, with the reason in its description.
 
 Use multi-select only when the choices combine.
 

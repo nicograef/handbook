@@ -13,7 +13,7 @@ Progress is durable only once committed and ticked. The run owns the turn: no hu
 - `rerere.enabled` is on in `~/.gitconfig`. A repeat conflict comes back fully resolved with no markers while `git status` still shows `UU`. Run every merge and rebase with `-c rerere.enabled=false`.
 - The plan copy on the base branch is stale during the run by design. Read it in the run worktree.
 - Under `rebase`, `--ours` is the base side; under `merge` it is your branch. Read the conflict, do not assume.
-- Pass the plan file to a Workflow agent as a path. Pasted phase text changes the cache key on the first tick and forces every later `agent()` call to rerun.
+- Pass the plan file to a Workflow agent as a path. Pasted phase text goes stale on the first tick and defeats resume.
 - Pin the base once, `BASE=$(git rev-parse refs/heads/<base>)`, and target the sha in every dry run, rebase and merge.
 
 ## Workflow
@@ -57,18 +57,17 @@ Written into the plan file on a stop, committed to `plan/<slug>`, deleted in its
 | `Workflow` | `scriptPath=<path>` and `runId=<id>` |
 | `Failure` | the verbatim failure string, only when the run died |
 
-## Failure strings
+## Failures
 
-| String | Response |
+Record the harness's message verbatim in `Failure`; match it by kind, not by exact wording.
+
+| Kind | Response |
 | --- | --- |
-| `You've hit your session limit · resets <time>` or weekly limit | Commit the handoff, name the reset time. Both windows span all models, so no model switch helps. Auto-continue resumes at the reset, or the user switches account |
-| `You've hit your Opus limit · resets <time>` | It stops `opus` workers and the lead. Commit the handoff, name the reset time. A worker never changes model |
-| `You've hit your Sonnet limit · resets <time>` | It stops `sonnet` workers. Commit the handoff, name the reset time. A worker never changes model |
-| `Agent terminated early due to an API error` | That `agent()` returned `null`; re-dispatch from its last commit |
-| `Server is temporarily limiting requests` / 529 | Already retried with backoff. Stop, hand off |
-| `Server error mid-response` | Not retried by design; rerun the phase from its last commit |
-
-`CLAUDE_CODE_RETRY_WATCHDOG=1` retries `429`/`529` capacity errors indefinitely instead of failing after `CLAUDE_CODE_MAX_RETRIES` (default 10). It fails at once on a spend-limit or exhausted-credits `429`. It raises the retry budget for other transient errors to 300, roughly three hours. On a usage limit that carries a reset time, it waits out the window. Set it for `-p`/`--bg` runs.
+| Session or weekly usage limit | Commit the handoff, name the reset time. These span all models, so no model switch helps. The reset or an account switch continues the run |
+| Model-specific usage limit | It stops that model's workers, and the lead if it runs on it. Commit the handoff, name the reset time. A worker never changes model |
+| Subagent terminated by an API error | Its `agent()` returned `null`; re-dispatch from its last commit |
+| Capacity throttling that outlasted the retries | Stop, hand off |
+| Server error mid-response | Not retried, output may be partial; rerun the phase from its last commit |
 
 ## Dispatch
 

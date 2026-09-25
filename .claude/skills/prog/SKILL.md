@@ -9,7 +9,7 @@ allowed-tools: Bash(git *), Read, Grep, Glob, Edit, Write
 
 Arguments: `$ARGUMENTS`. Structured output only: tables and lists, no prose.
 
-1. Establish the status quo from sources, not from recall. Sources: git log, status and worktrees, `CronList`, the tasks directory, live agents and shells, check results.
+1. Establish the status quo from sources, not from recall. Sources: git log, status and worktrees, scheduled jobs, background tasks, live agents and shells, check results.
 2. Hold every state file against it. That covers memory and `MEMORY.md`, the scratchpad, plan and programme files, run state, PRDs and lead notes.
 3. Rewrite each file to current decisions and verified state. Delete rows that are false, done elsewhere or superseded. A file then reads as if written now; no history.
 4. List every step or phase of the current plan, skill run or workflow. Status per row: done, open, or blocked and by what.
