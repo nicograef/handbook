@@ -74,6 +74,7 @@ Heading-grouped rules and idioms per stack — reference material, not runbooks.
 | [scripts/agent-bus.sh](scripts/agent-bus.sh)               | Coordination bus for concurrent Claude Code sessions in one repo        |
 | [scripts/check-agents.sh](scripts/check-agents.sh)         | Last activity of background agents, read off their task transcripts     |
 | [scripts/check-repo.sh](scripts/check-repo.sh)             | Repo self-check; `make check`                                          |
+| [scripts/report-repo-status.sh](scripts/report-repo-status.sh) | Repos under `~/r` with unpushed, uncommitted or stashed work; `repo-status` |
 | [scripts/test-agent-bus.sh](scripts/test-agent-bus.sh)     | Fixture test for `agent-bus.sh`; `make test-agent-bus`                  |
 | [scripts/plan-run-guard.sh](scripts/plan-run-guard.sh)     | Stop hook that keeps a live plan run from yielding the turn             |
 | [scripts/test-plan-run-guard.sh](scripts/test-plan-run-guard.sh) | Fixture test for `plan-run-guard.sh`; `make test-plan-run-guard`  |

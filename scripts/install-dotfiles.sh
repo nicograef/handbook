@@ -5,7 +5,7 @@
 #   git clone https://github.com/nicograef/handbook.git && cd handbook && ./install.sh
 #
 # What it does:
-#   1. Symlinks .bash_aliases, .tmux.conf and the Neovim init.lua into $HOME;
+#   1. Symlinks .bash_aliases, .tmux.conf, the Neovim init.lua and repo-status into $HOME;
 #      a real file or directory in the way is moved to <name>.bak
 #   2. Symlinks Claude Code config (global CLAUDE.md, settings, agents, skills,
 #      agent-bus.sh and plan-run-guard.sh — the global hooks in settings.json
@@ -48,6 +48,7 @@ link() {
 link templates/.bash_aliases .bash_aliases
 link templates/.tmux.conf .tmux.conf
 link templates/init.lua .config/nvim/init.lua
+link scripts/report-repo-status.sh .local/bin/repo-status
 
 # ── Claude Code config ──────────────────────────────────────────────────────
 # settings.local.json stays machine-local and is intentionally NOT linked.
