@@ -55,8 +55,10 @@ workload needs.
 3. **Signing key** — add that key to GitHub with key type "Signing Key":
    [adding a new SSH key](https://docs.github.com/en/authentication/connecting-to-github-with-ssh/adding-a-new-ssh-key-to-your-github-account).
 4. **Editor** — [neovim.md](neovim.md) installs Neovim; `install.sh` has already linked its config.
+5. **Docker** — Ubuntu's packages `docker.io`, `docker-compose-v2` and `docker-buildx`, then join the `docker` group.
+   Without `docker-buildx`, `docker build` falls back to the deprecated legacy builder.
 
-**Done when** `ls -l ~/.claude/CLAUDE.md ~/.bash_aliases` shows both as symlinks into the clone.
+**Done when** `ls -l ~/.claude/CLAUDE.md ~/.bash_aliases` shows both as symlinks into the clone, and `docker buildx version` runs.
 
 ## New project
 
