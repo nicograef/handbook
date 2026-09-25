@@ -36,7 +36,7 @@ Content, not age. Every finding carries target, cited evidence and a proposed ac
 | --- | --- |
 | Memory | Index and files out of sync, duplicates, dead references. Claims the repo contradicts: partly true becomes an update. Events stored as memories: keep the residue, drop the event |
 | Rule | Contradicted by the repo, names deleted files or tools, duplicates another surface, pins a stale version. Current repo only; propose per-rule edits |
-| Scratchpad | This session's files once the session ends; other sessions' leftovers |
+| Scratchpad | Other sessions' leftover directories. In this session, only files the agent wrote: the harness writes tool output into the session directory |
 | Plan, PRD | Every box ticked, or the PRD shipped. One commit for all |
 | Branch | Merged into the default branch, or squash-merged with the merged PR as evidence. Remote copies too |
 | Worktree | Clean, and its branch qualifies as a branch finding |
