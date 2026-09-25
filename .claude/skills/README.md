@@ -10,10 +10,10 @@
 | [distill](distill/) | Radically shrink and restructure a repo's prose |
 | [verify-docs](verify-docs/) | Fact-check committed docs against code, commands and upstream |
 | [reflect](reflect/) | End-of-session retrospective into memory, rules, skills, docs, tooling |
-| [prune](prune/) | Delete aged session state and stale memories, rules, leftovers |
+| [prune](prune/) | Clean up before closing a session: state, memories, branches, worktrees, Docker |
 | [parallel-sessions](parallel-sessions/) | Coordinate with another session in the same repo |
 | [audiobook](audiobook/) | Research, write and render an explanatory audiobook |
-| [prog](prog/) | Session status table; with `compact`, a compaction handoff |
+| [prog](prog/) | Sync state files to the verified status quo, then a status table; with `compact`, a compaction handoff |
 | [decide](decide/) | Put every open question of the session to the user, with context and trade-offs |
 
 Conventions: [.claude/rules/skills.md](../rules/skills.md).
