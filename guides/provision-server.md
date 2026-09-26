@@ -37,7 +37,9 @@ also use placeholders not in that block:
 - **manual SSH pipe** (netcup) — the fallback for a provider with no user-data
   field. Netcup supports only SSH-key injection at image install; see
   [`scripts/setup-server.sh`](../scripts/setup-server.sh)'s header comment for the
-  invocation.
+  invocation. In the netcup image dialog, pick your SSH key. Leave **Create
+  additional user** off, so the key goes to root. The script creates the user
+  and disables root login.
 
 ## Verify
 
