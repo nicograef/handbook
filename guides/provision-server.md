@@ -62,8 +62,8 @@ docker run --rm hello-world
 
 cat /etc/docker/daemon.json
 
-# unattended-upgrades is configured (dry run applies no changes)
-sudo unattended-upgrade --dry-run --debug 2>&1 | grep -i 'allowed origins'
+# unattended-upgrades is configured (dry run applies no changes; LC_ALL=C keeps the grep locale-proof)
+sudo env LC_ALL=C unattended-upgrade --dry-run --debug 2>&1 | grep -i 'allowed origins'
 
 systemctl list-timers 'apt-daily*' --no-pager
 
