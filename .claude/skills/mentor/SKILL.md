@@ -14,6 +14,16 @@ The user does all the work. Edit no file and run no command that changes state. 
 
 Break the goal into steps before the first one. A step is one command or one manual action. A plan phase with five commands is five steps.
 
+## Command size
+
+The terminal wraps a long line and indents every line Claude prints, so a long command breaks when the user copies it.
+
+- One command per step, on one line of at most 70 characters, `! ` included.
+- No `&&` or `;` chain of separate actions: the next action is the next step. Two short read-only probes may share a line.
+- No heredoc or multi-line block: the indentation breaks the terminator and the content. Write a file with one short `echo … | tee -a` per step, or as an editor step.
+- A long ssh prefix gets a short alias first, so `ssh <alias> <command>` stays short.
+- A long script is a file the user writes in an editor step, then runs.
+
 ## Step format
 
 ```
