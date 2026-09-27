@@ -26,7 +26,8 @@ Runs without asking. Everything here is a cache, regenerable or already dead:
 - Docker: dangling images, dangling build cache, unused networks.
 - Git: stale worktree entries, remote-tracking refs of deleted remote branches.
 - Agent bus: registrations of dead sessions (`agent-bus.sh sweep`).
-- This session: finished loops, monitors, background shells and agents.
+- This session: finished loops, monitors, background shells and agents. Recall misses ids from before a compaction, and `ListAgents` shows a finished agent as `completed` while the UI still holds it. Enumerate from the session's task directory (`/tmp/claude-<uid>/<project>/<session-id>/tasks/`) and `TaskStop` every id in it, subagents included; "No task found" means it already ended.
+- Temp files this session or its agents wrote under `/tmp` (named by the run's prefix).
 
 ## 3. Review
 
