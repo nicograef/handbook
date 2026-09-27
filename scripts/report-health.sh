@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# report-health.sh – daily dead-man health ping for an unattended server
+# report-health.sh – hourly dead-man health ping for an unattended server
 #
 # Usage (installed as /usr/local/bin/report-health, run by cron):
 #   report-health
@@ -19,7 +19,7 @@ set -euo pipefail
 DEFAULTS_FILE="${DEFAULTS_FILE:-/etc/default/report-health}"
 REBOOT_REQUIRED_FILE="${REBOOT_REQUIRED_FILE:-/var/run/reboot-required}"
 UNATTENDED_UPGRADES_LOG="${UNATTENDED_UPGRADES_LOG:-/var/log/unattended-upgrades/unattended-upgrades.log}"
-OOM_WINDOW="${OOM_WINDOW:-25 hours ago}"  # slightly over the daily cron interval, so no kill falls between runs
+OOM_WINDOW="${OOM_WINDOW:-65 minutes ago}"  # slightly over the hourly cron interval, so no kill falls between runs
 # ─────────────────────────────────────────────────────────────────────────────
 
 log() { printf '\n\033[1;34m▸ %s\033[0m\n' "$1"; }

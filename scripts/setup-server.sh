@@ -15,7 +15,7 @@
 #   4. UFW firewall
 #   5. fail2ban
 #   6. Docker + Compose, container-log rotation (IPv6 networking auto-enabled on IPv6-only hosts)
-#   7. Unattended upgrades (stock distro origins) + daily health ping
+#   7. Unattended upgrades (stock distro origins) + hourly health ping
 
 set -euo pipefail
 
@@ -25,7 +25,7 @@ SSH_PUBLIC_KEY="${SSH_PUBLIC_KEY:-}"              # paste your pubkey here or ex
 EXTRA_UFW_PORTS="${EXTRA_UFW_PORTS:-80/tcp 443/tcp}"  # space-separated
 PASSWORDLESS_SUDO="${PASSWORDLESS_SUDO:-false}"  # "true" grants NOPASSWD sudo (convenience over prompts)
 USER_PASSWORD_HASH="${USER_PASSWORD_HASH:-}"     # `mkpasswd -m yescrypt` output; required unless PASSWORDLESS_SUDO=true
-HEALTH_PING_URL="${HEALTH_PING_URL:-}"           # optional: daily dead-man health-ping URL (e.g. a Better Stack heartbeat)
+HEALTH_PING_URL="${HEALTH_PING_URL:-}"           # optional: hourly dead-man health-ping URL (e.g. a Better Stack heartbeat)
 SWAP_SIZE_GB="${SWAP_SIZE_GB:-auto}"             # swapfile size in GB; "auto" = RAM capped at 8; "0" skips swap
 DRY_RUN="${DRY_RUN:-false}"                      # set to "true" or pass --dry-run
 # ─────────────────────────────────────────────────────────────────────────────
@@ -324,7 +324,7 @@ APT::Periodic::Update-Package-Lists "1";
 APT::Periodic::Unattended-Upgrade "1";
 EOF
 
-log "Installing daily health ping"
+log "Installing hourly health ping"
 if [[ "$DRY_RUN" == "true" ]]; then
   printf '  \033[0;33m[DRY-RUN]\033[0m fetch report-health.sh and write /usr/local/bin/report-health (executable)\n'
 else
@@ -345,8 +345,8 @@ else
 fi
 
 write_file /etc/cron.d/report-health <<'EOF'
-# Daily dead-man health ping (see /usr/local/bin/report-health).
-0 8 * * * root /usr/local/bin/report-health
+# Hourly dead-man health ping (see /usr/local/bin/report-health).
+0 * * * * root /usr/local/bin/report-health
 EOF
 run chmod 644 /etc/cron.d/report-health
 
@@ -370,9 +370,9 @@ echo "  fail2ban: active"
 echo "  Docker:   $(docker --version 2>/dev/null || echo 'not installed (dry-run)')"
 echo "  Upgrades: unattended (distro stock origins, no auto-reboot)"
 if [[ -n "$HEALTH_PING_URL" ]]; then
-  echo "  Health:   daily ping (URL in /etc/default/report-health)"
+  echo "  Health:   hourly ping (URL in /etc/default/report-health)"
 else
-  echo "  Health:   daily check installed (no ping URL — set /etc/default/report-health to enable)"
+  echo "  Health:   hourly check installed (no ping URL — set /etc/default/report-health to enable)"
 fi
 echo ""
 # Route-based lookup returns the source address of real outbound traffic, so

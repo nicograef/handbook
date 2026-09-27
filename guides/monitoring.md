@@ -26,7 +26,7 @@ Each heartbeat has a secret URL. These are **per-server configuration and never 
 | --- | -------------- | ----------- | ------ | ----- |
 | `BACKUP_PING_URL` | server's Compose `.env` | [scripts/backup-postgres.sh](../scripts/backup-postgres.sh) | 1 day | 2-3 h |
 | `CERT_PING_URL` | server's Compose `.env` | `certbot` service in [docker-compose.prod.yml](../templates/docker-compose.prod.yml) | 1 day | 24-36 h |
-| `HEALTH_PING_URL` | `/etc/default/report-health` | `report-health` cron, persisted by provisioning | 1 day | 2-3 h |
+| `HEALTH_PING_URL` | `/etc/default/report-health` | `report-health` cron, persisted by provisioning | 1 hour | 15-30 min |
 | TLS-expiry URL | the server user's crontab | the [TLS-expiry check](#tls-expiry-heartbeat) | 1 day | 2-3 h |
 
 ```bash
