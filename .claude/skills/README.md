@@ -15,5 +15,6 @@
 | [audiobook](audiobook/) | Research, write and render an explanatory audiobook |
 | [prog](prog/) | Sync state files to the verified status quo, then a status table; with `compact`, a compaction handoff |
 | [decide](decide/) | Put every open question of the session to the user, with context and trade-offs |
+| [mentor](mentor/) | Walk the user through a goal or plan one command at a time while they do the work |
 
 Conventions: [.claude/rules/skills.md](../rules/skills.md).
