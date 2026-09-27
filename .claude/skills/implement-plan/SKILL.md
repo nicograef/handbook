@@ -21,11 +21,11 @@ Progress is durable only once committed and ticked. The run owns the turn: no hu
 1. Resume first, on every invocation: run the pickup sequence in [git.md](git.md). Finish or abort a half-open rebase or merge in its owning worktree. Redoing finished work is the most expensive failure.
 2. Read the plan. Detect the base branch with `git symbolic-ref --short refs/remotes/origin/HEAD`, then `git ls-remote --symref origin HEAD`; ask if neither resolves. Pin it.
 3. Review every unmet phase in one pass: ambiguous criteria, missing files, criteria no command verifies, shell commands the allowlist lacks.
-4. Choose the shape. Sequential is the default; the concurrency test is in [git.md](git.md). Set each phase's review tier. Gate only for redoable work; one probe where a rerun is paid or slow. Probes plus a human read before anything irreversible.
+4. Ask how the plan runs fast and lean, then choose the shape. Run the concurrency test in [git.md](git.md) on every phase pair. Each pair that passes becomes a lane, up to the writer cap in § Dispatch; sequential is the fallback. Set each phase's review tier. Gate only for redoable work; one probe where a rerun is paid or slow. Probes plus a human read before anything irreversible.
 5. Present the run contract once: plan, base and sha, phases with grouping and tiers, worktrees and branches. Also the verify command, stop conditions, open questions and missing allowlist commands. This is the run's only planned human turn.
 6. Create `../<repo>-wt/plan-<slug>` on branch `plan/<slug>` from `$BASE`. Confirm the verify command passes on unchanged code.
 7. Execute phases in order. Sequential phases run in the run worktree; a concurrent group gets one worktree, branch and agent per phase. No two agents write one file; only the lead writes the plan file.
-8. Commit per criterion that names its own change, then tick. Workers run targeted tests per criterion and the full gate once per phase, scoped to the languages touched. Tick a phase's criteria in one commit when it closes, and only what a tool result proves. Verification failing twice for one reason: debug root-cause first, then stop.
+8. Commit per criterion that names its own change, then tick. Workers batch verification: one targeted test run per criterion, the full gate once per phase, scoped to the languages touched. No gate, build or review after a single edit. Tick a phase's criteria in one commit when it closes, and only what a tool result proves. Verification failing twice for one reason: debug root-cause first, then stop.
 9. Fold each group into `plan/<slug>` in phase order with the fold sequence in [git.md](git.md). Re-verify after each fold.
 10. Land `plan/<slug>` on the base with the landing sequence, then re-verify in the main checkout and push the base. Remove `## Run state` in its own commit before landing. `git rm` the plan file after landing only when every criterion is ticked. Remove the run's worktrees and `-d` its merged branches.
 11. Report: `3 phases — 2 complete, 1 blocked; 9 criteria ticked; 11 commits landed`, then phases, dropped agents, unticked items and the plan file's fate.
@@ -72,7 +72,7 @@ Record the harness's message verbatim in `Failure`; match it by kind, not by exa
 ## Dispatch
 
 - Commit subject Conventional Commit, trailer `Plan: <slug> phase <N> criterion <M>`.
-- Give a worker: plan path (as a path), worktree path, branch, phase number, verify command, trailer format, plan-file write ban. Add: "commit each criterion as it verifies; at 30 minutes commit what verifies and return". A fully mechanical phase runs on `sonnet` with `effort: low`; the rest on `opus`.
+- Give a worker: plan path (as a path), worktree path, branch, phase number, verify command, trailer format, plan-file write ban. Add: "commit each criterion as it verifies; run the full gate once, at phase end". Also: "at 30 minutes commit what verifies and return". A fully mechanical phase runs on `sonnet` with `effort: low`; the rest on `opus`.
 - A lead with background agents or a workflow arms the jobs of [programme § Lead upkeep](../programme/SKILL.md#lead-upkeep). The plan file takes the programme file's place.
 - A returned `null` is a phase that did not happen; its branch keeps its commits. Re-dispatch it to continue from `git log <branch>`, never from scratch.
 - A defect a review finds goes back to the phase's own worker via SendMessage. Carry the defect classes into the next phase's prompt.

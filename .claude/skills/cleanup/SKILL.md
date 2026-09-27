@@ -43,4 +43,4 @@ Close with up to five most impactful changes across all files, then ask which to
 
 ## Apply
 
-Make the minimal change described, one finding at a time; verify each touched file still compiles or lints. Flag a large refactor for the user to schedule instead of doing it. Add no comments, abstractions or error handling; the goal is less noise. Leave patterns that look like slop but are the project's own idiom.
+Make the minimal change described per finding. Compile or lint the touched files once, after the last finding. Flag a large refactor for the user to schedule instead of doing it. Add no comments, abstractions or error handling; the goal is less noise. Leave patterns that look like slop but are the project's own idiom.

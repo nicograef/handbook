@@ -22,8 +22,9 @@ Arguments: `$ARGUMENTS`. Output is a file, never code. `/plan <task or PRD path>
 2. Clarify only what the code, PRD and conventions do not settle, at most three rounds. Zero questions is the normal outcome; say so in one line.
 3. Fix the durable decisions.
 4. Slice into tracer-bullet phases: each a thin, complete path through every layer (schema, API, UI, tests), demoable on its own. Many thin slices beat few thick ones. A refactor or config change is one phase.
-5. Self-review the file for placeholders: TBD, "add appropriate validation", "similar to phase N". Flag names that appear in one phase only. Fix inline.
-6. Self-review again specifically for simplifications, over-engineering, complexity and try to find KISS and YAGNI violations. Explain findings and propose changes to the user. Let the user decide through the decide skill.
+5. Ask how the plan runs fast and lean. Give phases disjoint files so implement-plan can run them as parallel lanes. Name a dependency only where a phase needs another's code. Put choke files (indexes, lockfiles, migrations) into one phase. Each criterion is verifiable by one targeted command; the full gate runs once per phase.
+6. Self-review the file for placeholders: TBD, "add appropriate validation", "similar to phase N". Flag names that appear in one phase only. Fix inline.
+7. Self-review again specifically for simplifications, over-engineering, complexity and try to find KISS and YAGNI violations. Explain findings and propose changes to the user. Let the user decide through the decide skill.
 
 ## PRD mode
 
