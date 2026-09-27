@@ -16,7 +16,7 @@ Break the goal into steps before the first one. A step is one command or one man
 
 ## Command size
 
-The terminal wraps a long line and indents every line Claude prints, so a long command breaks when the user copies it.
+The terminal wraps a long line and indents every line Claude prints. A long command then breaks when the user copies it.
 
 - One command per step, on one line of at most 70 characters, `! ` included.
 - No `&&` or `;` chain of separate actions: the next action is the next step. Two short read-only probes may share a line.
