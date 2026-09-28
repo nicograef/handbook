@@ -13,23 +13,32 @@
 name: CI
 
 # Every push on any branch, so a feature branch is measured while it is still a branch.
-# No pull_request trigger: it would run a second time on the same commit.
 on:
   push:
     branches: ['**']
+  # Public repos only: a fork's push runs in the fork, so its PR needs this trigger.
+  # In a private repo it would run a second time on the same commit.
+  # pull_request:
+  #   branches: [main]
+  # Advisories change without a code change; the schedule runs only the security jobs.
+  schedule:
+    - cron: "0 4 * * 1"  # Mondays 04:00 UTC
 
 # Least-privilege token; a job that needs more (e.g. OIDC deploy) requests
 # its scopes at job level (id-token: write, contents: read).
 permissions:
   contents: read
 
+# The event name keeps a scheduled run and a push to main from cancelling each other.
 concurrency:
-  group: ci-${{ github.ref }}
+  group: ci-${{ github.event_name }}-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
   # ── Change Detection ───────────────────────────────────────────────────────
+  # Skipped on schedule, and so is every job that needs it without `!cancelled()`.
   changes:
+    if: ${{ github.event_name != 'schedule' }}
     runs-on: ubuntu-latest
     timeout-minutes: 10
     outputs:
@@ -55,7 +64,8 @@ jobs:
   # ── Go Backend ─────────────────────────────────────────────────────────────
   backend-ci:
     needs: changes
-    if: ${{ needs.changes.outputs.backend == 'true' }}
+    # database: the generated code reads the schema.
+    if: ${{ (needs.changes.outputs.backend == 'true') || (needs.changes.outputs.database == 'true') }}
     runs-on: ubuntu-latest
     timeout-minutes: 10
     defaults:
@@ -82,6 +92,18 @@ jobs:
       # Fails if go.mod/go.sum drift from the source (edited without re-tidying).
       - name: Verify go.mod/go.sum are tidy
         run: go mod tidy -diff
+
+      # Generated code must match its source. sqlc is a go.mod tool like goimports and
+      # reads <database-dir>/migrations. Swap in your generator; the status check stays.
+      - name: Check generated code is current
+        run: |
+          go tool sqlc generate
+          DRIFT="$(git status --porcelain)"
+          if [ -n "$DRIFT" ]; then
+            echo "Generated code is stale; regenerate and commit:"
+            echo "$DRIFT"
+            exit 1
+          fi
 
       # goimports is a go.mod tool: `go get -tool golang.org/x/tools/cmd/goimports`.
       - name: Check format
@@ -215,6 +237,61 @@ jobs:
       - name: Audit
         run: uv audit
 
+  # ── Security ───────────────────────────────────────────────────────────────
+  # Runs on the weekly schedule too, when `changes` is skipped; !cancelled() lets it
+  # run past that skip. A push runs it only when the code it scans changed.
+  security-go:
+    needs: changes
+    if: ${{ !cancelled() && (github.event_name == 'schedule' || needs.changes.outputs.backend == 'true') }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    strategy:
+      fail-fast: false
+      matrix:
+        module: [<backend-dir>]  # one entry per go.mod
+    defaults:
+      run:
+        working-directory: ./${{ matrix.module }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
+        with:
+          go-version: "1.26"
+          cache-dependency-path: ${{ matrix.module }}/go.sum
+
+      # govulncheck is a go.mod tool: `go get -tool golang.org/x/vuln/cmd/govulncheck`.
+      # It fails only on vulnerabilities the module's code can reach.
+      - name: govulncheck
+        run: go tool govulncheck ./...
+
+  security-node:
+    needs: changes
+    if: ${{ !cancelled() && (github.event_name == 'schedule' || needs.changes.outputs.frontend == 'true') }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    defaults:
+      run:
+        working-directory: ./<frontend-dir>
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - uses: pnpm/action-setup@ea17c68df8912ef543352723c149a84f56e3d413 # v6.1.0
+        with:
+          package_json_file: <frontend-dir>/package.json
+          run_install: false
+
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: 26
+
+      # Reads pnpm-lock.yaml, so no install. Blocking from "high" upward.
+      - name: pnpm audit
+        run: pnpm audit --audit-level high
+
   # ── Integration Tests (Go + PostgreSQL) ────────────────────────────────────
   backend-integration-tests:
     needs: changes
@@ -230,8 +307,10 @@ jobs:
           POSTGRES_DB: <database-name>  # e.g. myapp
         ports:
           - 5432:5432
+        # TCP, not the socket: the image's init server listens on the socket only and
+        # restarts, so a socket probe reports ready before the real server is up.
         options: >-
-          --health-cmd pg_isready
+          --health-cmd "pg_isready -h 127.0.0.1 -U admin -d <database-name>"
           --health-interval 10s
           --health-timeout 5s
           --health-retries 5
@@ -271,7 +350,85 @@ jobs:
           # JWT_SECRET: test-secret  # uncomment and add secrets your app needs
         run: go test -tags=integration -v -race ./...
 
-      - name: Run database migrations down
-        if: always()
-        working-directory: ./<database-dir>
-        run: migrate -path ./migrations -database "postgres://admin:admin@localhost:5432/<database-name>?sslmode=disable" down -all
+  # ── Upgrade Path and Restore Drill (PostgreSQL) ────────────────────────────
+  # Migrations are forward-only: a database on the previous release must reach the
+  # current schema through `up` alone. The rollback is a backup restore, drilled below.
+  upgrade-path:
+    needs: changes
+    if: ${{ needs.changes.outputs.database == 'true' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      DB_NAME: <database-name>
+      MIGRATIONS: <database-dir>/migrations  # relative to the repo root
+      DB_URL: postgres://admin:admin@localhost:5432/<database-name>?sslmode=disable
+    services:
+      postgres:
+        image: postgres:18  # same image as docker-compose.prod.yml
+        env:
+          POSTGRES_USER: admin
+          POSTGRES_PASSWORD: admin
+          POSTGRES_DB: <database-name>
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -h 127.0.0.1 -U admin -d <database-name>"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+          fetch-depth: 0  # the tags mark the releases
+
+      - name: Install golang-migrate
+        working-directory: ${{ runner.temp }}
+        run: |
+          curl -fsSLo migrate.tar.gz "https://github.com/golang-migrate/migrate/releases/download/v4.20.1/migrate.linux-amd64.tar.gz"
+          echo "b1e13121d4178b7804a9fb29dca62d57b732390f7e5ae33f2cd65e9b192e1bd4  migrate.tar.gz" | sha256sum -c -
+          sudo tar -xzf migrate.tar.gz -C /usr/local/bin migrate
+
+      # HEAD^ skips the tag on a release commit itself. No tag yet: nothing to upgrade from.
+      - name: Apply the previous release's migrations
+        run: |
+          PREVIOUS="$(git describe --tags --abbrev=0 HEAD^ 2>/dev/null || true)"
+          if [ -z "$PREVIOUS" ]; then
+            echo "No release tag yet; the current migrations run on an empty database."
+            exit 0
+          fi
+          echo "Previous release: $PREVIOUS"
+          mkdir -p "$RUNNER_TEMP/previous"
+          git archive "$PREVIOUS" "$MIGRATIONS" | tar -x -C "$RUNNER_TEMP/previous"
+          migrate -path "$RUNNER_TEMP/previous/$MIGRATIONS" -database "$DB_URL" up
+          # Enable once the project has seed data: some migrations fail only on populated tables.
+          # git show "$PREVIOUS:<database-dir>/seed.sql" | psql "$DB_URL" -v ON_ERROR_STOP=1
+
+      - name: Apply the current migrations
+        run: migrate -path "$MIGRATIONS" -database "$DB_URL" up
+
+      # Dumps the migrated database and restores it into a throwaway container on the
+      # stack's own image. Passes when the migration version and table count survive.
+      - name: Restore drill
+        env:
+          SOURCE: ${{ job.services.postgres.id }}
+        run: |
+          PG_IMAGE="$(grep -oE 'postgres:[0-9][0-9.]*' docker-compose.prod.yml | head -n1)"
+          [ -n "$PG_IMAGE" ] || { echo "No postgres image in docker-compose.prod.yml."; exit 1; }
+          docker exec "$SOURCE" pg_dump -U admin -d "$DB_NAME" -Fc > "$RUNNER_TEMP/drill.dump"
+          docker run -d --name restore-drill -e POSTGRES_USER=admin \
+            -e POSTGRES_PASSWORD=drill -e POSTGRES_DB="$DB_NAME" "$PG_IMAGE"
+          READY=""
+          for _ in $(seq 1 30); do
+            if docker exec restore-drill pg_isready -q -h 127.0.0.1 -U admin; then READY=1; break; fi
+            sleep 1
+          done
+          [ -n "$READY" ] || { echo "Throwaway $PG_IMAGE did not start."; exit 1; }
+          docker exec -i restore-drill pg_restore -U admin -d "$DB_NAME" \
+            --exit-on-error --single-transaction < "$RUNNER_TEMP/drill.dump"
+          QUERY="SELECT (SELECT version FROM schema_migrations) || '/' ||
+            (SELECT count(*) FROM information_schema.tables WHERE table_schema = 'public')"
+          WANT="$(docker exec "$SOURCE" psql -U admin -d "$DB_NAME" -tAc "$QUERY")"
+          GOT="$(docker exec restore-drill psql -U admin -d "$DB_NAME" -tAc "$QUERY")"
+          echo "version/tables: source $WANT, restored $GOT"
+          [ "$GOT" = "$WANT" ]
