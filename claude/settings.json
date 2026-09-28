@@ -225,7 +225,7 @@
   "autoMode": {
     "environment": [
       "$defaults",
-      "Organization: gyva (legal entity AugRep GmbH), Freiburg im Breisgau, Germany. Nico Gräf is a software developer there. Claude Code runs on a company-issued, single-user Linux laptop and on a single-user netcup VPS that serves gyva.nicograef.de. Primary use of Claude Code: software development for gyva, plus personal projects.",
+      "Organization: gyva (legal entity AugRep GmbH), Freiburg im Breisgau, Germany. Nico Gräf is a software developer there. Claude Code runs on a company-issued, single-user Linux laptop, on a single-user netcup VPS that serves gyva.nicograef.de, and on gyva-staging, a single-user netcup VPS (staging.gyva.nicograef.de) where agent sessions build, evaluate and run the gyva stacks and lanes. Primary use of Claude Code: software development for gyva, plus personal projects.",
       "Source control: GitHub. Personal org github.com/nicograef with SSH remotes git@github.com:nicograef/<repo>.git. The company's GitHub org and remotes: not yet provided.",
       "Repository visibility: handbook is public. Treat every other repo, company or personal, as private.",
       "Trusted repo: every git repository under /home/nico/r, and every <repo>-wt/ directory beside one, which holds that repository's worktrees.",
