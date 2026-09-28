@@ -71,12 +71,12 @@ prod-logs:     ## Follow production logs
 
 .PHONY: prod-release
 
-prod-release:  ## Push a prod-<timestamp> tag (add your own tag-triggered deploy workflow)
+prod-release:  ## Push tag v$(VERSION); .github/workflows/release.yml builds the images (VERSION=X.Y.Z)
+	@echo "$(VERSION)" | grep -Eq '^[0-9]+\.[0-9]+\.[0-9]+$$' \
+	  || { echo "Error: set VERSION=X.Y.Z (got '$(VERSION)')" >&2; exit 1; }
 	@BRANCH=$$(git rev-parse --abbrev-ref HEAD); \
-	if [ "$$BRANCH" != "main" ]; then echo "Error: must be on main (currently on $$BRANCH)"; exit 1; fi
-	@TAG=prod-$$(date +%Y%m%d-%H%M) && \
-	git tag $$TAG && git push origin $$TAG && \
-	echo "Pushed tag $$TAG"
+	if [ "$$BRANCH" != "main" ]; then echo "Error: must be on main (currently on $$BRANCH)" >&2; exit 1; fi
+	git tag v$(VERSION) && git push origin v$(VERSION)
 
 # ── Utilities ──
 
