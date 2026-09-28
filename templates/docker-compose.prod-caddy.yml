@@ -1,0 +1,148 @@
+# docker-compose.prod-caddy.yml template
+# Production stack with Caddy: automatic Let's Encrypt TLS, no certbot, no initial-cert step.
+# guides/letsencrypt-docker.md names when to pick it over docker-compose.prod.yml.
+# The app runs pinned registry images built by CI; the server builds nothing.
+#
+# Usage (first deploy and every update; see guides/maintenance.md):
+#   PROD_FILE=docker-compose.prod-caddy.yml scripts/prod-init.sh
+
+name: myapp
+
+# Cap container logs — the json-file driver grows unbounded otherwise and can
+# fill the server disk over time.
+x-logging: &default-logging
+  driver: json-file
+  options:
+    max-size: "5m"
+    max-file: "3"
+
+# Every service gets a memory and CPU limit, so one runaway container cannot starve
+# the database or the proxy. Size them to the host.
+services:
+  # ── Database ──
+  postgres:
+    image: postgres:18
+    restart: unless-stopped
+    logging: *default-logging
+    # Docker's 64 MB /dev/shm default is too small for parallel queries.
+    shm_size: 128mb
+    # Time for a clean shutdown checkpoint before Docker sends SIGKILL.
+    stop_grace_period: 1m
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+    volumes:
+      - postgres-data:/var/lib/postgresql
+    networks:
+      - db-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+          cpus: "2.0"
+
+  # ── Backend ──
+  # The release tag is the deploy version: bump it in git, never float on `latest`.
+  # scripts/prod-init.sh reads it here and refuses a downgrade.
+  backend:
+    image: ghcr.io/<owner>/<project>-backend:v0.1.0
+    restart: unless-stopped
+    logging: *default-logging
+    environment:
+      DB_HOST: postgres
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+    networks:
+      - app-network
+      - db-network
+    depends_on:
+      postgres:
+        condition: service_healthy
+    # Needs wget in the image and a health route; `up --wait` polls it after every deploy.
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:8080/api/health >/dev/null 2>&1"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+      start_period: 5s
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+          cpus: "1.5"
+    # No exposed ports — reachable only via reverse-proxy
+
+  # ── Frontend ──
+  # Static SPA served by its own nginx (no TLS here — reverse-proxy handles it).
+  frontend:
+    image: ghcr.io/<owner>/<project>-frontend:v0.1.0 # same tag as backend
+    restart: unless-stopped
+    logging: *default-logging
+    networks:
+      - app-network
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://127.0.0.1:80/ >/dev/null 2>&1"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+      start_period: 5s
+    deploy:
+      resources:
+        limits:
+          memory: 128M
+          cpus: "0.5"
+    # No exposed ports — served via reverse-proxy
+
+  # ── Reverse Proxy (TLS termination, certificate issuance and renewal) ──
+  reverse-proxy:
+    image: caddy:2.11.4-alpine
+    restart: unless-stopped
+    logging: *default-logging
+    ports:
+      - "80:80"
+      - "443:443"
+      - "443:443/udp" # HTTP/3
+    volumes:
+      - ./reverse-proxy/Caddyfile:/etc/caddy/Caddyfile:ro
+      # Holds the certificates and the ACME account; losing it re-issues and risks rate limits.
+      - caddy-data:/data
+      - caddy-config:/config
+    networks:
+      - app-network
+    # Gated on healthy upstreams, so a fresh start never serves a 502 before the app is ready.
+    depends_on:
+      backend:
+        condition: service_healthy
+      frontend:
+        condition: service_healthy
+    # Any 2xx or 3xx on port 80 proves Caddy answers; the HTTPS redirect is a 308.
+    healthcheck:
+      test: ["CMD-SHELL", "wget -S -O /dev/null http://127.0.0.1:80/ 2>&1 | grep -qE 'HTTP/1.[01] [23][0-9][0-9]'"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+      start_period: 10s
+    deploy:
+      resources:
+        limits:
+          memory: 128M
+          cpus: "0.5"
+
+networks:
+  app-network:
+    driver: bridge
+  db-network:
+    driver: bridge
+    internal: true   # database not reachable from outside
+
+volumes:
+  postgres-data:
+  caddy-data:
+  caddy-config:

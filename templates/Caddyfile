@@ -1,0 +1,35 @@
+# Caddyfile template
+# Copy to reverse-proxy/Caddyfile and replace example.com with your domain.
+# Caddy obtains and renews the Let's Encrypt certificate itself, once DNS points here.
+
+# ── Global options ──
+# {
+# 	# Enable to receive Let's Encrypt expiry notices for this account.
+# 	email <you@example.com>
+# }
+
+# ── Redirect www to the apex domain ──
+www.example.com {
+	redir https://example.com{uri} permanent
+}
+
+# ── Primary site (HTTP redirects to HTTPS automatically) ──
+example.com {
+	header {
+		Strict-Transport-Security "max-age=63072000; includeSubDomains"
+		X-Content-Type-Options "nosniff"
+		X-Frame-Options "DENY"
+		Referrer-Policy "strict-origin-when-cross-origin"
+		-Server
+	}
+
+	# Caddy is the edge: it replaces a client-sent X-Forwarded-For with the real peer.
+	handle /api/* {
+		reverse_proxy backend:8080
+	}
+
+	# Frontend SPA, served by its own nginx
+	handle {
+		reverse_proxy frontend:80
+	}
+}

@@ -1,6 +1,15 @@
 # Let's Encrypt with Docker Compose
 
-Automated TLS certificates via Certbot webroot challenge, running entirely inside Docker.
+Automated TLS certificates, running entirely inside Docker: Caddy, or nginx with a Certbot webroot challenge.
+
+## Pick a variant
+
+| Variant | Templates | Pick it when |
+| ------- | --------- | ------------ |
+| Caddy | [docker-compose.prod-caddy.yml](../templates/docker-compose.prod-caddy.yml), [Caddyfile](../templates/Caddyfile) | Default for a new stack: Caddy issues and renews the certificate itself, with no initial-cert step |
+| nginx + Certbot | [docker-compose.prod.yml](../templates/docker-compose.prod.yml), [docker-compose.initial-cert.yml](../templates/docker-compose.initial-cert.yml), [nginx-tls.conf](../templates/nginx-tls.conf), [nginx-initial-cert.conf](../templates/nginx-initial-cert.conf) | You need per-client rate limiting (`limit_req`), or the team already runs nginx configs |
+
+Caddy's core has no rate limiter. The Certbot variant pings `CERT_PING_URL` after each renewal; the Caddy variant has no such heartbeat.
 
 ## Prerequisites
 
@@ -13,17 +22,21 @@ Collect these before starting:
 
 | Placeholder | Description | Example |
 | ----------- | ----------- | ------- |
-| `<project-name>` | Compose project name — the volume prefix set with `-p` (replaces `myapp`) | `myapp` |
+| `<project-name>` | Compose project name — the top-level `name:` in every Compose file (replaces `myapp`) | `myapp` |
+| `<domain>` | Public domain in `nginx-tls.conf` or the `Caddyfile` (replaces `example.com`) | `example.com` |
 
-> Volume names are prefixed with the Compose project name (e.g. `myapp_letsencrypt`).
-> Check with `docker volume ls | grep letsencrypt`. Use the **same** `-p myapp` for the
-> production stack so both share `certbot-challenges` and `letsencrypt`.
+> Volume names are prefixed with the project name (e.g. `myapp_letsencrypt`).
+> `docker-compose.initial-cert.yml` and `docker-compose.prod.yml` carry the **same** `name:`,
+> so both share `certbot-challenges` and `letsencrypt`.
 
 ## Automation
 
-For a fully automated first-time deploy, see [`scripts/prod-init.sh`](../scripts/prod-init.sh).
+[`scripts/prod-init.sh`](../scripts/prod-init.sh) runs the first deploy and every update for both variants.
+It requests the Certbot certificate only when none exists. For Caddy, set `PROD_FILE=docker-compose.prod-caddy.yml`.
 
 ## Verify
+
+nginx + Certbot:
 
 ```bash
 # cert was issued (expect a live/<domain>/ directory)
@@ -32,7 +45,17 @@ docker run --rm -v myapp_letsencrypt:/etc/letsencrypt alpine \
 
 # staging dry-run against the running stack — must print
 # "Congratulations, all simulated renewals succeeded"
-docker compose -p myapp -f docker-compose.prod.yml exec certbot certbot renew --dry-run
+docker compose -f docker-compose.prod.yml exec certbot certbot renew --dry-run
+```
+
+Caddy:
+
+```bash
+# expect a "certificate obtained successfully" line per domain
+docker compose -f docker-compose.prod-caddy.yml logs reverse-proxy | grep 'certificate obtained'
+
+# expect HTTP/2 200
+curl -sI https://example.com | head -1
 ```
 
 ## Troubleshooting

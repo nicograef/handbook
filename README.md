@@ -49,7 +49,9 @@ Heading-grouped rules and idioms per stack — reference material, not runbooks.
 | [templates/make-help.awk](templates/make-help.awk)                     | Renders `make help` by target class; `scripts/make-help.awk`     |
 | [templates/docker-compose.yml](templates/docker-compose.yml)           | Compose starter (local dev, no TLS)                               |
 | [templates/.dockerignore](templates/.dockerignore)                     | Build-context excludes: VCS, secrets, host toolchains, tests, docs |
-| [templates/docker-compose.prod.yml](templates/docker-compose.prod.yml) | Production Compose (reverse proxy + Let's Encrypt)                |
+| [templates/docker-compose.prod.yml](templates/docker-compose.prod.yml) | Production Compose (nginx + Certbot, pinned registry images)      |
+| [templates/docker-compose.prod-caddy.yml](templates/docker-compose.prod-caddy.yml) | Production Compose with Caddy: automatic TLS, healthchecks, resource limits |
+| [templates/Caddyfile](templates/Caddyfile)                             | Caddy site config: www redirect, security headers, API and SPA routes |
 | [templates/docker-compose.initial-cert.yml](templates/docker-compose.initial-cert.yml) | Minimal Compose for first-time cert issuance (ACME challenge only) |
 | [templates/nginx-initial-cert.conf](templates/nginx-initial-cert.conf) | Catch-all nginx config for the initial ACME challenge             |
 | [templates/nginx-tls.conf](templates/nginx-tls.conf)                   | Nginx TLS reverse proxy config                                    |
@@ -68,7 +70,7 @@ Heading-grouped rules and idioms per stack — reference material, not runbooks.
 | Script                                                     | Description                                                            |
 | ---------------------------------------------------------- | ---------------------------------------------------------------------- |
 | [scripts/setup-server.sh](scripts/setup-server.sh)         | Provision a fresh Debian/Ubuntu VPS (user, SSH, swap, UFW, fail2ban, Docker) |
-| [scripts/prod-init.sh](scripts/prod-init.sh)               | First-time production deploy (cert request + stack start)              |
+| [scripts/prod-init.sh](scripts/prod-init.sh)               | Production deploy and update: pin and downgrade guard, backup, health poll |
 | [scripts/backup-postgres.sh](scripts/backup-postgres.sh)   | Verified, retained PostgreSQL backups for a Compose stack (cron)        |
 | [scripts/report-health.sh](scripts/report-health.sh)       | Hourly dead-man health ping (reboot-required + unattended-upgrades + OOM check) |
 | [scripts/install-dotfiles.sh](scripts/install-dotfiles.sh) | Symlink shell and Claude config on a dev machine; `install.sh`          |
