@@ -39,10 +39,10 @@ The handbook takes over the jotti practices the owner picked and resolves the fo
 
 ### Acceptance criteria
 
-- [ ] `grep -n 'comment wins' .claude/skills/distill/SKILL.md` finds nothing
-- [ ] `grep -n 'Prefer a real test database' .claude/skills/testing/SKILL.md` finds nothing
-- [ ] `grep -n 'decisions.md' guides/new-project.md` finds the rule
-- [ ] `make check` green
+- [x] `grep -n 'comment wins' .claude/skills/distill/SKILL.md` finds nothing
+- [x] `grep -n 'Prefer a real test database' .claude/skills/testing/SKILL.md` finds nothing
+- [x] `grep -n 'decisions.md' guides/new-project.md` finds the rule
+- [x] `make check` green
 
 ## Phase 2: Stack conventions and editor templates
 
