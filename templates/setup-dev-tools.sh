@@ -64,7 +64,7 @@ fi
 
 ensure_cmd node "Install Node (see .devcontainer/devcontainer.json features)."
 
-# npm, not Corepack: Node 25+ no longer ships Corepack.
+# npm, not Corepack: Node 25 and later ship without Corepack.
 info "Ensuring pnpm..."
 if command -v pnpm >/dev/null 2>&1; then
   info "pnpm already installed: $(pnpm --version)"
@@ -92,8 +92,9 @@ uv sync --frozen
 # ── Frontend dependencies ───────────────────────────────────────────────────
 # Uncomment if your project has a frontend/ directory with pnpm.
 
+# --frozen-lockfile: the lockfile is the contract; a setup never rewrites it.
 # info "Installing frontend dependencies..."
-# cd "$PROJECT_ROOT/frontend" && pnpm install
+# cd "$PROJECT_ROOT/frontend" && pnpm install --frozen-lockfile
 # cd "$PROJECT_ROOT"
 
 # ── Summary ──────────────────────────────────────────────────────────────────
