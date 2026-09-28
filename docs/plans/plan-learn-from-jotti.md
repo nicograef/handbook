@@ -59,11 +59,11 @@ The handbook takes over the jotti practices the owner picked and resolves the fo
 
 ### Acceptance criteria
 
-- [ ] `grep -n 'gofumpt' templates/vscode-settings.json` finds nothing
-- [ ] `grep -n 'pnpm install' templates/setup-dev-tools.sh` shows `--frozen-lockfile`
-- [ ] `golangci-lint config verify -c templates/golangci.yml` passes
-- [ ] `grep -n 'Node 26' guides/stack-conventions.md` finds nothing
-- [ ] `make check` green (both indexes)
+- [x] `grep -n 'gofumpt' templates/vscode-settings.json` finds nothing
+- [x] `grep -n 'pnpm install' templates/setup-dev-tools.sh` shows `--frozen-lockfile`
+- [x] `golangci-lint config verify -c templates/golangci.yml` passes
+- [x] `grep -n 'Node 26' guides/stack-conventions.md` finds nothing
+- [x] `make check` green (both indexes)
 
 ## Phase 3: CI template and database operations
 
@@ -96,10 +96,10 @@ Every compose template gets a top-level `name:`, and `templates/Makefile` drops 
 
 ### Acceptance criteria
 
-- [ ] `docker compose -f <each template> config -q` passes
-- [ ] `grep -n 'PROJECT\|COMPOSE_PROJECT_NAME\| -p ' templates/Makefile scripts/prod-init.sh` finds nothing
-- [ ] `caddy validate --adapter caddyfile --config templates/Caddyfile` passes (caddy image)
-- [ ] `make check` green
+- [x] `docker compose -f <each template> config -q` passes
+- [x] `grep -n 'PROJECT\|COMPOSE_PROJECT_NAME\| -p ' templates/Makefile scripts/prod-init.sh` finds nothing
+- [x] `caddy validate --adapter caddyfile --config templates/Caddyfile` passes (caddy image)
+- [x] `make check` green
 
 ## Phase 5: Current-state gate
 
