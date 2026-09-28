@@ -24,6 +24,9 @@ other modules.
 
 `service.go` depends on a store interface it declares, so business rules are tested without a database.
 
+Test by layer. Service logic runs against the store interface and a stateful in-memory fake.
+Repository code and SQL run against a real database only; a fake cannot catch a wrong query.
+
 Unit tests carry no build tag; only integration test files start with `//go:build integration`.
 gopls loads untagged files by default, so a tagged unit test loses editor support
 ([gopls settings](https://go.dev/gopls/settings#buildflags)).
@@ -34,6 +37,12 @@ with a database.
 Write migrations in `database/migrations/` and sqlc queries in `sqlc/queries/`.
 
 Use the standard `testing` package: `t.Fatalf` for setup failures, `t.Errorf` for assertions.
+
+Lint with golangci-lint v2 from [templates/golangci.yml](../templates/golangci.yml). Its forbidigo rule
+shows how to guard a layer boundary.
+
+CI and hooks format with goimports. The editor keeps the gopls defaults and organizes imports on save,
+so both agree without gofumpt.
 
 ## Java
 
@@ -77,8 +86,8 @@ Always use constructor injection, never `@Autowired` field injection. Constructo
 
 Applies to every TypeScript package; React adds its own rules below.
 
-Run Node 26. It executes `.ts` files directly: [type stripping](https://nodejs.org/api/typescript.html)
-is stable and on by default.
+Run the current Active LTS, and move within a month of a new LTS. Node executes `.ts` files directly:
+[type stripping](https://nodejs.org/api/typescript.html) is on by default.
 
 Type stripping erases types and nothing else. Enums, runtime namespaces, parameter properties and
 decorators fail at load; `erasableSyntaxOnly` makes `tsc` reject them first:
@@ -138,6 +147,9 @@ package to conditionally combine Tailwind classes.
 Components call their feature's API functions; no raw `fetch` in components or hooks.
 
 Use **Vitest** + **@testing-library/react**; test utility setup goes in `src/test/`.
+
+Tests fake the single API client and render with a real query client. They never mock the project's
+own modules, so a refactor behind the API client breaks no test.
 
 ## Python
 
