@@ -81,10 +81,10 @@ Migrations become forward-only. The template replaces `migrate down -all` with a
 
 ### Acceptance criteria
 
-- [ ] `actionlint templates/ci.yml` clean
-- [ ] `grep -n 'down -all' templates/ci.yml guides/` finds nothing
-- [ ] `grep -n '127.0.0.1' templates/ci.yml` finds the `pg_isready` line
-- [ ] `make check` green
+- [x] `actionlint templates/ci.yml` clean
+- [x] `grep -n 'down -all' templates/ci.yml guides/` finds nothing
+- [x] `grep -n '127.0.0.1' templates/ci.yml` finds the `pg_isready` line
+- [x] `make check` green
 
 ## Phase 4: Compose, Makefile and deploy
 
