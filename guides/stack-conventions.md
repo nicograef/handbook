@@ -159,7 +159,7 @@ Start every project with `uv init --package --python <version>`. It writes `pypr
 `requires-python` in `pyproject.toml` and `.python-version` name the same version. CI and the image
 then resolve the interpreter from one fact.
 
-Commit `uv.lock`. CI runs `uv sync --locked`, which fails when the lock no longer matches
+Commit `uv.lock`. CI runs `uv sync --locked`, which fails when the lock is out of sync with
 `pyproject.toml`. The image runs `uv sync --frozen`: it installs the lock as is, unchecked.
 
 Dev tools live in the `dev` dependency group: `pytest`, `ruff`, `ty`. Nothing is installed globally,

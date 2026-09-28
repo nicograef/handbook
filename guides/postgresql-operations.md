@@ -78,7 +78,7 @@ sudo install -d -m 0700 /opt/backups/postgres
 > **Upgrade path when this stops being acceptable:** push the verified dumps offsite with
 > [restic](https://restic.net/).
 > Target a Hetzner Storage Box over SFTP, or Object Storage over S3.
-> Backup survival then no longer depends on the server surviving.
+> Backups then survive the loss of the server.
 
 ## 4. Restore drill
 

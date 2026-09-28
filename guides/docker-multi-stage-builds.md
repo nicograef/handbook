@@ -48,7 +48,7 @@ EXPOSE 80
 CMD ["nginx", "-g", "daemon off;"]
 ```
 
-- `npm install -g pnpm`, not Corepack: Node 25+ images no longer ship Corepack.
+- `npm install -g pnpm`, not Corepack: Node 25+ images ship without Corepack.
 - The cache mount keeps the pnpm store across builds and out of the image.
 
 - Copy [templates/.dockerignore](../templates/.dockerignore): the context is sent before any instruction runs.
