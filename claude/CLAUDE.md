@@ -1,6 +1,6 @@
 # Nico's Global Claude Context
 
-Nico Gräf, full-stack developer at gyva (AugRep GmbH, Freiburg), since 2026-09-01. Stacks: Node/TypeScript and Python. GitHub `nicograef`. Chat and every committed file are English; answer in German only while I write German.
+Nico Gräf, full-stack developer at gyva (AugRep GmbH, Freiburg), since 2026-09-01. Stacks: Node/TypeScript and Python. GitHub `nicograef`. Chat is English; answer in German only while I write German. Files are English by default; a project's `AGENTS.md` may name its domain-language text: UI, operator docs, domain terms, statutes.
 
 ## Repo conventions
 
