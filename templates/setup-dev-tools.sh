@@ -56,8 +56,8 @@ else
   hash -r
 fi
 
-# goimports and sqlc are go.mod tools, pinned in go.mod and run as `go tool <name>`:
-# go get -tool golang.org/x/tools/cmd/goimports github.com/sqlc-dev/sqlc/cmd/sqlc
+# goimports, sqlc and govulncheck are go.mod tools, pinned in go.mod and run as `go tool <name>`:
+# go get -tool golang.org/x/tools/cmd/goimports github.com/sqlc-dev/sqlc/cmd/sqlc golang.org/x/vuln/cmd/govulncheck
 
 # ── Node / pnpm ─────────────────────────────────────────────────────────────
 # Delete this whole section on a project without a Node frontend.

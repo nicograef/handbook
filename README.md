@@ -58,7 +58,7 @@ Heading-grouped rules and idioms per stack — reference material, not runbooks.
 | [templates/nginx-spa.conf](templates/nginx-spa.conf)                   | SPA container nginx config: client-side routing + asset caching   |
 | [templates/cloud-init.yml](templates/cloud-init.yml)                   | cloud-init user-data that fetches & runs `setup-server.sh`        |
 | [templates/setup-dev-tools.sh](templates/setup-dev-tools.sh)           | Dev tool setup script skeleton (Go, Node/pnpm blocks)             |
-| [templates/ci.yml](templates/ci.yml)                                   | GitHub Actions CI workflow (Go, Node, integration tests)          |
+| [templates/ci.yml](templates/ci.yml)                                   | GitHub Actions CI workflow (Go, Node, integration, security scans, upgrade path, restore drill) |
 | [templates/golangci.yml](templates/golangci.yml)                       | golangci-lint v2 config: security linters, layer guard, goimports |
 | [templates/dependabot.yml](templates/dependabot.yml)                   | Dependabot config (monthly, one grouped PR per ecosystem)         |
 | [templates/.env.example](templates/.env.example)                       | Standard env vars for Docker Compose templates                    |
