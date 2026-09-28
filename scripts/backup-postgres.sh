@@ -54,8 +54,8 @@ docker compose version >/dev/null 2>&1 || error "docker compose plugin is not in
 
 mkdir -p "$BACKUP_DIR"
 
-# docker compose reads COMPOSE_FILE and COMPOSE_PROJECT_NAME from COMPOSE_DIR/.env,
-# so `exec` reaches the production stack (see templates/.env.example).
+# docker compose reads COMPOSE_FILE from COMPOSE_DIR/.env and the project from that
+# file's `name:`, so `exec` reaches the production stack (see templates/.env.example).
 cd "$COMPOSE_DIR"
 
 timestamp="$(date +%Y%m%d-%H%M)"

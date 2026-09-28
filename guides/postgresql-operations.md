@@ -4,10 +4,8 @@
 
 - Docker Compose stack with a `postgres` service (see [templates/docker-compose.prod.yml](../templates/docker-compose.prod.yml))
 - `.env` file with `POSTGRES_USER`, `POSTGRES_PASSWORD`, `POSTGRES_DB`
-- On the server, `.env` also sets `COMPOSE_FILE` and `COMPOSE_PROJECT_NAME` (see
-  [templates/.env.example](../templates/.env.example)).
-  Plain `docker compose` then targets the production stack.
-  `COMPOSE_PROJECT_NAME` must equal `PROJECT` in the Makefile (default `myapp`).
+- On the server, `.env` also sets `COMPOSE_FILE` (see [templates/.env.example](../templates/.env.example)).
+  Plain `docker compose` then targets the production stack; its top-level `name:` sets the project.
 
 ## 1. Manual Backup
 
