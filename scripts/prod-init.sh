@@ -4,14 +4,14 @@
 # Usage (DOMAIN is required; EMAIL is optional and only receives account notices):
 #   DOMAIN=example.com make prod-deploy
 #   DOMAIN=example.com EMAIL=you@example.com make prod-deploy
-#   DOMAIN=example.com PROD_FILE=docker-compose.prod-caddy.yml make prod-deploy
+#   ROLLBACK=1 DOMAIN=example.com make prod-deploy   # only after restoring a backup
 #
 # What it does:
-#   1. Checks prerequisites, and that APP_SERVICE's image carries a pinned vX.Y.Z tag.
-#   2. On a running stack: refuses a downgrade, then takes a verified backup.
+#   1. Checks prerequisites, and that every image carries a pinned tag (the app a vX.Y.Z one).
+#   2. After an earlier deploy: refuses a downgrade unless ROLLBACK=1, then takes a verified backup.
 #   3. nginx variant without a certificate: requests one through the initial-cert stack.
 #   4. Pulls the pinned images, starts the stack and polls every healthcheck.
-#   5. Polls https://DOMAIN; on a failed update, prints the rollback path.
+#   5. Polls https://DOMAIN, then records the tag as deployed; on a failure, prints the rollback path.
 #
 # Not checked below: the DNS A record for DOMAIN, and any AAAA record, must already
 # point at this server, or the ACME challenge fails (see guides/letsencrypt-docker.md).
@@ -20,11 +20,16 @@ set -euo pipefail
 # ── Configuration ──
 DOMAIN="${DOMAIN:-}"
 EMAIL="${EMAIL:-}"
-PROD_FILE="${PROD_FILE:-docker-compose.prod.yml}"
-CERT_FILE="${CERT_FILE:-docker-compose.initial-cert.yml}"
+ROLLBACK="${ROLLBACK:-}"                    # 1: the operator restored a backup that fits the older tag
 APP_SERVICE="${APP_SERVICE:-backend}"       # its image tag is the release version
 HEALTH_TIMEOUT="${HEALTH_TIMEOUT:-180}"     # seconds `up --wait` polls the healthchecks
 BACKUP_DIR="${BACKUP_DIR:-/opt/backups/postgres}"
+
+# Either variant is copied to docker-compose.prod.yml, so this name holds for both.
+PROD_FILE="docker-compose.prod.yml"
+CERT_FILE="docker-compose.initial-cert.yml"
+# Last healthy tag and the tag of an unfinished attempt. Written by this script only; gitignore it.
+STATE_FILE=".deploy-state"
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 # Both files carry the same top-level `name:`, so they address one Compose project.
@@ -47,6 +52,17 @@ is_downgrade() {
   [[ "$1" != "$2" ]] && [[ "$(printf '%s\n%s\n' "$1" "$2" | sort -V | head -n1)" == "$1" ]]
 }
 
+read_state() {
+  [[ -f "$STATE_FILE" ]] || return 0
+  grep -E "^$1=" "$STATE_FILE" | tail -n1 | cut -d= -f2- || true
+}
+
+# write_state DEPLOYED ATTEMPTED — the rename keeps the record whole if the script dies mid-write.
+write_state() {
+  printf 'deployed=%s\nattempted=%s\n' "$1" "$2" > "$STATE_FILE.tmp"
+  mv "$STATE_FILE.tmp" "$STATE_FILE"
+}
+
 # ── Prerequisite Checks ──
 log "Checking prerequisites…"
 
@@ -62,14 +78,15 @@ command -v docker >/dev/null 2>&1      || error "docker is not installed."
 docker compose version >/dev/null 2>&1 || error "docker compose plugin is not installed."
 command -v curl >/dev/null 2>&1        || error "curl is not installed."
 command -v jq >/dev/null 2>&1          || error "jq is not installed (setup-server.sh installs it)."
-[[ -f "$PROD_FILE" ]]                  || error "$PROD_FILE not found."
+[[ -f "$PROD_FILE" ]]                  || error "$PROD_FILE not found. Copy one production Compose template to it."
 
 [[ -n "$DOMAIN" ]] || error "DOMAIN is required. Set it via 'DOMAIN=example.com make prod-deploy'."
 
+CONFIG="$("${COMPOSE_PROD[@]}" config --format json)"
+
 # The certbot service marks the nginx variant; the Caddy variant issues certificates itself.
 # A missing bind source becomes an empty directory inside the container, and the proxy fails.
-SERVICES="$("${COMPOSE_PROD[@]}" config --services)"
-if grep -qx certbot <<<"$SERVICES"; then
+if jq -e '.services | has("certbot")' <<<"$CONFIG" >/dev/null; then
   USES_CERTBOT=true
   [[ -f "$CERT_FILE" ]] || error "$CERT_FILE not found. Copy the docker-compose.initial-cert.yml template."
   [[ -f reverse-proxy/nginx.initial-cert.conf ]] || \
@@ -82,8 +99,19 @@ else
     error "reverse-proxy/Caddyfile not found. Copy the Caddyfile template there and set your domain."
 fi
 
-# `latest` or a branch tag would move under a running stack and defeat the downgrade guard.
-TARGET_IMAGE="$("${COMPOSE_PROD[@]}" config --format json | jq -r --arg s "$APP_SERVICE" '.services[$s].image')"
+# A `build:`, a missing tag or `latest` lets the stack change under an unchanged Compose file.
+BUILT="$(jq -r '.services | to_entries[] | select(.value.build) | .key' <<<"$CONFIG")"
+[[ -z "$BUILT" ]] || error "The server builds nothing; pin a registry image for: $BUILT"
+while IFS= read -r image; do
+  [[ "$image" != *@sha256:* ]] || continue
+  last="${image##*/}"
+  if [[ "$last" != *:* || "${last##*:}" == latest ]]; then
+    error "Image '$image' in $PROD_FILE is not pinned to a tag."
+  fi
+done < <(jq -r '.services[].image // empty' <<<"$CONFIG")
+
+# The app tag orders releases; the downgrade guard compares it.
+TARGET_IMAGE="$(jq -r --arg s "$APP_SERVICE" '.services[$s].image' <<<"$CONFIG")"
 TARGET_TAG="${TARGET_IMAGE##*:}"
 is_release_tag "$TARGET_TAG" || \
   error "$APP_SERVICE image '$TARGET_IMAGE' is not pinned to a vX.Y.Z tag in $PROD_FILE."
@@ -94,34 +122,50 @@ EMAIL_ARGS=()
 
 log "Domain:  $DOMAIN"
 log "Email:   ${EMAIL:-none}"
-log "Stack:   $PROD_FILE"
 log "Target:  $TARGET_TAG"
 echo ""
 
 # ── Downgrade guard and pre-update backup ──
-RUNNING_TAG=""
+# The record, not the running containers, says what has touched the schema: a stopped
+# stack or a failed update still counts.
+DEPLOYED_TAG="$(read_state deployed)"
+ATTEMPTED_TAG="$(read_state attempted)"
+DATA_VOLUME="$(jq -r '.volumes["postgres-data"].name // empty' <<<"$CONFIG")"
 PRE_UPDATE_DUMP=""
-RUNNING_ID="$("${COMPOSE_PROD[@]}" ps -q "$APP_SERVICE" 2>/dev/null || true)"
-if [[ -n "$RUNNING_ID" ]]; then
-  RUNNING_IMAGE="$(docker inspect -f '{{.Config.Image}}' "$RUNNING_ID")"
-  RUNNING_TAG="${RUNNING_IMAGE##*:}"
-  if ! is_release_tag "$RUNNING_TAG"; then
-    warn "Running tag '$RUNNING_TAG' is not a release tag; the downgrade guard cannot order it."
-  elif is_downgrade "$TARGET_TAG" "$RUNNING_TAG"; then
-    # Migrations are forward-only: an older release cannot start on a newer schema.
-    error "Downgrade refused: $TARGET_TAG is older than the running $RUNNING_TAG. Restore a backup instead."
-  fi
-  log "Updating: $RUNNING_TAG -> $TARGET_TAG"
 
+if [[ ! -f "$STATE_FILE" ]]; then
+  if [[ -n "$DATA_VOLUME" ]] && docker volume inspect "$DATA_VOLUME" >/dev/null 2>&1; then
+    error "Volume $DATA_VOLUME exists but $STATE_FILE does not. Write 'deployed=<running tag>' to $STATE_FILE, then rerun."
+  fi
+  log "First deploy: no deploy record and no database volume."
+else
+  FLOOR="$(printf '%s\n%s\n' "$DEPLOYED_TAG" "$ATTEMPTED_TAG" | sed '/^$/d' | sort -V | tail -n1)"
+  [[ -n "$FLOOR" ]] || error "$STATE_FILE holds no tag. Write 'deployed=<running tag>' to it, then rerun."
+  if is_downgrade "$TARGET_TAG" "$FLOOR"; then
+    # Migrations are forward-only: an older release cannot start on a newer schema.
+    [[ "$ROLLBACK" == 1 ]] || error "Downgrade refused: $TARGET_TAG is older than $FLOOR." \
+      "Restore a backup taken on $TARGET_TAG or earlier, then rerun with ROLLBACK=1."
+    warn "════════════════════════════════════════════════════════════════════"
+    warn "ROLLBACK=1: deploying $TARGET_TAG below $FLOOR, with the downgrade guard off."
+    warn "You assert the database was restored from a backup taken on $TARGET_TAG or earlier."
+    warn "════════════════════════════════════════════════════════════════════"
+  elif [[ "$ROLLBACK" == 1 ]]; then
+    warn "ROLLBACK=1 ignored: $TARGET_TAG is not older than $FLOOR."
+  fi
+  log "Updating: $FLOOR -> $TARGET_TAG"
+
+  if [[ -z "$("${COMPOSE_PROD[@]}" ps -q postgres)" ]]; then
+    log "Starting postgres for the backup…"
+    "${COMPOSE_PROD[@]}" up -d --no-recreate --wait postgres
+  fi
   log "Taking a pre-update backup…"
-  COMPOSE_FILE="$PROD_FILE" COMPOSE_DIR="$PWD" BACKUP_DIR="$BACKUP_DIR" \
+  # The empty ping URL keeps the heartbeat for the cron run; a failed ping must not abort a deploy.
+  BACKUP_PING_URL="" COMPOSE_FILE="$PROD_FILE" COMPOSE_DIR="$PWD" BACKUP_DIR="$BACKUP_DIR" \
     "$SCRIPT_DIR/backup-postgres.sh"
   PRE_UPDATE_DUMP="$(find "$BACKUP_DIR" -maxdepth 1 -name 'backup-*.dump' -printf '%f\n' | sort | tail -n1)"
   [[ -n "$PRE_UPDATE_DUMP" ]] || error "No backup found in $BACKUP_DIR. Nothing was changed."
   PRE_UPDATE_DUMP="$BACKUP_DIR/$PRE_UPDATE_DUMP"
   log "Pre-update backup: $PRE_UPDATE_DUMP"
-else
-  log "First deploy: no running $APP_SERVICE container."
 fi
 
 # ── Certificate (nginx variant, first time only) ──
@@ -167,15 +211,18 @@ fi
 
 # ── Start and health polling ──
 rollback_hint() {
-  [[ -n "$PRE_UPDATE_DUMP" ]] || return 0
-  warn "Roll back to $RUNNING_TAG:"
-  warn "  1. Set the image tags in $PROD_FILE back to $RUNNING_TAG."
+  [[ -n "$PRE_UPDATE_DUMP" && -n "$DEPLOYED_TAG" ]] || return 0
+  warn "Roll back to $DEPLOYED_TAG (guides/maintenance.md, Roll back):"
+  warn "  1. Set the app image tags in $PROD_FILE back to $DEPLOYED_TAG."
   warn "  2. Restore $PRE_UPDATE_DUMP (guides/postgresql-operations.md, Restore)."
-  warn "  3. Run this script again."
+  warn "  3. ROLLBACK=1 DOMAIN=$DOMAIN make prod-deploy"
 }
 
 log "Pulling the pinned images…"
 "${COMPOSE_PROD[@]}" pull || error "Pull failed. Nothing was changed."
+
+# From here on the new release may migrate the schema, so the attempt counts for the guard.
+write_state "$DEPLOYED_TAG" "$TARGET_TAG"
 
 log "Starting the stack and waiting up to ${HEALTH_TIMEOUT}s for every healthcheck…"
 if ! "${COMPOSE_PROD[@]}" up -d --wait --wait-timeout "$HEALTH_TIMEOUT"; then
@@ -195,6 +242,8 @@ for i in {1..10}; do
   fi
   sleep 3
 done
+
+write_state "$TARGET_TAG" ""
 
 echo ""
 log "Deployed $TARGET_TAG — https://$DOMAIN"

@@ -10,6 +10,7 @@
 #
 # What it does:
 #   1. Reads BACKUP_PING_URL from the Compose .env in COMPOSE_DIR, without sourcing it.
+#      Set but empty in the environment (prod-init.sh's pre-update backup), it skips the ping.
 #   2. Dumps the DB (custom format) via `docker compose exec -T` to a TEMP file.
 #   3. Verifies the fresh dump by restoring it to /dev/null with `pg_restore`
 #      (run in the container — the host is not assumed to have postgresql-client).
@@ -27,7 +28,6 @@ umask 077
 BACKUP_DIR="${BACKUP_DIR:-/opt/backups/postgres}"
 RETENTION_DAYS="${RETENTION_DAYS:-14}"
 COMPOSE_DIR="${COMPOSE_DIR:-/opt/myapp}"
-BACKUP_PING_URL="${BACKUP_PING_URL:-}"
 
 RED='\033[0;31m'
 GREEN='\033[0;32m'
@@ -42,7 +42,7 @@ error() { echo -e "${RED}[ERROR]${NC} $*" >&2; exit 1; }
 # Only this one key is parsed; sourcing would execute the file as shell code.
 [[ -d "$COMPOSE_DIR" ]] || error "COMPOSE_DIR not found: $COMPOSE_DIR"
 [[ -f "$COMPOSE_DIR/.env" ]] || error ".env not found in COMPOSE_DIR: $COMPOSE_DIR/.env"
-if [[ -z "$BACKUP_PING_URL" ]]; then
+if [[ -z "${BACKUP_PING_URL+set}" ]]; then
   BACKUP_PING_URL="$(grep -E '^BACKUP_PING_URL=' "$COMPOSE_DIR/.env" | tail -n 1 | cut -d= -f2-)" || true
   BACKUP_PING_URL="${BACKUP_PING_URL%$'\r'}"
   BACKUP_PING_URL="${BACKUP_PING_URL#[\"\']}"
