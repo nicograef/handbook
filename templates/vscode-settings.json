@@ -28,8 +28,13 @@
   "[css]": {
     "editor.defaultFormatter": "vscode.css-language-features"
   },
+  "[go]": {
+    "editor.formatOnSave": true,
+    "editor.codeActionsOnSave": {
+      "source.organizeImports": "explicit"
+    }
+  },
   "go.buildTags": "integration",
-  "go.formatTool": "gofumpt",
   "go.toolsManagement.autoUpdate": true,
   "go.lintTool": "golangci-lint-v2",
   "[typescriptreact]": {
