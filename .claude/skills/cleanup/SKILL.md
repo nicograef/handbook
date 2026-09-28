@@ -23,7 +23,7 @@ Named files or area, else staged changes, else unstaged, else the last commit, e
 | Principles | Knowledge duplication (not coincidental similarity), speculative extension points, functions with several reasons to change. Calibrate: 2–3 branches are fine; test setup repetition is fine |
 | Architecture | Domain code importing ORM, HTTP or framework types; infrastructure built inside domain functions; repositories returning rows instead of domain objects; external DTOs and SDK enums reaching domain code; modules reaching into another module's tables or internals |
 | Cross-layer (`repo` only) | Trace frontend call → API client → handler → service → repository → SQL. Shapes, nullability, validation limits and enum values must agree at every hop; name the layer that is the source of truth |
-| UX (`ux` only) | At 375×667 (Playwright if the app runs, else a static review labelled so): components that break, tables without a mobile fallback, touch targets under 44×44 px, primary action below the fold, one concept labelled two ways, inconsistent loading/empty/error states, labels diverging from `docs/UBIQUITOUS_LANGUAGE.md` |
+| UX (`ux` only) | At 375×667 (Playwright if the app runs, else a static review labelled so): components that break, tables without a mobile fallback, touch targets under 44×44 px, primary action below the fold, one concept labelled two ways, inconsistent loading/empty/error states, labels diverging from the repo's glossary, else `docs/UBIQUITOUS_LANGUAGE.md` |
 
 Test files get the readability pass only; retagging or deleting tests is the testing skill's job.
 
