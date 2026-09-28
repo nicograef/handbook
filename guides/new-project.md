@@ -96,6 +96,7 @@ printf '@AGENTS.md\n' > CLAUDE.md          # first line imports AGENTS.md
 - Write `AGENTS.md` with only what the global [claude/CLAUDE.md](../claude/CLAUDE.md) cannot know: one line on what the project is, the `make` targets, project-only rules.
 - `/init` drafts it; cut everything that restates the global file or the repo layout.
 - Create `docs/README.md` as a table with one row per page. The second column is the question that page answers.
+- Create `docs/decisions.md` with one line per decision, numbered `D01`, `D02`. A replaced line gets "replaced by DNN".
 
 ## Verify
 
