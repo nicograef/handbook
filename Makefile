@@ -1,8 +1,8 @@
 # Handbook dev interface.
 
-.PHONY: check links lint readme language skills compose prose test-agent-bus test-plan-run-guard help
+.PHONY: check links lint readme language skills compose prose history test-agent-bus test-plan-run-guard help
 
-## check: run the full repo self-check (links, shellcheck, README index, language, skills, compose, prose)
+## check: run the full repo self-check (links, shellcheck, README index, language, skills, compose, prose, history words)
 check:
 	@scripts/check-repo.sh all
 
@@ -33,6 +33,10 @@ compose:
 ## prose: verify Markdown meets the prose caps (sentence ≤ 20 words, paragraph ≤ 3 lines)
 prose:
 	@scripts/check-repo.sh prose
+
+## history: verify Markdown prose holds no history words (previously, formerly, deprecated, no longer, used to)
+history:
+	@scripts/check-repo.sh history
 
 ## test-agent-bus: run the fixture test for scripts/agent-bus.sh
 test-agent-bus:

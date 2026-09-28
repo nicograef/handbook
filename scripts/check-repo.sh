@@ -34,6 +34,17 @@ PARA_ALLOW=(
   ".claude/skills/audiobook/writing.md"
 )
 
+# History words check_history flags in prose; the rule is "current state only" in claude/CLAUDE.md.
+# A passive "is used to" describes a purpose, not a past, so the lookbehinds skip it.
+HISTORY_RE='\b(previously|formerly|deprecated|no longer|(?<!is )(?<!are )(?<!be )(?<!been )(?<!being )used to)\b'
+
+# Accepted history-word hits, as "<file>|<word>|<reason>". Every entry names its reason.
+HISTORY_ALLOW=(
+  "claude/CLAUDE.md|previously|the current-state rule names the banned word"
+  ".claude/skills/distill/SKILL.md|previously|the skill names the word as residue to cut"
+  ".claude/skills/verify-docs/SKILL.md|deprecated|upstream deprecations are a claim class to check"
+)
+
 # Prose caps enforced by check_prose; stated in AGENTS.md and claude/CLAUDE.md.
 PROSE_MAX_WORDS=20
 PROSE_MAX_PARA_LINES=3
@@ -51,12 +62,12 @@ prose_md() {
   tracked_md | grep -v '^docs/plans/'
 }
 
-# strip_code removes fenced code blocks and inline backtick spans from stdin so the
-# link check does not match example links inside code samples.
+# strip_code blanks fenced code blocks and removes inline backtick spans from stdin so
+# checks skip code samples. Blank lines keep the line numbers of the input.
 strip_code() {
   awk '
-    /^[[:space:]]*```/ { fence = !fence; next }
-    fence { next }
+    /^[[:space:]]*```/ { fence = !fence; print ""; next }
+    fence { print ""; next }
     { gsub(/`[^`]*`/, ""); print }
   '
 }
@@ -199,6 +210,22 @@ check_compose() {
       docker compose -f "$file" --env-file templates/.env.example config -q >&2 || true
     fi
   done < <(git ls-files 'templates/docker-compose*.yml')
+}
+
+check_history() {
+  local file hit lineno word entry allowed
+  while IFS= read -r file; do
+    while IFS= read -r hit; do
+      lineno="${hit%%:*}"
+      word="${hit#*:}"
+      word="${word,,}"
+      allowed=false
+      for entry in "${HISTORY_ALLOW[@]}"; do
+        [[ "$entry" == "$file|$word|"* ]] && allowed=true
+      done
+      [[ "$allowed" == true ]] || log "history word in $file:$lineno: $word"
+    done < <(strip_code < "$file" | grep -noiP "$HISTORY_RE" || true)
+  done < <(prose_md)
 }
 
 # prose_scan prints one violation per line for a single Markdown file.
@@ -382,8 +409,9 @@ case "$STAGE" in
   skills)   check_skills ;;
   compose)  check_compose ;;
   prose)    check_prose ;;
-  all)      check_links; check_shell; check_readme; check_language; check_skills; check_compose; check_prose ;;
-  *)        printf 'usage: %s [links|lint|readme|language|skills|compose|prose|all]\n' "$0" >&2; exit 2 ;;
+  history)  check_history ;;
+  all)      check_links; check_shell; check_readme; check_language; check_skills; check_compose; check_prose; check_history ;;
+  *)        printf 'usage: %s [links|lint|readme|language|skills|compose|prose|history|all]\n' "$0" >&2; exit 2 ;;
 esac
 
 if [[ "$FAILED" -ne 0 ]]; then
