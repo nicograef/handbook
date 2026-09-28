@@ -2,17 +2,17 @@
 
 ## Image updates (every deploy)
 
-- Image tags in [docker-compose.prod.yml](../templates/docker-compose.prod.yml) are
-  explicit, not `latest`, and bumped **deliberately** at deploy time. Only `certbot` is
-  pinned to a concrete version; `postgres` uses a major-series tag and `nginx` a minor-series tag.
-- Never float on `latest`; never pull on a schedule.
-- A deploy is the only moment images change.
-- So a deploy is also where you prune the images the bump superseded.
+- Every image tag in the production Compose file ([nginx](../templates/docker-compose.prod.yml)
+  or [Caddy](../templates/docker-compose.prod-caddy.yml) variant) is explicit, never `latest`.
+- The app images come from the registry, pinned to a `vX.Y.Z` release tag CI built. The server builds nothing.
+- `postgres` uses a major-series tag and `nginx` a minor-series tag. `certbot` and `caddy` are pinned exactly.
+- Never pull on a schedule. A deploy is the only moment images change, so it also prunes the superseded ones.
 
 ### Prerequisites
 
 - The tag change committed to the repo, so the running stack matches source.
 - Edit the Compose file in git, not on the box.
+- `BACKUP_DIR` (default `/opt/backups/postgres`) writable, for the pre-update backup.
 
 ### Steps
 
@@ -20,32 +20,25 @@
    not a moving tag:
 
    ```diff
-   -    image: postgres:18
-   +    image: postgres:18.6
+   -    image: ghcr.io/<owner>/<project>-backend:v1.4.0
+   +    image: ghcr.io/<owner>/<project>-backend:v1.5.0
    ```
 
-2. **Fetch the new pinned images** (`pull` also tries `build:` services, reporting
-   they must be built; `--ignore-buildable` skips them — `build` rebuilds them):
+2. **Run the guarded deploy.** [`prod-init.sh`](../scripts/prod-init.sh) runs the safe deploy flow:
+
+   - It refuses an unpinned tag and a downgrade. Migrations are forward-only, so an older release fails on a newer schema.
+   - It takes a verified backup with [`backup-postgres.sh`](../scripts/backup-postgres.sh) before any container changes.
+   - It pulls the pinned images and starts the stack with `up --wait`, which polls every healthcheck.
+   - It polls `https://<domain>`. On a failure it prints the rollback path to the pre-update backup.
 
    ```bash
-   docker compose -f docker-compose.prod.yml pull
-   docker compose -f docker-compose.prod.yml build
+   DOMAIN=<domain> make prod-deploy
    ```
 
-   Expected: `pull` reports `Pulled` (or `Already exists` for unchanged layers)
-   per image and exits 0; `build` ends with a `Built` line per service.
+   Expected: the last lines read `Deployed v1.5.0 — https://<domain>`, exit 0.
+   `Downgrade refused` changes nothing; to go back, [restore](postgresql-operations.md#2-restore) a backup.
 
-3. **Recreate the stack** so containers run the new images:
-
-   ```bash
-   docker compose -f docker-compose.prod.yml up -d
-   ```
-
-   Expected: only the changed services are recreated (`Recreated` /
-   `Started`); unchanged ones report `Running`.
-
-4. **Verify the stack is healthy** (see [reboot routine](#reboot-routine-monthly)
-   for the full `ps` + HTTPS check), then **prune the superseded images**:
+3. **Prune the superseded images:**
 
    ```bash
    docker image prune -f

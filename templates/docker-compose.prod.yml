@@ -1,8 +1,13 @@
 # docker-compose.prod.yml template
 # Full production stack: app + DB + nginx reverse proxy + Let's Encrypt.
+# The app runs pinned registry images built by CI; the server builds nothing.
+# The Caddy variant, docker-compose.prod-caddy.yml, needs no certbot.
 #
-# Usage:
-#   docker compose -p <project> -f docker-compose.prod.yml up --build -d
+# Usage (first deploy and every update; see guides/maintenance.md):
+#   scripts/prod-init.sh
+
+# Prefixes the volumes; docker-compose.initial-cert.yml must carry the same name.
+name: myapp
 
 # Cap container logs — the json-file driver grows unbounded otherwise and can
 # fill the server disk over time.
@@ -37,11 +42,10 @@ services:
       retries: 10
 
   # ── Backend ──
-  # Replace with your backend service (Spring Boot, Node, etc.)
+  # The release tag is the deploy version: bump it in git, never float on `latest`.
+  # scripts/prod-init.sh reads it here and refuses a downgrade.
   backend:
-    build:
-      context: ./backend
-      dockerfile: Dockerfile
+    image: ghcr.io/<owner>/<project>-backend:v0.1.0
     restart: unless-stopped
     logging: *default-logging
     environment:
@@ -55,14 +59,19 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
+    # Needs wget in the image and a health route; `up --wait` polls it after every deploy.
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:8080/api/health >/dev/null 2>&1"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+      start_period: 5s
     # No exposed ports — reachable only via reverse-proxy
 
   # ── Frontend ──
   # Static SPA served by its own nginx (no TLS here — reverse-proxy handles it).
   frontend:
-    build:
-      context: ./frontend
-      dockerfile: Dockerfile
+    image: ghcr.io/<owner>/<project>-frontend:v0.1.0 # same tag as backend
     restart: unless-stopped
     logging: *default-logging
     networks:
