@@ -70,7 +70,7 @@ uv init --package --python <project-python-version>   # Python only: pyproject.t
 
 - **Dockerfiles** — one per built tier, following [docker-multi-stage-builds.md](docker-multi-stage-builds.md); Java, Node and Python examples there. Copy `templates/.dockerignore` beside each.
 - A Go backend uses the same two-stage pattern: compile a static binary into a minimal runtime image.
-- A Go backend adds goimports as a module tool: `go get -tool golang.org/x/tools/cmd/goimports`. CI runs `go tool goimports`.
+- A Go backend adds its tools to `go.mod`: `go get -tool golang.org/x/tools/cmd/goimports github.com/sqlc-dev/sqlc/cmd/sqlc golang.org/x/vuln/cmd/govulncheck`. CI runs each as `go tool <name>`.
 - Then follow the linked **stack guide(s)** for source layout and conventions. A Python project adds the ruff, ty and pytest tables from there.
 
 ## 4. CI and dependency updates
