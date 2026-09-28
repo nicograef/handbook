@@ -52,7 +52,7 @@ Keep only what a reader cannot get anywhere else. Ask of every line: *if this re
 | Aspirational | Roadmaps, docs for unbuilt features, placeholder sections |
 | Ceremonial | Table of contents on a one-screen file, Introduction/Overview/Summary sections, a first sentence restating the heading, badge walls, boilerplate CONTRIBUTING text |
 | Padding | Paragraphs introducing a code block, "as you can see", motivational framing, recaps of the previous section |
-| Comments | Banner blocks and file preambles repeating the module docs; `@param userId The user ID` on a typed parameter. Keep contracts the type cannot express: units, ownership, nullability, side effects. When a comment and a doc explain one mechanism, the comment wins |
+| Comments | Banner blocks and file preambles repeating the module docs; `@param userId The user ID` on a typed parameter. Keep contracts the type cannot express: units, ownership, nullability, side effects. When a comment and a doc explain one mechanism, the 2-sentence cap wins and the comment links the doc |
 
 ## What survives
 
