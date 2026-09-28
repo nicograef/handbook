@@ -9,7 +9,9 @@ argument-hint: "[tdd <feature> | review <paths>]"
 ## Preferences that differ from defaults
 
 - Test observable behaviour through public interfaces. Tests of private methods, internal call counts, argument order, or mock invocations on our own code are implementation-detail tests.
-- Mock only at true system boundaries: external APIs, email, time, randomness. Prefer a real test database over a mocked repository; mock the driver only when none is available.
+- Mock only at true system boundaries: external APIs, email, time, randomness.
+- Test service logic against the store interface with a stateful fake. Test repositories and SQL against a real database only.
+- Frontend tests fake the single API client and render with a real query client. Never mock the project's own modules.
 - A hand-rolled mock implements the whole interface or is replaced by a real in-memory fake. Partial mocks hide integration gaps.
 - No test-only methods on production classes; build state through test helpers.
 - Assert on error type, code or sentinel, not on the full message string.
