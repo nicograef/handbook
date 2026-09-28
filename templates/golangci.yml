@@ -1,0 +1,52 @@
+version: "2"
+
+# Copy to backend/.golangci.yml. Pin golangci-lint to the version in setup-dev-tools.sh and ci.yml.
+
+# ── Run ──────────────────────────────────────────────────────────────────────
+# Integration test files carry `//go:build integration`; without the tag they go unlinted.
+run:
+  build-tags:
+    - integration
+
+# ── Linters ──────────────────────────────────────────────────────────────────
+linters:
+  enable:
+    - errcheck
+    - govet
+    - staticcheck
+    - unused
+    - ineffassign
+    - gosec
+    - bodyclose
+    - errorlint
+    - gocritic
+    - nilerr
+    - forbidigo
+  settings:
+    gosec:
+      excludes:
+        - G115 # integer-conversion overflow: false positives on bounded casts
+    forbidigo:
+      # Layer guard: forbid a call that bypasses a business rule, and name the call that enforces it.
+      # The pattern matches the selector as written in source (s.store.GetOrder), without parentheses.
+      # Leave analyze-types unset: it rewrites the matched text to <package>.<Interface>.<Method>.
+      forbid:
+        - pattern: '\.store\.<Method>$'
+          msg: call <Service>.<Method> instead; it enforces <rule>
+    gocritic:
+      enabled-tags:
+        - diagnostic
+        - performance
+      disabled-checks:
+        - hugeParam # passing structs by value is a readability choice, not a bug
+        - rangeValCopy
+
+# ── Formatters ───────────────────────────────────────────────────────────────
+# goimports, not gofumpt: gopls formats with goimports rules on save, so editor and CI agree.
+formatters:
+  enable:
+    - goimports
+
+output:
+  sort-order:
+    - file
