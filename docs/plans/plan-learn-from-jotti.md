@@ -111,5 +111,5 @@ Every compose template gets a top-level `name:`, and `templates/Makefile` drops 
 
 ### Acceptance criteria
 
-- [ ] a "previously" added to a guide makes `make check` fail
-- [ ] `make check` green
+- [x] a "previously" added to a guide makes `make check` fail
+- [x] `make check` green
