@@ -1,6 +1,10 @@
 # docker-compose.yml template
 # Usage: copy to project root and adapt services
 
+# Project name, so every `docker compose` call reaches this stack without -p.
+# The -dev suffix keeps it apart from the prod stack on a shared host.
+name: myapp-dev
+
 services:
   app:
     image: node:26-slim

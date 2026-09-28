@@ -8,10 +8,6 @@
 # include .env
 # export
 
-# Compose project name: the prod targets and scripts/prod-init.sh must share it,
-# because it prefixes the cert volumes the stack mounts.
-PROJECT ?= myapp
-
 # ── Local Development (one terminal per target) ──
 
 .PHONY: db be fe
@@ -58,19 +54,18 @@ logs:          ## Follow logs
 
 # ── Production (docker-compose.prod.yml — HTTPS) ──
 
-.PHONY: prod-init prod-up prod-down prod-logs
+# The Compose files carry the project name (`name:`), so every target reaches the same stack.
 
-prod-init:     ## First-time prod setup (cert + stack)
-	PROJECT=$(PROJECT) ./scripts/prod-init.sh
+.PHONY: prod-deploy prod-down prod-logs
 
-prod-up:       ## Start production stack (HTTPS)
-	docker compose -p $(PROJECT) -f docker-compose.prod.yml up --build -d
+prod-deploy:   ## First deploy or update to the pinned tags (cert, backup, downgrade guard, health poll)
+	./scripts/prod-init.sh
 
 prod-down:     ## Stop production stack
-	docker compose -p $(PROJECT) -f docker-compose.prod.yml down
+	docker compose -f docker-compose.prod.yml down
 
 prod-logs:     ## Follow production logs
-	docker compose -p $(PROJECT) -f docker-compose.prod.yml logs -f
+	docker compose -f docker-compose.prod.yml logs -f
 
 # ── Release ──
 
@@ -98,14 +93,14 @@ db-shell:      ## Open psql shell in running PostgreSQL container (needs the .en
 # Every documented target stands in exactly one CLASS_* list, and `make help` prints the
 # lists as its sections. A target in none prints under UNCLASSIFIED.
 CLASS_developer := db be fe be-check fe-check check up down logs db-shell help
-CLASS_production := prod-init prod-up prod-down prod-logs prod-release
+CLASS_production := prod-deploy prod-down prod-logs prod-release
 
 # Column the help text wraps at.
 HELP_WIDTH ?= 96
 
 # `$(firstword $(MAKEFILE_LIST))`, not the whole list: `include .env` would put `.env` in it.
 help:          ## Show every target, by class (HELP_WIDTH=<n> moves the wrap column)
-	@grep -hE '^[a-zA-Z_-]+:.*##' $(firstword $(MAKEFILE_LIST)) \
+	@grep -hE '^[a-zA-Z0-9_-]+:.*##' $(firstword $(MAKEFILE_LIST)) \
 	  | awk -v width=$(HELP_WIDTH) \
 	        -v developer='$(CLASS_developer)' -v production='$(CLASS_production)' \
 	        -f scripts/make-help.awk
