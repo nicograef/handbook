@@ -4,7 +4,7 @@
 # The Caddy variant, docker-compose.prod-caddy.yml, needs no certbot.
 #
 # Usage (first deploy and every update; see guides/maintenance.md):
-#   scripts/prod-init.sh
+#   DOMAIN=<domain> make prod-deploy
 
 # Prefixes the volumes; docker-compose.initial-cert.yml must carry the same name.
 name: myapp

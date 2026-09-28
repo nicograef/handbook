@@ -9,6 +9,8 @@ Automated TLS certificates, running entirely inside Docker: Caddy, or nginx with
 | Caddy | [docker-compose.prod-caddy.yml](../templates/docker-compose.prod-caddy.yml), [Caddyfile](../templates/Caddyfile) | Default for a new stack: Caddy issues and renews the certificate itself, with no initial-cert step |
 | nginx + Certbot | [docker-compose.prod.yml](../templates/docker-compose.prod.yml), [docker-compose.initial-cert.yml](../templates/docker-compose.initial-cert.yml), [nginx-tls.conf](../templates/nginx-tls.conf), [nginx-initial-cert.conf](../templates/nginx-initial-cert.conf) | You need per-client rate limiting (`limit_req`), or the team already runs nginx configs |
 
+A project copies its variant's Compose template to `docker-compose.prod.yml`. Only this handbook names the Caddy file differently.
+
 Caddy's core has no rate limiter. The Certbot variant pings `CERT_PING_URL` after each renewal; the Caddy variant has no such heartbeat.
 
 ## Prerequisites
@@ -32,7 +34,7 @@ Collect these before starting:
 ## Automation
 
 [`scripts/prod-init.sh`](../scripts/prod-init.sh) runs the first deploy and every update for both variants.
-It requests the Certbot certificate only when none exists. For Caddy, set `PROD_FILE=docker-compose.prod-caddy.yml`.
+It requests the Certbot certificate only when none exists.
 
 ## Verify
 
@@ -52,7 +54,7 @@ Caddy:
 
 ```bash
 # expect a "certificate obtained successfully" line per domain
-docker compose -f docker-compose.prod-caddy.yml logs reverse-proxy | grep 'certificate obtained'
+docker compose -f docker-compose.prod.yml logs reverse-proxy | grep 'certificate obtained'
 
 # expect HTTP/2 200
 curl -sI https://example.com | head -1

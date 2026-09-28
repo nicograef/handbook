@@ -24,8 +24,8 @@ workload needs.
    in to work on the box.
 4. **Deploy TLS + reverse proxy** (web app only). Point DNS at the VPS first.
 
-   - First deploy: [scripts/prod-init.sh](../scripts/prod-init.sh) with
-     [templates/docker-compose.prod.yml](../templates/docker-compose.prod.yml).
+   - First deploy: [scripts/prod-init.sh](../scripts/prod-init.sh) with the production Compose template of the
+     [chosen variant](letsencrypt-docker.md#pick-a-variant), copied to `docker-compose.prod.yml`.
    - Then [letsencrypt-docker.md](letsencrypt-docker.md) to verify and troubleshoot the certs.
 
 5. **External monitoring** — [monitoring.md](monitoring.md).
