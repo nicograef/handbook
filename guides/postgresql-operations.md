@@ -91,6 +91,9 @@ sudo install -d -m 0700 /opt/backups/postgres
 - Use the [full-restore commands](#2-restore), not the throwaway one below.
 - The drill restores into a **throwaway database** and never touches the live one.
 - Run it as root: the backup directory is root-only.
+- CI runs a schema-only drill on every migration change: the `upgrade-path` job in
+  [templates/ci.yml](../templates/ci.yml).
+  It restores a dump into the stack's Postgres image; this drill proves the real dumps.
 
 Open a root shell and set the two env vars to your server's values (same as the backup
 script):
@@ -199,10 +202,22 @@ curl -fsSL "https://github.com/golang-migrate/migrate/releases/download/v4.20.1/
   | sudo tar -xz -C /usr/local/bin migrate
 ```
 
+### Forward-only
+
+- Write only `.up.sql` files. The rollback is the backup taken before the deploy.
+- A down migration that drops a column destroys data; the restore keeps it.
+- Make each change additive, so the running release still works against the new schema.
+- Never edit a migration that a release already shipped.
+- The `upgrade-path` job in [templates/ci.yml](../templates/ci.yml) applies the latest
+  tag's migrations, then the current ones.
+
 ### Create a migration
+
+`migrate create` writes an up and a down file; delete the down file.
 
 ```bash
 migrate create -ext sql -dir database/migrations -seq add_users_table
+rm database/migrations/*_add_users_table.down.sql
 ```
 
 ### Run migrations
