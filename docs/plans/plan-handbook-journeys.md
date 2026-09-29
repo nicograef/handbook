@@ -227,10 +227,10 @@ One runbook from a provisioned server to a running app, and back. Prerequisites:
 
 ### Acceptance criteria
 
-- [ ] `git grep -nE 'docker login ghcr.io|/opt/<project>|COMPOSE_FILE|ROLLBACK=1' guides/deploy.md` shows each step.
-- [ ] `git grep -n 'backup-restore.md#daily-backup' guides/deploy.md` shows the cron hand-off.
-- [ ] `runbook_shape guides/deploy.md` prints nothing.
-- [ ] `make check` passes.
+- [x] `git grep -nE 'docker login ghcr.io|/opt/<project>|COMPOSE_FILE|ROLLBACK=1' guides/deploy.md` shows each step.
+- [x] `git grep -n 'backup-restore.md#daily-backup' guides/deploy.md` shows the cron hand-off.
+- [x] `runbook_shape guides/deploy.md` prints nothing.
+- [x] `make check` passes.
 
 ## Phase 6: Backup and upgrade runbooks
 

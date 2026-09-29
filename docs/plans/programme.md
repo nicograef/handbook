@@ -72,7 +72,7 @@ None.
 | S9 | lead on `main` | 1 | done | c4cf2e8 |
 | J1, J2 | `journeys-core` | 2 | landed | e021c64 |
 | J4 | `new-project` | 3 | running | |
-| J5 | `deploy` | 3 | running | |
+| J5 | `deploy` | 3 | landed | 386fdef |
 | J6 | `backup` | 3 | running | |
 | J7 | `server-upkeep` | 3 | landed | 64c917b |
 | J8 | `monitoring` | 3 | landed | 45f2386 |
