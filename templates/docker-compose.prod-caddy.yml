@@ -67,7 +67,7 @@ services:
       postgres:
         condition: service_healthy
     # The image's HEALTHCHECK probes /api/health with a tool the image ships; `up --wait` polls it
-    # after every deploy. Dockerfiles: guides/docker-multi-stage-builds.md.
+    # after every deploy. Dockerfiles: templates/Dockerfile.python and templates/Dockerfile.go.
     deploy:
       resources:
         limits:
@@ -77,18 +77,13 @@ services:
 
   # ── Frontend ──
   # Static SPA served by its own nginx (no TLS here — reverse-proxy handles it).
+  # The image's HEALTHCHECK probes / (templates/Dockerfile.spa).
   frontend:
     image: ghcr.io/<owner>/<project>-frontend:v0.1.0 # same tag as backend
     restart: unless-stopped
     logging: *default-logging
     networks:
       - app-network
-    healthcheck:
-      test: ["CMD-SHELL", "wget -qO- http://127.0.0.1:80/ >/dev/null 2>&1"]
-      interval: 10s
-      timeout: 3s
-      retries: 5
-      start_period: 5s
     deploy:
       resources:
         limits:

@@ -1,0 +1,37 @@
+# Dockerfile.python — Python (uv) backend image, single stage
+# Copy to <backend-dir>/Dockerfile, the name release.yml builds, and copy .dockerignore beside it.
+# Fill <package>: the import name under src/ that `uv init --package` created.
+# The app answers GET /api/health on port 8080; the production Compose files poll its healthcheck.
+# One stage suffices: the base image already carries the interpreter and the resolver.
+
+# Both versions literal: `latest` or `python3.12` alone would move under a frozen lockfile.
+# The Python version repeats the project's .python-version.
+FROM ghcr.io/astral-sh/uv:0.12.18-python3.12-trixie-slim
+
+# Compile bytecode once at build time; copy instead of hardlink across the cache boundary.
+ENV UV_COMPILE_BYTECODE=1 \
+    UV_LINK_MODE=copy \
+    PATH=/app/.venv/bin:$PATH
+
+WORKDIR /app
+
+# Dependencies alone, keyed on the two files that pin them: a source edit rebuilds nothing here.
+# --frozen installs what uv.lock pins and never re-resolves; --no-dev leaves pytest, ruff and ty out.
+COPY pyproject.toml uv.lock ./
+RUN --mount=type=cache,target=/root/.cache/uv \
+    uv sync --frozen --no-dev --no-install-project
+
+COPY src ./src
+RUN --mount=type=cache,target=/root/.cache/uv \
+    uv sync --frozen --no-dev
+
+# Created after the sync, so the venv is owned by root and only read by the service.
+RUN useradd --create-home --uid 10001 app
+USER app
+
+EXPOSE 8080
+# The slim image ships no wget or curl, so the probe uses the interpreter.
+HEALTHCHECK --interval=10s --timeout=3s --start-period=5s --retries=5 \
+  CMD ["python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8080/api/health', timeout=2)"]
+# 0.0.0.0 inside the container; the Compose file publishes no port, so only the proxy reaches it.
+CMD ["uvicorn", "--factory", "<package>.api:app", "--host", "0.0.0.0", "--port", "8080"]

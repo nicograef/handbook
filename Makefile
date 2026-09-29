@@ -1,6 +1,6 @@
 # Handbook dev interface.
 
-.PHONY: check links lint readme language skills compose prose history contracts test-agent-bus test-plan-run-guard help
+.PHONY: check links lint readme language skills compose prose history contracts test-agent-bus test-plan-run-guard test-dockerfiles help
 
 ## check: run the full repo self-check (links, shellcheck, README index, language, skills, compose, prose, history words, contracts)
 check:
@@ -49,6 +49,10 @@ test-agent-bus:
 ## test-plan-run-guard: run the fixture test for scripts/plan-run-guard.sh
 test-plan-run-guard:
 	@scripts/test-plan-run-guard.sh
+
+## test-dockerfiles: build the three Dockerfile templates against stub apps and wait for healthy (needs Docker and network)
+test-dockerfiles:
+	@scripts/test-dockerfiles.sh
 
 ## help: list available targets
 help:

@@ -1,0 +1,29 @@
+# Dockerfile.spa — React SPA image: pnpm + Vite build, served by nginx
+# Copy to <frontend-dir>/Dockerfile, the name release.yml builds, and copy .dockerignore beside it.
+# Copy nginx-spa.conf to <frontend-dir>/nginx.conf; this file COPYs it unedited.
+# The build writes dist/; nginx answers GET / on port 80, which its healthcheck probes.
+
+# ── Build ──
+FROM node:26-alpine AS build
+WORKDIR /app
+
+# npm, not Corepack: Node 25+ images ship without Corepack.
+# The cache mount keeps the pnpm store across builds and out of the image.
+COPY package.json pnpm-lock.yaml ./
+RUN npm install -g pnpm@12
+RUN --mount=type=cache,id=pnpm,target=/pnpm/store \
+    pnpm install --frozen-lockfile --store-dir /pnpm/store
+
+COPY . .
+RUN pnpm build
+
+# ── Runtime ──
+FROM nginx:1.30-alpine
+COPY --from=build /app/dist /usr/share/nginx/html
+COPY nginx.conf /etc/nginx/conf.d/default.conf
+
+EXPOSE 80
+# busybox wget ships in the Alpine base.
+HEALTHCHECK --interval=10s --timeout=3s --start-period=5s --retries=5 \
+  CMD wget -qO- http://127.0.0.1:80/ >/dev/null 2>&1 || exit 1
+CMD ["nginx", "-g", "daemon off;"]

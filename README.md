@@ -81,16 +81,19 @@ Copy-once files and conventions for a new project repository.
 | [guides/docker-multi-stage-builds.md](guides/docker-multi-stage-builds.md) | Docker multi-stage builds |
 | [templates/Makefile](templates/Makefile) | Full-stack Makefile (dev, prod, checks, release) |
 | [templates/make-help.awk](templates/make-help.awk) | Renders `make help` by target class; `scripts/make-help.awk` |
-| [templates/setup-dev-tools.sh](templates/setup-dev-tools.sh) | Dev tool setup script skeleton (Go, Node/pnpm blocks) |
+| [templates/setup-dev-tools.sh](templates/setup-dev-tools.sh) | Dev tool setup script skeleton (Go, Node/pnpm, Python/uv blocks) |
 | [templates/devcontainer.json](templates/devcontainer.json) | Dev Container config with commented feature blocks per stack |
 | [templates/.editorconfig](templates/.editorconfig) | EditorConfig for consistent formatting (Go tabs, JS/TS 2-space) |
 | [templates/.gitignore](templates/.gitignore) | Universal .gitignore (OS, IDE, env, build artifacts, logs, Claude local settings) |
 | [templates/vscode-settings.json](templates/vscode-settings.json) | VS Code workspace settings for consistent formatting |
 | [templates/docker-compose.yml](templates/docker-compose.yml) | Compose starter (local dev, no TLS) |
+| [templates/Dockerfile.python](templates/Dockerfile.python) | Python (uv) backend image with a HEALTHCHECK; copied as `<backend-dir>/Dockerfile` |
+| [templates/Dockerfile.go](templates/Dockerfile.go) | Go backend image: static binary on Alpine with a HEALTHCHECK; copied as `<backend-dir>/Dockerfile` |
+| [templates/Dockerfile.spa](templates/Dockerfile.spa) | React SPA image: pnpm build served by nginx with a HEALTHCHECK; copied as `<frontend-dir>/Dockerfile` |
 | [templates/.dockerignore](templates/.dockerignore) | Build-context excludes: VCS, secrets, host toolchains, tests, docs |
 | [templates/.env.example](templates/.env.example) | Standard env vars for Docker Compose templates |
-| [templates/nginx-spa.conf](templates/nginx-spa.conf) | SPA container nginx config: client-side routing + asset caching |
-| [templates/ci.yml](templates/ci.yml) | GitHub Actions CI workflow (Go, Node, integration, security scans, upgrade path, restore drill) |
+| [templates/nginx-spa.conf](templates/nginx-spa.conf) | SPA container nginx server block: client-side routing + asset caching; copied as `<frontend-dir>/nginx.conf` |
+| [templates/ci.yml](templates/ci.yml) | GitHub Actions CI workflow (Go, Node, Python, integration, security scans, upgrade path, restore drill) |
 | [templates/release.yml](templates/release.yml) | GitHub Actions release workflow: a vX.Y.Z tag pushes the app images to GHCR |
 | [templates/golangci.yml](templates/golangci.yml) | golangci-lint v2 config: security linters, layer guard, goimports |
 | [templates/dependabot.yml](templates/dependabot.yml) | Dependabot config (monthly, one grouped PR per ecosystem) |
@@ -149,6 +152,7 @@ Rules and checks for maintaining this repo.
 | [scripts/check-repo.sh](scripts/check-repo.sh) | Repo self-check; `make check` |
 | [scripts/test-agent-bus.sh](scripts/test-agent-bus.sh) | Fixture test for `agent-bus.sh`; `make test-agent-bus` |
 | [scripts/test-plan-run-guard.sh](scripts/test-plan-run-guard.sh) | Fixture test for `plan-run-guard.sh`; `make test-plan-run-guard` |
+| [scripts/test-dockerfiles.sh](scripts/test-dockerfiles.sh) | Builds the Dockerfile templates against stub apps until healthy; `make test-dockerfiles` |
 
 ## License
 
