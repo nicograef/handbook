@@ -1,6 +1,6 @@
 # Programme: Handbook Restructure
 
-Plans: structure (S, landed and removed), `plan-handbook-journeys.md` (J), `plan-handbook-agent-layer.md` (A). Phase ids below are plan letter plus phase number.
+Plans: structure (S) and journeys (J) landed and removed; `plan-handbook-agent-layer.md` (A). Phase ids below are plan letter plus phase number.
 
 ## Rule
 
@@ -78,4 +78,4 @@ None.
 | J8 | `monitoring` | 3 | landed | 45f2386 |
 | J9 | `dev-machine` | 3 | landed | 5d72e4f |
 | A1–A4 | `agent-layer` | 3 | reviewed and fixed, lands last | |
-| J10 | `linux-services` | 4 | running | |
+| J10 | `linux-services` | 4 | landed | ce6147e |
