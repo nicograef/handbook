@@ -1,6 +1,6 @@
 # Programme: Handbook Restructure
 
-Plans: `plan-handbook-structure.md` (S), `plan-handbook-journeys.md` (J), `plan-handbook-agent-layer.md` (A). Phase ids below are plan letter plus phase number.
+Plans: structure (S, landed and removed), `plan-handbook-journeys.md` (J), `plan-handbook-agent-layer.md` (A). Phase ids below are plan letter plus phase number.
 
 ## Rule
 
@@ -69,7 +69,7 @@ None.
 | --- | --- | --- | --- | --- |
 | J3 | `project-gate` | 1 | landed | d807182 |
 | S1–S8 | `structure` | 1 | landed | ddbb63a |
-| S9 | lead on `main` | 1 | open | |
+| S9 | lead on `main` | 1 | done | c4cf2e8 |
 | J1, J2 | `journeys-core` | 2 | open | |
 | J4 | `new-project` | 3 | open | |
 | J5 | `deploy` | 3 | open | |
