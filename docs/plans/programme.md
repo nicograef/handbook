@@ -75,7 +75,7 @@ None.
 | J5 | `deploy` | 3 | running | |
 | J6 | `backup` | 3 | running | |
 | J7 | `server-upkeep` | 3 | running | |
-| J8 | `monitoring` | 3 | running | |
+| J8 | `monitoring` | 3 | landed | 45f2386 |
 | J9 | `dev-machine` | 3 | landed | 5d72e4f |
 | A1–A4 | `agent-layer` | 3 | running | |
 | J10 | `linux-services` | 4 | open | |

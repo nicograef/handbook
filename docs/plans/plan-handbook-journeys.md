@@ -294,9 +294,9 @@ Prerequisites come first. A step creates each heartbeat in Better Stack and stor
 
 ### Acceptance criteria
 
-- [ ] `grep -E '^## ' guides/monitoring.md | head -1` prints `## Prerequisites`.
-- [ ] `runbook_shape guides/monitoring.md` prints nothing.
-- [ ] `make check` passes.
+- [x] `grep -E '^## ' guides/monitoring.md | head -1` prints `## Prerequisites`.
+- [x] `runbook_shape guides/monitoring.md` prints nothing.
+- [x] `make check` passes.
 
 ## Phase 9: Dev machine runbook
 
