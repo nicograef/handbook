@@ -32,6 +32,6 @@ A deliberate ritual the user starts; never run it mid-task. The report lives in 
 
    A check beats a rule; a rule beats a memory. Targets are discovered in the repo at hand, never assumed from the handbook.
 3. Dedup against the existing artifacts of each category. Already covered: drop it. Covered but the evidence adds something: propose an update instead.
-4. For each surviving item, search docs, rules and memory for the statement it replaces. Propose that retirement beside the item. A memory that records an event is rewritten as its residue, in present tense. A landed plan becomes the constraints it settled. A run report becomes the lesson, a milestone the state it left.
+4. For each surviving item, search docs, rules and memory for the statement it replaces. Propose that retirement beside the item. A memory that records an event is rewritten per the [memory rule of the global CLAUDE.md](../../../claude/CLAUDE.md#models-and-subagents). A landed plan becomes the constraints it settled. A run report becomes the lesson, a milestone the state it left.
 5. Present items and retirements as one multi-select, each showing category, target and citation. Zero picks is valid.
 6. Apply picked items and retirements only, then commit them in one commit.

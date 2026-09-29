@@ -32,7 +32,7 @@ Lead with the answer or the problem. Sentences ≤ 20 words, one claim each. Par
 - End a turn on the thing done, not on what comes next. Waiting on your own background work happens inside the turn. Only a forced stop or a question that passed the gate ends a turn mid-task. I will not notice a session that waits for me.
 - Autonomy is configured, not prompted: `permissions.allow` / `deny`, `autoMode.environment`, the permission mode, a container. A scheduled wake-up cannot answer a permission prompt.
 - Before implementing, ask how it ships fast and lean. Batch checks instead of verifying each small step. Slice work with disjoint files into parallel lanes.
-- Debugging: name the root cause before the fix, and change one thing at a time. After three failed fixes, question the design instead of trying a fourth patch.
+- Debugging: name the root cause before the fix, and change one thing at a time. After two failed fixes, question the design instead of trying a third patch.
 - Review feedback: verify each item against the code before implementing it. Push back with the specific reason when a suggestion is wrong. Reply to inline PR comments in their thread.
 - A finished branch: run the tests, then offer merge, PR, keep or discard. Delete a branch only after merge or discard.
 - Isolated work lives in `../<repo>-wt/<branch>` via `git worktree add`. A sibling directory keeps linters that walk `.` out of the lanes.
@@ -42,12 +42,8 @@ Lead with the answer or the problem. Sentences ≤ 20 words, one claim each. Par
 
 ## Models and subagents
 
-- Subagents: `sonnet` for mechanical, fully specified work (search, rename, format, doc sweep, checking a named finding). `opus` for implementation, review, debugging and synthesis. Review means finding and synthesising, never re-checking a finding somebody already stated. Set `model` explicitly, reviewers included.
-- Review workflows: finders on `opus`, one per lens, few. Verifying a finding is a fully specified check (claim, evidence, command) and runs on `sonnet`. One verifier per critical or major finding. Minor and cleanup findings go unverified to the fixer, who holds each against the code before applying it. The fixer runs on `opus`, the gate on `sonnet` at low effort. Verify agents never exceed three times the finders; beyond that, verify by severity and batch the rest ten per agent. More votes per finding only on my instruction for that run.
-- A session with background agents, a workflow or lanes is a lead. Before the first dispatch it arms a 15-minute check-in and an hourly recovery job, both fixed-interval. Mechanics: the programme skill, § Lead upkeep.
-- A lead keeps its scratchpad and memory current and holds each row against its source at every check-in.
-- No session switches its own model. Session and weekly limits span all models; there the reset or my account switch continues the run.
+- Subagents: `sonnet` for mechanical, fully specified work (search, rename, format, doc sweep, checking a named finding). `opus` for implementation, review, debugging and synthesis. Set `model` explicitly, reviewers included.
+- A session with background agents, a workflow or lanes is a lead and follows [lead.md](../.claude/skills/implement-plan/lead.md).
 - A subagent prompt is self-contained: scope, pasted errors and paths, the rules that apply, the return format. File ownership is explicit, so no two agents write one file. Act on each result as it lands.
-- Verification is budgeted by blast radius. Redoable work gets the gate plus one batched review. Irreversible work (spend, overwrite, publish, production migration) gets probes and my read. The gate runs once, where the change is, and again only after a fold, a rebase or an unseen edit.
 - External facts about companies, tools or markets go through the web-researcher agent. Every such claim carries a source and a date.
-- Memory holds current state, not events.
+- Memory holds current state, not events. An event is rewritten as its residue, in present tense.

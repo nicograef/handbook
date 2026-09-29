@@ -35,7 +35,7 @@ Content, not age. Every finding carries target, cited evidence and its action: d
 
 | Class | Finding |
 | --- | --- |
-| Memory | Index and files out of sync, duplicates, dead references. Claims the repo contradicts: partly true becomes an update. Events stored as memories: keep the residue, drop the event |
+| Memory | Index and files out of sync, duplicates, dead references. Claims the repo contradicts: partly true becomes an update. Events stored as memories, rewritten per the [memory rule of the global CLAUDE.md](../../../claude/CLAUDE.md#models-and-subagents) |
 | Rule | Contradicted by the repo, names deleted files or tools, duplicates another surface, pins a stale version. Current repo only; edit per rule |
 | Scratchpad | Other sessions' leftover directories. In this session, only files the agent wrote |
 | Plan, PRD | Every box ticked, or the PRD shipped. One commit for all |
