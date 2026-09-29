@@ -2,27 +2,27 @@
 # md-to-epub.sh – render listenable Markdown chapters into an ElevenReader EPUB
 #
 # Usage:
-#   scripts/md-to-epub.sh <chapter-dir> [output.epub]
-#   WPM=140 STRICT=1 scripts/md-to-epub.sh audiobook/ indexes.epub
+#   ~/.claude/skills/audiobook/md-to-epub.sh <chapter-dir> [output.epub]
+#   WPM=140 STRICT=1 ~/.claude/skills/audiobook/md-to-epub.sh audiobook/ indexes.epub
 #
 # Chapters are the NN-slug.md files in <chapter-dir>, in filename order. Other
 # Markdown in that directory (PLAN.md, sources.md) is ignored.
 #
 # What it does:
-#   1. Runs each chapter through templates/strip-visuals.lua; every element
+#   1. Runs each chapter through strip-visuals.lua beside this script; every element
 #      the filter strips is a finding, prefixed with the chapter name.
 #   2. Renders the chapters with pandoc and the same filter.
 #   3. Splits one EPUB chapter per H1 and builds a depth-1 table of contents.
 #   4. Reports words and estimated listening time, per chapter and total.
 #
-# See guides/audiobook-pipeline.md.
+# See .claude/skills/audiobook/pipeline.md.
 
 set -euo pipefail
 
-REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 # ── Configuration (env-var defaults) ─────────────────────────────────────────
-FILTER="${FILTER:-$REPO_ROOT/templates/strip-visuals.lua}"
+FILTER="${FILTER:-$SCRIPT_DIR/strip-visuals.lua}"
 WPM="${WPM:-150}"          # narration speed used for the time estimate
 STRICT="${STRICT:-0}"      # 1 = abort on any finding
 

@@ -76,6 +76,8 @@
       "Bash(~/.claude/agent-bus.sh:*)",
       "Bash(~/.claude/check-agents.sh:*)",
       "Bash(~/.claude/plan-run-guard.sh:*)",
+      "Bash(~/.claude/skills/audiobook/md-to-epub.sh:*)",
+      "Bash(~/.claude/skills/audiobook/check-terms.sh:*)",
       "Bash(scripts/agent-bus.sh:*)",
       "Bash(./scripts/agent-bus.sh:*)",
       "Bash(uv sync:*)",

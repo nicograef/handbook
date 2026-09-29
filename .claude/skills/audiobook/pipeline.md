@@ -44,8 +44,7 @@ sudo apt install ./pandoc-<version>-1-amd64.deb
 ## Step 1 — Render the EPUB
 
 ```bash
-STRICT=1 FILTER=<handbook>/templates/strip-visuals.lua \
-  <handbook>/scripts/md-to-epub.sh audiobook/ book.epub
+STRICT=1 ~/.claude/skills/audiobook/md-to-epub.sh audiobook/ book.epub
 ```
 
 Drop `STRICT=1` only for hand-written chapters, where warnings are a to-do list.
@@ -60,7 +59,7 @@ Each finding names its chapter, not a line: search that chapter for the element.
 ```bash
 # 1. Nothing unspeakable survived: no code, no table markup, no URLs.
 pandoc audiobook/[0-9][0-9]-*.md --from gfm --to plain \
-  --lua-filter <handbook>/templates/strip-visuals.lua | less
+  --lua-filter ~/.claude/skills/audiobook/strip-visuals.lua | less
 
 # 2. The split worked: one xhtml file per chapter.
 unzip -l book.epub | grep -c 'text/ch'

@@ -2,7 +2,7 @@
 # check-terms.sh – verify no audiobook term is used before it is explained
 #
 # Usage:
-#   scripts/check-terms.sh <chapter-dir>
+#   ~/.claude/skills/audiobook/check-terms.sh <chapter-dir>
 #
 # What it does:
 #   1. Reads <chapter-dir>/terms.yml — one `term: chapter-file.md` per line.

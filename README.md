@@ -14,7 +14,6 @@ Setting something up? Start at [guides/bootstrap.md](guides/bootstrap.md).
 | PostgreSQL operations             | [guides/postgresql-operations.md](guides/postgresql-operations.md)         |
 | External monitoring (Better Stack)| [guides/monitoring.md](guides/monitoring.md)                               |
 | Server maintenance & upkeep       | [guides/maintenance.md](guides/maintenance.md)                             |
-| Audiobooks for ElevenReader       | [guides/audiobook-pipeline.md](guides/audiobook-pipeline.md)               |
 | Unattended agent runs             | [guides/unattended-agents.md](guides/unattended-agents.md)                 |
 | Neovim for text editing           | [guides/neovim.md](guides/neovim.md)                                       |
 
@@ -55,7 +54,6 @@ Pages to look up, not follow step by step: command tables and rule lists.
 | [templates/dependabot.yml](templates/dependabot.yml)                   | Dependabot config (monthly, one grouped PR per ecosystem)         |
 | [templates/.env.example](templates/.env.example)                       | Standard env vars for Docker Compose templates                    |
 | [templates/vscode-settings.json](templates/vscode-settings.json)       | VS Code workspace settings for consistent formatting              |
-| [templates/strip-visuals.lua](templates/strip-visuals.lua)             | Pandoc filter that removes what a narrator cannot speak           |
 
 ## Dotfiles
 
@@ -83,8 +81,6 @@ Linked into `$HOME` by [install.sh](install.sh), not copied.
 | [scripts/test-agent-bus.sh](scripts/test-agent-bus.sh)     | Fixture test for `agent-bus.sh`; `make test-agent-bus`                  |
 | [scripts/plan-run-guard.sh](scripts/plan-run-guard.sh)     | Stop hook that keeps a live plan run from yielding the turn             |
 | [scripts/test-plan-run-guard.sh](scripts/test-plan-run-guard.sh) | Fixture test for `plan-run-guard.sh`; `make test-plan-run-guard`  |
-| [scripts/md-to-epub.sh](scripts/md-to-epub.sh)             | Lint and render audiobook chapters into an ElevenReader EPUB           |
-| [scripts/check-terms.sh](scripts/check-terms.sh)           | Verify no audiobook term is used before the chapter that explains it   |
 
 ## Agent Setup
 

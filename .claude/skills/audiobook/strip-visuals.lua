@@ -1,6 +1,6 @@
 -- strip-visuals.lua - Pandoc filter that removes what a narrator cannot speak.
 --
--- Consumed by scripts/md-to-epub.sh; see guides/audiobook-pipeline.md.
+-- Consumed by md-to-epub.sh beside it; see pipeline.md in the same skill directory.
 -- Copy this file into a project to render audiobook chapters there.
 --
 -- It is a safety net, not a converter: it deletes unspeakable elements rather

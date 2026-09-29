@@ -7,7 +7,7 @@ disable-model-invocation: true
 
 # Audiobook
 
-Subject: **$ARGUMENTS**. Pipeline and rendering: [guides/audiobook-pipeline.md](../../../guides/audiobook-pipeline.md). Prose rules, German narration and review contracts: [writing.md](writing.md).
+Subject: **$ARGUMENTS**. Open [pipeline.md](pipeline.md) before rendering: ElevenReader limits, pandoc setup, render, verify and troubleshooting. Prose rules, German narration and review contracts: [writing.md](writing.md).
 
 ## Hard rules
 
@@ -29,5 +29,5 @@ Subject: **$ARGUMENTS**. Pipeline and rendering: [guides/audiobook-pipeline.md](
 6. Execute it through the web-researcher agent, recording every claim in `sources.md`.
 7. Build `PLAN.md`: chapters in concept-dependency order (never repo layout), each with the question it answers and its prerequisites. Every guiding question is covered. Write `terms.yml` (`term: chapter-file.md`, the chapter that first explains it) and `meta.yml` (`title`, `creator`, `lang`, `de` for German). Record assumptions.
 8. Write the chapters, `NN-slug.md`, single H1, per [writing.md](writing.md), anchoring each concept in a named file or decision.
-9. Round A, correctness, per chapter in parallel. 10. Round B, structure and terms, once over the book, running the handbook's `scripts/check-terms.sh <dir>`. 11. Round C, language and flow, per chapter in parallel. 12. Re-check only the Round C diff against `sources.md`, reverting broken claims to the Round B wording.
-13. Render with the handbook's `scripts/md-to-epub.sh` and `STRICT=1`. A finding is a bug in step 8: fix the chapter, re-render. Report the assumptions, every unverified claim, and every drift from `BRIEF.md` with its reason.
+9. Round A, correctness, per chapter in parallel. 10. Round B, structure and terms, once over the book, running `~/.claude/skills/audiobook/check-terms.sh <dir>`. 11. Round C, language and flow, per chapter in parallel. 12. Re-check only the Round C diff against `sources.md`, reverting broken claims to the Round B wording.
+13. Render with `~/.claude/skills/audiobook/md-to-epub.sh` and `STRICT=1`; the filter sits beside it. A finding is a bug in step 8: fix the chapter, re-render. Report the assumptions, every unverified claim, and every drift from `BRIEF.md` with its reason.
