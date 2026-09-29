@@ -77,5 +77,5 @@ None.
 | J7 | `server-upkeep` | 3 | landed | 64c917b |
 | J8 | `monitoring` | 3 | landed | 45f2386 |
 | J9 | `dev-machine` | 3 | landed | 5d72e4f |
-| A1–A4 | `agent-layer` | 3 | running | |
+| A1–A4 | `agent-layer` | 3 | reviewed and fixed, lands last | |
 | J10 | `linux-services` | 4 | running | |
