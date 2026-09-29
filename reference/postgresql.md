@@ -1,5 +1,7 @@
 # PostgreSQL
 
+Backup, restore and the restore drill: [backup-restore.md](../guides/backup-restore.md). Major upgrades: [postgres-upgrade.md](../guides/postgres-upgrade.md).
+
 ## Connect
 
 The host has no `psql`; PostgreSQL and its client tools live only in the `postgres`
@@ -42,7 +44,7 @@ curl -fsSL "https://github.com/golang-migrate/migrate/releases/download/v4.20.1/
 
 ### Forward-only
 
-- Write only `.up.sql` files. The rollback is the backup taken before the deploy.
+- Write only `.up.sql` files. The rollback restores the backup taken before the deploy: [Roll back](../guides/deploy.md#roll-back).
 - A down migration that drops a column destroys data; the restore keeps it.
 - Make each change additive, so the running release still works against the new schema.
 - Never edit a migration that a release already shipped.
@@ -101,5 +103,3 @@ migrate version
 migrate version
 migrate force <last-good-version>
 ```
-
-Backup, restore and the restore drill: [guides/backup-restore.md](../guides/backup-restore.md). Major upgrades: [guides/postgres-upgrade.md](../guides/postgres-upgrade.md).

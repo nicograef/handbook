@@ -1,12 +1,13 @@
 #!/usr/bin/env bash
 # backup-postgres.sh — verified, retained PostgreSQL backups for a Compose stack.
 #
-# Usage:
-#   scripts/backup-postgres.sh              # uses the defaults / env-var overrides below
-#   BACKUP_DIR=/opt/backups/postgres COMPOSE_DIR=/opt/myapp scripts/backup-postgres.sh
+# Usage (as the deploy user, from the project clone under /opt/<project>):
+#   scripts/backup-postgres.sh                        # defaults below
+#   BACKUP_DIR=<dir> RETENTION_DAYS=<days> scripts/backup-postgres.sh
 #
-#   Intended for cron — see guides/backup-restore.md, Daily backup:
-#     0 3 * * * BACKUP_DIR=/opt/backups/postgres COMPOSE_DIR=/opt/myapp /opt/scripts/backup-postgres.sh >> /opt/backups/postgres/backup.log 2>&1
+#   Cron runs the clone's own copy, so `git pull` keeps it current
+#   (see guides/backup-restore.md, Daily backup):
+#     0 3 * * * /opt/<project>/scripts/backup-postgres.sh >> /opt/backups/postgres/backup.log 2>&1
 #
 # What it does:
 #   1. Reads BACKUP_PING_URL from the Compose .env in COMPOSE_DIR, without sourcing it.
@@ -27,7 +28,8 @@ umask 077
 # ── Configuration (env-var overridable) ──
 BACKUP_DIR="${BACKUP_DIR:-/opt/backups/postgres}"
 RETENTION_DAYS="${RETENTION_DAYS:-14}"
-COMPOSE_DIR="${COMPOSE_DIR:-/opt/myapp}"
+# The clone root: this script lives in its scripts/ directory.
+COMPOSE_DIR="${COMPOSE_DIR:-$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)}"
 
 RED='\033[0;31m'
 GREEN='\033[0;32m'

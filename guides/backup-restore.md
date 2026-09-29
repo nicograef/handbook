@@ -1,156 +1,150 @@
 # PostgreSQL Backup and Restore
 
-Take a manual backup, restore a dump, run the verified daily backup, and prove it with the quarterly drill.
+Set up the verified daily backup of a deployed stack, restore a dump, and prove the backups quarterly.
 
 ## Prerequisites
 
-- Docker Compose stack with a `postgres` service (see [templates/docker-compose.prod.yml](../templates/docker-compose.prod.yml))
-- `.env` file with `POSTGRES_USER`, `POSTGRES_PASSWORD`, `POSTGRES_DB`
-- On the server, `.env` also sets `COMPOSE_FILE` (see [templates/.env.example](../templates/.env.example)).
-  Plain `docker compose` then targets the production stack; its top-level `name:` sets the project.
-
-## Manual backup
-
-- The `postgres` container already holds `POSTGRES_USER` / `POSTGRES_DB` in its
-  environment.
-
-### Compressed dump (recommended)
+- The stack passes [deploy.md#verify](deploy.md#verify): a clone under `/opt/<project>`, owned by the deploy user.
+- Its `.env` sets `COMPOSE_FILE`, so plain `docker compose` targets the production stack.
+- The backup heartbeat `BACKUP_PING_URL` is set in `.env`, as [monitoring.md](monitoring.md) describes.
+- Every command runs as the deploy user in the clone:
 
 ```bash
-docker compose exec -T postgres sh -c \
-  'pg_dump -U "$POSTGRES_USER" -d "$POSTGRES_DB" -Fc' \
-  > "backup-$(date +%Y%m%d-%H%M).dump"
-```
-
-## Restore
-
-### From compressed dump
-
-Stop the backend so no session holds the database open.
-`--single-transaction` rolls the whole restore back on any error.
-
-```bash
-docker compose stop backend
-docker compose exec -T postgres sh -c \
-  'pg_restore -U "$POSTGRES_USER" -d "$POSTGRES_DB" --clean --if-exists --single-transaction' \
-  < backup-20260101-1200.dump
-docker compose exec postgres sh -c \
-  'vacuumdb -U "$POSTGRES_USER" -d "$POSTGRES_DB" --analyze-in-stages'
-docker compose start backend
-```
-
-`pg_restore` restores no planner statistics, so `vacuumdb` rebuilds them.
-
-### Into a fresh database
-
-```bash
-docker compose exec postgres sh -c 'createdb -U "$POSTGRES_USER" mydb_restored'
-docker compose exec -T postgres sh -c \
-  'pg_restore -U "$POSTGRES_USER" -d mydb_restored' \
-  < backup-20260101-1200.dump
+cd /opt/<project>
 ```
 
 ## Daily backup
 
-Use [scripts/backup-postgres.sh](../scripts/backup-postgres.sh); its header
-documents each step. Set up the `BACKUP_PING_URL` heartbeat in
-[monitoring.md](monitoring.md).
+[scripts/backup-postgres.sh](../scripts/backup-postgres.sh) takes, verifies and prunes the dumps; its header lists each step and setting.
+Cron runs the clone's own copy, so `git pull` keeps it current.
 
-### Install on the server
+1. **Create the backup directory**, owned by the deploy user:
 
-```bash
-sudo install -m 0755 scripts/backup-postgres.sh /opt/scripts/backup-postgres.sh
-sudo install -d -o "$USER" -g "$USER" -m 0700 /opt/backups/postgres
-```
+   ```bash
+   sudo install -d -o "$USER" -g "$USER" -m 0700 /opt/backups/postgres
+   ```
 
-Run this as the deploy user. It owns the directory, so its deploys and its cron job both write there.
+   Expected: `ls -ld /opt/backups/postgres` shows `drwx------` and the deploy user as owner.
 
-### Cron line
+2. **Take one backup by hand:**
 
-Add it to the deploy user's crontab with `crontab -e`, not to root's.
+   ```bash
+   scripts/backup-postgres.sh
+   ```
 
-```bash
-# daily at 03:00
-0 3 * * * BACKUP_DIR=/opt/backups/postgres COMPOSE_DIR=/opt/myapp /opt/scripts/backup-postgres.sh >> /opt/backups/postgres/backup.log 2>&1
-```
+   Expected: `Verified backup written: /opt/backups/postgres/backup-<timestamp>.dump`, then `Backup complete`.
 
-> **Accepted risk — backups are on the same disk they protect.**
-> `BACKUP_DIR` lives on the server being backed up.
-> Losing the server loses the backups with it: disk failure, provider incident,
-> accidental deletion.
-> The daily verified dump plus the quarterly restore drill covers the failure modes that
-> actually happen.
-> Those are bad migration, dropped table, and corruption.
-> **Upgrade path when this stops being acceptable:** push the verified dumps offsite with
-> [restic](https://restic.net/).
-> Target a Hetzner Storage Box over SFTP, or Object Storage over S3.
-> Backups then survive the loss of the server.
+3. **Schedule it daily at 03:00.** Open the deploy user's crontab with `crontab -e`, not root's, and add:
+
+   ```bash
+   0 3 * * * /opt/<project>/scripts/backup-postgres.sh >> /opt/backups/postgres/backup.log 2>&1
+   ```
+
+   Expected: `crontab -l` prints the line.
+
+The dumps sit on the disk they protect, so losing the server loses them too.
+The daily verified dump and the quarterly drill cover the common failures: bad migration, dropped table, corruption.
+When that stops being enough, push the dumps offsite with [restic](https://restic.net/).
+
+## Restore
+
+A restore replaces the live database with a dump. Use it after data loss or for a [roll back](deploy.md#roll-back).
+
+1. **Pick the dump:** the newest one taken before the loss, or the pre-update dump a failed deploy printed.
+
+   ```bash
+   ls -t /opt/backups/postgres/backup-*.dump | head
+   DUMP=/opt/backups/postgres/backup-<timestamp>.dump
+   ```
+
+   Expected: `ls -l "$DUMP"` shows the file.
+
+2. **Stop the backend**, so no session holds the database open:
+
+   ```bash
+   docker compose stop backend
+   ```
+
+   Expected: `Container <project>-backend-1  Stopped`.
+
+3. **Restore the dump.** `--single-transaction` rolls the whole restore back on any error:
+
+   ```bash
+   docker compose exec -T postgres sh -c \
+     'pg_restore -U "$POSTGRES_USER" -d "$POSTGRES_DB" --clean --if-exists --single-transaction' < "$DUMP"
+   ```
+
+   Expected: no output, exit 0.
+
+4. **Rebuild the planner statistics**, which `pg_restore` does not restore:
+
+   ```bash
+   docker compose exec postgres sh -c 'vacuumdb -U "$POSTGRES_USER" -d "$POSTGRES_DB" --analyze-in-stages'
+   ```
+
+   Expected: three `Generating ... optimizer statistics` lines.
+
+5. **Start the backend:**
+
+   ```bash
+   docker compose start backend
+   ```
+
+   Expected: `docker compose ps backend` shows `(healthy)` within a minute.
 
 ## Restore drill
 
-- Run this drill **quarterly**.
-- It proves the newest dump restores cleanly and that your row counts survive the
-  round-trip.
-- For the live disaster case, restore into the production database instead.
-- Use the [full-restore commands](#restore), not the throwaway one below.
-- The drill restores into a **throwaway database** and never touches the live one.
-- Run it as the deploy user: it owns the backup directory and is in the `docker` group.
-- CI runs a schema-only drill on every migration change: the `upgrade-path` job in
-  [templates/ci.yml](../templates/ci.yml).
-  It restores a dump into the stack's Postgres image; this drill proves the real dumps.
+Run the drill quarterly. It restores the newest dump into a throwaway database and never touches the live one.
+CI's `upgrade-path` job in [templates/ci.yml](../templates/ci.yml) proves the migrations; this drill proves the real dumps.
 
-Set the two env vars to your server's values (same as the backup script):
-
-```bash
-export BACKUP_DIR=/opt/backups/postgres    # where scripts/backup-postgres.sh writes
-export COMPOSE_DIR=/opt/myapp              # Compose project dir (its .env is used)
-cd "$COMPOSE_DIR"
-```
-
-1. **Pick the newest verified dump.**
+1. **Pick the newest dump:**
 
    ```bash
-   DUMP="$(ls -t "$BACKUP_DIR"/backup-*.dump | head -1)"
-   echo "$DUMP"
+   DUMP="$(ls -t /opt/backups/postgres/backup-*.dump | head -1)"; echo "$DUMP"
    ```
 
-2. **Create a throwaway database and restore into it** (the live DB is left
-   alone):
+   Expected: a dump from the last 24 hours.
+
+2. **Restore it into a throwaway database:**
 
    ```bash
    docker compose exec postgres sh -c 'createdb -U "$POSTGRES_USER" restore_drill'
-   docker compose exec -T postgres sh -c \
-     'pg_restore -U "$POSTGRES_USER" -d restore_drill --exit-on-error' < "$DUMP"
+   docker compose exec -T postgres sh -c 'pg_restore -U "$POSTGRES_USER" -d restore_drill --exit-on-error' < "$DUMP"
    ```
 
-3. **Spot-check** that known tables came back with the expected row counts.
-   Replace `users` / `orders` with two tables you know:
+   Expected: no output, exit 0.
+
+3. **Count the rows of a table you know**, in the drill and in the live database:
 
    ```bash
-   docker compose exec -T postgres sh -c \
-     'psql -U "$POSTGRES_USER" -d restore_drill -c "SELECT count(*) FROM users;" -c "SELECT count(*) FROM orders;"'
+   docker compose exec -T postgres sh -c 'for db in restore_drill "$POSTGRES_DB"; do
+     psql -U "$POSTGRES_USER" -d "$db" -At -c "SELECT count(*) FROM <table>;"; done'
    ```
 
-   Each `-c` prints its own one-row result block; expect a plausible,
-   non-zero count per table.
+   Expected: two non-zero counts; the live one differs only by a day of writes.
 
-4. **Record the outcome** — one line is enough. Append to a `restore-drills.log` next
-   to the backups, or note it in your ops journal:
+4. **Record the outcome** next to the backups:
 
    ```bash
-   echo "$(date +%F)  restore drill OK — users=42 orders=100 from $(basename "$DUMP")" \
-     >> "$BACKUP_DIR/restore-drills.log"
+   echo "$(date +%F) restore drill OK, <table>=<count> from $(basename "$DUMP")" >> /opt/backups/postgres/restore-drills.log
    ```
 
-5. **Drop the throwaway database.**
+   Expected: `tail -n 1 /opt/backups/postgres/restore-drills.log` prints the line.
+
+5. **Drop the throwaway database:**
 
    ```bash
    docker compose exec postgres sh -c 'dropdb -U "$POSTGRES_USER" restore_drill'
    ```
 
+   Expected: no output, exit 0.
+
 ## Verify
 
 ```bash
-# confirm backup file was created (BACKUP_DIR from the cron line)
-ls -lh /opt/backups/postgres/backup-*.dump
+crontab -l | grep backup-postgres
+find /opt/backups/postgres -name 'backup-*.dump' -mtime -1
+tail -n 1 /opt/backups/postgres/restore-drills.log
 ```
+
+Expected: the cron line, at least one dump younger than a day, and a drill line from this quarter.
