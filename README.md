@@ -28,7 +28,7 @@ A developer laptop: dotfiles linked into `$HOME`, editor, terminal multiplexer.
 
 | File | Description |
 | --- | --- |
-| [guides/dev-machine.md](guides/dev-machine.md) | Set up a dev machine: CLI tools, dotfiles, Claude config, editor, Docker |
+| [guides/dev-machine.md](guides/dev-machine.md) | Set up a dev machine: gh, Node, pnpm, uv, Claude Code, Docker, CLI tools, dotfiles, Claude config, editor |
 | [install.sh](install.sh) | Dotfiles entrypoint; runs `scripts/install-dotfiles.sh` |
 | [scripts/install-dotfiles.sh](scripts/install-dotfiles.sh) | Symlink shell and Claude config on a dev machine; `--check` lists the links |
 | [dotfiles/.bash_aliases](dotfiles/.bash_aliases) | Shell aliases (git, make, pnpm), history tuning, git prompt |
@@ -54,12 +54,12 @@ Copy-once files and conventions for a new project repository.
 | [templates/.gitignore](templates/.gitignore) | Universal .gitignore (OS, IDE, env, build artifacts, logs, Claude local settings) |
 | [templates/vscode-settings.json](templates/vscode-settings.json) | VS Code workspace settings for consistent formatting |
 | [templates/docker-compose.yml](templates/docker-compose.yml) | Compose starter (local dev, no TLS) |
-| [templates/Dockerfile.python](templates/Dockerfile.python) | Python (uv) backend image with a HEALTHCHECK; copied as `<backend-dir>/Dockerfile` |
-| [templates/Dockerfile.go](templates/Dockerfile.go) | Go backend image: static binary on Alpine with a HEALTHCHECK; copied as `<backend-dir>/Dockerfile` |
-| [templates/Dockerfile.spa](templates/Dockerfile.spa) | React SPA image: pnpm build served by nginx with a HEALTHCHECK; copied as `<frontend-dir>/Dockerfile` |
+| [templates/Dockerfile.python](templates/Dockerfile.python) | Python (uv) backend image with a HEALTHCHECK; copied as `backend/Dockerfile` |
+| [templates/Dockerfile.go](templates/Dockerfile.go) | Go backend image: static binary on Alpine with a HEALTHCHECK; copied as `backend/Dockerfile` |
+| [templates/Dockerfile.spa](templates/Dockerfile.spa) | React SPA image: pnpm build served by nginx with a HEALTHCHECK; copied as `frontend/Dockerfile` |
 | [templates/.dockerignore](templates/.dockerignore) | Build-context excludes: VCS, secrets, host toolchains, tests, docs |
 | [templates/.env.example](templates/.env.example) | Standard env vars for Docker Compose templates |
-| [templates/nginx-spa.conf](templates/nginx-spa.conf) | SPA container nginx server block: client-side routing + asset caching; copied as `<frontend-dir>/nginx.conf` |
+| [templates/nginx-spa.conf](templates/nginx-spa.conf) | SPA container nginx server block: client-side routing + asset caching; copied as `frontend/nginx.conf` |
 | [templates/ci.yml](templates/ci.yml) | GitHub Actions CI workflow (Go, Node, Python, integration, security scans, upgrade path, restore drill) |
 | [templates/release.yml](templates/release.yml) | GitHub Actions release workflow: a vX.Y.Z tag pushes the app images to GHCR |
 | [templates/golangci.yml](templates/golangci.yml) | golangci-lint v2 config: security linters, layer guard, goimports |
@@ -77,7 +77,7 @@ Provision, deploy, back up, monitor and maintain a VPS.
 | [guides/backup-restore.md](guides/backup-restore.md) | PostgreSQL backup, restore and the quarterly restore drill |
 | [guides/postgres-upgrade.md](guides/postgres-upgrade.md) | PostgreSQL major upgrade onto a fresh volume |
 | [guides/monitoring.md](guides/monitoring.md) | External monitoring (Better Stack) |
-| [guides/maintenance.md](guides/maintenance.md) | Server maintenance: reboot routine, monthly checks, OOM diagnosis |
+| [guides/maintenance.md](guides/maintenance.md) | Server maintenance: monthly checklist, OOM diagnosis |
 | [reference/postgresql.md](reference/postgresql.md) | PostgreSQL: queries, indexes, golang-migrate migrations |
 | [reference/linux-services.md](reference/linux-services.md) | Linux services: systemd, journalctl, Compose, ports and firewall, cron |
 | [reference/system-resources.md](reference/system-resources.md) | System info and resource usage |

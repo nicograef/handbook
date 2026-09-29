@@ -1,5 +1,5 @@
 # Dockerfile.go — Go backend image: static binary on Alpine
-# Copy to <backend-dir>/Dockerfile, the name release.yml builds, and copy .dockerignore beside it.
+# Copy to backend/Dockerfile, the name release.yml builds, and copy .dockerignore beside it.
 # Fill <name>: the command directory under cmd/ that holds main.go.
 # The app answers GET /api/health on port 8080; the production Compose files poll its healthcheck.
 
