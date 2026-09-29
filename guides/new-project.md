@@ -127,7 +127,7 @@ A React repository skips [Copy the production files](#copy-the-production-files)
    PROJECT=<project-name> OWNER=<github-owner> DB=<database-name> MARKER=<pytest-marker> GOV=<project-go-version>
    FILES=$(ls Makefile docker-compose*.yml .devcontainer/* scripts/setup-dev-tools.sh .github/*.yml .github/workflows/*.yml */Dockerfile frontend/nginx.conf 2>/dev/null)
    sed -i -e "s|<owner>|$OWNER|g; s|<project>|$PROJECT|g; s|<name>|$PROJECT|g; s|<package>|backend|g; s|<database-name>|$DB|g" \
-     -e "s|<marker>|$MARKER|g; s|<project-go-version>|$GOV|g; s|<backend-dir>|backend|g; s|<frontend-dir>|frontend|g; s|my-project-dev|$PROJECT-dev|" $FILES
+     -e "s|<marker>|$MARKER|g; s|<project-go-version>|$GOV|g; s|my-project-dev|$PROJECT-dev|" $FILES
    sed -i "s|^name: [a-z]*|name: $PROJECT|" docker-compose*.yml
    grep -n '^[^#]*<[a-z][a-z-]\+>' $FILES    # placeholders outside comments
    ```
