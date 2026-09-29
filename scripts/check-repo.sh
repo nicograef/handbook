@@ -85,22 +85,25 @@ strip_code() {
 }
 
 # heading_slugs prints the GitHub heading slug of every ATX heading in a Markdown file,
-# one per line. Frontmatter and fenced code do not count; a repeated slug gets -1, -2.
+# one per line. Frontmatter and fenced code do not count; a repeated slug gets the
+# first unused suffix -1, -2, as GitHub assigns them.
 heading_slugs() {
   perl -CSD -ne '
     if ($. == 1 && /^---\s*$/) { $fm = 1; next }
     if ($fm) { $fm = 0 if /^---\s*$/; next }
     if (/^\s*(```|~~~)/) { $fence = !$fence; next }
     next if $fence;
-    next unless /^#{1,6}\s+(.*?)\s*#*\s*$/;
+    next unless /^ {0,3}#{1,6}\s+(.*?)\s*#*\s*$/;
     $h = $1;
     $h =~ s/\[([^\]]*)\]\([^)]*\)/$1/g;
     $h =~ tr/`*//d;
     $h = lc $h;
     $h =~ s/[^\p{L}\p{N}\p{M} _-]//g;
     $h =~ tr/ /-/;
-    print $seen{$h} ? "$h-$seen{$h}\n" : "$h\n";
-    $seen{$h}++;
+    ($s, $n) = ($h, $seen{$h} || 1);
+    $s = "$h-" . $n++ while $used{$s};
+    ($seen{$h}, $used{$s}) = ($n, 1);
+    print "$s\n";
   ' "$1"
 }
 
@@ -225,6 +228,8 @@ check_contracts() {
     file="${hit%%:*}"
     path="${hit#*:}"
     path="${path#*/nicograef/handbook/}"
+    path="${path#refs/heads/}"
+    path="${path#refs/tags/}"
     path="${path#*/}"
     path="${path%%[.,;:]}"
     if ! git ls-files --error-unmatch -- "$path" >/dev/null 2>&1; then
@@ -270,8 +275,9 @@ check_contracts() {
 # of every Bash(<path>:*) allow entry.
 settings_candidates() {
   jq -r '[.hooks[]?[]?.hooks[]?.command, .statusLine.command?] | .[] | select(. != null)' "$1" \
-    | tr -d "\"'" | tr ';|&()' '     ' | tr -s '[:space:]' '\n' | grep -E '\.sh$' || true
-  jq -r '.permissions.allow[]?' "$1" | sed -nE 's/^Bash\((.*):\*\)$/\1/p'
+    | sed -E 's/\$\{(HOME|CLAUDE_PROJECT_DIR)\}/$\1/g' | tr -d "\"'" | tr ';|&()' '     ' | tr -s '[:space:]' '\n' | grep -E '\.sh$' || true
+  jq -r '.permissions.allow[]?' "$1" | sed -E 's/\$\{(HOME|CLAUDE_PROJECT_DIR)\}/$\1/g' \
+    | sed -nE 's/^Bash\((.*):\*\)$/\1/p'
 }
 
 check_language() {
