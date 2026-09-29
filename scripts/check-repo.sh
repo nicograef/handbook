@@ -27,7 +27,13 @@ log() {
 }
 
 # Content directories the README indexes as its file index.
-INDEX_DIRS=(guides cheatsheets templates scripts)
+INDEX_DIRS=(guides cheatsheets templates scripts claude)
+
+# Tracked top-level folders the README does not index, as "<dir>|<reason>".
+INDEX_EXCLUDE=(
+  ".claude|the skills stage indexes skills; rules and agents are harness config"
+  "docs|PRDs, plans and their glossary are work files"
+)
 
 LANG_ALLOW=(
   ".claude/skills/audiobook/writing.md"
@@ -78,24 +84,54 @@ strip_code() {
   '
 }
 
+# heading_slugs prints the GitHub heading slug of every ATX heading in a Markdown file,
+# one per line. Frontmatter and fenced code do not count; a repeated slug gets -1, -2.
+heading_slugs() {
+  perl -CSD -ne '
+    if ($. == 1 && /^---\s*$/) { $fm = 1; next }
+    if ($fm) { $fm = 0 if /^---\s*$/; next }
+    if (/^\s*(```|~~~)/) { $fence = !$fence; next }
+    next if $fence;
+    next unless /^#{1,6}\s+(.*?)\s*#*\s*$/;
+    $h = $1;
+    $h =~ s/\[([^\]]*)\]\([^)]*\)/$1/g;
+    $h =~ tr/`*//d;
+    $h = lc $h;
+    $h =~ s/[^\p{L}\p{N}\p{M} _-]//g;
+    $h =~ tr/ /-/;
+    print $seen{$h} ? "$h-$seen{$h}\n" : "$h\n";
+    $seen{$h}++;
+  ' "$1"
+}
+
 check_links() {
-  local file dir target path resolved
+  local file dir target path anchor resolved
+  local -A slugs=()
   while IFS= read -r file; do
     dir="$(dirname "$file")"
     while IFS= read -r target; do
       [[ -z "$target" ]] && continue
       case "$target" in
-        http://*|https://*|mailto:*|tel:*|\#*) continue ;;
+        http://*|https://*|mailto:*|tel:*) continue ;;
       esac
       path="${target%%#*}"
-      [[ -z "$path" ]] && continue
-      if [[ "$path" = /* ]]; then
+      anchor=""
+      [[ "$target" == *"#"* ]] && anchor="${target#*#}"
+      if [[ -z "$path" ]]; then
+        resolved="$file"
+      elif [[ "$path" = /* ]]; then
         resolved="$path"
       else
         resolved="$dir/$path"
       fi
       if [[ ! -e "$resolved" ]]; then
         log "dead link in $file -> $target"
+        continue
+      fi
+      [[ -z "$anchor" || "$resolved" != *.md || ! -f "$resolved" ]] && continue
+      [[ -v "slugs[$resolved]" ]] || slugs[$resolved]="$(heading_slugs "$resolved")"
+      if ! grep -qxF -- "$anchor" <<<"${slugs[$resolved]}"; then
+        log "dead anchor in $file -> $target: no heading with slug #$anchor"
       fi
     done < <(strip_code < "$file" | grep -oE '\]\([^)]+\)' | sed -E 's/^\]\(//; s/\)$//')
   done < <(tracked_md)
@@ -132,6 +168,15 @@ check_readme() {
       log "not indexed in README.md: $file"
     fi
   done < <(git ls-files "${index_globs[@]}")
+
+  # Every tracked top-level folder is indexed or excluded with a reason.
+  local folder entry covered
+  while IFS= read -r folder; do
+    covered=false
+    for d in "${INDEX_DIRS[@]}"; do [[ "$folder" == "$d" ]] && covered=true; done
+    for entry in "${INDEX_EXCLUDE[@]}"; do [[ "$entry" == "$folder|"* ]] && covered=true; done
+    [[ "$covered" == true ]] || log "top-level folder neither indexed nor excluded: $folder/"
+  done < <(git ls-files | grep / | cut -d/ -f1 | sort -u)
 
   # Every README link into an index dir must point at an existing tracked file.
   while IFS= read -r target; do

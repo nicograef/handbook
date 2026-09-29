@@ -6,7 +6,7 @@
 check:
 	@scripts/check-repo.sh all
 
-## links: verify every relative Markdown link resolves on disk
+## links: verify every relative Markdown link resolves on disk, #anchors included (GitHub heading slugs)
 links:
 	@scripts/check-repo.sh links
 
@@ -14,7 +14,7 @@ links:
 lint:
 	@scripts/check-repo.sh lint
 
-## readme: verify README.md indexes every content file and vice-versa
+## readme: verify README.md indexes every content file and vice-versa, and every top-level folder is indexed or excluded
 readme:
 	@scripts/check-repo.sh readme
 
