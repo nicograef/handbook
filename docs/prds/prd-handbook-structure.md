@@ -15,7 +15,7 @@ What `install.sh` puts into `~/.claude` is spread over `claude/`, `.claude/` and
 
 Each folder holds exactly one kind of document, and the README is the single entry. It routes by journey first, then indexes every file grouped by area.
 
-Lookup pages live on one reference shelf. Everything `install.sh` links into `~/.claude` lives under `claude/`, and dotfiles linked into `$HOME` live under `dotfiles/`.
+Lookup pages live on one reference shelf, and dotfiles linked into `$HOME` live under `dotfiles/`. `AGENTS.md` names every folder `install.sh` links into `~/.claude`.
 
 The live contracts become checked. `make check` fails when a raw URL, an install origin or a settings script path points nowhere. `install.sh` fails when an origin is missing.
 
@@ -24,7 +24,7 @@ The live contracts become checked. `make check` fails when a raw URL, an install
 1. As the reader, I want one entry page that routes by journey, so that I find the right runbook.
 2. As the reader, I want one document kind per folder, so that I know what I will find.
 3. As the reader, I want all lookup pages on one shelf, so that I can scan commands mid-task.
-4. As the maintainer, I want the `~/.claude` payload in one folder, so that I see the installed surface at a glance.
+4. As the maintainer, I want the payload folders named in one place, so that I see what gets installed.
 5. As the maintainer, I want dotfiles apart from copy-once templates, so that I know which edits go live immediately.
 6. As the maintainer, I want `install.sh` to fail on a missing origin, so that a move never disables a hook silently.
 7. As the maintainer, I want `make check` to verify every live path contract, so that none breaks unnoticed.
@@ -41,16 +41,16 @@ The live contracts become checked. `make check` fails when a raw URL, an install
 | `reference/` | Lookup pages: command tables, and rule lists with one line of rationale |
 | `templates/` | Files a project or server copies once |
 | `dotfiles/` | Files `install.sh` links into `$HOME` outside `~/.claude` |
-| `scripts/` | Server scripts and repo tools |
-| `claude/` | The whole `~/.claude` payload: `CLAUDE.md`, `settings.json`, `statusline.sh`, `bin/`, `agents/`, `skills/` |
-| `.claude/` | Repo-local only: path-scoped rules and the Stop hook |
+| `scripts/` | Server scripts, repo tools and the agent scripts installed into `~/.claude` |
+| `claude/` | Global `CLAUDE.md`, `settings.json` and `statusline.sh` |
+| `.claude/` | Path-scoped rules and the Stop hook, plus the skills and agents installed globally |
 
 ### Moves
 
 - `cheatsheets/` becomes `reference/`; `guides/stack-conventions.md` joins it.
 - `bootstrap.md` is dissolved. Its routing becomes the README Journeys section. Its dev-machine and first-deploy steps move to `guides/dev-machine.md` and `guides/deploy.md`.
 - `.bash_aliases`, `.tmux.conf` and `init.lua` move from `templates/` to `dotfiles/`.
-- `.claude/skills` and `.claude/agents` move to `claude/`. The agent scripts and their tests move to `claude/bin/`.
+- Skills, agents and agent scripts stay in place. Moving them would break the live `~/.claude` until reinstall.
 - The audiobook pipeline guide, `md-to-epub.sh`, `check-terms.sh` and `strip-visuals.lua` move into the audiobook skill directory.
 - The dangling root `agents` symlink is deleted.
 - `scripts/report-repo-status.sh` stays in `scripts/`; its link target does not depend on the folder.
@@ -61,7 +61,7 @@ The live contracts become checked. `make check` fails when a raw URL, an install
 
 ### Guards
 
-- `check-repo.sh` indexes `reference/`, `dotfiles/`, the top-level files of `claude/` and `claude/bin/`. The skills index keeps sole ownership of `claude/skills/**`.
+- `check-repo.sh` indexes `reference/` and `dotfiles/` beside the existing folders.
 - A new `contracts` stage checks three things. Every handbook raw URL resolves to a tracked file. Every install origin exists. Every script path in both settings files exists.
 - Link checking resolves `#anchor` against GitHub heading slugs.
 - Every tracked top-level folder is either indexed or explicitly excluded.
@@ -71,7 +71,7 @@ The live contracts become checked. `make check` fails when a raw URL, an install
 
 ### Landing
 
-`install.sh` never runs from a worktree, because it would repoint `~/.claude` into it. The phase that moves installed files lands on `main`, then runs `~/r/handbook/install.sh` at once. A phase that deletes or moves a file owns every inbound reference to it.
+`install.sh` never runs from a worktree, because it would repoint `~/.claude` into it. The phase that moves the dotfiles lands on `main`, then runs `~/r/handbook/install.sh` at once. A phase that deletes or moves a file owns every inbound reference to it.
 
 ## Testing Decisions
 

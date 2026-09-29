@@ -34,7 +34,7 @@ Each rule is stated once and linked from everywhere else. The unattended-agents 
 
 - `gh api` is allowed for GET only. `find` is allowed without `-delete` and `-exec`.
 - `docker compose down` is allowed without `-v` or `--volumes`. `docker compose exec` leaves the allowlist.
-- Node and Python read-only tools gain allow entries. PHP and Java entries stay, because live repos use both.
+- Node and Python read-only tools gain allow entries. PHP entries stay for `~/r/website`; Java entries go with the Java stack.
 - The `agent-bus.sh` allow entry names its installed path.
 
 ### Global instructions

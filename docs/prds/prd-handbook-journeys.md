@@ -11,7 +11,7 @@ Some journeys stop halfway. Provisioning a server never gets my app onto it. No 
 
 Other pages contradict each other or the setup I actually use. Monitoring assumes the nginx stack, although Caddy is the default. TLS asks for an IPv4 record on an IPv6-only server. Deploy steps are spread over three pages, and a server setup step hides in the tmux sheet.
 
-The stack material leads with Go and Java, while my daily work is Node/TypeScript and Python. I am learning Linux server administration, yet no page teaches services, logs or networking basics.
+The stack material leads with Go and Java, while my daily work is Node/TypeScript and Python. Java costs upkeep on every version bump. I am learning Linux server administration, yet no page teaches services, logs or networking basics.
 
 ## Solution
 
@@ -50,7 +50,7 @@ A reference page on Linux services teaches the commands the runbooks already use
 | Runbook | Content |
 | --- | --- |
 | `dev-machine` | SSH key, git identity, `gh auth login`, Node, pnpm, uv, Claude Code, then `install.sh` |
-| `new-project` | Matrix Python + React, Python, Go + React, Go, React, Docs, Java + React; copies Dockerfile, production and release files |
+| `new-project` | Matrix Python + React, Python, Go + React, Go, React, Docs; copies Dockerfile, production and release files |
 | `provision-server` | Unchanged scope; lingering becomes a step with its own Verify row |
 | `deploy` | Project under `/opt/<project>`, `docker login ghcr.io`, `.env`, first deploy, update, rollback, TLS per variant |
 | `backup-restore` | Backup setup, restore, quarterly drill |
@@ -62,10 +62,12 @@ A reference page on Linux services teaches the commands the runbooks already use
 
 ### Templates and conventions
 
-- `Dockerfile.python`, `Dockerfile.go` and `Dockerfile.spa` join `templates/`, each with a `HEALTHCHECK`. Java keeps its Dockerfile.
+- `Dockerfile.python`, `Dockerfile.go` and `Dockerfile.spa` join `templates/`, each with a `HEALTHCHECK`.
 - The template Makefile `check` target runs the pnpm and uv gates in the documented gate order.
 - CI gains a Python integration step. The template `.gitignore` gains `.deploy-state`.
-- Stack conventions run Node/TypeScript, React, Python, Go, Java. They require a `packageManager` pin and state the real Python pin.
+- Stack conventions run Node/TypeScript, React, Python, Go.
+- Java leaves the handbook: conventions, Dockerfile, matrix row, Makefile lines and editor settings.
+- Conventions require a `packageManager` pin and state the real Python pin.
 - Tool versions stay pinned in their files. CI reads `*-version-file` inputs where the action supports it; the `AGENTS.md` grep rule covers the rest.
 
 ### Linux reference
@@ -98,4 +100,4 @@ A reference page on Linux services teaches the commands the runbooks already use
 
 ## Further Notes
 
-Java stays because `nicograef/lexiban` is a Java and TypeScript project built from these templates. PHP settings stay because `~/r/website` is a live PHP repo.
+`nicograef/lexiban` keeps its own copies of the Java files; git history holds the rest. PHP settings stay because `~/r/website` is a live PHP repo.
