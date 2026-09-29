@@ -101,7 +101,7 @@ The server builds nothing and never pulls on a schedule; a deploy is the only mo
    `Downgrade refused` changes nothing; follow [Roll back](#roll-back).
 
    ```bash
-   cd /opt/<project> && git pull --ff-only && DOMAIN=<domain> make prod-deploy && docker image prune -f
+   cd /opt/<project> && git pull --ff-only && DOMAIN=<domain> make prod-deploy && docker image prune -af
    ```
 
 > `docker volume prune --all` and `docker compose down --volumes` delete the database; only a human decides that.

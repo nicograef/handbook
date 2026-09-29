@@ -38,7 +38,7 @@ The health-ping heartbeat alerts while `/var/run/reboot-required` exists; the re
    docker system df
    ```
 
-   Expected: four rows with a `RECLAIMABLE` column. A large figure is the cue to prune, see [Update](deploy.md#update).
+   Expected: four rows with a `RECLAIMABLE` column. A large figure is the cue to run `docker image prune -af`, as [Update](deploy.md#update) does.
    The `postgres-data` volume is **not** reclaimable and stays.
 
 4. **Quarterly: run the [restore drill](backup-restore.md#restore-drill)** into a throwaway database.
@@ -68,7 +68,7 @@ sudo ufw status verbose
 | `systemctl --failed` | `0 loaded units listed.` | Read the unit's log: `sudo journalctl -u <unit> -b` |
 | `docker compose ps` | Every service `Up`, `postgres` `(healthy)`; none `Restarting` or `Exit` | `docker compose logs <service>` |
 | HTTPS | `HTTP/2 200`, or the deliberate `301`/`308` of a redirecting root | `docker compose logs reverse-proxy`; a hang means the proxy is down |
-| `df -h /` | `Use%` under 80 % | Prune per [Update](deploy.md#update) or grow the volume the same day |
+| `df -h /` | `Use%` under 80 % | Run `docker image prune -af`, or grow the volume the same day |
 | `swapon --show` | One swap row | Create a swapfile as the swap block of [`setup-server.sh`](../scripts/setup-server.sh) does |
 | `findmnt /tmp` | `tmpfs` (the Debian 13 default) or nothing (a directory on disk) | On a box running builds or agents, a tmpfs `/tmp` eats RAM: `sudo systemctl mask tmp.mount`, then reboot |
 | fail2ban | A `Status for the jail: sshd` block; a non-zero `Total banned` is normal | `sudo systemctl restart fail2ban` |
