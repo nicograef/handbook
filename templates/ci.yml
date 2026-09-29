@@ -2,6 +2,10 @@
 # Search for <angle-bracket> placeholders and adapt to your project.
 # Validate locally before pushing: actionlint .github/workflows/ci.yml
 #
+# Toolchain versions come from the project's own pins, so CI and a dev machine agree:
+# Go from go.mod, Node from .node-version, pnpm from packageManager in package.json,
+# uv from [tool.uv] required-version in pyproject.toml.
+#
 # Every `uses:` is pinned to a full commit SHA, with the release it stood for in the
 # trailing comment. A tag is mutable: whoever controls the upstream repository can
 # repoint it and every run picks that up silently. Dependabot's github-actions group
@@ -81,7 +85,7 @@ jobs:
           # fetch-depth: 0
       - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
         with:
-          go-version: "1.26"  # match your go.mod version
+          go-version-file: <backend-dir>/go.mod  # relative to the repo root
 
       - name: Download dependencies
         run: go mod download
@@ -146,7 +150,7 @@ jobs:
           persist-credentials: false
       - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
         with:
-          go-version: "1.26"
+          go-version-file: <backend-dir>/go.mod
 
       - name: golangci-lint
         uses: golangci/golangci-lint-action@ba0d7d2ec06a0ea1cb5fa41b2e4a3ab91d21278a # v9.3.0
@@ -176,7 +180,7 @@ jobs:
 
       - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
-          node-version: 26  # match your .node-version or package.json engines
+          node-version-file: <frontend-dir>/.node-version  # relative to the repo root
           cache: "pnpm"
           cache-dependency-path: <frontend-dir>/pnpm-lock.yaml  # e.g. frontend/pnpm-lock.yaml
 
@@ -215,7 +219,7 @@ jobs:
       # setup-uv publishes no floating tag since v8, so an exact release or a SHA is the only pin.
       - uses: astral-sh/setup-uv@bec219d24cd3e171d82865faccec33120bb574f4 # v10.1.0
         with:
-          version: "0.12.18"
+          version-file: <backend-dir>/pyproject.toml  # relative to the repo root
 
       # --locked fails when uv.lock no longer matches pyproject.toml.
       - name: Sync dependencies
@@ -258,7 +262,7 @@ jobs:
           persist-credentials: false
       - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
         with:
-          go-version: "1.26"
+          go-version-file: ${{ matrix.module }}/go.mod
           cache-dependency-path: ${{ matrix.module }}/go.sum
 
       # govulncheck is a go.mod tool: `go get -tool golang.org/x/vuln/cmd/govulncheck`.
@@ -286,13 +290,14 @@ jobs:
 
       - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
-          node-version: 26
+          node-version-file: <frontend-dir>/.node-version
 
       # Reads pnpm-lock.yaml, so no install. Blocking from "high" upward.
       - name: pnpm audit
         run: pnpm audit --audit-level high
 
-  # ── Integration Tests (Go + PostgreSQL) ────────────────────────────────────
+  # ── Integration Tests (PostgreSQL) ─────────────────────────────────────────
+  # Go and Python steps share the database and its migrations; delete the other stack's steps.
   backend-integration-tests:
     needs: changes
     if: ${{ (needs.changes.outputs.backend == 'true') || (needs.changes.outputs.database == 'true') }}
@@ -314,6 +319,14 @@ jobs:
           --health-interval 10s
           --health-timeout 5s
           --health-retries 5
+    # Read by the tests of either stack.
+    env:
+      POSTGRES_HOST: localhost
+      POSTGRES_PORT: "5432"
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: admin
+      POSTGRES_DBNAME: <database-name>  # match POSTGRES_DB above
+      # JWT_SECRET: test-secret  # uncomment and add secrets your app needs
     defaults:
       run:
         working-directory: ./<backend-dir>
@@ -321,12 +334,22 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
+
+      # Go backend
       - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
         with:
-          go-version: "1.26"
+          go-version-file: <backend-dir>/go.mod
 
       - name: Download dependencies
         run: go mod download
+
+      # Python backend
+      - uses: astral-sh/setup-uv@bec219d24cd3e171d82865faccec33120bb574f4 # v10.1.0
+        with:
+          version-file: <backend-dir>/pyproject.toml
+
+      - name: Sync dependencies
+        run: uv sync --locked
 
       # The digest is the release's sha256sum.txt entry; update it together with the version.
       - name: Install golang-migrate
@@ -340,15 +363,13 @@ jobs:
         working-directory: ./<database-dir>  # e.g. ./database
         run: migrate -path ./migrations -database "postgres://admin:admin@localhost:5432/<database-name>?sslmode=disable" up
 
-      - name: Run integration tests
-        env:
-          POSTGRES_HOST: localhost
-          POSTGRES_PORT: "5432"
-          POSTGRES_USER: admin
-          POSTGRES_PASSWORD: admin
-          POSTGRES_DBNAME: <database-name>  # match POSTGRES_DB above
-          # JWT_SECRET: test-secret  # uncomment and add secrets your app needs
+      - name: Run Go integration tests
         run: go test -tags=integration -v -race ./...
+
+      # -m <marker> overrides the addopts that deselects it; the marker is the opt-in one
+      # from pyproject.toml's [tool.pytest] markers.
+      - name: Run Python integration tests
+        run: uv run pytest -m <marker>
 
   # ── Upgrade Path and Restore Drill (PostgreSQL) ────────────────────────────
   # Migrations are forward-only: a database on the previous release must reach the

@@ -8,6 +8,10 @@
 # include .env
 # export
 
+# Source directories, relative to the project root.
+BACKEND_DIR ?= backend
+FRONTEND_DIR ?= frontend
+
 # ── Local Development (one terminal per target) ──
 
 .PHONY: db be fe
@@ -15,27 +19,40 @@
 db:            ## Start database container
 	docker compose up postgres
 
-be:            ## Start backend (adapt command to your stack)
-	@echo "TODO: add backend start command" >&2; exit 1
-	# cd backend && ./mvnw spring-boot:run -Dspring-boot.run.profiles=dev
-	# cd backend && npm run dev
+# Go backend: cd $(BACKEND_DIR) && go run ./cmd/<name>
+be:            ## Start backend with reload on :8080
+	cd $(BACKEND_DIR) && uv run uvicorn --factory <package>.api:app --reload --port 8080
 
 fe:            ## Start frontend dev server
-	@echo "TODO: add frontend start command" >&2; exit 1
-	# cd frontend && pnpm dev
-	# cd frontend && npm run dev
+	cd $(FRONTEND_DIR) && pnpm dev
 
 # ── Code Quality ──
 
+# The steps and order of ci.yml, so a green `make check` predicts a green CI.
+
 .PHONY: be-check fe-check check
 
-be-check:      ## Backend: lint + test
-	@echo "TODO: add backend checks" >&2; exit 1
-	# cd backend && ./mvnw verify -B
+be-check:      ## Backend: uv gate (sync, lint, format, types, tests, audit)
+	cd $(BACKEND_DIR) && uv sync --locked
+	cd $(BACKEND_DIR) && uv run ruff check .
+	cd $(BACKEND_DIR) && uv run ruff format --check .
+	cd $(BACKEND_DIR) && uv run ty check .
+	cd $(BACKEND_DIR) && uv run pytest
+	cd $(BACKEND_DIR) && uv audit
+# Go backend: use this recipe instead.
+# 	cd $(BACKEND_DIR) && go mod tidy -diff
+# 	cd $(BACKEND_DIR) && go tool goimports -l . | (! grep .)
+# 	cd $(BACKEND_DIR) && go vet ./...
+# 	cd $(BACKEND_DIR) && golangci-lint run
+# 	cd $(BACKEND_DIR) && go test -race ./...
 
-fe-check:      ## Frontend: lint + test
-	@echo "TODO: add frontend checks" >&2; exit 1
-	# cd frontend && pnpm lint && pnpm test
+# `vitest run`, not the test script: vitest watches in a terminal and would never exit.
+fe-check:      ## Frontend: pnpm gate (install, format, lint, types, tests)
+	cd $(FRONTEND_DIR) && pnpm install --frozen-lockfile
+	cd $(FRONTEND_DIR) && pnpm run format:check
+	cd $(FRONTEND_DIR) && pnpm run lint
+	cd $(FRONTEND_DIR) && pnpm exec tsc -b
+	cd $(FRONTEND_DIR) && pnpm exec vitest run
 
 check: be-check fe-check  ## Run all checks
 
