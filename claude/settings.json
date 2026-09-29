@@ -74,6 +74,8 @@
       "Bash(git add:*)",
       "Bash(git commit:*)",
       "Bash(~/.claude/agent-bus.sh:*)",
+      "Bash(~/.claude/check-agents.sh:*)",
+      "Bash(~/.claude/plan-run-guard.sh:*)",
       "Bash(scripts/agent-bus.sh:*)",
       "Bash(./scripts/agent-bus.sh:*)",
       "Bash(uv sync:*)",
