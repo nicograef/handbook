@@ -272,11 +272,11 @@ Lingering becomes a provisioning step with its own Verify row (`Linger=yes`). `A
 
 ### Acceptance criteria
 
-- [ ] `git grep -n 'enable-linger' -- guides reference` shows `guides/provision-server.md` only, and `git grep -n 'Linger=yes' guides/provision-server.md` shows the Verify row.
-- [ ] `git grep -n 'loginctl' reference/tmux.md` prints nothing, and `git grep -n 'provision-server.md' reference/tmux.md` shows the link.
-- [ ] `git grep -n 'backup-restore.md#restore-drill' guides/maintenance.md` shows the quarterly item.
-- [ ] `runbook_shape guides/provision-server.md guides/maintenance.md guides/ipv6-only-vps.md` prints nothing.
-- [ ] `make check` passes.
+- [x] `git grep -n 'enable-linger' -- guides reference` shows `guides/provision-server.md` only, and `git grep -n 'Linger=yes' guides/provision-server.md` shows the Verify row.
+- [x] `git grep -n 'loginctl' reference/tmux.md` prints nothing, and `git grep -n 'provision-server.md' reference/tmux.md` shows the link.
+- [x] `git grep -n 'backup-restore.md#restore-drill' guides/maintenance.md` shows the quarterly item.
+- [x] `runbook_shape guides/provision-server.md guides/maintenance.md guides/ipv6-only-vps.md` prints nothing.
+- [x] `make check` passes.
 
 ## Phase 8: Monitoring runbook
 
