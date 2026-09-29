@@ -1,18 +1,19 @@
 # Server Maintenance
 
+The monthly checklist: apply upgrades, reboot, reclaim disk, then check that everything came back.
 Image updates and roll back happen at deploy time: [deploy.md#update](deploy.md#update).
 
-## Reboot routine (monthly)
+Unattended-upgrades installs patches but never reboots (see [`setup-server.sh`](../scripts/setup-server.sh)).
+Kernel and libc updates take effect only after a reboot, so the monthly reboot is unconditional.
+The health-ping heartbeat alerts while `/var/run/reboot-required` exists; the reboot clears it.
 
-- Unattended-upgrades installs patches but **never auto-reboots**
-  (see [`setup-server.sh`](../scripts/setup-server.sh)).
-- Kernel and libc updates only take effect on the next reboot.
-- On Debian only kernel updates set `/var/run/reboot-required`, so the reboot is unconditional.
-- The health-ping heartbeat alerts while that flag is set; this routine clears it.
-- Run it in a low-traffic maintenance window — a reboot drops all connections
-  for ~1 min.
+## Prerequisites
 
-### Steps
+- SSH access as `<username>` to a server that passed [provision-server.md#verify](provision-server.md#verify).
+- The app deployed per [deploy.md](deploy.md) in `/opt/<project>`, whose `.env` sets `COMPOSE_FILE`.
+- A low-traffic window: the reboot drops all connections for about a minute.
+
+## Monthly checklist
 
 1. **Apply every pending upgrade**, including held-back ones:
 
@@ -22,113 +23,66 @@ Image updates and roll back happen at deploy time: [deploy.md#update](deploy.md#
 
    Expected: apt lists the upgrades and asks to continue, or reports `0 upgraded`.
 
-2. **Note whether the flag is set.** This is informational; the reboot follows either way:
-
-   ```bash
-   test -f /var/run/reboot-required && echo "reboot required" || echo "no flag set"
-   ```
-
-   Expected: `reboot required` after a kernel upgrade, otherwise `no flag set`.
-
-3. **Reboot inside the maintenance window:**
+2. **Reboot inside the maintenance window:**
 
    ```bash
    sudo reboot
    ```
 
-   Expected: the SSH session drops; the host is back in ~30–60 s. Reconnect.
+   Expected: the SSH session drops and the host is back within 30 to 60 s. Reconnect.
+   Containers have `restart: unless-stopped`, so the stack starts on its own.
 
-4. **Verify the stack came back.** Containers have `restart: unless-stopped`, so
-   they should start on their own:
-
-   ```bash
-   docker compose -f docker-compose.prod.yml ps
-   ```
-
-   Expected: every service is listed with `STATUS` `Up …`, and `postgres` shows
-   `(healthy)`. No service in `Restarting` or `Exit`.
-
-5. **Confirm the site is reachable over HTTPS** from off the box:
-
-   ```bash
-   curl -sI https://<your-domain> | head -1
-   ```
-
-   Expected: `HTTP/2 200` (or a deliberate `301`/`308` redirect line if the root
-   redirects). A hang or `curl: (7) Failed to connect` means the reverse proxy
-   didn't come up — check `docker compose -f docker-compose.prod.yml logs
-   reverse-proxy`.
-
-## Disk, memory and service checks (monthly)
-
-1. **Disk headroom.** Threshold: **act when the stack's filesystem is ≥ 80 %
-   used**.
-
-   - Prune images (see [Update](deploy.md#update)), or grow the
-     volume before it fills.
-   - A full disk stops Postgres writes and breaks `certbot renew`.
-
-   ```bash
-   df -h /
-   ```
-
-   Expected: the `/` row's `Use%` is **under 80 %**. At or above, take action the
-   same day.
-
-2. **Swap exists, and `/tmp` is not eating RAM** — see the swap and tmpfs
-   comments in [`setup-server.sh`](../scripts/setup-server.sh) for why both matter.
-
-   ```bash
-   free -h && findmnt -no FSTYPE,SIZE,USED /tmp
-   ```
-
-   Expected: a non-zero `Swap` row, and `/tmp` **absent from `findmnt`** (a plain
-   directory on disk, not tmpfs). Fix: `sudo systemctl mask tmp.mount` and reboot.
-
-3. **Docker's share of the disk** — images, containers, volumes, build cache:
+3. **Reclaim Docker's share of the disk.** List images, containers, volumes and build cache:
 
    ```bash
    docker system df
    ```
 
-   Expected: four rows (`Images`, `Containers`, `Local Volumes`, `Build Cache`)
-   with a `RECLAIMABLE` column. A large reclaimable figure is the cue to prune
-   (see [Update](deploy.md#update)); `postgres-data` under
-   `Local Volumes` is **not** reclaimable and must stay.
+   Expected: four rows with a `RECLAIMABLE` column. A large figure is the cue to prune, see [Update](deploy.md#update).
+   The `postgres-data` volume is **not** reclaimable and stays.
 
-4. **No failed systemd units:**
+4. **Quarterly: run the [restore drill](backup-restore.md#restore-drill)** into a throwaway database.
 
-   ```bash
-   systemctl --failed
-   ```
+   Expected: the throwaway database's row counts match the live one. An actual disaster uses [Restore](backup-restore.md#restore) instead.
 
-   Expected: `0 loaded units listed.` Any listed unit is a regression to
-   investigate (often `fail2ban` or a timer).
+## Verify
 
-5. **fail2ban is active and jailing SSH:**
+Run each check on the server, in `/opt/<project>`; run the HTTPS check from your own machine.
 
-   ```bash
-   sudo systemctl is-active fail2ban && sudo fail2ban-client status sshd
-   ```
+```bash
+test -f /var/run/reboot-required && echo "reboot required" || echo "no flag set"
+systemctl --failed
+docker compose ps
+curl -sI https://<domain> | head -1
+df -h /
+swapon --show
+findmnt -no FSTYPE /tmp
+sudo fail2ban-client status sshd
+sudo ufw status verbose
+```
 
-   Expected: `active`, then an `sshd` jail status block (`Currently banned`,
-   `Total banned`, …). A non-zero `Total banned` is normal on a public box.
-   (Jail config: [`setup-server.sh`](../scripts/setup-server.sh).)
+| Check | Passes when | Otherwise |
+| --- | --- | --- |
+| Reboot flag | `no flag set` | Reboot again; a kernel upgrade landed after the reboot |
+| `systemctl --failed` | `0 loaded units listed.` | Read the unit's log: `journalctl -u <unit> -b` |
+| `docker compose ps` | Every service `Up`, `postgres` `(healthy)`; none `Restarting` or `Exit` | `docker compose logs <service>` |
+| HTTPS | `HTTP/2 200`, or the deliberate `301`/`308` of a redirecting root | `docker compose logs reverse-proxy`; a hang means the proxy is down |
+| `df -h /` | `Use%` under 80 % | Prune per [Update](deploy.md#update) or grow the volume the same day |
+| `swapon --show` | One swap row | Create a swapfile as the swap block of [`setup-server.sh`](../scripts/setup-server.sh) does |
+| `findmnt /tmp` | Prints nothing: `/tmp` is a directory on disk, not tmpfs | `sudo systemctl mask tmp.mount`, then reboot |
+| fail2ban | A `Status for the jail: sshd` block; a non-zero `Total banned` is normal | `sudo systemctl restart fail2ban` |
+| `ufw status verbose` | `Status: active`, `Default: deny (incoming)`, `22/tcp LIMIT`, the app's `80,443/tcp` | Re-add the UFW rules from [`setup-server.sh`](../scripts/setup-server.sh) |
 
-6. **UFW is up and rate-limiting SSH:**
+A full disk stops Postgres writes and breaks certificate renewal.
+The swap and tmpfs comments in [`setup-server.sh`](../scripts/setup-server.sh) explain why both matter.
 
-   ```bash
-   sudo ufw status verbose
-   ```
+## Troubleshooting
 
-   Expected: `Status: active`, `Default: deny (incoming)`, a `22/tcp  LIMIT`
-   rule, and the `80,443/tcp` rules the app needs.
-
-## After an OOM kill
+### After an OOM kill
 
 Processes vanish, nothing is logged as failed, and `uptime` shows no reboot.
 
-The kernel's own report is usually unreadable — `dmesg_restrict=1` on Debian, and
+The kernel's own report is usually unreadable: `dmesg_restrict=1` on Debian, and
 a user outside `adm`/`systemd-journal` sees no kernel lines. Three readings settle
 it without root.
 
@@ -150,22 +104,19 @@ it without root.
    journalctl --since '1 day ago' | grep -E 'OOM killer|oom-kill|memory peak'
    ```
 
-   The `Consumed … memory peak …` line names the culprit — one scope's peak against
+   The `Consumed … memory peak …` line names the culprit. One scope's peak against
    the machine's total is usually the whole diagnosis.
 
-3. **Check whether the user manager itself died**, which is what turns one kill
-   into the loss of every session:
+3. **Check whether the user manager itself died**, which turns one kill into the loss of every session:
 
    ```bash
    systemctl show user@$(id -u).service -p MainPID -p ActiveEnterTimestamp
    ```
 
-   A start timestamp later than the kill means the manager was replaced.
-   Everything in its slice went with it; [tmux.md](../reference/tmux.md) has
-   the lingering that prevents this.
+   A start timestamp later than the kill means the manager was replaced, and everything in its slice went with it.
 
-## Restore drill (quarterly)
+Lingering prevents that loss. Without it, systemd stops `user@<uid>.service` after the last logout.
+An OOM kill that lands on the user manager then takes its whole slice down; a lingering manager stays up.
+[provision-server.md](provision-server.md#turn-on-lingering) enables it.
 
-Follow the [restore drill](backup-restore.md#restore-drill) into a throwaway DB;
-an actual disaster uses the [full-restore commands](backup-restore.md#restore) instead.
-
+A logout alone kills tmux servers only when logind's `KillUserProcesses=` is `yes`. Debian's default `no` keeps them.

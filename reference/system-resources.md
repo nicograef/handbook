@@ -1,6 +1,6 @@
 # System Info and Resource Usage
 
-Monthly thresholds and fixes: [maintenance.md](../guides/maintenance.md#disk-memory-and-service-checks-monthly).
+Monthly thresholds and fixes: [maintenance.md](../guides/maintenance.md#verify).
 
 ```bash
 sudo apt install fastfetch btop ncdu nvtop sysstat   # friendlier add-ons; the rest ships with Ubuntu
