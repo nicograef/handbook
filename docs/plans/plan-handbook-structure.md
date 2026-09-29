@@ -90,13 +90,13 @@ Guards land first, so each later move runs under the anchor, folder-coverage and
 
 ### Acceptance criteria
 
-- [ ] `grep -q -- '--check)' scripts/install-dotfiles.sh && scripts/install-dotfiles.sh --bogus; echo $?` prints the usage, then 2
-- [ ] `grep -q -- '--check)' scripts/install-dotfiles.sh && scripts/install-dotfiles.sh --check` exits 0 and prints `scripts/check-agents.sh .claude/check-agents.sh` among its lines; `test ! -e ~/.claude/check-agents.sh` still holds afterwards
-- [ ] Probe: with `scripts/check-agents.sh` moved aside, the guarded `--check` exits 1 naming it; moved back, it exits 0
-- [ ] Probe: `grep -q -- '--check)' scripts/install-dotfiles.sh && { d=$(mktemp -d); ln -s "$(command -v dirname)" "$d/"; PATH="$d" "$(command -v bash)" scripts/install-dotfiles.sh --check; echo $?; }` prints a line naming jq, then 1
-- [ ] `jq -r '.permissions.allow[]' claude/settings.json | grep -cE '^Bash\(~/\.claude/(check-agents|plan-run-guard)\.sh:\*\)$'` prints 2
-- [ ] `grep -n '~/.claude/check-agents.sh' .claude/skills/programme/SKILL.md` hits, and `git grep -n 'scripts/check-agents.sh' .claude/skills` prints nothing
-- [ ] `make check` passes
+- [x] `grep -q -- '--check)' scripts/install-dotfiles.sh && scripts/install-dotfiles.sh --bogus; echo $?` prints the usage, then 2
+- [x] `grep -q -- '--check)' scripts/install-dotfiles.sh && scripts/install-dotfiles.sh --check` exits 0 and prints `scripts/check-agents.sh .claude/check-agents.sh` among its lines; `test ! -e ~/.claude/check-agents.sh` still holds afterwards
+- [x] Probe: with `scripts/check-agents.sh` moved aside, the guarded `--check` exits 1 naming it; moved back, it exits 0
+- [x] Probe: `grep -q -- '--check)' scripts/install-dotfiles.sh && { d=$(mktemp -d); ln -s "$(command -v dirname)" "$d/"; PATH="$d" "$(command -v bash)" scripts/install-dotfiles.sh --check; echo $?; }` prints a line naming jq, then 1
+- [x] `jq -r '.permissions.allow[]' claude/settings.json | grep -cE '^Bash\(~/\.claude/(check-agents|plan-run-guard)\.sh:\*\)$'` prints 2
+- [x] `grep -n '~/.claude/check-agents.sh' .claude/skills/programme/SKILL.md` hits, and `git grep -n 'scripts/check-agents.sh' .claude/skills` prints nothing
+- [x] `make check` passes
 
 ## Phase 2: Stop hook release and redundant symlink
 
@@ -114,10 +114,10 @@ The repo Stop hook releases a session that was already blocked once: with `stop_
 
 ### Acceptance criteria
 
-- [ ] With a scratch history word in any tracked Markdown file, `printf '{"stop_hook_active":true}' | CLAUDE_PROJECT_DIR="$PWD" bash -c "$(jq -r '.hooks.Stop[0].hooks[0].command' .claude/settings.json)"` exits 0
-- [ ] With the same scratch edit and `"stop_hook_active":false`, the same command exits 2; with the edit restored, it exits 0
-- [ ] `git ls-files agents` prints nothing and `test ! -L agents` holds
-- [ ] `make check` passes
+- [x] With a scratch history word in any tracked Markdown file, `printf '{"stop_hook_active":true}' | CLAUDE_PROJECT_DIR="$PWD" bash -c "$(jq -r '.hooks.Stop[0].hooks[0].command' .claude/settings.json)"` exits 0
+- [x] With the same scratch edit and `"stop_hook_active":false`, the same command exits 2; with the edit restored, it exits 0
+- [x] `git ls-files agents` prints nothing and `test ! -L agents` holds
+- [x] `make check` passes
 
 ## Phase 3: Anchor and folder-coverage checks
 
@@ -135,11 +135,11 @@ The links stage resolves anchors as the header decision describes, and names the
 
 ### Acceptance criteria
 
-- [ ] `make links` passes on the current tree
-- [ ] Probe: renaming the `### Roll back` heading in `guides/maintenance.md` makes `make links` fail naming `guides/maintenance.md` and `#roll-back`; restored, it passes
-- [ ] Probe: a tracked scratch file in a new top-level folder (`git add`) makes `make readme` fail naming the folder; unstaged and removed, it passes
-- [ ] `make readme` passes with `claude` in `INDEX_DIRS`
-- [ ] `make check` passes
+- [x] `make links` passes on the current tree
+- [x] Probe: renaming the `### Roll back` heading in `guides/maintenance.md` makes `make links` fail naming `guides/maintenance.md` and `#roll-back`; restored, it passes
+- [x] Probe: a tracked scratch file in a new top-level folder (`git add`) makes `make readme` fail naming the folder; unstaged and removed, it passes
+- [x] `make readme` passes with `claude` in `INDEX_DIRS`
+- [x] `make check` passes
 
 ## Phase 4: Contracts stage
 
@@ -161,12 +161,12 @@ The links stage resolves anchors as the header decision describes, and names the
 
 ### Acceptance criteria
 
-- [ ] `make contracts` passes, and `make help` lists `contracts`
-- [ ] Probe: pointing the raw URL in `templates/cloud-init.yml` at a missing script makes `make check` fail naming the file and path; restored, it passes
-- [ ] Probe: with `claude/statusline.sh` moved aside, `make contracts` fails naming it; moved back, it passes
-- [ ] Probe: renaming, to names nothing provides, the Stop hook script in `.claude/settings.json`, the `statusLine` script in `claude/settings.json` and the `Bash(~/.claude/agent-bus.sh:*)` allow entry makes `make contracts` fail naming all three; restored, it passes
-- [ ] `grep -n contracts AGENTS.md` hits the `make check` sentence
-- [ ] `make check` passes
+- [x] `make contracts` passes, and `make help` lists `contracts`
+- [x] Probe: pointing the raw URL in `templates/cloud-init.yml` at a missing script makes `make check` fail naming the file and path; restored, it passes
+- [x] Probe: with `claude/statusline.sh` moved aside, `make contracts` fails naming it; moved back, it passes
+- [x] Probe: renaming, to names nothing provides, the Stop hook script in `.claude/settings.json`, the `statusLine` script in `claude/settings.json` and the `Bash(~/.claude/agent-bus.sh:*)` allow entry makes `make contracts` fail naming all three; restored, it passes
+- [x] `grep -n contracts AGENTS.md` hits the `make check` sentence
+- [x] `make check` passes
 
 ## Phase 5: Reference shelf
 
@@ -189,13 +189,13 @@ The four reference pages live in `reference/` and `cheatsheets/` is gone. `.clau
 
 ### Acceptance criteria
 
-- [ ] `git ls-files reference` lists the four pages; `git ls-files cheatsheets guides/stack-conventions.md .claude/rules/cheatsheets.md` prints nothing
-- [ ] `git grep -n -i -e cheatsheet -e guides/stack-conventions -- ':!docs'` prints nothing
-- [ ] `head -4 .claude/rules/reference.md` shows `paths: "reference/**"`, and `grep -n rationale .claude/rules/reference.md` hits
-- [ ] `grep -n stack-conventions .claude/rules/guides.md` prints nothing
-- [ ] `grep -nF '.claude/skills/**/*.sh' .claude/rules/scripts.md` hits the `paths` frontmatter
-- [ ] `make links readme` passes
-- [ ] `make check` passes
+- [x] `git ls-files reference` lists the four pages; `git ls-files cheatsheets guides/stack-conventions.md .claude/rules/cheatsheets.md` prints nothing
+- [x] `git grep -n -i -e cheatsheet -e guides/stack-conventions -- ':!docs'` prints nothing
+- [x] `head -4 .claude/rules/reference.md` shows `paths: "reference/**"`, and `grep -n rationale .claude/rules/reference.md` hits
+- [x] `grep -n stack-conventions .claude/rules/guides.md` prints nothing
+- [x] `grep -nF '.claude/skills/**/*.sh' .claude/rules/scripts.md` hits the `paths` frontmatter
+- [x] `make links readme` passes
+- [x] `make check` passes
 
 ## Phase 6: Dotfiles folder
 
@@ -216,11 +216,11 @@ The three dotfiles live in `dotfiles/`, and the install table links them from th
 
 ### Acceptance criteria
 
-- [ ] `git ls-files dotfiles` lists the three files; `git ls-files templates/.bash_aliases templates/.tmux.conf templates/init.lua` prints nothing
-- [ ] `scripts/install-dotfiles.sh --check` exits 0 and prints `dotfiles/.bash_aliases .bash_aliases`, `dotfiles/.tmux.conf .tmux.conf` and `dotfiles/init.lua .config/nvim/init.lua`
-- [ ] `git grep -n -E 'templates/(\.bash_aliases|\.tmux\.conf|init\.lua)' -- ':!docs'` prints nothing
-- [ ] `grep -n "dotfiles/.bash_aliases" scripts/check-repo.sh` hits the lint glob, and `make lint` passes
-- [ ] `make check` passes
+- [x] `git ls-files dotfiles` lists the three files; `git ls-files templates/.bash_aliases templates/.tmux.conf templates/init.lua` prints nothing
+- [x] `scripts/install-dotfiles.sh --check` exits 0 and prints `dotfiles/.bash_aliases .bash_aliases`, `dotfiles/.tmux.conf .tmux.conf` and `dotfiles/init.lua .config/nvim/init.lua`
+- [x] `git grep -n -E 'templates/(\.bash_aliases|\.tmux\.conf|init\.lua)' -- ':!docs'` prints nothing
+- [x] `grep -n "dotfiles/.bash_aliases" scripts/check-repo.sh` hits the lint glob, and `make lint` passes
+- [x] `make check` passes
 
 ## Phase 7: Audiobook pipeline into its skill
 
@@ -241,12 +241,12 @@ The audiobook pipeline lives entirely in its skill directory. `SKILL.md` introdu
 
 ### Acceptance criteria
 
-- [ ] `git ls-files .claude/skills/audiobook` lists `SKILL.md`, `writing.md`, `pipeline.md`, `md-to-epub.sh`, `check-terms.sh` and `strip-visuals.lua`
-- [ ] `git grep -n -E 'audiobook-pipeline|scripts/(md-to-epub|check-terms)\.sh|templates/strip-visuals' -- ':!docs'` prints nothing
-- [ ] `grep -n 'FILTER=' .claude/skills/audiobook/md-to-epub.sh` shows a default relative to the script's own directory
-- [ ] `.claude/skills/audiobook/check-terms.sh /nonexistent` exits 2 with "chapter directory not found"
-- [ ] `jq -r '.permissions.allow[]' claude/settings.json | grep -c '~/.claude/skills/audiobook/'` prints 2, and `make contracts` passes
-- [ ] `make check` passes
+- [x] `git ls-files .claude/skills/audiobook` lists `SKILL.md`, `writing.md`, `pipeline.md`, `md-to-epub.sh`, `check-terms.sh` and `strip-visuals.lua`
+- [x] `git grep -n -E 'audiobook-pipeline|scripts/(md-to-epub|check-terms)\.sh|templates/strip-visuals' -- ':!docs'` prints nothing
+- [x] `grep -n 'FILTER=' .claude/skills/audiobook/md-to-epub.sh` shows a default relative to the script's own directory
+- [x] `.claude/skills/audiobook/check-terms.sh /nonexistent` exits 2 with "chapter directory not found"
+- [x] `jq -r '.permissions.allow[]' claude/settings.json | grep -c '~/.claude/skills/audiobook/'` prints 2, and `make contracts` passes
+- [x] `make check` passes
 
 ## Phase 8: Entry page and layout map
 
@@ -270,17 +270,17 @@ After Journeys, the README index groups every file by the five areas of the head
 
 ### Acceptance criteria
 
-- [ ] `git ls-files guides/bootstrap.md` prints nothing, and `git grep -n 'bootstrap\.md' -- ':!docs'` prints nothing
-- [ ] `grep -cE '^## (Prerequisites|Verify)$' guides/dev-machine.md guides/deploy.md` prints 2 for each file
-- [ ] `grep -n '^## ' README.md` lists Journeys, Dev machine, Project, Server, Agents, Handbook upkeep and License, in that order
-- [ ] `awk '/^## Journeys/{j=1;next} /^## /{j=0} j' README.md | grep -oE 'guides/(dev-machine|deploy|provision-server|new-project)\.md' | sort -u | wc -l` prints 4
-- [ ] `awk '/^## Journeys/{j=1;next} /^## /{j=0} !j' README.md | grep -oE '\]\([^)#]+' | sort | uniq -d` prints nothing
-- [ ] `for d in guides reference templates dotfiles scripts claude .claude; do grep -qF "| \`$d/\`" AGENTS.md || echo "missing $d"; done` prints nothing
-- [ ] `grep -n -e 'scripts/setup-server.sh' -e 'scripts/report-health.sh' AGENTS.md` hits both frozen paths
-- [ ] `scripts/install-dotfiles.sh --check | awk '$2 ~ /^\.claude\// {print $1}'` lists origins under `claude/`, `scripts/`, `.claude/agents` and `.claude/skills` only
-- [ ] `grep -i payload AGENTS.md | grep -E '(^|[^.])claude/' | grep -F 'scripts/' | grep -F '.claude/agents' | grep -F '.claude/skills'` hits
-- [ ] `make links readme` passes
-- [ ] `make check` passes
+- [x] `git ls-files guides/bootstrap.md` prints nothing, and `git grep -n 'bootstrap\.md' -- ':!docs'` prints nothing
+- [x] `grep -cE '^## (Prerequisites|Verify)$' guides/dev-machine.md guides/deploy.md` prints 2 for each file
+- [x] `grep -n '^## ' README.md` lists Journeys, Dev machine, Project, Server, Agents, Handbook upkeep and License, in that order
+- [x] `awk '/^## Journeys/{j=1;next} /^## /{j=0} j' README.md | grep -oE 'guides/(dev-machine|deploy|provision-server|new-project)\.md' | sort -u | wc -l` prints 4
+- [x] `awk '/^## Journeys/{j=1;next} /^## /{j=0} !j' README.md | grep -oE '\]\([^)#]+' | sort | uniq -d` prints nothing
+- [x] `for d in guides reference templates dotfiles scripts claude .claude; do grep -qF "| \`$d/\`" AGENTS.md || echo "missing $d"; done` prints nothing
+- [x] `grep -n -e 'scripts/setup-server.sh' -e 'scripts/report-health.sh' AGENTS.md` hits both frozen paths
+- [x] `scripts/install-dotfiles.sh --check | awk '$2 ~ /^\.claude\// {print $1}'` lists origins under `claude/`, `scripts/`, `.claude/agents` and `.claude/skills` only
+- [x] `grep -i payload AGENTS.md | grep -E '(^|[^.])claude/' | grep -F 'scripts/' | grep -F '.claude/agents' | grep -F '.claude/skills'` hits
+- [x] `make links readme` passes
+- [x] `make check` passes
 
 ## Phase 9: Landing
 

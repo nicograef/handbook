@@ -68,7 +68,7 @@ None.
 | Phase | Lane | Wave | Status | Landed sha |
 | --- | --- | --- | --- | --- |
 | J3 | `project-gate` | 1 | landed | d807182 |
-| S1–S8 | `structure` | 1 | open | |
+| S1–S8 | `structure` | 1 | landed | ddbb63a |
 | S9 | lead on `main` | 1 | open | |
 | J1, J2 | `journeys-core` | 2 | open | |
 | J4 | `new-project` | 3 | open | |
