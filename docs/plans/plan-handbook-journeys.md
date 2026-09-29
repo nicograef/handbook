@@ -314,10 +314,10 @@ A fresh Ubuntu laptop reaches a working toolchain in one pass. Steps: SSH key, g
 
 ### Acceptance criteria
 
-- [ ] `for t in ssh-keygen 'git config --global user.' 'gh auth login' 'snap install node' 'npm install -g' 'pipx install uv' 'claude --version' install.sh; do grep -qF -- "$t" guides/dev-machine.md || echo "$t"; done` prints nothing.
-- [ ] `git grep -n 'provision-server' guides/dev-machine.md` prints nothing.
-- [ ] `runbook_shape guides/dev-machine.md` prints nothing.
-- [ ] `make check` passes.
+- [x] `for t in ssh-keygen 'git config --global user.' 'gh auth login' 'snap install node' 'npm install -g' 'pipx install uv' 'claude --version' install.sh; do grep -qF -- "$t" guides/dev-machine.md || echo "$t"; done` prints nothing.
+- [x] `git grep -n 'provision-server' guides/dev-machine.md` prints nothing.
+- [x] `runbook_shape guides/dev-machine.md` prints nothing.
+- [x] `make check` passes.
 
 ## Phase 10: Linux services reference and journey check
 
