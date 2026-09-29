@@ -2,7 +2,7 @@
 # check-repo.sh – repo self-check for the handbook knowledge base.
 #
 # Usage:
-#   scripts/check-repo.sh [all|links|lint|readme|language|skills|compose|prose|history]
+#   scripts/check-repo.sh [all|links|lint|readme|language|skills|compose|prose|history|contracts]
 #
 # What it does:
 #   1. Runs the named stage, or every stage for `all` (the default)
@@ -193,6 +193,85 @@ check_readme() {
       fi
     done
   done <<< "$links"
+}
+
+# Handbook raw URLs, host and repo written with escaped dots so this file never matches itself.
+RAW_URL_RE='raw\.githubusercontent\.com/nicograef/handbook/[^/[:space:]]+/[^[:space:]"'\''`)<>|]+'
+
+# The Claude settings files whose script paths check_contracts resolves.
+SETTINGS_FILES=(claude/settings.json .claude/settings.json)
+
+# resolve_home_claude maps a ~/.claude/<rest> path to its repo origin through the install
+# table on stdin ("<origin> <dest>" lines): the exact dest, else a directory dest above it.
+resolve_home_claude() {
+  local dest="$1" origin link_dest
+  while read -r origin link_dest; do
+    if [[ "$dest" == "$link_dest" ]]; then
+      printf '%s\n' "$origin"
+      return
+    fi
+    if [[ "$dest" == "$link_dest/"* ]]; then
+      printf '%s\n' "$origin/${dest#"$link_dest"/}"
+      return
+    fi
+  done
+}
+
+check_contracts() {
+  local hit file path table line settings candidate rest resolved
+
+  # 1. Every handbook raw URL names a tracked path.
+  while IFS= read -r hit; do
+    file="${hit%%:*}"
+    path="${hit#*:}"
+    path="${path#*/nicograef/handbook/}"
+    path="${path#*/}"
+    path="${path%%[.,;:]}"
+    if ! git ls-files --error-unmatch -- "$path" >/dev/null 2>&1; then
+      log "raw URL in $file names an untracked path: $path"
+    fi
+  done < <(git grep -IoE -e "$RAW_URL_RE" || true)
+
+  # 2. The install table's pre-flight passes.
+  if ! table="$(scripts/install-dotfiles.sh --check 2>/dev/null)"; then
+    table=""
+    log "install-dotfiles.sh --check failed; ~/.claude script paths not resolved"
+    while IFS= read -r line; do
+      log "install-dotfiles.sh --check: $line"
+    done < <(scripts/install-dotfiles.sh --check 2>&1 >/dev/null)
+  fi
+
+  # 3. Every script path in the settings files exists.
+  for settings in "${SETTINGS_FILES[@]}"; do
+    while IFS= read -r candidate; do
+      [[ -z "$candidate" ]] && continue
+      case "$candidate" in
+        \~/.claude/*|\$HOME/.claude/*)
+          [[ -n "$table" ]] || continue
+          rest=".claude/${candidate#*/.claude/}"
+          resolved="$(resolve_home_claude "$rest" <<<"$table")"
+          if [[ -z "$resolved" ]]; then
+            log "script path in $settings is not in the install table: $candidate"
+          elif [[ ! -e "$resolved" ]]; then
+            log "script path in $settings resolves to a missing file: $candidate -> $resolved"
+          fi
+          ;;
+        \$CLAUDE_PROJECT_DIR/*)
+          resolved="${candidate#*/}"
+          [[ -e "$resolved" ]] || log "script path in $settings names a missing file: $candidate"
+          ;;
+      esac
+    done < <(settings_candidates "$settings")
+  done
+}
+
+# settings_candidates prints the script-path candidates of one settings file: every
+# token ending in .sh in a hook or statusLine command, quotes stripped, plus the path
+# of every Bash(<path>:*) allow entry.
+settings_candidates() {
+  jq -r '[.hooks[]?[]?.hooks[]?.command, .statusLine.command?] | .[] | select(. != null)' "$1" \
+    | tr -d "\"'" | tr ';|&()' '     ' | tr -s '[:space:]' '\n' | grep -E '\.sh$' || true
+  jq -r '.permissions.allow[]?' "$1" | sed -nE 's/^Bash\((.*):\*\)$/\1/p'
 }
 
 check_language() {
@@ -461,8 +540,9 @@ case "$STAGE" in
   compose)  check_compose ;;
   prose)    check_prose ;;
   history)  check_history ;;
-  all)      check_links; check_shell; check_readme; check_language; check_skills; check_compose; check_prose; check_history ;;
-  *)        printf 'usage: %s [links|lint|readme|language|skills|compose|prose|history|all]\n' "$0" >&2; exit 2 ;;
+  contracts) check_contracts ;;
+  all)      check_links; check_shell; check_readme; check_language; check_skills; check_compose; check_prose; check_history; check_contracts ;;
+  *)        printf 'usage: %s [links|lint|readme|language|skills|compose|prose|history|contracts|all]\n' "$0" >&2; exit 2 ;;
 esac
 
 if [[ "$FAILED" -ne 0 ]]; then
