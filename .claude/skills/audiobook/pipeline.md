@@ -44,10 +44,10 @@ sudo apt install ./pandoc-<version>-1-amd64.deb
 ## Step 1 — Render the EPUB
 
 ```bash
-STRICT=1 ~/.claude/skills/audiobook/md-to-epub.sh audiobook/ book.epub
+~/.claude/skills/audiobook/md-to-epub.sh --strict audiobook/ book.epub
 ```
 
-Drop `STRICT=1` only for hand-written chapters, where warnings are a to-do list.
+Drop `--strict` only for hand-written chapters, where warnings are a to-do list.
 Each finding names its chapter, not a line: search that chapter for the element.
 
 ## Step 2 — Load it into ElevenReader

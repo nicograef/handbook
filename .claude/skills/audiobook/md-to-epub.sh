@@ -2,8 +2,10 @@
 # md-to-epub.sh – render listenable Markdown chapters into an ElevenReader EPUB
 #
 # Usage:
-#   ~/.claude/skills/audiobook/md-to-epub.sh <chapter-dir> [output.epub]
-#   WPM=140 STRICT=1 ~/.claude/skills/audiobook/md-to-epub.sh audiobook/ indexes.epub
+#   ~/.claude/skills/audiobook/md-to-epub.sh [--strict] <chapter-dir> [output.epub]
+#   WPM=140 ~/.claude/skills/audiobook/md-to-epub.sh --strict audiobook/ indexes.epub
+#
+# --strict (or STRICT=1) aborts on any finding.
 #
 # Chapters are the NN-slug.md files in <chapter-dir>, in filename order. Other
 # Markdown in that directory (PLAN.md, sources.md) is ignored.
@@ -30,11 +32,16 @@ log() { printf '\033[1;34m▸ %s\033[0m\n' "$1"; }
 warn() { printf '\033[1;33m! %s\033[0m\n' "$1" >&2; }
 die() { printf '\033[1;31mERROR: %s\033[0m\n' "$1" >&2; exit 1; }
 
+if [[ "${1:-}" == "--strict" ]]; then
+  STRICT=1
+  shift
+fi
+
 SRC_DIR="${1:-}"
 OUT_FILE="${2:-book.epub}"
 
 # ── Pre-flight ───────────────────────────────────────────────────────────────
-[[ -n "$SRC_DIR" ]] || die "usage: $0 <chapter-dir> [output.epub]"
+[[ -n "$SRC_DIR" ]] || die "usage: $0 [--strict] <chapter-dir> [output.epub]"
 [[ -d "$SRC_DIR" ]] || die "chapter directory not found: $SRC_DIR"
 command -v pandoc >/dev/null 2>&1 || die "pandoc is not installed"
 [[ -f "$FILTER" ]] || die "lua filter not found: $FILTER (override with FILTER=)"
@@ -81,7 +88,7 @@ done
 if [[ "$FINDINGS" -gt 0 ]]; then
   warn "$FINDINGS finding(s); the filter strips them from the EPUB"
   if [[ "$STRICT" == "1" ]]; then
-    die "STRICT=1 and the chapters are not clean"
+    die "strict mode and the chapters are not clean"
   fi
 else
   log "No findings"
