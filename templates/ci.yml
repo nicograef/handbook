@@ -197,7 +197,7 @@ jobs:
         run: pnpm exec tsc -b
 
       - name: Run tests
-        run: pnpm run test
+        run: pnpm exec vitest run
 
       - name: Build
         run: pnpm run build
@@ -368,6 +368,8 @@ jobs:
 
       # -m <marker> overrides the addopts that deselects it; the marker is the opt-in one
       # from pyproject.toml's [tool.pytest] markers.
+      # pytest exits 5 while no test carries the marker;
+      # add the first integration test or delete this step.
       - name: Run Python integration tests
         run: uv run pytest -m <marker>
 

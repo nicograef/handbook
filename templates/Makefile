@@ -28,7 +28,8 @@ fe:            ## Start frontend dev server
 
 # ── Code Quality ──
 
-# The steps and order of ci.yml, so a green `make check` predicts a green CI.
+# The uv and pnpm recipes mirror ci.yml's steps and order,
+# so a green `make check` predicts a green CI.
 
 .PHONY: be-check fe-check check
 
@@ -40,19 +41,22 @@ be-check:      ## Backend: uv gate (sync, lint, format, types, tests, audit)
 	cd $(BACKEND_DIR) && uv run pytest
 	cd $(BACKEND_DIR) && uv audit
 # Go backend: use this recipe instead.
+# 	cd $(BACKEND_DIR) && go mod verify
 # 	cd $(BACKEND_DIR) && go mod tidy -diff
 # 	cd $(BACKEND_DIR) && go tool goimports -l . | (! grep .)
 # 	cd $(BACKEND_DIR) && go vet ./...
 # 	cd $(BACKEND_DIR) && golangci-lint run
+# 	cd $(BACKEND_DIR) && go build ./...
 # 	cd $(BACKEND_DIR) && go test -race ./...
 
 # `vitest run`, not the test script: vitest watches in a terminal and would never exit.
-fe-check:      ## Frontend: pnpm gate (install, format, lint, types, tests)
+fe-check:      ## Frontend: pnpm gate (install, format, lint, types, tests, build)
 	cd $(FRONTEND_DIR) && pnpm install --frozen-lockfile
 	cd $(FRONTEND_DIR) && pnpm run format:check
 	cd $(FRONTEND_DIR) && pnpm run lint
 	cd $(FRONTEND_DIR) && pnpm exec tsc -b
 	cd $(FRONTEND_DIR) && pnpm exec vitest run
+	cd $(FRONTEND_DIR) && pnpm run build
 
 check: be-check fe-check  ## Run all checks
 

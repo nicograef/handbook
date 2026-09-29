@@ -87,8 +87,9 @@ else
 fi
 
 # --frozen: the lockfile is the contract; a setup never rewrites it.
+# backend/ is the default backend directory; adapt it to yours.
 info "Syncing Python dependencies..."
-uv sync --frozen
+(cd "$PROJECT_ROOT/backend" && uv sync --frozen)
 
 # ── Frontend dependencies ───────────────────────────────────────────────────
 # Uncomment if your project has a frontend/ directory with pnpm.
