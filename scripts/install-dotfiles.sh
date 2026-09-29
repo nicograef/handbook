@@ -1,40 +1,82 @@
 #!/usr/bin/env bash
 # install-dotfiles.sh – bootstrap shell config in a new environment
 #
+# Usage:
+#   scripts/install-dotfiles.sh           # link, merge and configure; install.sh runs this
+#   scripts/install-dotfiles.sh --check   # pre-flight only: print "<origin> <dest>" per link
+#
 # Run after cloning the repo:
 #   git clone https://github.com/nicograef/handbook.git && cd handbook && ./install.sh
 #
 # What it does:
-#   1. Symlinks .bash_aliases, .tmux.conf, the Neovim init.lua and repo-status into $HOME;
+#   1. Pre-flight: jq present, every link origin exists; any failure exits 1 before a change
+#   2. Symlinks .bash_aliases, .tmux.conf, the Neovim init.lua and repo-status into $HOME;
 #      a real file or directory in the way is moved to <name>.bak
-#   2. Symlinks Claude Code config (global CLAUDE.md, settings, agents, skills,
-#      agent-bus.sh and plan-run-guard.sh — the global hooks in settings.json
-#      call them by those paths)
-#   3. Sets git config defaults (pull.rebase, fetch.prune, etc.)
-#   4. Sets up SSH commit signing when ~/.ssh/id_ed25519.pub exists
-#   5. Points to the gh install docs if gh is missing
+#   3. Symlinks Claude Code config (global CLAUDE.md, settings, agents, skills,
+#      agent-bus.sh, plan-run-guard.sh and check-agents.sh — the global hooks in
+#      settings.json and the skills call them by those paths)
+#   4. Sets git config defaults (pull.rebase, fetch.prune, etc.)
+#   5. Sets up SSH commit signing when ~/.ssh/id_ed25519.pub exists
+#   6. Points to the gh install docs if gh is missing
 #
+# --check touches nothing; its origins are relative to the repo, its dests to $HOME.
 # .bashrc is left alone: the Ubuntu default sources ~/.bash_aliases.
 set -euo pipefail
+
+usage() {
+  printf 'usage: %s [--check]\n' "$0" >&2
+}
+
+CHECK=false
+case "$#:${1:-}" in
+  0:) ;;
+  1:--check) CHECK=true ;;
+  *) usage; exit 2 ;;
+esac
 
 DOTFILES_DIR="$(cd "$(dirname "$0")/.." && pwd)"
 
 log() { printf '\033[1;34m▸ %s\033[0m\n' "$1"; }
 
-# Guard: abort early if the repo root is wrong (templates/.bash_aliases missing),
-# so we don't silently create broken symlinks.
-if [[ ! -f "$DOTFILES_DIR/templates/.bash_aliases" ]]; then
-  echo "ERROR: $DOTFILES_DIR/templates/.bash_aliases not found — run this from the handbook repo." >&2
-  exit 1
-fi
+# The one link table, as "<origin> <dest>": origin relative to the repo, dest to $HOME.
+# settings.local.json stays machine-local and is intentionally NOT linked.
+# Copilot CLI reads ~/.agents/skills, not ~/.claude/skills.
+LINKS=(
+  "templates/.bash_aliases .bash_aliases"
+  "templates/.tmux.conf .tmux.conf"
+  "templates/init.lua .config/nvim/init.lua"
+  "scripts/report-repo-status.sh .local/bin/repo-status"
+  "claude/CLAUDE.md .claude/CLAUDE.md"
+  "claude/settings.json .claude/settings.json"
+  "claude/statusline.sh .claude/statusline.sh"
+  "scripts/agent-bus.sh .claude/agent-bus.sh"
+  "scripts/plan-run-guard.sh .claude/plan-run-guard.sh"
+  "scripts/check-agents.sh .claude/check-agents.sh"
+  ".claude/agents .claude/agents"
+  ".claude/skills .claude/skills"
+  ".claude/skills .agents/skills"
+)
+
+# Checks every precondition before the first change; exits 1 naming each failure.
+preflight() {
+  local entry origin ok=true
+  if ! command -v jq >/dev/null 2>&1; then
+    printf 'ERROR: jq not found; install it first (apt install jq)\n' >&2
+    ok=false
+  fi
+  for entry in "${LINKS[@]}"; do
+    origin="${entry%% *}"
+    if [[ ! -e "$DOTFILES_DIR/$origin" ]]; then
+      printf 'ERROR: link origin not found: %s\n' "$origin" >&2
+      ok=false
+    fi
+  done
+  [[ "$ok" == true ]] || exit 1
+}
 
 # Moves a real file or directory at the destination to .bak, then links it.
 link() {
   local origin="$DOTFILES_DIR/$1" dest="$HOME/$2"
-  if [[ ! -e "$origin" ]]; then
-    echo "SKIP: $origin not found"
-    return
-  fi
   if [[ -e "$dest" && ! -L "$dest" ]]; then
     mv -T --backup=numbered "$dest" "$dest.bak"
     log "Moved $dest to $dest.bak"
@@ -44,23 +86,17 @@ link() {
   log "Linked $dest → $origin"
 }
 
-# ── Symlink dotfiles ────────────────────────────────────────────────────────
-link templates/.bash_aliases .bash_aliases
-link templates/.tmux.conf .tmux.conf
-link templates/init.lua .config/nvim/init.lua
-link scripts/report-repo-status.sh .local/bin/repo-status
+preflight
 
-# ── Claude Code config ──────────────────────────────────────────────────────
-# settings.local.json stays machine-local and is intentionally NOT linked.
-link claude/CLAUDE.md .claude/CLAUDE.md
-link claude/settings.json .claude/settings.json
-link claude/statusline.sh .claude/statusline.sh
-link scripts/agent-bus.sh .claude/agent-bus.sh
-link scripts/plan-run-guard.sh .claude/plan-run-guard.sh
-link .claude/agents .claude/agents
-link .claude/skills .claude/skills
-# Copilot CLI reads ~/.agents/skills, not ~/.claude/skills.
-link .claude/skills .agents/skills
+if [[ "$CHECK" == true ]]; then
+  printf '%s\n' "${LINKS[@]}"
+  exit 0
+fi
+
+# ── Symlink dotfiles and Claude Code config ─────────────────────────────────
+for entry in "${LINKS[@]}"; do
+  link "${entry%% *}" "${entry#* }"
+done
 
 # ~/.claude.json holds machine state (auth, project list), so it is merged, not linked.
 # It carries the /config choices that have no settings.json key.
