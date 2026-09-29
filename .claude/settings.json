@@ -6,7 +6,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "[ \"$(jq -r '.stop_hook_active // false' 2>/dev/null)\" = true ] && exit 0; \"$CLAUDE_PROJECT_DIR\"/scripts/check-repo.sh"
+            "command": "p=$(cat); case \"$p\" in *'\"stop_hook_active\":true'*|*'\"stop_hook_active\": true'*) exit 0 ;; esac; \"$CLAUDE_PROJECT_DIR\"/scripts/check-repo.sh"
           }
         ]
       }
