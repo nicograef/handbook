@@ -47,8 +47,8 @@ The preferred path, on Hetzner Cloud: the server provisions itself on first boot
 4. **Wait for cloud-init to finish:**
 
    ```bash
-   ssh <username>@<host> "sudo cloud-init status --wait"
-   ssh <username>@<host> "sudo tail -n 40 /var/log/cloud-init-output.log"
+   ssh <username>@<host> "cloud-init status --wait"
+   ssh -t <username>@<host> "sudo tail -n 40 /var/log/cloud-init-output.log"
    ```
 
    Expected: `status: done`, and the log shows the script's `Setup complete` summary.

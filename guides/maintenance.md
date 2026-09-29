@@ -64,14 +64,14 @@ sudo ufw status verbose
 | Check | Passes when | Otherwise |
 | --- | --- | --- |
 | Reboot flag | `no flag set` | Reboot again; a kernel upgrade landed after the reboot |
-| `systemctl --failed` | `0 loaded units listed.` | Read the unit's log: `journalctl -u <unit> -b` |
+| `systemctl --failed` | `0 loaded units listed.` | Read the unit's log: `sudo journalctl -u <unit> -b` |
 | `docker compose ps` | Every service `Up`, `postgres` `(healthy)`; none `Restarting` or `Exit` | `docker compose logs <service>` |
 | HTTPS | `HTTP/2 200`, or the deliberate `301`/`308` of a redirecting root | `docker compose logs reverse-proxy`; a hang means the proxy is down |
 | `df -h /` | `Use%` under 80 % | Prune per [Update](deploy.md#update) or grow the volume the same day |
 | `swapon --show` | One swap row | Create a swapfile as the swap block of [`setup-server.sh`](../scripts/setup-server.sh) does |
-| `findmnt /tmp` | Prints nothing: `/tmp` is a directory on disk, not tmpfs | `sudo systemctl mask tmp.mount`, then reboot |
+| `findmnt /tmp` | `tmpfs` (the Debian 13 default) or nothing (a directory on disk) | On a box running builds or agents, a tmpfs `/tmp` eats RAM: `sudo systemctl mask tmp.mount`, then reboot |
 | fail2ban | A `Status for the jail: sshd` block; a non-zero `Total banned` is normal | `sudo systemctl restart fail2ban` |
-| `ufw status verbose` | `Status: active`, `Default: deny (incoming)`, `22/tcp LIMIT`, the app's `80,443/tcp` | Re-add the UFW rules from [`setup-server.sh`](../scripts/setup-server.sh) |
+| `ufw status verbose` | `Status: active`, `Default: deny (incoming)`, `22/tcp LIMIT`, `80/tcp` and `443/tcp` `ALLOW IN` | Re-add the UFW rules from [`setup-server.sh`](../scripts/setup-server.sh) |
 
 A full disk stops Postgres writes and breaks certificate renewal.
 The swap and tmpfs comments in [`setup-server.sh`](../scripts/setup-server.sh) explain why both matter.
@@ -115,8 +115,12 @@ it without root.
 
    A start timestamp later than the kill means the manager was replaced, and everything in its slice went with it.
 
-Lingering prevents that loss. Without it, systemd stops `user@<uid>.service` after the last logout.
-An OOM kill that lands on the user manager then takes its whole slice down; a lingering manager stays up.
-[provision-server.md](provision-server.md#turn-on-lingering) enables it.
+The manager dies when the OOM killer takes `systemd --user` itself, which runs with `OOMScoreAdjust=100`.
+Its `KillMode=mixed` then kills the rest of the slice. Swap keeps the OOM killer off the manager.
+The swap comment in [`setup-server.sh`](../scripts/setup-server.sh) details it.
 
-A logout alone kills tmux servers only when logind's `KillUserProcesses=` is `yes`. Debian's default `no` keeps them.
+Lingering covers the other path. tmux runs each pane in a `tmux-spawn-*.scope` under `user@<uid>.service`.
+Without lingering, the last logout stops that unit and every pane, whatever `KillUserProcesses=` says.
+An OOM kill that ends your SSH sessions then takes tmux with it.
+
+[provision-server.md](provision-server.md#turn-on-lingering) turns lingering on.

@@ -60,7 +60,13 @@ Source: <https://docs.docker.com/engine/daemon/ipv6/>
    ```
 
    Expected: `"ipv6": true` and the `default-network-opts` block beside `"max-size": "10m"`.
-   If the file predates the script, merge the keys from its step 6b by hand.
+   If the file predates the script, merge the keys from its step 6b by hand, then restart Docker:
+
+   ```bash
+   sudo systemctl restart docker
+   ```
+
+   Existing networks keep their options until `docker compose down && docker compose up -d` recreates them.
 
 ## Limits (no on-box workaround)
 
