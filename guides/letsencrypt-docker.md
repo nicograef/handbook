@@ -15,8 +15,9 @@ Caddy's core has no rate limiter. The Certbot variant pings `CERT_PING_URL` afte
 
 ## Prerequisites
 
-1. DNS A record pointing to the VPS IP (+ `www` subdomain)
-2. Any AAAA record for either name points to this server or is removed, since Let's Encrypt prefers IPv6
+1. DNS records for the domain and its `www` subdomain, per host type:
+   - Dual-stack server: an A record to its IPv4. Any AAAA record points to its IPv6 or is removed, since Let's Encrypt prefers IPv6.
+   - IPv6-only server: an AAAA record only. IPv4-only clients cannot reach it; see [ipv6-only-vps.md](ipv6-only-vps.md#limits-no-on-box-workaround).
 
 ### Inputs
 

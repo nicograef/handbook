@@ -13,8 +13,9 @@
 #   4. Pulls the pinned images, starts the stack and polls every healthcheck.
 #   5. Polls https://DOMAIN, then records the tag as deployed; on a failure, prints the rollback path.
 #
-# Not checked below: the DNS A record for DOMAIN, and any AAAA record, must already
-# point at this server, or the ACME challenge fails (see guides/letsencrypt-docker.md).
+# Not checked below: the DNS records for DOMAIN (A and AAAA on dual-stack, AAAA only on
+# IPv6-only) must already point at this server, or the ACME challenge fails
+# (see guides/letsencrypt-docker.md).
 set -euo pipefail
 
 # ── Configuration ──
