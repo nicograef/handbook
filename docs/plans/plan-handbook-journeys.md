@@ -176,14 +176,14 @@ A copied project runs one gate locally and in CI. The template Makefile's `be`, 
 
 ### Acceptance criteria
 
-- [ ] `docker run --rm -v "$PWD:/repo" -w /repo rhysd/actionlint:latest -shellcheck= templates/ci.yml` exits 0.
-- [ ] `git grep -nE 'go-version:|node-version:|version: "0\.' templates/ci.yml` prints nothing.
-- [ ] `git grep -n 'pytest -m' templates/ci.yml` shows the Python integration step.
-- [ ] `git grep -c 'Install golang-migrate' templates/ci.yml` prints 2 (integration and upgrade path only).
-- [ ] `make -n -f templates/Makefile check` prints the uv gate then the pnpm gate, with no `TODO`.
-- [ ] `git grep -nx '.deploy-state' templates/.gitignore` prints one line.
-- [ ] `git grep -niE '\bjava\b|mvnw|\*\.class' -- templates/` prints nothing.
-- [ ] `make check` passes.
+- [x] `docker run --rm -v "$PWD:/repo" -w /repo rhysd/actionlint:latest -shellcheck= templates/ci.yml` exits 0.
+- [x] `git grep -nE 'go-version:|node-version:|version: "0\.' templates/ci.yml` prints nothing.
+- [x] `git grep -n 'pytest -m' templates/ci.yml` shows the Python integration step.
+- [x] `git grep -c 'Install golang-migrate' templates/ci.yml` prints 2 (integration and upgrade path only).
+- [x] `make -n -f templates/Makefile check` prints the uv gate then the pnpm gate, with no `TODO`.
+- [x] `grep -nx '.deploy-state' templates/.gitignore` prints one line.
+- [x] `git grep -niE '\bjava\b|mvnw|\*\.class' -- templates/` prints nothing.
+- [x] `make check` passes.
 
 ## Phase 4: New project runbook
 
