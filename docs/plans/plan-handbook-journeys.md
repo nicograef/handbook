@@ -91,6 +91,11 @@ Every README journey (new dev machine, new project, fresh server, deploy, then b
 - Owner ruling 2026-09-29: gh installs from GitHub's apt repository; the owner's laptop moves to it.
 - Runbook steps stay numbered lists; only headings are unnumbered, so the glossary's "numbered steps" holds.
 
+- Owner ruling 2026-09-29: the uv pin is a floor, `required-version = ">=<uv-version>"`; CI's setup-uv runs `resolution-strategy: lowest`, so CI runs exactly the floor.
+- Owner ruling 2026-09-29: React-only projects have no `prod-init.sh` deploy path.
+- Owner ruling 2026-09-29: React projects lint with type-aware oxlint on TypeScript 7; typescript-eslint goes.
+- `backend/` and `frontend/` are fixed directory names, since every template hard-codes them.
+
 ## Open questions / Risks
 
 - `deploy.md` absorbs three sources and must stay at or under 150 lines. Linking script headers instead of restating them is what keeps it there.
@@ -202,13 +207,13 @@ A copied project runs one gate locally and in CI. The template Makefile's `be`, 
 
 ### Acceptance criteria
 
-- [ ] `grep -E '^## ' reference/stack-conventions.md` prints Node/TypeScript, React, Python, Go in that order.
-- [ ] `for t in packageManager .node-version required-version; do grep -qF -- "$t" reference/stack-conventions.md || echo "$t"; done` prints nothing.
-- [ ] `for t in Dockerfile.python Dockerfile.go Dockerfile.spa nginx-spa.conf .dockerignore docker-compose.prod-caddy.yml Caddyfile .env.example prod-init.sh backup-postgres.sh release.yml; do grep -qF -- "$t" guides/new-project.md || echo "$t"; done` prints nothing.
-- [ ] `for t in .node-version packageManager .python-version required-version; do grep -qF -- "$t" guides/new-project.md || echo "$t"; done` prints nothing.
-- [ ] `runbook_shape guides/new-project.md` prints nothing.
-- [ ] `git grep -niwE 'java|spring|maven|mvnw' -- guides reference README.md` prints nothing.
-- [ ] `make check` passes.
+- [x] `grep -E '^## ' reference/stack-conventions.md` prints Node/TypeScript, React, Python, Go in that order.
+- [x] `for t in packageManager .node-version required-version; do grep -qF -- "$t" reference/stack-conventions.md || echo "$t"; done` prints nothing.
+- [x] `for t in Dockerfile.python Dockerfile.go Dockerfile.spa nginx-spa.conf .dockerignore docker-compose.prod-caddy.yml Caddyfile .env.example prod-init.sh backup-postgres.sh release.yml; do grep -qF -- "$t" guides/new-project.md || echo "$t"; done` prints nothing.
+- [x] `for t in .node-version packageManager .python-version required-version; do grep -qF -- "$t" guides/new-project.md || echo "$t"; done` prints nothing.
+- [x] `runbook_shape guides/new-project.md` prints nothing.
+- [x] `git grep -niwE 'java|spring|maven|mvnw' -- guides reference README.md` prints nothing.
+- [x] `make check` passes.
 
 ## Phase 5: Deploy runbook
 
