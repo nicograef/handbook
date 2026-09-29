@@ -113,6 +113,7 @@ sudo env LC_ALL=C unattended-upgrade --dry-run --debug 2>&1 | grep -i 'allowed o
 systemctl list-timers 'apt-daily*' --no-pager
 swapon --show
 cat /etc/cron.d/report-health
+systemctl is-active cron
 loginctl show-user "$USER" -p Linger
 ```
 
@@ -130,6 +131,7 @@ loginctl show-user "$USER" -p Linger
 | `systemctl list-timers` | `apt-daily.timer` and `apt-daily-upgrade.timer` appear |
 | `swapon --show` | One swap row, so the kernel can reclaim memory before the OOM killer runs |
 | `/etc/cron.d/report-health` | Prints the `0 * * * * root /usr/local/bin/report-health` line |
+| `systemctl is-active cron` | `active` |
 | `loginctl show-user` | `Linger=yes` |
 
 The script adds no upgrade origins; the stock `50unattended-upgrades` ones apply.

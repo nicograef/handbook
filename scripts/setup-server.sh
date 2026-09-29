@@ -96,7 +96,7 @@ run apt full-upgrade -y
 run apt install -y \
   curl wget git make vim unzip \
   ca-certificates \
-  jq lsof \
+  jq lsof cron \
   ufw fail2ban
 
 # ── 1b. Swap ────────────────────────────────────────────────────────────────
