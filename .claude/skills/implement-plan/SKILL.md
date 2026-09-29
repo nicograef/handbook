@@ -8,6 +8,8 @@ argument-hint: "<path to plan file>"
 
 Progress is durable only once committed and ticked. The run owns the turn: no human turn between phases, folds and landing. The Stop hook `plan-run-guard.sh` blocks a stop while `plan/<slug>` still has an unticked criterion, for the session that claimed the run. Claim it with `~/.claude/plan-run-guard.sh claim <slug>` once the run branch exists, and again on every pickup. An unclaimed run nudges every session in the repo.
 
+Open [lead.md](lead.md) before the first dispatch, on a stop and before landing. It holds lead upkeep, failures, dispatch, the verification budget and the landing protocol.
+
 ## Gotchas
 
 - `rerere.enabled` is on in `~/.gitconfig`. A repeat conflict comes back fully resolved with no markers while `git status` still shows `UU`. Run every merge and rebase with `-c rerere.enabled=false`.
@@ -21,13 +23,13 @@ Progress is durable only once committed and ticked. The run owns the turn: no hu
 1. Resume first, on every invocation: run the pickup sequence in [git.md](git.md). Finish or abort a half-open rebase or merge in its owning worktree. Redoing finished work is the most expensive failure.
 2. Read the plan. Detect the base branch with `git symbolic-ref --short refs/remotes/origin/HEAD`, then `git ls-remote --symref origin HEAD`; ask if neither resolves. Pin it.
 3. Review every unmet phase in one pass: ambiguous criteria, missing files, criteria no command verifies, shell commands the allowlist lacks.
-4. Ask how the plan runs fast and lean, then choose the shape. Run the concurrency test in [git.md](git.md) on every phase pair. Each pair that passes becomes a lane, up to the writer cap in § Dispatch; sequential is the fallback. Set each phase's review tier. Gate only for redoable work; one probe where a rerun is paid or slow. Probes plus a human read before anything irreversible.
+4. Ask how the plan runs fast and lean, then choose the shape. Run the concurrency test in [git.md](git.md) on every phase pair. Each pair that passes becomes a lane, up to the [writer cap](lead.md#dispatch); sequential is the fallback. Set each phase's [review tier](lead.md#verification-budget).
 5. Present the run contract once: plan, base and sha, phases with grouping and tiers, worktrees and branches. Also the verify command, stop conditions, open questions and missing allowlist commands. This is the run's only planned human turn.
 6. Create `../<repo>-wt/plan-<slug>` on branch `plan/<slug>` from `$BASE`. Confirm the verify command passes on unchanged code.
 7. Execute phases in order. Sequential phases run in the run worktree; a concurrent group gets one worktree, branch and agent per phase. No two agents write one file; only the lead writes the plan file.
 8. Commit per criterion that names its own change, then tick. Workers batch verification: one targeted test run per criterion, the full gate once per phase, scoped to the languages touched. No gate, build or review after a single edit. Tick a phase's criteria in one commit when it closes, and only what a tool result proves. Verification failing twice for one reason: debug root-cause first, then stop.
 9. Fold each group into `plan/<slug>` in phase order with the fold sequence in [git.md](git.md). Re-verify after each fold.
-10. Land `plan/<slug>` on the base with the landing sequence, then re-verify in the main checkout and push the base. Remove `## Run state` in its own commit before landing. `git rm` the plan file after landing only when every criterion is ticked. Remove the run's worktrees and `-d` its merged branches.
+10. Remove `## Run state` in its own commit, then land `plan/<slug>` as [lead.md](lead.md#landing) says. `git rm` the plan file after landing only when every criterion is ticked. Remove the run's worktrees and `-d` its merged branches.
 11. Report: `3 phases — 2 complete, 1 blocked; 9 criteria ticked; 11 commits landed`, then phases, dropped agents, unticked items and the plan file's fate.
 
 ## Stops
@@ -38,7 +40,7 @@ Progress is durable only once committed and ticked. The run owns the turn: no hu
 | Forced | Verification fails repeatedly for one reason after debugging | Stop |
 | Forced | A step needs a hazard command, or a branch, worktree or file the run did not create | Stop |
 | Forced | A foreign dirty worktree or `index.lock` blocks the path | Report it; never clear another session's state |
-| Forced | Usage limit or terminal API error | Commit `## Run state`, report the verbatim string and reset time |
+| Forced | Usage limit or terminal API error | Commit `## Run state` with the verbatim string; respond as [lead.md](lead.md#failures) says |
 | Judgment | A criterion is ambiguous or unverifiable | One reading survives: implement it, say so in the commit body. Otherwise ask |
 | Judgment | The plan would have to change | That is `plan`'s job: stop |
 | Judgment | A shell command is not allowlisted | Use an allowlisted equivalent, or stop and name the exact command |
@@ -57,23 +59,9 @@ Written into the plan file on a stop, committed to `plan/<slug>`, deleted in its
 | `Workflow` | `scriptPath=<path>` and `runId=<id>` |
 | `Failure` | the verbatim failure string, only when the run died |
 
-## Failures
-
-Record the harness's message verbatim in `Failure`; match it by kind, not by exact wording.
-
-| Kind | Response |
-| --- | --- |
-| Session or weekly usage limit | Commit the handoff, name the reset time. These span all models, so no model switch helps. The reset or an account switch continues the run |
-| Model-specific usage limit | It stops that model's workers, and the lead if it runs on it. Commit the handoff, name the reset time. A worker never changes model |
-| Subagent terminated by an API error | Its `agent()` returned `null`; re-dispatch from its last commit |
-| Capacity throttling that outlasted the retries | Stop, hand off |
-| Server error mid-response | Not retried, output may be partial; rerun the phase from its last commit |
-
-## Dispatch
+## Workers
 
 - Commit subject Conventional Commit, trailer `Plan: <slug> phase <N> criterion <M>`.
-- Give a worker: plan path (as a path), worktree path, branch, phase number, verify command, trailer format, plan-file write ban. Add: "commit each criterion as it verifies; run the full gate once, at phase end". Also: "at 30 minutes commit what verifies and return". A fully mechanical phase runs on `sonnet` with `effort: low`; the rest on `opus`.
-- A lead with background agents or a workflow arms the jobs of [programme § Lead upkeep](../programme/SKILL.md#lead-upkeep). The plan file takes the programme file's place.
-- A returned `null` is a phase that did not happen; its branch keeps its commits. Re-dispatch it to continue from `git log <branch>`, never from scratch.
-- A defect a review finds goes back to the phase's own worker via SendMessage. Carry the defect classes into the next phase's prompt.
-- Cap writers at 4 (one checkout, install and fold each); read-only scouts and reviewers at the runtime's cap. While phase N's writer works, a read-only scout may prepare phase N+1.
+- Give a worker: plan path (as a path), worktree path, branch, phase number, verify command, trailer format, plan-file write ban.
+- Add: "commit each criterion as it verifies; run the full gate once, at phase end". Also: "at 30 minutes commit what verifies and return".
+- A fully mechanical phase runs on `sonnet` with `effort: low`; the rest on `opus`.
