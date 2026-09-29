@@ -34,6 +34,7 @@ Heading-grouped rules and idioms per stack — reference material, not runbooks.
 | --------------------- | -------------------------------------------------------------- |
 | tmux                  | [cheatsheets/tmux.md](cheatsheets/tmux.md)                     |
 | PostgreSQL            | [cheatsheets/postgresql.md](cheatsheets/postgresql.md)         |
+| System info and resource usage | [cheatsheets/system-resources.md](cheatsheets/system-resources.md) |
 
 ## Templates
 
