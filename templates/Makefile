@@ -49,13 +49,13 @@ be-check:      ## Backend: uv gate (sync, lint, format, types, tests, audit)
 # 	cd $(BACKEND_DIR) && go build ./...
 # 	cd $(BACKEND_DIR) && go test -race ./...
 
-# `vitest run`, not the test script: vitest watches in a terminal and would never exit.
+# The package.json scripts reference/stack-conventions.md names; `test` is `vitest run`, which exits.
 fe-check:      ## Frontend: pnpm gate (install, format, lint, types, tests, build)
 	cd $(FRONTEND_DIR) && pnpm install --frozen-lockfile
 	cd $(FRONTEND_DIR) && pnpm run format:check
 	cd $(FRONTEND_DIR) && pnpm run lint
-	cd $(FRONTEND_DIR) && pnpm exec tsc -b
-	cd $(FRONTEND_DIR) && pnpm exec vitest run
+	cd $(FRONTEND_DIR) && pnpm run typecheck
+	cd $(FRONTEND_DIR) && pnpm run test
 	cd $(FRONTEND_DIR) && pnpm run build
 
 check: be-check fe-check  ## Run all checks

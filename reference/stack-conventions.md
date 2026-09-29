@@ -31,11 +31,20 @@ decorators fail at load; `erasableSyntaxOnly` makes `tsc` reject them first:
 Node never type-checks. `tsc -b` does, as its own gate step. Plain `tsc` checks nothing under
 Vite's solution-style tsconfig.
 
-Pin TypeScript to `~6.0`. typescript-eslint supports `>=4.8.4 <6.1.0`, so TypeScript 7 breaks the linter
-([dependency versions](https://typescript-eslint.io/users/dependency-versions/)).
+Pin TypeScript to `~7.0`, the Go-native compiler. Its `tsc -b` builds project references as before
+([TypeScript 7.0](https://devblogs.microsoft.com/typescript/announcing-typescript-7-0/)).
 
-Lint with ESLint and typescript-eslint's `recommendedTypeChecked`. Rules like `no-floating-promises`
-need type information.
+Lint with oxlint in type-aware mode. create-vite's React template ships oxlint
+([vite#22638](https://github.com/vitejs/vite/pull/22638)).
+
+Type-aware oxlint runs on `oxlint-tsgolint` and requires TypeScript 7. It covers nearly all type-checked
+typescript-eslint rules, `no-floating-promises` and `no-misused-promises` included
+([type-aware linting](https://oxc.rs/docs/guide/usage/linter/type-aware.html)).
+
+oxlint reports these rules as warnings by default, so `--deny-warnings` makes a warning fail the gate.
+
+Format with Prettier, the formatter the editor settings template names. `.prettierignore` lists
+`pnpm-lock.yaml`: pnpm rewrites it in its own format, which would fail `format:check`.
 
 Pin pnpm with `packageManager` in `package.json`, an exact `pnpm@<version>`. CI's pnpm setup reads it.
 
@@ -44,8 +53,19 @@ fails instead of re-resolving.
 
 Test with Vitest: it runs TypeScript without a build step.
 
-The gate runs in this order: `pnpm install --frozen-lockfile`, format check, `eslint .`, `tsc -b`,
-`vitest run`.
+Every package carries these scripts; the Makefile and CI call them by name:
+
+| Script | Command |
+| ------ | ------- |
+| `format` | `prettier --write .` |
+| `format:check` | `prettier --check .` |
+| `lint` | `oxlint --type-aware --deny-warnings` |
+| `typecheck` | `tsc -b` |
+| `test` | `vitest run`: plain `vitest` watches and never exits |
+| `build` | `tsc -b && vite build`, as create-vite writes it |
+
+The gate runs in this order: `pnpm install --frozen-lockfile`, then `pnpm run` with `format:check`, `lint`,
+`typecheck`, `test` and `build`.
 
 ## React
 
