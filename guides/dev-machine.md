@@ -28,14 +28,17 @@ Placeholders: `<name>` and `<email>` are your git identity; `<title>` names this
    git config --global user.email "<email>"
    ```
 
-3. **gh** — add GitHub's apt repo, install gh and log in. Pick SSH as the protocol and upload `~/.ssh/id_ed25519.pub`.
+3. **gh** — add GitHub's apt repo, allow unattended-upgrades to update from it, install gh and log in.
+   Pick SSH as the protocol and upload `~/.ssh/id_ed25519.pub`.
    `gh auth status` then shows the account ([install_linux.md](https://github.com/cli/cli/blob/trunk/docs/install_linux.md)):
 
    ```bash
    sudo apt install -y curl
    sudo mkdir -p -m 755 /etc/apt/keyrings
    curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg | sudo tee /etc/apt/keyrings/githubcli-archive-keyring.gpg >/dev/null
+   sudo chmod go+r /etc/apt/keyrings/githubcli-archive-keyring.gpg
    echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/githubcli-archive-keyring.gpg] https://cli.github.com/packages stable main" | sudo tee /etc/apt/sources.list.d/github-cli.list >/dev/null
+   echo 'Unattended-Upgrade::Origins-Pattern { "origin=gh,codename=stable"; };' | sudo tee /etc/apt/apt.conf.d/52unattended-upgrades-gh >/dev/null
    sudo apt update && sudo apt install -y gh
    gh auth login
    ```
@@ -89,7 +92,7 @@ Placeholders: `<name>` and `<email>` are your git identity; `<title>` names this
     ```
 
 11. **Run install.sh** — it links the dotfiles, the Claude config and the skills, and sets up commit signing.
-    The header of [scripts/install-dotfiles.sh](../scripts/install-dotfiles.sh) lists what it does. Its last line reads `gh already installed`:
+    The header of [scripts/install-dotfiles.sh](../scripts/install-dotfiles.sh) lists what it does. It ends with `Done – restart your shell`; the line above reads `gh already installed`:
 
     ```bash
     cd ~/r/handbook && ./install.sh
@@ -104,6 +107,7 @@ Placeholders: `<name>` and `<email>` are your git identity; `<title>` names this
     ```
 
 13. **Editor** — [neovim.md](neovim.md) installs Neovim; `install.sh` has already linked its config.
+14. **New login** — log out and back in. The session then has the `docker` group and the new `PATH`.
 
 ## Verify
 
@@ -118,6 +122,7 @@ for c in 'git --version' 'gh --version' 'node --version' 'pnpm --version' 'uv --
 done                                               # → 20 lines, each starting with ok
 readlink -f ~/.claude/CLAUDE.md ~/.bash_aliases    # → <home>/r/handbook/claude/CLAUDE.md, <home>/r/handbook/dotfiles/.bash_aliases
 git config --global commit.gpgsign                 # → true
+apt-config dump | grep -F 'origin=gh'              # → Unattended-Upgrade::Origins-Pattern:: "origin=gh,codename=stable";
 docker run --rm hello-world | grep Hello           # → Hello from Docker!
 ```
 
