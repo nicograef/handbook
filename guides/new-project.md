@@ -1,6 +1,6 @@
 # Set Up a New Project Repository
 
-This is the "New project" path of [bootstrap.md](bootstrap.md).
+This is the "New project" journey of the [README](../README.md#journeys).
 
 ## Inputs
 

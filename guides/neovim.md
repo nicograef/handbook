@@ -11,7 +11,7 @@ Minimal Neovim for prose, Markdown, YAML and JSON: one config file, no plugins, 
 
 - The latest Neovim release, from [github.com/neovim/neovim/releases](https://github.com/neovim/neovim/releases/latest).
   apt lags a major version behind (Debian 13 ships 0.10) and is not used.
-- The handbook cloned and [`install.sh`](../install.sh) run — [bootstrap.md](bootstrap.md#new-dev-machine).
+- The handbook cloned and [`install.sh`](../install.sh) run — [dev-machine.md](dev-machine.md).
 - A desktop clipboard needs `xclip`; the clipboard comment in [dotfiles/init.lua](../dotfiles/init.lua) says why.
 
 ## Steps
