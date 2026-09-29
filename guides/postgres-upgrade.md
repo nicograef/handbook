@@ -43,9 +43,10 @@ Run each step as the deploy user in `/opt/<project>`.
    ```bash
    docker compose stop backend
    scripts/backup-postgres.sh
+   DUMP=/opt/backups/postgres/backup-<timestamp>.dump
    ```
 
-   Expected: `Verified backup written: /opt/backups/postgres/backup-<timestamp>.dump`.
+   Expected: `Verified backup written: /opt/backups/postgres/backup-<timestamp>.dump`; `DUMP` holds that path.
 
 2. **Save a row-count query and record the counts:**
 
@@ -79,7 +80,6 @@ Run each step as the deploy user in `/opt/<project>`.
 5. **Restore the dump** from step 1:
 
    ```bash
-   DUMP="$(ls -t /opt/backups/postgres/backup-*.dump | head -1)"
    docker compose exec -T postgres sh -c \
      'pg_restore -U "$POSTGRES_USER" -d "$POSTGRES_DB" --single-transaction' < "$DUMP"
    ```
@@ -109,6 +109,7 @@ Run each step as the deploy user in `/opt/<project>`.
    ```
 
    Expected: the last lines read `Deployed v<X.Y.Z> — https://<domain>`, exit 0.
+   On failure, ignore the printed roll-back hint and [fall back](#fall-back-to-the-old-version).
 
 ## Fall back to the old version
 

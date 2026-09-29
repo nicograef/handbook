@@ -29,7 +29,7 @@ umask 077
 BACKUP_DIR="${BACKUP_DIR:-/opt/backups/postgres}"
 RETENTION_DAYS="${RETENTION_DAYS:-14}"
 # The clone root: this script lives in its scripts/ directory.
-COMPOSE_DIR="${COMPOSE_DIR:-$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)}"
+COMPOSE_DIR="${COMPOSE_DIR:-$(CDPATH='' cd -- "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)}"
 
 RED='\033[0;31m'
 GREEN='\033[0;32m'

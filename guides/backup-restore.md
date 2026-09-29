@@ -67,14 +67,14 @@ A restore replaces the live database with a dump. Use it after data loss or for 
 
    Expected: `Container <project>-backend-1  Stopped`.
 
-3. **Restore the dump.** `--single-transaction` rolls the whole restore back on any error:
+3. **Recreate the database and restore the dump.** The drop also removes tables a failed migration added:
 
    ```bash
-   docker compose exec -T postgres sh -c \
-     'pg_restore -U "$POSTGRES_USER" -d "$POSTGRES_DB" --clean --if-exists --single-transaction' < "$DUMP"
+   docker compose exec postgres sh -c 'dropdb -U "$POSTGRES_USER" --force "$POSTGRES_DB" && createdb -U "$POSTGRES_USER" "$POSTGRES_DB"'
+   docker compose exec -T postgres sh -c 'pg_restore -U "$POSTGRES_USER" -d "$POSTGRES_DB" --single-transaction --exit-on-error' < "$DUMP"
    ```
 
-   Expected: no output, exit 0.
+   Expected: no output, exit 0. An error leaves the database empty; rerun this step from the same dump.
 
 4. **Rebuild the planner statistics**, which `pg_restore` does not restore:
 
