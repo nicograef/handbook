@@ -249,9 +249,9 @@ One runbook from a provisioned server to a running app, and back. Prerequisites:
 
 ### Acceptance criteria
 
-- [ ] `git grep -n '/opt/scripts' -- guides reference scripts` prints nothing.
-- [ ] `runbook_shape guides/backup-restore.md guides/postgres-upgrade.md` prints nothing.
-- [ ] `make check` passes.
+- [x] `git grep -n '/opt/scripts' -- guides reference scripts` prints nothing.
+- [x] `runbook_shape guides/backup-restore.md guides/postgres-upgrade.md` prints nothing.
+- [x] `make check` passes.
 
 ## Phase 7: Server upkeep runbooks
 

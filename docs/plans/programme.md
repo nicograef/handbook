@@ -73,7 +73,7 @@ None.
 | J1, J2 | `journeys-core` | 2 | landed | e021c64 |
 | J4 | `new-project` | 3 | running | |
 | J5 | `deploy` | 3 | landed | 386fdef |
-| J6 | `backup` | 3 | running | |
+| J6 | `backup` | 3 | landed | 21c66fa |
 | J7 | `server-upkeep` | 3 | landed | 64c917b |
 | J8 | `monitoring` | 3 | landed | 45f2386 |
 | J9 | `dev-machine` | 3 | landed | 5d72e4f |
