@@ -2,7 +2,7 @@
 
 Minimal Neovim for prose, Markdown, YAML and JSON: one config file, no plugins, no IDE layer.
 
-- [templates/init.lua](../templates/init.lua) is the whole config; it sets only non-defaults.
+- [dotfiles/init.lua](../dotfiles/init.lua) is the whole config; it sets only non-defaults.
 - [scripts/install-dotfiles.sh](../scripts/install-dotfiles.sh) links it to `~/.config/nvim/init.lua`.
 - Distributions (kickstart, LazyVim, NvChad, AstroNvim) ship LSP and completion machinery
   that text editing never uses.
@@ -12,7 +12,7 @@ Minimal Neovim for prose, Markdown, YAML and JSON: one config file, no plugins, 
 - The latest Neovim release, from [github.com/neovim/neovim/releases](https://github.com/neovim/neovim/releases/latest).
   apt lags a major version behind (Debian 13 ships 0.10) and is not used.
 - The handbook cloned and [`install.sh`](../install.sh) run — [bootstrap.md](bootstrap.md#new-dev-machine).
-- A desktop clipboard needs `xclip`; the clipboard comment in [templates/init.lua](../templates/init.lua) says why.
+- A desktop clipboard needs `xclip`; the clipboard comment in [dotfiles/init.lua](../dotfiles/init.lua) says why.
 
 ## Steps
 
@@ -51,7 +51,7 @@ Minimal Neovim for prose, Markdown, YAML and JSON: one config file, no plugins, 
 
 `[ ] { } /` sit behind AltGr or Shift. The config moves them to the umlaut keys in Normal,
 Visual and Operator-pending mode. Insert mode and `f`, `t`, `r` still get the umlaut.
-The mechanism is the German-keyboard comment in [templates/init.lua](../templates/init.lua).
+The mechanism is the German-keyboard comment in [dotfiles/init.lua](../dotfiles/init.lua).
 
 | Press       | Acts as             | Example                                                   |
 | ----------- | ------------------- | --------------------------------------------------------- |
@@ -101,7 +101,7 @@ for d in "$P"/*/; do git -C "$d" pull; done                                     
 
 ```bash
 nvim --version | head -1                                             # → the tag of the latest release
-readlink -f ~/.config/nvim/init.lua                                  # → <clone>/templates/init.lua
+readlink -f ~/.config/nvim/init.lua                                  # → <clone>/dotfiles/init.lua
 nvim --headless -c 'lua print(vim.o.shiftwidth, vim.o.clipboard)' -c q   # → 2 unnamedplus (desktop) / 2 (server)
 nvim +'checkhealth vim.provider'                                     # Clipboard: xclip (desktop)
 ```

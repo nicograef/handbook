@@ -27,7 +27,7 @@ log() {
 }
 
 # Content directories the README indexes as its file index.
-INDEX_DIRS=(guides reference templates scripts claude)
+INDEX_DIRS=(guides reference templates dotfiles scripts claude)
 
 # Tracked top-level folders the README does not index, as "<dir>|<reason>".
 INDEX_EXCLUDE=(
@@ -150,7 +150,7 @@ check_shell() {
       shellcheck "$script" >&2 || true
     fi
   done < <(git ls-files 'scripts/*.sh' 'install.sh' 'claude/*.sh' 'templates/*.sh' \
-                        'templates/.bash_aliases' '.claude/skills/*/*.sh')
+                        'dotfiles/.bash_aliases' '.claude/skills/*/*.sh')
 }
 
 check_readme() {

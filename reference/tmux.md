@@ -1,6 +1,6 @@
 # tmux
 
-Config: [templates/.tmux.conf](../templates/.tmux.conf).
+Config: [dotfiles/.tmux.conf](../dotfiles/.tmux.conf).
 
 ```bash
 tmux source-file ~/.tmux.conf     # apply config changes to the running server

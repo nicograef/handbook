@@ -33,9 +33,6 @@ Pages to look up, not follow step by step: command tables and rule lists.
 
 | File                                                                   | Description                                                       |
 | ---------------------------------------------------------------------- | ----------------------------------------------------------------- |
-| [templates/.bash_aliases](templates/.bash_aliases)                     | Shell aliases (git, make, pnpm), history tuning, git prompt       |
-| [templates/.tmux.conf](templates/.tmux.conf)                           | tmux defaults for remote work (mouse, scrollback, escape-time)    |
-| [templates/init.lua](templates/init.lua)                               | Neovim config: prose defaults, 2-space indent, German keyboard remaps |
 | [templates/.editorconfig](templates/.editorconfig)                     | EditorConfig for consistent formatting (Go tabs, JS/TS 2-space)   |
 | [templates/.gitignore](templates/.gitignore)                           | Universal .gitignore (OS, IDE, env, build artifacts, logs, Claude local settings) |
 | [templates/devcontainer.json](templates/devcontainer.json)             | Dev Container config with commented feature blocks per stack      |
@@ -59,6 +56,16 @@ Pages to look up, not follow step by step: command tables and rule lists.
 | [templates/.env.example](templates/.env.example)                       | Standard env vars for Docker Compose templates                    |
 | [templates/vscode-settings.json](templates/vscode-settings.json)       | VS Code workspace settings for consistent formatting              |
 | [templates/strip-visuals.lua](templates/strip-visuals.lua)             | Pandoc filter that removes what a narrator cannot speak           |
+
+## Dotfiles
+
+Linked into `$HOME` by [install.sh](install.sh), not copied.
+
+| File                                                                   | Description                                                       |
+| ---------------------------------------------------------------------- | ----------------------------------------------------------------- |
+| [dotfiles/.bash_aliases](dotfiles/.bash_aliases)                     | Shell aliases (git, make, pnpm), history tuning, git prompt       |
+| [dotfiles/.tmux.conf](dotfiles/.tmux.conf)                           | tmux defaults for remote work (mouse, scrollback, escape-time)    |
+| [dotfiles/init.lua](dotfiles/init.lua)                               | Neovim config: prose defaults, 2-space indent, German keyboard remaps |
 
 ## Scripts
 

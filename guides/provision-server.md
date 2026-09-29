@@ -97,7 +97,7 @@ cat /etc/cron.d/report-health
 - Deploy apps via Docker Compose – see [letsencrypt-docker.md](letsencrypt-docker.md)
 - Install tmux and the modern CLI tools the shell aliases expect, all in Debian 13
   `main`. Without bat, eza, fd-find or fzf, their aliases in
-  [templates/.bash_aliases](../templates/.bash_aliases) silently stay inactive:
+  [dotfiles/.bash_aliases](../dotfiles/.bash_aliases) silently stay inactive:
 
   ```bash
   sudo apt install -y tmux bat eza fzf fd-find ripgrep git-delta

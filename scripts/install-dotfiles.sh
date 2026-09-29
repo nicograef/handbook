@@ -42,9 +42,9 @@ log() { printf '\033[1;34m▸ %s\033[0m\n' "$1"; }
 # settings.local.json stays machine-local and is intentionally NOT linked.
 # Copilot CLI reads ~/.agents/skills, not ~/.claude/skills.
 LINKS=(
-  "templates/.bash_aliases .bash_aliases"
-  "templates/.tmux.conf .tmux.conf"
-  "templates/init.lua .config/nvim/init.lua"
+  "dotfiles/.bash_aliases .bash_aliases"
+  "dotfiles/.tmux.conf .tmux.conf"
+  "dotfiles/init.lua .config/nvim/init.lua"
   "scripts/report-repo-status.sh .local/bin/repo-status"
   "claude/CLAUDE.md .claude/CLAUDE.md"
   "claude/settings.json .claude/settings.json"
