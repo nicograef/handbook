@@ -31,7 +31,7 @@ Keeping state:
 
 ## Failures
 
-Record the harness's message verbatim in the handoff; match it by kind, not by exact wording. No session switches its own model.
+Record the harness's message verbatim in the handoff; match it by kind, not by exact wording.
 
 | Kind | Response |
 | --- | --- |
@@ -60,7 +60,7 @@ Budget verification by blast radius. Set a tier per phase or lane before dispatc
 | Read | irreversible work: spend, overwrite, publish, production migration | probes plus the owner's read |
 
 - The gate runs once, where the change is, and again only after a fold, a rebase or an unseen edit.
-- Review means finding and synthesising, never re-checking a finding somebody already stated.
+- The rules for irreversible work, reviews and model switches bind every session: [global CLAUDE.md](../../../claude/CLAUDE.md#models-and-subagents).
 - Review a finished phase or lane once, over its whole diff, on `opus`.
 - Review workflows: finders on `opus`, one per lens, few.
 - Verifying a finding is a fully specified check (claim, evidence, command) and runs on `sonnet`.
@@ -76,6 +76,6 @@ One protocol for a run branch and a lane alike. Commands: [git.md](git.md#land-o
 1. Peers commit to the base mid-landing. Follow [parallel-sessions](../parallel-sessions/SKILL.md) steps 3 and 8 before every rebase and landing. A conflict with a peer is settled by landing order, the later branch rebasing.
 2. Pin the base and rebase the branch onto it. A rebase that brings code means a full re-gate. Docs only means the lints plus the suites naming the changed directory.
 3. The gate runs on the rebased branch. Green means a complete run.
-4. Apply the review the tier asks for; findings are verified before any is applied.
-5. Fast-forward the base, re-verify in the main checkout, push it, and send `landed` on the bus. A fast-forward refused because the base moved means one more rebase.
+4. Apply the confirmed findings of the tier's review, verified as [Verification budget](#verification-budget) says.
+5. Fast-forward the base, push it, and send `landed` on the bus. The base tip then equals the gated tip, so no second gate runs. A fast-forward refused because the base moved means one more rebase.
 6. Remove the branch's worktree and delete the branch with `-d`. Cleanup that a permission rule or the auto-mode classifier refuses goes to the owner as a `! <command>` line in the handoff.
