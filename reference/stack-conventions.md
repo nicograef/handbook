@@ -83,8 +83,8 @@ Start every project with `uv init --package --python <version>`. It writes `pypr
 `.python-version` is the interpreter pin; uv reads it locally and in CI. `requires-python` is the floor.
 The `Dockerfile.python` base tag repeats the pin literally.
 
-Pin uv with `[tool.uv] required-version = "==<version>"` in `pyproject.toml`. uv refuses to run at any
-other version, CI's setup-uv reads it, and the base tag repeats it.
+Set a uv floor with `[tool.uv] required-version = ">=<version>"` in `pyproject.toml`. uv refuses to run below it.
+CI's setup-uv reads it with `resolution-strategy: lowest`, so CI runs the floor; the base tag repeats it.
 
 Commit `uv.lock`. CI runs `uv sync --locked`, which fails when the lock is out of sync with
 `pyproject.toml`. The image runs `uv sync --frozen`: it installs the lock as is, unchecked.

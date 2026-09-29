@@ -1,10 +1,10 @@
-# All jobs are active. Delete the ones you don't need.
-# Search for <angle-bracket> placeholders and adapt to your project.
-# Validate locally before pushing: actionlint .github/workflows/ci.yml
+# All jobs are active. Each stack's jobs and steps sit between a `# >>> stack: NAME` and a
+# `# <<< stack: NAME` line (go, python, frontend, database); delete the stacks your project lacks.
+# Fill the angle-bracket placeholders. Validate locally before pushing: actionlint .github/workflows/ci.yml
 #
 # Toolchain versions come from the project's own pins, so CI and a dev machine agree:
 # Go from go.mod, Node from .node-version, pnpm from packageManager in package.json,
-# uv from [tool.uv] required-version in pyproject.toml.
+# uv from the [tool.uv] required-version floor in pyproject.toml.
 #
 # Every `uses:` is pinned to a full commit SHA, with the release it stood for in the
 # trailing comment. A tag is mutable: whoever controls the upstream repository can
@@ -12,7 +12,7 @@
 # rewrites SHA and comment together, so the pins still get bumped.
 #
 # `timeout-minutes` on every job: GitHub's default is six hours. The values here are
-# placeholders; read the real figure off `gh run view <id> --json jobs` and set each
+# placeholders; read the real figure off `gh run view RUN_ID --json jobs` and set each
 # well above it.
 name: CI
 
@@ -65,6 +65,7 @@ jobs:
             database:
               - 'database/**'
 
+  # >>> stack: go
   # ── Go Backend ─────────────────────────────────────────────────────────────
   backend-ci:
     needs: changes
@@ -74,18 +75,18 @@ jobs:
     timeout-minutes: 10
     defaults:
       run:
-        working-directory: ./<backend-dir>  # e.g. ./backend
+        working-directory: ./backend
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
-          # Only for a diff-scoped lint (one that reads `git diff <base>..HEAD`): a shallow
+          # Only for a diff-scoped lint (one that reads `git diff BASE..HEAD`): a shallow
           # clone carries no merge base, the diff reads as empty, and the gate is green for
           # the one reason a gate may never be green.
           # fetch-depth: 0
       - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
         with:
-          go-version-file: <backend-dir>/go.mod  # relative to the repo root
+          go-version-file: backend/go.mod  # relative to the repo root
 
       - name: Download dependencies
         run: go mod download
@@ -98,7 +99,7 @@ jobs:
         run: go mod tidy -diff
 
       # Generated code must match its source. sqlc is a go.mod tool like goimports and
-      # reads <database-dir>/migrations. Swap in your generator; the status check stays.
+      # reads database/migrations. Swap in your generator; the status check stays.
       - name: Check generated code is current
         run: |
           go tool sqlc generate
@@ -143,21 +144,23 @@ jobs:
     timeout-minutes: 10
     defaults:
       run:
-        working-directory: ./<backend-dir>
+        working-directory: ./backend
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
       - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
         with:
-          go-version-file: <backend-dir>/go.mod
+          go-version-file: backend/go.mod
 
       - name: golangci-lint
         uses: golangci/golangci-lint-action@ba0d7d2ec06a0ea1cb5fa41b2e4a3ab91d21278a # v9.3.0
         with:
           version: v2.13.2  # keep in sync with scripts/setup-dev-tools.sh
-          working-directory: ./<backend-dir>
+          working-directory: ./backend
+  # <<< stack: go
 
+  # >>> stack: frontend
   # ── Node / pnpm Frontend ──────────────────────────────────────────────────
   frontend-ci:
     needs: changes
@@ -166,7 +169,7 @@ jobs:
     timeout-minutes: 10
     defaults:
       run:
-        working-directory: ./<frontend-dir>  # e.g. ./frontend
+        working-directory: ./frontend
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -175,14 +178,14 @@ jobs:
       - uses: pnpm/action-setup@ea17c68df8912ef543352723c149a84f56e3d413 # v6.1.0
         with:
           # pnpm reads its version from the packageManager field.
-          package_json_file: <frontend-dir>/package.json  # relative to the repo root
+          package_json_file: frontend/package.json  # relative to the repo root
           run_install: false
 
       - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
-          node-version-file: <frontend-dir>/.node-version  # relative to the repo root
+          node-version-file: frontend/.node-version  # relative to the repo root
           cache: "pnpm"
-          cache-dependency-path: <frontend-dir>/pnpm-lock.yaml  # e.g. frontend/pnpm-lock.yaml
+          cache-dependency-path: frontend/pnpm-lock.yaml
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
@@ -201,7 +204,9 @@ jobs:
 
       - name: Build
         run: pnpm run build
+  # <<< stack: frontend
 
+  # >>> stack: python
   # ── Python Backend (uv) ───────────────────────────────────────────────────
   backend-python-ci:
     needs: changes
@@ -210,16 +215,18 @@ jobs:
     timeout-minutes: 10
     defaults:
       run:
-        working-directory: ./<backend-dir>  # e.g. ./backend, or . for a root pyproject.toml
+        working-directory: ./backend
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
 
       # setup-uv publishes no floating tag since v8, so an exact release or a SHA is the only pin.
+      # required-version is a floor; `lowest` installs exactly it, so CI runs the oldest uv the project admits.
       - uses: astral-sh/setup-uv@bec219d24cd3e171d82865faccec33120bb574f4 # v10.1.0
         with:
-          version-file: <backend-dir>/pyproject.toml  # relative to the repo root
+          version-file: backend/pyproject.toml  # relative to the repo root
+          resolution-strategy: lowest
 
       # --locked fails when uv.lock no longer matches pyproject.toml.
       - name: Sync dependencies
@@ -240,10 +247,12 @@ jobs:
       # Last: the only step that queries a remote advisory service.
       - name: Audit
         run: uv audit
+  # <<< stack: python
 
   # ── Security ───────────────────────────────────────────────────────────────
   # Runs on the weekly schedule too, when `changes` is skipped; !cancelled() lets it
   # run past that skip. A push runs it only when the code it scans changed.
+  # >>> stack: go
   security-go:
     needs: changes
     if: ${{ !cancelled() && (github.event_name == 'schedule' || needs.changes.outputs.backend == 'true') }}
@@ -252,7 +261,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        module: [<backend-dir>]  # one entry per go.mod
+        module: [backend]  # one entry per go.mod
     defaults:
       run:
         working-directory: ./${{ matrix.module }}
@@ -269,7 +278,9 @@ jobs:
       # It fails only on vulnerabilities the module's code can reach.
       - name: govulncheck
         run: go tool govulncheck ./...
+  # <<< stack: go
 
+  # >>> stack: frontend
   security-node:
     needs: changes
     if: ${{ !cancelled() && (github.event_name == 'schedule' || needs.changes.outputs.frontend == 'true') }}
@@ -277,7 +288,7 @@ jobs:
     timeout-minutes: 10
     defaults:
       run:
-        working-directory: ./<frontend-dir>
+        working-directory: ./frontend
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -285,19 +296,21 @@ jobs:
 
       - uses: pnpm/action-setup@ea17c68df8912ef543352723c149a84f56e3d413 # v6.1.0
         with:
-          package_json_file: <frontend-dir>/package.json
+          package_json_file: frontend/package.json
           run_install: false
 
       - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
-          node-version-file: <frontend-dir>/.node-version
+          node-version-file: frontend/.node-version
 
       # Reads pnpm-lock.yaml, so no install. Blocking from "high" upward.
       - name: pnpm audit
         run: pnpm audit --audit-level high
+  # <<< stack: frontend
 
+  # >>> stack: database
   # ── Integration Tests (PostgreSQL) ─────────────────────────────────────────
-  # Go and Python steps share the database and its migrations; delete the other stack's steps.
+  # Go and Python steps share the database and its migrations.
   backend-integration-tests:
     needs: changes
     if: ${{ (needs.changes.outputs.backend == 'true') || (needs.changes.outputs.database == 'true') }}
@@ -309,7 +322,7 @@ jobs:
         env:
           POSTGRES_USER: admin
           POSTGRES_PASSWORD: admin
-          POSTGRES_DB: <database-name>  # e.g. myapp
+          POSTGRES_DB: <database-name>
         ports:
           - 5432:5432
         # TCP, not the socket: the image's init server listens on the socket only and
@@ -329,27 +342,30 @@ jobs:
       # JWT_SECRET: test-secret  # uncomment and add secrets your app needs
     defaults:
       run:
-        working-directory: ./<backend-dir>
+        working-directory: ./backend
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
 
-      # Go backend
+      # >>> stack: go
       - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
         with:
-          go-version-file: <backend-dir>/go.mod
+          go-version-file: backend/go.mod
 
       - name: Download dependencies
         run: go mod download
+      # <<< stack: go
 
-      # Python backend
+      # >>> stack: python
       - uses: astral-sh/setup-uv@bec219d24cd3e171d82865faccec33120bb574f4 # v10.1.0
         with:
-          version-file: <backend-dir>/pyproject.toml
+          version-file: backend/pyproject.toml
+          resolution-strategy: lowest  # the floor, as in backend-python-ci
 
       - name: Sync dependencies
         run: uv sync --locked
+      # <<< stack: python
 
       # The digest is the release's sha256sum.txt entry; update it together with the version.
       - name: Install golang-migrate
@@ -360,18 +376,22 @@ jobs:
           sudo tar -xzf migrate.tar.gz -C /usr/local/bin migrate
 
       - name: Run database migrations up
-        working-directory: ./<database-dir>  # e.g. ./database
+        working-directory: ./database
         run: migrate -path ./migrations -database "postgres://admin:admin@localhost:5432/<database-name>?sslmode=disable" up
 
+      # >>> stack: go
       - name: Run Go integration tests
         run: go test -tags=integration -v -race ./...
+      # <<< stack: go
 
+      # >>> stack: python
       # -m <marker> overrides the addopts that deselects it; the marker is the opt-in one
       # from pyproject.toml's [tool.pytest] markers.
       # pytest exits 5 while no test carries the marker;
       # add the first integration test or delete this step.
       - name: Run Python integration tests
-        run: uv run pytest -m <marker>
+        run: uv run pytest -m "<marker>"
+      # <<< stack: python
 
   # ── Upgrade Path and Restore Drill (PostgreSQL) ────────────────────────────
   # Migrations are forward-only: a database on the previous release must reach the
@@ -383,7 +403,7 @@ jobs:
     timeout-minutes: 10
     env:
       DB_NAME: <database-name>
-      MIGRATIONS: <database-dir>/migrations  # relative to the repo root
+      MIGRATIONS: database/migrations  # relative to the repo root
       DB_URL: postgres://admin:admin@localhost:5432/<database-name>?sslmode=disable
     services:
       postgres:
@@ -425,7 +445,7 @@ jobs:
           git archive "$PREVIOUS" "$MIGRATIONS" | tar -x -C "$RUNNER_TEMP/previous"
           migrate -path "$RUNNER_TEMP/previous/$MIGRATIONS" -database "$DB_URL" up
           # Enable once the project has seed data: some migrations fail only on populated tables.
-          # git show "$PREVIOUS:<database-dir>/seed.sql" | psql "$DB_URL" -v ON_ERROR_STOP=1
+          # git show "$PREVIOUS:database/seed.sql" | psql "$DB_URL" -v ON_ERROR_STOP=1
 
       - name: Apply the current migrations
         run: migrate -path "$MIGRATIONS" -database "$DB_URL" up
@@ -455,3 +475,4 @@ jobs:
           GOT="$(docker exec restore-drill psql -U admin -d "$DB_NAME" -tAc "$QUERY")"
           echo "version/tables: source $WANT, restored $GOT"
           [ "$GOT" = "$WANT" ]
+  # <<< stack: database

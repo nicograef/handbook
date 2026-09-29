@@ -1,6 +1,7 @@
 # Dependabot template – copy to .github/dependabot.yml
 # Monthly + grouped: one batched PR per ecosystem instead of per-dependency noise.
-# Keep only the ecosystems your project uses; adapt <angle-bracket> directories.
+# Each stack's ecosystem sits between `# >>> stack: NAME` and `# <<< stack: NAME` lines, as in
+# ci.yml; delete the stacks your project lacks.
 # The github-actions updater also keeps pinned action refs from rotting.
 version: 2
 updates:
@@ -14,35 +15,41 @@ updates:
         patterns:
           - "*"
 
+  # >>> stack: go
   # ── Go modules ──
   - package-ecosystem: "gomod"
-    directory: "/<backend-dir>" # e.g. /backend
+    directory: "/backend"
     schedule:
       interval: "monthly"
     groups:
       gomod:
         patterns:
           - "*"
+  # <<< stack: go
 
+  # >>> stack: frontend
   # ── npm / pnpm ──
   - package-ecosystem: "npm"
-    directory: "/<frontend-dir>" # e.g. /frontend
+    directory: "/frontend"
     schedule:
       interval: "monthly"
     groups:
       npm:
         patterns:
           - "*"
+  # <<< stack: frontend
 
+  # >>> stack: python
   # ── Python (uv: pyproject.toml + uv.lock) ──
   - package-ecosystem: "uv"
-    directory: "/<backend-dir>" # e.g. /backend, or / for a root pyproject.toml
+    directory: "/backend"
     schedule:
       interval: "monthly"
     groups:
       uv:
         patterns:
           - "*"
+  # <<< stack: python
 
   # ── Docker Compose service images ──
   # The docker ecosystem parses Dockerfiles only, so compose image tags need this entry.
@@ -58,7 +65,7 @@ updates:
   # ── Docker base images ──
   # Covers Dockerfiles and Kubernetes manifests; enable when a Dockerfile pins a base image.
   # - package-ecosystem: "docker"
-  #   directory: "/<backend-dir>" # one entry per directory containing a Dockerfile
+  #   directory: "/backend" # one entry per directory containing a Dockerfile
   #   schedule:
   #     interval: "monthly"
   #   groups:

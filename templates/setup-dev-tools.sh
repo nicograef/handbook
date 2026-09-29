@@ -3,9 +3,9 @@
 #
 # Called by devcontainer.json postCreateCommand, or run manually.
 #
-# Delete the stack sections your project does not use, and their summary lines at
-# the bottom. Each section hard-requires its runtime, so a leftover Go section
-# fails the postCreateCommand of a frontend-only repo.
+# Each stack's section sits between `# >>> stack: NAME` and `# <<< stack: NAME` lines, as in
+# ci.yml; delete the stacks your project lacks. Each section hard-requires its runtime,
+# so a leftover Go section fails the postCreateCommand of a frontend-only repo.
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -32,8 +32,8 @@ ensure_cmd() {
 info "Project root: $PROJECT_ROOT"
 cd "$PROJECT_ROOT"
 
+# >>> stack: go
 # ── Go tools ─────────────────────────────────────────────────────────────────
-# Delete this whole section on a project without a Go backend.
 
 ensure_cmd go "Install Go (see .devcontainer/devcontainer.json features)."
 
@@ -45,7 +45,7 @@ export PATH="$GO_BIN_PATH:$PATH"
 # binaries often lag behind), and GitHub release downloads are blocked behind
 # some proxies (e.g. Claude Code cloud sessions).
 GOLANGCI_LINT_VERSION="v2.13.2"
-GO_TOOLCHAIN="go<project-go-version>" # the `go` directive from your go.mod, e.g. 1.26.5
+GO_TOOLCHAIN="go<project-go-version>" # the `go` directive from backend/go.mod, e.g. 1.26.5
 
 info "Ensuring golangci-lint ($GOLANGCI_LINT_VERSION)..."
 if [ "v$(golangci-lint version --short 2>/dev/null | sed 's/^v//')" = "$GOLANGCI_LINT_VERSION" ]; then
@@ -56,11 +56,15 @@ else
   hash -r
 fi
 
-# goimports, sqlc and govulncheck are go.mod tools, pinned in go.mod and run as `go tool <name>`:
+# goimports, sqlc and govulncheck are go.mod tools, pinned in go.mod and run through `go tool`:
 # go get -tool golang.org/x/tools/cmd/goimports github.com/sqlc-dev/sqlc/cmd/sqlc golang.org/x/vuln/cmd/govulncheck
 
+echo "  go:             $(go version)"
+echo "  golangci-lint:  $(golangci-lint --version | head -n 1)"
+# <<< stack: go
+
+# >>> stack: frontend
 # ── Node / pnpm ─────────────────────────────────────────────────────────────
-# Delete this whole section on a project without a Node frontend.
 
 ensure_cmd node "Install Node (see .devcontainer/devcontainer.json features)."
 
@@ -72,8 +76,16 @@ else
   npm install -g pnpm@12
 fi
 
+# --frozen-lockfile: the lockfile is the contract; a setup never rewrites it.
+info "Installing frontend dependencies..."
+(cd "$PROJECT_ROOT/frontend" && pnpm install --frozen-lockfile)
+
+echo "  node:           $(node --version)"
+echo "  pnpm:           $(pnpm --version)"
+# <<< stack: frontend
+
+# >>> stack: python
 # ── Python / uv ─────────────────────────────────────────────────────────────
-# Delete this whole section on a project without a Python package.
 
 # The official installer, because no devcontainer feature ships uv and pip
 # would tie it to one interpreter.
@@ -81,31 +93,17 @@ info "Ensuring uv..."
 if command -v uv >/dev/null 2>&1; then
   info "uv already installed: $(uv --version)"
 else
-  # Match [tool.uv] required-version in pyproject.toml: uv refuses to run at any other version.
+  # The floor in [tool.uv] required-version of backend/pyproject.toml: uv refuses to run below it.
   curl -LsSf https://astral.sh/uv/0.12.18/install.sh | sh
   export PATH="$HOME/.local/bin:$PATH"
 fi
 
 # --frozen: the lockfile is the contract; a setup never rewrites it.
-# backend/ is the default backend directory; adapt it to yours.
 info "Syncing Python dependencies..."
 (cd "$PROJECT_ROOT/backend" && uv sync --frozen)
 
-# ── Frontend dependencies ───────────────────────────────────────────────────
-# Uncomment if your project has a frontend/ directory with pnpm.
-
-# --frozen-lockfile: the lockfile is the contract; a setup never rewrites it.
-# info "Installing frontend dependencies..."
-# cd "$PROJECT_ROOT/frontend" && pnpm install --frozen-lockfile
-# cd "$PROJECT_ROOT"
+echo "  uv:             $(uv --version)"
+# <<< stack: python
 
 # ── Summary ──────────────────────────────────────────────────────────────────
-info "Setup complete."
-
-echo "  go:             $(go version)"
-echo "  node:           $(node --version)"
-echo "  pnpm:           $(pnpm --version)"
-echo "  uv:             $(uv --version)"
-echo "  golangci-lint:  $(golangci-lint --version | head -n 1)"
-
-info "Next step: make check"
+info "Setup complete. Next step: make check"
