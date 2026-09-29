@@ -8,7 +8,8 @@
 # What it does:
 #   1. Writes a minimal stub app per template into a temp dir:
 #      go      standard library only, answers GET /api/health on port 8080
-#      python  a bare ASGI factory on uvicorn, the only dependency, same endpoint
+#      python  `uv init --package` output plus a bare ASGI factory on uvicorn,
+#              the only dependency, same endpoint
 #      spa     no dependencies; its build script writes dist/index.html
 #   2. Resolves each stub's lockfile inside the template's own build image.
 #   3. Fills the placeholders, copies .dockerignore (and nginx-spa.conf for the
@@ -86,21 +87,14 @@ func main() {
 GO
 }
 
+# stub_python scaffolds with `uv init --package`, as the new-project runbook does, so
+# the stub carries every file the scaffold writes (README.md among them).
 stub_python() {
   local d="$TMP/python"
-  mkdir -p "$d/src/stub"
-  cat >"$d/pyproject.toml" <<'TOML'
-[project]
-name = "stub"
-version = "0.1.0"
-requires-python = ">=3.12"
-dependencies = ["uvicorn"]
-
-[build-system]
-requires = ["uv_build>=0.12,<0.13"]
-build-backend = "uv_build"
-TOML
-  : >"$d/src/stub/__init__.py"
+  mkdir -p "$d"
+  docker run --rm --name "$PREFIX-scaffold" ghcr.io/astral-sh/uv:0.12.18-python3.12-trixie-slim \
+    sh -c 'cd /tmp && uv init -q --package --python 3.12 stub >&2 && cd stub && uv add -q --no-sync uvicorn >&2 && tar -cf - .' |
+    tar -xf - -C "$d"
   cat >"$d/src/stub/api.py" <<'PY'
 def app():
     async def asgi(scope, receive, send):
@@ -112,7 +106,6 @@ def app():
 
     return asgi
 PY
-  lock "$d" ghcr.io/astral-sh/uv:0.12.18-python3.12-trixie-slim "uv lock -q" uv.lock
 }
 
 stub_spa() {
@@ -156,7 +149,7 @@ check_stack() {
   fill "$TEMPLATES/Dockerfile.$s" "$d/Dockerfile"
   cp "$TEMPLATES/.dockerignore" "$d/.dockerignore"
   log "$s: build"
-  docker build --progress=plain -t "$PREFIX-$s:test" "$d"
+  docker build --pull --progress=plain -t "$PREFIX-$s:test" "$d"
   log "$s: run"
   docker run -d --name "$PREFIX-$s" "$PREFIX-$s:test" >/dev/null
   health "$PREFIX-$s"

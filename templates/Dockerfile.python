@@ -5,7 +5,7 @@
 # One stage suffices: the base image already carries the interpreter and the resolver.
 
 # Both versions literal: `latest` or `python3.12` alone would move under a frozen lockfile.
-# The Python version repeats the project's .python-version.
+# The uv version repeats [tool.uv] required-version in pyproject.toml; the Python version repeats .python-version.
 FROM ghcr.io/astral-sh/uv:0.12.18-python3.12-trixie-slim
 
 # Compile bytecode once at build time; copy instead of hardlink across the cache boundary.
@@ -21,6 +21,8 @@ COPY pyproject.toml uv.lock ./
 RUN --mount=type=cache,target=/root/.cache/uv \
     uv sync --frozen --no-dev --no-install-project
 
+# The package build reads README.md: `uv init --package` names it as the project readme.
+COPY README.md ./
 COPY src ./src
 RUN --mount=type=cache,target=/root/.cache/uv \
     uv sync --frozen --no-dev
@@ -33,5 +35,7 @@ EXPOSE 8080
 # The slim image ships no wget or curl, so the probe uses the interpreter.
 HEALTHCHECK --interval=10s --timeout=3s --start-period=5s --retries=5 \
   CMD ["python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8080/api/health', timeout=2)"]
-# 0.0.0.0 inside the container; the Compose file publishes no port, so only the proxy reaches it.
-CMD ["uvicorn", "--factory", "<package>.api:app", "--host", "0.0.0.0", "--port", "8080"]
+# An empty host binds one IPv4 and one IPv6 socket, so IPv6-only Compose networks work too;
+# `::` alone would be IPv6-only, since asyncio sets IPV6_V6ONLY.
+# Trusting every proxy's X-Forwarded-* is safe: the Compose file publishes no backend port.
+CMD ["uvicorn", "--factory", "<package>.api:app", "--host", "", "--port", "8080", "--forwarded-allow-ips", "*"]
