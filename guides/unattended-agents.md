@@ -7,7 +7,9 @@ Applies to an [implement-plan](../.claude/skills/implement-plan/SKILL.md) run, a
 
 - Claude Code v2.1.234 or later (`claude --version`).
 - `~/.claude/settings.json` is this repo's [claude/settings.json](../claude/settings.json).
-- Docker and the `devcontainer` CLI, for the container posture.
+- Docker, for the container posture.
+- The Dev Containers CLI, from [devcontainers/cli](https://github.com/devcontainers/cli): `npm install -g @devcontainers/cli`.
+- The repo holds `.devcontainer/devcontainer.json` from [templates/devcontainer.json](../templates/devcontainer.json).
 - A claude.ai subscription login, for automatic continue at a usage limit.
 
 ## Choose the posture
@@ -47,21 +49,47 @@ Source: [Configure auto mode](https://code.claude.com/docs/en/auto-mode-config).
 
 Expected: `claude auto-mode config` lists your entries, as Verify checks.
 
-## Start the run in a container
+## Add Claude Code to the dev container
+
+The template's base image has no Claude Code, no settings and no login.
+Add the Claude Code feature, a config volume, and a read-only mount of this repo's settings.
+Source: [Development containers](https://code.claude.com/docs/en/devcontainer).
+
+```diff
+   "features": {
++    "ghcr.io/anthropics/devcontainer-features/claude-code:1.0": {},
+     // -- Go --
+@@
+   "postCreateCommand": "bash scripts/setup-dev-tools.sh",
++  "mounts": [
++    "source=claude-code-config-${devcontainerId},target=/home/vscode/.claude,type=volume",
++    "source=<handbook>/claude/settings.json,target=/etc/handbook/settings.json,type=bind,readonly"
++  ],
++  "containerEnv": { "CLAUDE_CONFIG_DIR": "/home/vscode/.claude" },
+```
+
+`<handbook>` is the absolute path of your handbook clone; `vscode` is the base image's non-root user.
+Expected: `devcontainer up --workspace-folder .` builds the container without errors.
+
+- The volume keeps the login and the bypass acceptance across rebuilds; `CLAUDE_CONFIG_DIR` puts `.claude.json` in it too.
+- The settings stay read-only in the container; `--settings` loads them on every start.
+
+## Start the run in the container
 
 `bypassPermissions` skips the classifier, so run it only where a mistake cannot reach the host.
-The container comes from [templates/devcontainer.json](../templates/devcontainer.json).
 
 ```bash
 cd <repo>
 devcontainer up --workspace-folder .
-devcontainer exec --workspace-folder . env CLAUDE_CODE_RETRY_WATCHDOG=1 claude --permission-mode bypassPermissions
+devcontainer exec --workspace-folder . env CLAUDE_CODE_RETRY_WATCHDOG=1 \
+  claude --settings /etc/handbook/settings.json --permission-mode bypassPermissions
 ```
 
-Expected: Claude Code starts as the image's non-root user in bypass-permissions mode.
+On the first start, sign in and accept the responsibility dialog. The volume keeps both.
+Expected: Claude Code starts as `vscode` in bypass-permissions mode, with this repo's `ask` and `deny` rules.
 
 - `bypassPermissions` refuses to start as root or under `sudo`. Source: [Permission modes](https://code.claude.com/docs/en/permission-modes#skip-all-checks-with-bypasspermissions-mode).
-- Accept the responsibility dialog once, interactively, before any `--bg` run.
+- Accept the dialog interactively before any `--bg` run; a `--bg` run is refused until then.
 - `CLAUDE_CODE_RETRY_WATCHDOG=1` retries `429` and `529` capacity errors indefinitely, backing off up to 5 minutes.
 - It raises the retry count for server errors, timeouts and dropped connections to 300, roughly three hours.
 - A `429` that reports a spend limit or exhausted usage credits still fails at once.
@@ -112,7 +140,7 @@ Committed work survives every stop; the session does not. The messages are liste
 | Symptom | Recovery |
 | --- | --- |
 | `You've hit your session limit` or `weekly limit`, session still open | It continues at the reset, as the usage-limit section above says |
-| A limit stopped a `--bg` or `-p` run, or the reset is over 24 hours away | [Resume from the last commit](../.claude/skills/implement-plan/git.md#pickup) at the reset, or let the [hourly recovery job](../.claude/skills/implement-plan/lead.md#lead-upkeep) do it |
+| A limit stopped a `--bg` or `-p` run, or the reset is over 24 hours away | At the reset, [resume from the last commit](../.claude/skills/implement-plan/git.md#pickup). An open interactive session that armed its [hourly recovery job](../.claude/skills/implement-plan/lead.md#lead-upkeep) resumes on its own |
 | `Repeated 529 Overloaded errors` or `Request rejected (429)` ended the run | Restart it with `CLAUDE_CODE_RETRY_WATCHDOG=1`, then [resume from the last commit](../.claude/skills/implement-plan/git.md#pickup) |
 | `Agent terminated early due to an API error` | [Respond per error kind](../.claude/skills/implement-plan/lead.md#failures): the work restarts from its branch's last commit |
 | `API Error: 500` mid-response | The output may be partial; [respond per error kind](../.claude/skills/implement-plan/lead.md#failures) |
