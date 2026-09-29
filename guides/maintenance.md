@@ -12,7 +12,7 @@
 
 - The release tag pushed with `make prod-release VERSION=X.Y.Z`, and its images built.
 - The tag change committed to the repo, so the running stack matches source. Edit the Compose file in git, not on the box.
-- `BACKUP_DIR` (default `/opt/backups/postgres`) writable, for the pre-update backup.
+- `BACKUP_DIR` (default `/opt/backups/postgres`) owned by the deploy user, for the pre-update backup.
 - `.deploy-state` in `.gitignore`. [`prod-init.sh`](../scripts/prod-init.sh) records the last healthy tag there.
 
 ### Steps

@@ -58,14 +58,18 @@ documents each step. Set up the `BACKUP_PING_URL` heartbeat in
 
 ```bash
 sudo install -m 0755 scripts/backup-postgres.sh /opt/scripts/backup-postgres.sh
-sudo install -d -m 0700 /opt/backups/postgres
+sudo install -d -o "$USER" -g "$USER" -m 0700 /opt/backups/postgres
 ```
+
+Run this as the deploy user. It owns the directory, so its deploys and its cron job both write there.
 
 ### Cron line
 
+Add it to the deploy user's crontab with `crontab -e`, not to root's.
+
 ```bash
 # daily at 03:00
-0 3 * * * BACKUP_DIR=/opt/backups/postgres COMPOSE_DIR=/opt/myapp /opt/scripts/backup-postgres.sh >> /var/log/pg-backup.log 2>&1
+0 3 * * * BACKUP_DIR=/opt/backups/postgres COMPOSE_DIR=/opt/myapp /opt/scripts/backup-postgres.sh >> /opt/backups/postgres/backup.log 2>&1
 ```
 
 > **Accepted risk — backups are on the same disk they protect.**
@@ -88,16 +92,14 @@ sudo install -d -m 0700 /opt/backups/postgres
 - For the live disaster case, restore into the production database instead.
 - Use the [full-restore commands](#2-restore), not the throwaway one below.
 - The drill restores into a **throwaway database** and never touches the live one.
-- Run it as root: the backup directory is root-only.
+- Run it as the deploy user: it owns the backup directory and is in the `docker` group.
 - CI runs a schema-only drill on every migration change: the `upgrade-path` job in
   [templates/ci.yml](../templates/ci.yml).
   It restores a dump into the stack's Postgres image; this drill proves the real dumps.
 
-Open a root shell and set the two env vars to your server's values (same as the backup
-script):
+Set the two env vars to your server's values (same as the backup script):
 
 ```bash
-sudo -i
 export BACKUP_DIR=/opt/backups/postgres    # where scripts/backup-postgres.sh writes
 export COMPOSE_DIR=/opt/myapp              # Compose project dir (its .env is used)
 cd "$COMPOSE_DIR"
@@ -148,10 +150,9 @@ cd "$COMPOSE_DIR"
 
 - A new major version (18 → 19) cannot read the old data directory.
 - Move the data with a dump and restore onto a fresh volume.
-- Run the steps as root in the Compose directory, since the backup directory is root-only.
+- Run the steps as the deploy user in the Compose directory.
 
 ```bash
-sudo -i
 cd /opt/myapp
 ```
 
