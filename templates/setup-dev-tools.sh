@@ -81,7 +81,8 @@ info "Ensuring uv..."
 if command -v uv >/dev/null 2>&1; then
   info "uv already installed: $(uv --version)"
 else
-  curl -LsSf https://astral.sh/uv/0.12.18/install.sh | sh  # match the uv pin in ci.yml
+  # Match [tool.uv] required-version in pyproject.toml: uv refuses to run at any other version.
+  curl -LsSf https://astral.sh/uv/0.12.18/install.sh | sh
   export PATH="$HOME/.local/bin:$PATH"
 fi
 

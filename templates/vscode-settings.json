@@ -40,6 +40,5 @@
   "[typescriptreact]": {
     "editor.defaultFormatter": "esbenp.prettier-vscode"
   },
-  "java.format.settings.google.extra": "--aosp",
   "js/ts.updateImportsOnFileMove.enabled": "always"
 }

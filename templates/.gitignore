@@ -30,7 +30,10 @@ __pycache__/
 dist/
 build/
 *.exe
-*.class
+
+# ── Deploy ───────────────────────────────────────────────────────────────────
+# Server-local release state, written by scripts/prod-init.sh.
+.deploy-state
 
 # ── Logs ─────────────────────────────────────────────────────────────────────
 *.log
