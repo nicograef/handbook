@@ -6,9 +6,10 @@ One HTTPS uptime monitor watches the site; cron heartbeats watch backup, server 
 ## Prerequisites
 
 - The stack passes [deploy.md#verify](deploy.md#verify), with its clone and `.env` under `/opt/<project>`.
+- The daily backup cron installed per [backup-restore.md#daily-backup](backup-restore.md#daily-backup).
 - SSH access as the deploy user, with `sudo` for `/etc/default/report-health`.
 - A Better Stack account on the free plan, with email alerts and optionally Slack configured once.
-- Four free slots on Caddy, five on nginx: the free plan's 10 monitors and heartbeats share one pool.
+- Free plan room: Caddy uses 1 monitor and 3 heartbeats, nginx 1 monitor and 4, of 10 each.
 
 | Placeholder | Description |
 | ----------- | ----------- |
@@ -27,11 +28,7 @@ Heartbeat URLs are secrets and per-server configuration, so they never enter the
 | TLS expiry | 1 day | 3 h | the deploy user's crontab | the cron line in [TLS-expiry heartbeat](#tls-expiry-heartbeat) |
 | Cert renewal, nginx only | 1 day | 36 h | `CERT_PING_URL` in `/opt/<project>/.env` | `certbot` service in [docker-compose.prod.yml](../templates/docker-compose.prod.yml) |
 
-Each script's header states the conditions under which it pings.
-
 ## Create a heartbeat
-
-Every heartbeat below starts with this step.
 
 1. In Better Stack, open **Heartbeats → Create heartbeat**. Name it after its table row, set **Expect a heartbeat every** and the grace period from the table, then save.
    Expected: the heartbeat shows **Pending**, and its detail page shows the secret URL.
@@ -48,15 +45,23 @@ Source: [Better Stack heartbeat docs](https://betterstack.com/docs/uptime/cron-a
    echo 'BACKUP_PING_URL=<heartbeat-url>' >> /opt/<project>/.env
    ```
 
-   Expected: `grep BACKUP_PING_URL /opt/<project>/.env` prints the line once.
+   Expected: `grep '^BACKUP_PING_URL=' /opt/<project>/.env` prints the line once.
 
 ## Health heartbeat
 
-Provisioning writes `/etc/default/report-health` when it was given `HEALTH_PING_URL`; this step writes it otherwise.
+Provisioning writes `/etc/default/report-health` when it was given `HEALTH_PING_URL`.
+That heartbeat then exists already; reuse it instead of creating a second one.
 
-1. [Create a heartbeat](#create-a-heartbeat) from the Health row.
+1. Check whether provisioning stored a URL:
+
+   ```bash
+   sudo grep -q '^HEALTH_PING_URL=.' /etc/default/report-health && echo "health URL set"
+   ```
+
+   Expected: `health URL set` means this section is done; no output means continue with the next step.
+2. [Create a heartbeat](#create-a-heartbeat) from the Health row.
    Expected: a Pending heartbeat and its `<heartbeat-url>`.
-2. Write the URL to the defaults file, readable by root only:
+3. Write the URL to the defaults file, readable by root only:
 
    ```bash
    echo 'HEALTH_PING_URL=<heartbeat-url>' | sudo tee /etc/default/report-health >/dev/null
@@ -72,8 +77,8 @@ Provisioning writes `/etc/default/report-health` when it was given `HEALTH_PING_
 
 ## TLS-expiry heartbeat
 
-Better Stack's SSL-expiry check is paid only, so a daily cron job checks the live certificate instead.
-It pings only while the certificate served on `:443` has more than 7 days left.
+A daily cron job checks the certificate the live `:443` endpoint serves, not the one on disk.
+It pings only while that certificate has more than 7 days left.
 A failed renewal or a stuck reload then withholds the ping.
 
 1. [Create a heartbeat](#create-a-heartbeat) from the TLS expiry row.
@@ -92,9 +97,7 @@ This heartbeat applies to the nginx variant only; Caddy renews and serves its ce
 On nginx, `certbot renew` and the nginx reload run as separate loops (see [deploy.md#tls-variants](deploy.md#tls-variants)).
 This heartbeat proves the renewal; the TLS-expiry heartbeat proves the reload.
 
-The 36 h grace is wide because the `certbot` loop sleeps 24 h between passes.
-
-1. [Create a heartbeat](#create-a-heartbeat) from the Cert renewal row.
+1. [Create a heartbeat](#create-a-heartbeat) from the Cert renewal row; its 36 h grace spans the loop's 24 h sleep.
    Expected: a Pending heartbeat and its `<heartbeat-url>`.
 2. Append the URL to the Compose `.env`:
 
@@ -102,7 +105,7 @@ The 36 h grace is wide because the `certbot` loop sleeps 24 h between passes.
    echo 'CERT_PING_URL=<heartbeat-url>' >> /opt/<project>/.env
    ```
 
-   Expected: `grep CERT_PING_URL /opt/<project>/.env` prints the line once.
+   Expected: `grep '^CERT_PING_URL=' /opt/<project>/.env` prints the line once.
 3. Recreate the `certbot` container so it reads the new variable:
 
    ```bash
@@ -119,8 +122,8 @@ Fire every heartbeat once by hand, as the deploy user:
 cd /opt/<project>
 # backup: sends the stored URL a plain GET
 curl -fsS -m 10 "$(grep -E '^BACKUP_PING_URL=' .env | tail -n 1 | cut -d= -f2-)" >/dev/null && echo "backup ping sent"
-# health: runs the hourly check; exits 0 only when healthy and pinged
-sudo report-health && echo "health ping sent"
+# health: runs the hourly check, see the report-health.sh header
+sudo grep -q '^HEALTH_PING_URL=.' /etc/default/report-health && sudo report-health && echo "health ping sent"
 # TLS expiry: runs the crontab command as cron would
 crontab -l | grep -- '-checkend' | cut -d' ' -f6- | sh && echo "tls ping sent"
 # cert renewal, nginx variant only: a no-op renew pass still pings
@@ -134,3 +137,13 @@ The Better Stack dashboard then shows every monitor **Up**: four on Caddy, five 
 | ------- | ----------- |
 | Caddy | Uptime, Backup, Health, TLS expiry |
 | nginx | Uptime, Backup, Health, TLS expiry, Cert renewal |
+
+To prove alerting end to end, withhold the health ping for one cycle, then restore it:
+
+```bash
+sudo mv /etc/default/report-health /etc/default/report-health.off
+# wait for the Health heartbeat's alert email, at most 90 minutes
+sudo mv /etc/default/report-health.off /etc/default/report-health
+```
+
+Expected: the alert email arrives, and the next hourly ping resolves the incident.
