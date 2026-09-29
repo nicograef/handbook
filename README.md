@@ -6,53 +6,21 @@ Setting something up? Start at [Journeys](#journeys); the file index follows, gr
 
 Start here when you (or an agent) are told "follow the handbook to set up X".
 
-- Gather the listed inputs **before** you start, so nothing is discovered mid-run.
-- This section is routing only — every command lives in the linked guide.
+- Gather the runbook's Prerequisites **before** step 1, so nothing is discovered mid-run.
+- This section is routing only — every command lives in the linked runbook.
 
-### Fresh VPS
+| Journey | Follow | Done when |
+| --- | --- | --- |
+| New dev machine | [dev-machine.md](guides/dev-machine.md) | [Verify](guides/dev-machine.md#verify) passes |
+| New project | [new-project.md](guides/new-project.md) | [Verify](guides/new-project.md#verify) passes |
+| Fresh server | [provision-server.md](guides/provision-server.md), then [ipv6-only-vps.md](guides/ipv6-only-vps.md) on an IPv6-only box | [Verify](guides/provision-server.md#verify) passes |
+| Deploy | [deploy.md](guides/deploy.md): pick one of the [TLS variants](guides/deploy.md#tls-variants), deploy, then [Update](guides/deploy.md#update) or [Roll back](guides/deploy.md#roll-back) | [Verify](guides/deploy.md#verify) passes |
+| Backup and restore | [backup-restore.md](guides/backup-restore.md): the [Daily backup](guides/backup-restore.md#daily-backup), and [Restore](guides/backup-restore.md#restore) on data loss | The quarterly [Restore drill](guides/backup-restore.md#restore-drill) passes |
+| Postgres upgrade | [postgres-upgrade.md](guides/postgres-upgrade.md) | The app runs on the new major version |
+| Maintenance | [maintenance.md](guides/maintenance.md), monthly | Every check shows its expected result |
+| Monitoring | [monitoring.md](guides/monitoring.md) | [Verify](guides/monitoring.md#verify) passes |
 
-Provision a Debian/Ubuntu box, then layer on TLS, monitoring, and backups as the
-workload needs.
-
-**Gather first** — assemble the inputs from these sections before step 1:
-
-- [provision-server.md#inputs](guides/provision-server.md#inputs)
-- [letsencrypt-docker.md#inputs](guides/letsencrypt-docker.md#inputs) (web app only)
-- [monitoring.md#inputs](guides/monitoring.md#inputs)
-
-1. **Provision & harden** (always) — [provision-server.md](guides/provision-server.md)
-   via the cloud-init primary path.
-2. **IPv6-only box only** — [ipv6-only-vps.md](guides/ipv6-only-vps.md). Skip on dual-stack servers.
-3. **Install the CLI tools the aliases expect** (optional) —
-   [After provisioning](guides/provision-server.md#after-provisioning); only if you SSH
-   in to work on the box.
-4. **Deploy TLS + reverse proxy** (web app only) — [deploy.md](guides/deploy.md).
-5. **External monitoring** — [monitoring.md](guides/monitoring.md).
-
-   - Health-ping heartbeat: applies to any box.
-   - HTTPS uptime monitor, cert heartbeat, backup heartbeat: once it hosts a web app.
-
-6. **Backups** (app has a database) —
-   [postgresql-operations.md](guides/postgresql-operations.md) with
-   [scripts/backup-postgres.sh](scripts/backup-postgres.sh) on the daily cron.
-7. **Ongoing upkeep** — [maintenance.md](guides/maintenance.md).
-
-**Done when** these Verify sections pass:
-
-- [provision](guides/provision-server.md#verify)
-- [TLS](guides/letsencrypt-docker.md#verify)
-- [monitoring](guides/monitoring.md#verify)
-- [backups](guides/postgresql-operations.md#verify)
-
-### New dev machine
-
-Follow [dev-machine.md](guides/dev-machine.md) end-to-end; **done when** its Verify section passes.
-
-### New project
-
-**Gather first** — [new-project.md#inputs](guides/new-project.md#inputs).
-
-Follow [new-project.md](guides/new-project.md) end-to-end; **done when** its Verify section passes.
+A web app on a fresh server chains Fresh server, Deploy, Monitoring, then Backup and restore.
 
 ## Dev machine
 
@@ -77,8 +45,7 @@ Copy-once files and conventions for a new project repository.
 | File | Description |
 | --- | --- |
 | [guides/new-project.md](guides/new-project.md) | Set up a new project repository |
-| [reference/stack-conventions.md](reference/stack-conventions.md) | Go, Java/Spring Boot, Node/TypeScript, React, Python conventions |
-| [guides/docker-multi-stage-builds.md](guides/docker-multi-stage-builds.md) | Docker multi-stage builds |
+| [reference/stack-conventions.md](reference/stack-conventions.md) | Node/TypeScript, React, Python, Go conventions |
 | [templates/Makefile](templates/Makefile) | Full-stack Makefile (dev, prod, checks, release) |
 | [templates/make-help.awk](templates/make-help.awk) | Renders `make help` by target class; `scripts/make-help.awk` |
 | [templates/setup-dev-tools.sh](templates/setup-dev-tools.sh) | Dev tool setup script skeleton (Go, Node/pnpm, Python/uv blocks) |
@@ -106,12 +73,12 @@ Provision, deploy, back up, monitor and maintain a VPS.
 | --- | --- |
 | [guides/provision-server.md](guides/provision-server.md) | Provision & harden a new VPS |
 | [guides/ipv6-only-vps.md](guides/ipv6-only-vps.md) | IPv6-only VPS (DNS64/NAT64, Docker) |
-| [guides/deploy.md](guides/deploy.md) | First deploy of a web app with TLS and a reverse proxy |
-| [guides/letsencrypt-docker.md](guides/letsencrypt-docker.md) | Let's Encrypt with Docker Compose |
-| [guides/postgresql-operations.md](guides/postgresql-operations.md) | PostgreSQL operations |
+| [guides/deploy.md](guides/deploy.md) | Deploy a web app with TLS and a reverse proxy; update and roll back |
+| [guides/backup-restore.md](guides/backup-restore.md) | PostgreSQL backup, restore and the quarterly restore drill |
+| [guides/postgres-upgrade.md](guides/postgres-upgrade.md) | PostgreSQL major upgrade onto a fresh volume |
 | [guides/monitoring.md](guides/monitoring.md) | External monitoring (Better Stack) |
-| [guides/maintenance.md](guides/maintenance.md) | Server maintenance & upkeep |
-| [reference/postgresql.md](reference/postgresql.md) | PostgreSQL |
+| [guides/maintenance.md](guides/maintenance.md) | Server maintenance: reboot routine, monthly checks, OOM diagnosis |
+| [reference/postgresql.md](reference/postgresql.md) | PostgreSQL: queries, indexes, golang-migrate migrations |
 | [reference/system-resources.md](reference/system-resources.md) | System info and resource usage |
 | [templates/cloud-init.yml](templates/cloud-init.yml) | cloud-init user-data that fetches & runs `setup-server.sh` |
 | [scripts/setup-server.sh](scripts/setup-server.sh) | Provision a fresh Debian/Ubuntu VPS (user, SSH, swap, UFW, fail2ban, Docker) |

@@ -1,10 +1,10 @@
 # docker-compose.prod-caddy.yml template
 # Production stack with Caddy: automatic Let's Encrypt TLS, no certbot, no initial-cert step.
 # Copy it to docker-compose.prod.yml in the project: the Makefile and scripts use that name.
-# guides/letsencrypt-docker.md names when to pick it over the nginx variant.
+# guides/deploy.md, TLS variants, names when to pick it over the nginx variant.
 # The app runs pinned registry images built by CI; the server builds nothing.
 #
-# Usage (first deploy and every update; see guides/maintenance.md):
+# Usage (first deploy and every update; see guides/deploy.md):
 #   DOMAIN=<domain> make prod-deploy
 
 name: myapp

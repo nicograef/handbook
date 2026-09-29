@@ -5,7 +5,7 @@
 #   scripts/backup-postgres.sh              # uses the defaults / env-var overrides below
 #   BACKUP_DIR=/opt/backups/postgres COMPOSE_DIR=/opt/myapp scripts/backup-postgres.sh
 #
-#   Intended for cron — see guides/postgresql-operations.md §3:
+#   Intended for cron — see guides/backup-restore.md, Daily backup:
 #     0 3 * * * BACKUP_DIR=/opt/backups/postgres COMPOSE_DIR=/opt/myapp /opt/scripts/backup-postgres.sh >> /opt/backups/postgres/backup.log 2>&1
 #
 # What it does:

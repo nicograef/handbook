@@ -2,7 +2,7 @@
 
 This is the "New project" journey of the [README](../README.md#journeys).
 
-## Inputs
+## Prerequisites
 
 | Input | Description | Example |
 |-------|-------------|---------|
@@ -55,7 +55,6 @@ service in the Compose file and copy `.env.example`.
 |---------------|---------------|-----------------------|-------------|-------------|
 | Full-stack Go + React | `docker-compose.yml` + `.env.example` (`db`) | Go + Node + Docker-in-Docker | backend + frontend | [stack-conventions.md#go](../reference/stack-conventions.md#go) + [#nodetypescript](../reference/stack-conventions.md#nodetypescript) + [#react](../reference/stack-conventions.md#react) |
 | Go service only | `docker-compose.yml` + `.env.example` (`db`) | Go + Docker-in-Docker | backend | [stack-conventions.md#go](../reference/stack-conventions.md#go) |
-| Java Spring Boot service | `docker-compose.yml` + `.env.example` (`db`) | `java` (add — not pre-listed) + Docker-in-Docker | backend | [stack-conventions.md#java](../reference/stack-conventions.md#java) |
 | Python service (uv) | `docker-compose.yml` + `.env.example` (`db`) | Docker-in-Docker | backend | [stack-conventions.md#python](../reference/stack-conventions.md#python) |
 | React frontend only | `docker-compose.yml` (app only, no `db`) | Node | frontend | [stack-conventions.md#nodetypescript](../reference/stack-conventions.md#nodetypescript) + [#react](../reference/stack-conventions.md#react) |
 | Docs-only | — | — | — | — |
@@ -68,8 +67,7 @@ mkdir -p scripts && cp "$HANDBOOK/templates/setup-dev-tools.sh" scripts/setup-de
 uv init --package --python <project-python-version>   # Python only: pyproject.toml, .python-version, src/
 ```
 
-- **Dockerfiles** — one per built tier, following [docker-multi-stage-builds.md](docker-multi-stage-builds.md); Java, Node and Python examples there. Copy `templates/.dockerignore` beside each.
-- A Go backend uses the same two-stage pattern: compile a static binary into a minimal runtime image.
+- **Dockerfiles** — one per built tier: copy `templates/Dockerfile.python` or `templates/Dockerfile.go` to `<backend-dir>/Dockerfile`, and `templates/Dockerfile.spa` to `<frontend-dir>/Dockerfile` with `templates/nginx-spa.conf` as `<frontend-dir>/nginx.conf`. Copy `templates/.dockerignore` beside each.
 - A Go backend adds its tools to `go.mod`: `go get -tool golang.org/x/tools/cmd/goimports github.com/sqlc-dev/sqlc/cmd/sqlc golang.org/x/vuln/cmd/govulncheck`. CI runs each as `go tool <name>`.
 - Then follow the linked **stack guide(s)** for source layout and conventions. A Python project adds the ruff, ty and pytest tables from there.
 

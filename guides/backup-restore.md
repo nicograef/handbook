@@ -1,4 +1,6 @@
-# PostgreSQL Operations
+# PostgreSQL Backup and Restore
+
+Take a manual backup, restore a dump, run the verified daily backup, and prove it with the quarterly drill.
 
 ## Prerequisites
 
@@ -7,7 +9,7 @@
 - On the server, `.env` also sets `COMPOSE_FILE` (see [templates/.env.example](../templates/.env.example)).
   Plain `docker compose` then targets the production stack; its top-level `name:` sets the project.
 
-## 1. Manual Backup
+## Manual backup
 
 - The `postgres` container already holds `POSTGRES_USER` / `POSTGRES_DB` in its
   environment.
@@ -20,7 +22,7 @@ docker compose exec -T postgres sh -c \
   > "backup-$(date +%Y%m%d-%H%M).dump"
 ```
 
-## 2. Restore
+## Restore
 
 ### From compressed dump
 
@@ -48,7 +50,7 @@ docker compose exec -T postgres sh -c \
   < backup-20260101-1200.dump
 ```
 
-## 3. Automated Backup (cron)
+## Daily backup
 
 Use [scripts/backup-postgres.sh](../scripts/backup-postgres.sh); its header
 documents each step. Set up the `BACKUP_PING_URL` heartbeat in
@@ -84,13 +86,13 @@ Add it to the deploy user's crontab with `crontab -e`, not to root's.
 > Target a Hetzner Storage Box over SFTP, or Object Storage over S3.
 > Backups then survive the loss of the server.
 
-## 4. Restore drill
+## Restore drill
 
 - Run this drill **quarterly**.
 - It proves the newest dump restores cleanly and that your row counts survive the
   round-trip.
 - For the live disaster case, restore into the production database instead.
-- Use the [full-restore commands](#2-restore), not the throwaway one below.
+- Use the [full-restore commands](#restore), not the throwaway one below.
 - The drill restores into a **throwaway database** and never touches the live one.
 - Run it as the deploy user: it owns the backup directory and is in the `docker` group.
 - CI runs a schema-only drill on every migration change: the `upgrade-path` job in
@@ -146,123 +148,9 @@ cd "$COMPOSE_DIR"
    docker compose exec postgres sh -c 'dropdb -U "$POSTGRES_USER" restore_drill'
    ```
 
-## 5. Major upgrade
-
-- A new major version (18 → 19) cannot read the old data directory.
-- Move the data with a dump and restore onto a fresh volume.
-- Run the steps as the deploy user in the Compose directory.
-
-```bash
-cd /opt/myapp
-```
-
-1. **Stop the backend and take a verified dump** with the
-   [backup script](#3-automated-backup-cron):
-
-   ```bash
-   docker compose stop backend
-   BACKUP_DIR=/opt/backups/postgres COMPOSE_DIR=/opt/myapp /opt/scripts/backup-postgres.sh
-   ```
-
-2. **Stop the stack**, then bump the `postgres` image tag in the Compose file.
-
-   ```bash
-   docker compose down
-   ```
-
-3. **Point the service at a fresh volume.** Rename the volume in the Compose file,
-   e.g. `postgres-data` to `postgres19-data`, so the old one stays as a fallback.
-
-4. **Start only the database** and restore the dump into it:
-
-   ```bash
-   docker compose up -d --wait postgres
-   DUMP="$(ls -t /opt/backups/postgres/backup-*.dump | head -1)"
-   docker compose exec -T postgres sh -c \
-     'pg_restore -U "$POSTGRES_USER" -d "$POSTGRES_DB" --single-transaction' < "$DUMP"
-   ```
-
-5. **Rebuild planner statistics**, then start the rest of the stack:
-
-   ```bash
-   docker compose exec postgres sh -c \
-     'vacuumdb -U "$POSTGRES_USER" -d "$POSTGRES_DB" --analyze-in-stages'
-   docker compose up -d
-   ```
-
-6. **Remove the old volume** once the app runs correctly on the new version.
-
-## 6. Migrations with golang-migrate
-
-### Install
-
-```bash
-curl -fsSL "https://github.com/golang-migrate/migrate/releases/download/v4.20.1/migrate.linux-amd64.tar.gz" \
-  | sudo tar -xz -C /usr/local/bin migrate
-```
-
-### Forward-only
-
-- Write only `.up.sql` files. The rollback is the backup taken before the deploy.
-- A down migration that drops a column destroys data; the restore keeps it.
-- Make each change additive, so the running release still works against the new schema.
-- Never edit a migration that a release already shipped.
-- The `upgrade-path` job in [templates/ci.yml](../templates/ci.yml) applies the latest
-  tag's migrations, then the current ones.
-
-### Create a migration
-
-`migrate create` writes an up and a down file; delete the down file.
-
-```bash
-migrate create -ext sql -dir database/migrations -seq add_users_table
-rm database/migrations/*_add_users_table.down.sql
-```
-
-### Run migrations
-
-- The wrapper below shadows the binary installed above; that install serves the
-  published-port form at the end of this section.
-- Run `migrate` as a throwaway container **on the compose network**.
-- It then reaches the database by its service name (`postgres`), no published port
-  required.
-- Replace `<project>` with your Compose project name (the volume/network prefix).
-- The network is `<project>_db-network`.
-
-```bash
-DB_URL="postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}?sslmode=disable"
-
-migrate() {
-  docker run --rm \
-    --network <project>_db-network \
-    -v "$PWD/database/migrations:/migrations" \
-    migrate/migrate:v4.20.1 \
-    -path /migrations -database "$DB_URL" "$@"
-}
-
-migrate up                 # apply all pending
-```
-
-> **Published-port form.** If the `postgres` service publishes `5432` to the host, you
-> can instead point a locally installed `migrate` binary at `@localhost:5432`.
-> Replace `@postgres:5432` with `@localhost:5432` in `DB_URL`, and drop the
-> `docker run` wrapper.
-
 ## Verify
 
 ```bash
 # confirm backup file was created (BACKUP_DIR from the cron line)
 ls -lh /opt/backups/postgres/backup-*.dump
-
-# check migration version (uses the migrate wrapper from section 6)
-migrate version
-```
-
-## Troubleshooting
-
-```bash
-# "dirty database version" after failed migration
-# → check which version is dirty, fix the SQL, then force
-migrate version
-migrate force <last-good-version>
 ```

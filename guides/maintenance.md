@@ -1,82 +1,6 @@
 # Server Maintenance
 
-## Image updates (every deploy)
-
-- Every image in `docker-compose.prod.yml` carries an explicit tag, never `latest`; the deploy refuses anything else.
-- The project copies one variant there: [nginx](../templates/docker-compose.prod.yml) or [Caddy](../templates/docker-compose.prod-caddy.yml).
-- The app images come from the registry under a `vX.Y.Z` tag that [release.yml](../templates/release.yml) built. The server builds nothing.
-- `postgres` uses a major-series tag and `nginx` a minor-series tag. `certbot` and `caddy` are pinned exactly.
-- Never pull on a schedule. A deploy is the only moment images change, so it also prunes the superseded ones.
-
-### Prerequisites
-
-- The release tag pushed with `make prod-release VERSION=X.Y.Z`, and its images built.
-- The tag change committed to the repo, so the running stack matches source. Edit the Compose file in git, not on the box.
-- `BACKUP_DIR` (default `/opt/backups/postgres`) owned by the deploy user, for the pre-update backup.
-- `.deploy-state` in `.gitignore`. [`prod-init.sh`](../scripts/prod-init.sh) records the last healthy tag there.
-
-### Steps
-
-1. **Bump the tag explicitly** in the Compose file. Pin to a concrete version,
-   not a moving tag:
-
-   ```diff
-   -    image: ghcr.io/<owner>/<project>-backend:v1.4.0
-   +    image: ghcr.io/<owner>/<project>-backend:v1.5.0
-   ```
-
-2. **Run the guarded deploy.** [`prod-init.sh`](../scripts/prod-init.sh) runs the safe deploy flow:
-
-   - It refuses a `build:`, an untagged or `latest` image, and a downgrade below the recorded tag.
-   - Migrations are forward-only, so an older release fails on a newer schema. A failed attempt counts too.
-   - It takes a verified backup with [`backup-postgres.sh`](../scripts/backup-postgres.sh) before any container changes.
-   - It pulls the pinned images and starts the stack with `up --wait`, which polls every healthcheck.
-   - It polls `https://<domain>`, then records the tag in `.deploy-state`. On a failure it prints the rollback path.
-
-   ```bash
-   DOMAIN=<domain> make prod-deploy
-   ```
-
-   Expected: the last lines read `Deployed v1.5.0 — https://<domain>`, exit 0.
-   `Downgrade refused` changes nothing; to go back, follow [Roll back](#roll-back).
-
-3. **Prune the superseded images:**
-
-   ```bash
-   docker image prune -f
-   ```
-
-   Expected: dangling images left untagged by the bump are removed; the summary
-   ends with a `Total reclaimed space: <N>` line (`0B` if nothing was orphaned).
-
-> To reclaim more aggressively, use `docker system prune -af`. Its `--volumes` flag
-> prunes only **anonymous** volumes — `postgres-data`, being named, survives it.
-> **`docker volume prune --all` or `docker compose down --volumes` remove it too.**
-> After `down` drops the containers, that includes the database. Deleting a volume
-> needs a human decision, never an agent's.
-
-### Roll back
-
-The failed deploy printed the pre-update dump and the tag to return to. The same steps undo a healthy deploy.
-
-1. **Set the app image tags back** to the previous release in git, and pull that commit on the server:
-
-   ```diff
-   -    image: ghcr.io/<owner>/<project>-backend:v1.5.0
-   +    image: ghcr.io/<owner>/<project>-backend:v1.4.0
-   ```
-
-2. **Restore the pre-update dump** with the [full-restore commands](postgresql-operations.md#2-restore).
-   The dump must come from the release you return to, or earlier.
-   Skip the final `start backend`: step 3 starts the older release.
-
-3. **Deploy with the override.** `ROLLBACK=1` asserts that step 2 happened; the script lifts the downgrade guard for this run only:
-
-   ```bash
-   ROLLBACK=1 DOMAIN=<domain> make prod-deploy
-   ```
-
-   Expected: a `ROLLBACK=1` warning block, then `Deployed v1.4.0 — https://<domain>`, exit 0.
+Image updates and roll back happen at deploy time: [deploy.md#update](deploy.md#update).
 
 ## Reboot routine (monthly)
 
@@ -140,7 +64,7 @@ The failed deploy printed the pre-update dump and the tag to return to. The same
 1. **Disk headroom.** Threshold: **act when the stack's filesystem is ≥ 80 %
    used**.
 
-   - Prune images (see [image updates](#image-updates-every-deploy)), or grow the
+   - Prune images (see [Update](deploy.md#update)), or grow the
      volume before it fills.
    - A full disk stops Postgres writes and breaks `certbot renew`.
 
@@ -169,7 +93,7 @@ The failed deploy printed the pre-update dump and the tag to return to. The same
 
    Expected: four rows (`Images`, `Containers`, `Local Volumes`, `Build Cache`)
    with a `RECLAIMABLE` column. A large reclaimable figure is the cue to prune
-   (see [image updates](#image-updates-every-deploy)); `postgres-data` under
+   (see [Update](deploy.md#update)); `postgres-data` under
    `Local Volumes` is **not** reclaimable and must stay.
 
 4. **No failed systemd units:**
@@ -242,6 +166,6 @@ it without root.
 
 ## Restore drill (quarterly)
 
-Follow the [restore drill](postgresql-operations.md#4-restore-drill) into a throwaway DB;
-an actual disaster uses the [full-restore commands](postgresql-operations.md#2-restore) instead.
+Follow the [restore drill](backup-restore.md#restore-drill) into a throwaway DB;
+an actual disaster uses the [full-restore commands](backup-restore.md#restore) instead.
 

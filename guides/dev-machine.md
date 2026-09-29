@@ -12,7 +12,13 @@ sudo apt install -y git jq
 
 ## Set up
 
-1. **CLI tools** — the apt line in [After provisioning](provision-server.md#after-provisioning).
+1. **CLI tools** — tmux and the modern CLI tools the shell aliases expect.
+   Without bat, eza, fd-find or fzf, their aliases in [dotfiles/.bash_aliases](../dotfiles/.bash_aliases) stay inactive:
+
+   ```bash
+   sudo apt install -y tmux bat eza fzf fd-find ripgrep git-delta
+   ```
+
    Add gh from its apt repo: [install_linux.md](https://github.com/cli/cli/blob/trunk/docs/install_linux.md).
 2. Clone the handbook and run [`install.sh`](../install.sh). It symlinks the shell dotfiles, the Claude config and the shared skills into `$HOME`.
    A real file in the way moves to `<name>.bak`.

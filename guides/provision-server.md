@@ -2,7 +2,7 @@
 
 Automated setup using [`scripts/setup-server.sh`](../scripts/setup-server.sh).
 
-## Inputs
+## Prerequisites
 
 Collect a value for every variable in the Configuration block at the top of
 [`scripts/setup-server.sh`](../scripts/setup-server.sh) before running. The steps
@@ -94,7 +94,7 @@ cat /etc/cron.d/report-health
 
 - IPv6-only server? Set up DNS64 resolvers (and check the limits) —
   see [ipv6-only-vps.md](ipv6-only-vps.md)
-- Deploy apps via Docker Compose – see [letsencrypt-docker.md](letsencrypt-docker.md)
+- Deploy apps via Docker Compose – see [deploy.md](deploy.md)
 - Install tmux and the modern CLI tools the shell aliases expect, all in Debian 13
   `main`. Without bat, eza, fd-find or fzf, their aliases in
   [dotfiles/.bash_aliases](../dotfiles/.bash_aliases) silently stay inactive:

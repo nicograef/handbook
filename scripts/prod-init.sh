@@ -15,7 +15,7 @@
 #
 # Not checked below: the DNS records for DOMAIN (A and AAAA on dual-stack, AAAA only on
 # IPv6-only) must already point at this server, or the ACME challenge fails
-# (see guides/letsencrypt-docker.md).
+# (see guides/deploy.md, Prerequisites).
 set -euo pipefail
 
 # ── Configuration ──
@@ -213,9 +213,9 @@ fi
 # ── Start and health polling ──
 rollback_hint() {
   [[ -n "$PRE_UPDATE_DUMP" && -n "$DEPLOYED_TAG" ]] || return 0
-  warn "Roll back to $DEPLOYED_TAG (guides/maintenance.md, Roll back):"
+  warn "Roll back to $DEPLOYED_TAG (guides/deploy.md, Roll back):"
   warn "  1. Set the app image tags in $PROD_FILE back to $DEPLOYED_TAG."
-  warn "  2. Restore $PRE_UPDATE_DUMP (guides/postgresql-operations.md, Restore)."
+  warn "  2. Restore $PRE_UPDATE_DUMP (guides/backup-restore.md, Restore)."
   warn "  3. ROLLBACK=1 DOMAIN=$DOMAIN make prod-deploy"
 }
 

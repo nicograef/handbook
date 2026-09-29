@@ -13,7 +13,7 @@ Stand up external monitoring for a single-VPS stack on [Better Stack](https://be
 - A job that never runs at all (dead cron, dead box) alerts by itself.
 - Caddy renews and serves the certificate in one process, so the TLS-expiry heartbeat alone covers it.
 - On the nginx variant, certs need two signals, because `certbot renew` and
-  `nginx -s reload` are decoupled loops (see [letsencrypt-docker.md](letsencrypt-docker.md)).
+  `nginx -s reload` are decoupled loops (see [deploy.md#tls-variants](deploy.md#tls-variants)).
   - **cert-renewal heartbeat** — proves `certbot renew` ran and succeeded.
   - **TLS-expiry heartbeat** — the safety net for the *reload* half.
   - A renew can succeed while a stuck reload keeps nginx serving the old cert.
@@ -48,7 +48,7 @@ docker compose -f docker-compose.prod.yml up -d certbot   # recreate to pick up 
 
 ## Prerequisites
 
-- The production stack deployed with a public HTTPS endpoint (see [letsencrypt-docker.md](letsencrypt-docker.md)).
+- The production stack deployed with a public HTTPS endpoint (see [deploy.md](deploy.md)).
 - SSH access to the server to edit its `.env` and reach `/etc/default/report-health`.
 - Configure alerts once under the team's on-call/notification settings (email and, optionally, Slack) — every monitor and heartbeat below reuses it.
 
