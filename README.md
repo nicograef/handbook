@@ -4,8 +4,6 @@ Setting something up? Start at [guides/bootstrap.md](guides/bootstrap.md).
 
 ## Guides
 
-### Runbooks
-
 | Topic                             | File                                                                       |
 | --------------------------------- | -------------------------------------------------------------------------- |
 | Set up a new project repository   | [guides/new-project.md](guides/new-project.md)                             |
@@ -20,21 +18,16 @@ Setting something up? Start at [guides/bootstrap.md](guides/bootstrap.md).
 | Unattended agent runs             | [guides/unattended-agents.md](guides/unattended-agents.md)                 |
 | Neovim for text editing           | [guides/neovim.md](guides/neovim.md)                                       |
 
-### Stack conventions
+## Reference
 
-Heading-grouped rules and idioms per stack — reference material, not runbooks.
-
-| Topic                             | File                                                                       |
-| --------------------------------- | -------------------------------------------------------------------------- |
-| Go, Java/Spring Boot, Node/TypeScript, React, Python conventions | [guides/stack-conventions.md](guides/stack-conventions.md) |
-
-## Cheatsheets
+Pages to look up, not follow step by step: command tables and rule lists.
 
 | Topic                 | File                                                           |
 | --------------------- | -------------------------------------------------------------- |
-| tmux                  | [cheatsheets/tmux.md](cheatsheets/tmux.md)                     |
-| PostgreSQL            | [cheatsheets/postgresql.md](cheatsheets/postgresql.md)         |
-| System info and resource usage | [cheatsheets/system-resources.md](cheatsheets/system-resources.md) |
+| Go, Java/Spring Boot, Node/TypeScript, React, Python conventions | [reference/stack-conventions.md](reference/stack-conventions.md) |
+| tmux                  | [reference/tmux.md](reference/tmux.md)                         |
+| PostgreSQL            | [reference/postgresql.md](reference/postgresql.md)             |
+| System info and resource usage | [reference/system-resources.md](reference/system-resources.md) |
 
 ## Templates
 

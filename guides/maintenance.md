@@ -237,7 +237,7 @@ it without root.
    ```
 
    A start timestamp later than the kill means the manager was replaced.
-   Everything in its slice went with it; [tmux.md](../cheatsheets/tmux.md) has
+   Everything in its slice went with it; [tmux.md](../reference/tmux.md) has
    the lingering that prevents this.
 
 ## Restore drill (quarterly)

@@ -53,11 +53,11 @@ service in the Compose file and copy `.env.example`.
 
 | Project shape | Compose + env | devcontainer features | Dockerfiles | Stack guide |
 |---------------|---------------|-----------------------|-------------|-------------|
-| Full-stack Go + React | `docker-compose.yml` + `.env.example` (`db`) | Go + Node + Docker-in-Docker | backend + frontend | [stack-conventions.md#go](stack-conventions.md#go) + [#nodetypescript](stack-conventions.md#nodetypescript) + [#react](stack-conventions.md#react) |
-| Go service only | `docker-compose.yml` + `.env.example` (`db`) | Go + Docker-in-Docker | backend | [stack-conventions.md#go](stack-conventions.md#go) |
-| Java Spring Boot service | `docker-compose.yml` + `.env.example` (`db`) | `java` (add — not pre-listed) + Docker-in-Docker | backend | [stack-conventions.md#java](stack-conventions.md#java) |
-| Python service (uv) | `docker-compose.yml` + `.env.example` (`db`) | Docker-in-Docker | backend | [stack-conventions.md#python](stack-conventions.md#python) |
-| React frontend only | `docker-compose.yml` (app only, no `db`) | Node | frontend | [stack-conventions.md#nodetypescript](stack-conventions.md#nodetypescript) + [#react](stack-conventions.md#react) |
+| Full-stack Go + React | `docker-compose.yml` + `.env.example` (`db`) | Go + Node + Docker-in-Docker | backend + frontend | [stack-conventions.md#go](../reference/stack-conventions.md#go) + [#nodetypescript](../reference/stack-conventions.md#nodetypescript) + [#react](../reference/stack-conventions.md#react) |
+| Go service only | `docker-compose.yml` + `.env.example` (`db`) | Go + Docker-in-Docker | backend | [stack-conventions.md#go](../reference/stack-conventions.md#go) |
+| Java Spring Boot service | `docker-compose.yml` + `.env.example` (`db`) | `java` (add — not pre-listed) + Docker-in-Docker | backend | [stack-conventions.md#java](../reference/stack-conventions.md#java) |
+| Python service (uv) | `docker-compose.yml` + `.env.example` (`db`) | Docker-in-Docker | backend | [stack-conventions.md#python](../reference/stack-conventions.md#python) |
+| React frontend only | `docker-compose.yml` (app only, no `db`) | Node | frontend | [stack-conventions.md#nodetypescript](../reference/stack-conventions.md#nodetypescript) + [#react](../reference/stack-conventions.md#react) |
 | Docs-only | — | — | — | — |
 
 ```bash

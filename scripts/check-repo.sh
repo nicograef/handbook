@@ -27,7 +27,7 @@ log() {
 }
 
 # Content directories the README indexes as its file index.
-INDEX_DIRS=(guides cheatsheets templates scripts claude)
+INDEX_DIRS=(guides reference templates scripts claude)
 
 # Tracked top-level folders the README does not index, as "<dir>|<reason>".
 INDEX_EXCLUDE=(

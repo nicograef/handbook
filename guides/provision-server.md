@@ -104,4 +104,4 @@ cat /etc/cron.d/report-health
   ```
 
 - Work in a named tmux session: `tmux new -A -s <project>` — see
-  [cheatsheets/tmux.md](../cheatsheets/tmux.md).
+  [reference/tmux.md](../reference/tmux.md).
