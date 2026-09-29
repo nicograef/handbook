@@ -96,6 +96,8 @@ Without bat, eza, fd-find or fzf, their aliases in
 
 ## Verify
 
+[linux-services.md](../reference/linux-services.md) explains each command.
+
 ```bash
 ssh <username>@<host>
 sudo ufw status verbose

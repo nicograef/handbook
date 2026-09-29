@@ -24,7 +24,7 @@ Each template is copied to the project path after its arrow. Both nginx Compose 
 
 ## First deploy
 
-Run every step on the server as `<username>`, logged in with `ssh <username>@<host>`.
+Run every step on the server as `<username>`, logged in with `ssh <username>@<host>`. Command reference: [linux-services.md](../reference/linux-services.md).
 
 1. **Create the project and backup directories**, owned by you. Expected: `ls -ld` on both shows `<username> <username>`.
 

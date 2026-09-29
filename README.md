@@ -79,6 +79,7 @@ Provision, deploy, back up, monitor and maintain a VPS.
 | [guides/monitoring.md](guides/monitoring.md) | External monitoring (Better Stack) |
 | [guides/maintenance.md](guides/maintenance.md) | Server maintenance: reboot routine, monthly checks, OOM diagnosis |
 | [reference/postgresql.md](reference/postgresql.md) | PostgreSQL: queries, indexes, golang-migrate migrations |
+| [reference/linux-services.md](reference/linux-services.md) | Linux services: systemd, journalctl, Compose, ports and firewall, cron |
 | [reference/system-resources.md](reference/system-resources.md) | System info and resource usage |
 | [templates/cloud-init.yml](templates/cloud-init.yml) | cloud-init user-data that fetches & runs `setup-server.sh` |
 | [scripts/setup-server.sh](scripts/setup-server.sh) | Provision a fresh Debian/Ubuntu VPS (user, SSH, swap, UFW, fail2ban, Docker) |

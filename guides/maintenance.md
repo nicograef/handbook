@@ -48,6 +48,7 @@ The health-ping heartbeat alerts while `/var/run/reboot-required` exists; the re
 ## Verify
 
 Run each check on the server, in `/opt/<project>`; run the HTTPS check from your own machine.
+[linux-services.md](../reference/linux-services.md) explains each command.
 
 ```bash
 test -f /var/run/reboot-required && echo "reboot required" || echo "no flag set"
