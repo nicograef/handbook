@@ -66,13 +66,8 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
-    # Needs wget in the image and a health route; `up --wait` polls it after every deploy.
-    healthcheck:
-      test: ["CMD-SHELL", "wget -qO- http://localhost:8080/api/health >/dev/null 2>&1"]
-      interval: 10s
-      timeout: 3s
-      retries: 5
-      start_period: 5s
+    # The image's HEALTHCHECK probes /api/health with a tool the image ships; `up --wait` polls it
+    # after every deploy. Dockerfiles: guides/docker-multi-stage-builds.md.
     deploy:
       resources:
         limits:

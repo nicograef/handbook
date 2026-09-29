@@ -19,6 +19,8 @@ RUN adduser -D -H -u 10001 app
 COPY --from=builder /src/target/*.jar /app/app.jar
 USER app
 EXPOSE 8080
+HEALTHCHECK --interval=10s --timeout=3s --start-period=5s --retries=5 \
+  CMD wget -qO- http://127.0.0.1:8080/api/health >/dev/null 2>&1 || exit 1
 ENTRYPOINT ["java", "-jar", "/app/app.jar"]
 ```
 
@@ -26,6 +28,7 @@ ENTRYPOINT ["java", "-jar", "/app/app.jar"]
 - No cache mount for Maven: `package` reads `~/.m2` from the `go-offline` layer.
 - `-DskipTests -B` → no tests inside the Docker build.
 - `USER app` (uid 10001): the JVM never runs as root.
+- `HEALTHCHECK` uses the busybox `wget` of the Alpine base; the production Compose files rely on it.
 
 ## Node.js (pnpm + Vite → Nginx)
 
@@ -82,6 +85,9 @@ RUN useradd --create-home --uid 10001 app
 USER app
 
 EXPOSE 8080
+# The slim image ships no wget or curl, so the probe uses the interpreter.
+HEALTHCHECK --interval=10s --timeout=3s --start-period=5s --retries=5 \
+  CMD ["python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8080/api/health', timeout=2)"]
 CMD ["uvicorn", "--factory", "<package>.api:app", "--host", "0.0.0.0", "--port", "8080"]
 ```
 
