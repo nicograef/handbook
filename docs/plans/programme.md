@@ -70,7 +70,7 @@ None.
 | J3 | `project-gate` | 1 | landed | d807182 |
 | S1–S8 | `structure` | 1 | landed | ddbb63a |
 | S9 | lead on `main` | 1 | done | c4cf2e8 |
-| J1, J2 | `journeys-core` | 2 | open | |
+| J1, J2 | `journeys-core` | 2 | landed | e021c64 |
 | J4 | `new-project` | 3 | open | |
 | J5 | `deploy` | 3 | open | |
 | J6 | `backup` | 3 | open | |

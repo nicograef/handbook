@@ -116,13 +116,13 @@ Three Dockerfile templates a project copies unedited after filling placeholders,
 
 ### Acceptance criteria
 
-- [ ] `make test-dockerfiles` exits 0 and reports all three images healthy.
-- [ ] `git grep -nE 'HEALTHCHECK' templates/Dockerfile.python templates/Dockerfile.go templates/Dockerfile.spa` prints one hit per file.
-- [ ] `git grep -n 'COPY nginx.conf' templates/Dockerfile.spa` prints one line.
-- [ ] `git grep -n 'docker-multi-stage-builds' templates/` prints nothing.
-- [ ] `docker compose -f templates/docker-compose.prod-caddy.yml --env-file templates/.env.example config --format json | jq '.services.frontend.healthcheck'` prints `null`.
-- [ ] `git grep -n 'Dockerfile\.python' .claude/rules/templates.md` shows the variant line.
-- [ ] `make check` passes.
+- [x] `make test-dockerfiles` exits 0 and reports all three images healthy.
+- [x] `git grep -nE 'HEALTHCHECK' templates/Dockerfile.python templates/Dockerfile.go templates/Dockerfile.spa` prints one hit per file.
+- [x] `git grep -n 'COPY nginx.conf' templates/Dockerfile.spa` prints one line.
+- [x] `git grep -n 'docker-multi-stage-builds' templates/` prints nothing.
+- [x] `docker compose -f templates/docker-compose.prod-caddy.yml --env-file templates/.env.example config --format json | jq '.services.frontend.healthcheck'` prints `null`.
+- [x] `git grep -n 'Dockerfile\.python' .claude/rules/templates.md` shows the variant line.
+- [x] `make check` passes.
 
 ## Phase 2: Runbook set
 
@@ -147,16 +147,16 @@ A mechanical refactor that fixes the runbook set before any rewrite. Content mov
 
 ### Acceptance criteria
 
-- [ ] `git grep -nE 'letsencrypt-docker|postgresql-operations|docker-multi-stage-builds|after-provisioning' -- . ':!docs/'` prints nothing.
-- [ ] `ls guides/backup-restore.md guides/postgres-upgrade.md guides/deploy.md` lists all three.
-- [ ] `{ grep -xE '## (TLS variants|Update|Roll back)' guides/deploy.md; grep -xE '## (Daily backup|Restore|Restore drill)' guides/backup-restore.md; } | wc -l` prints 6.
-- [ ] `git grep -nE '^#{2,} +[0-9]' guides/deploy.md guides/backup-restore.md guides/postgres-upgrade.md` prints nothing.
-- [ ] `git grep -nE 'deploy\.md, Roll back|backup-restore\.md, Restore' scripts/prod-init.sh` prints two lines.
-- [ ] `git grep -n 'Usage (first deploy and every update' templates/` shows both compose files naming `guides/deploy.md`.
-- [ ] `for f in dev-machine new-project provision-server deploy backup-restore postgres-upgrade maintenance monitoring; do awk '/^## Journeys/{j=1;next} /^## /{j=0} j' README.md | grep -q "guides/$f.md" || echo "$f"; done` prints nothing.
-- [ ] `for t in '<angle-brackets>' '50 to 150' 'never numbers'; do grep -qF -- "$t" .claude/rules/guides.md || echo "$t"; done` prints nothing.
-- [ ] `awk '/^## Journeys/{j=1;next} /^## /{j=0} j' README.md | grep -oE '\.md#[a-z0-9-]+' | sort -u | grep -vxE '\.md#(prerequisites|verify|tls-variants|update|roll-back|daily-backup|restore|restore-drill)'` prints nothing.
-- [ ] `make check` passes.
+- [x] `git grep -nE 'letsencrypt-docker|postgresql-operations|docker-multi-stage-builds|after-provisioning' -- . ':!docs/'` prints nothing.
+- [x] `ls guides/backup-restore.md guides/postgres-upgrade.md guides/deploy.md` lists all three.
+- [x] `{ grep -xE '## (TLS variants|Update|Roll back)' guides/deploy.md; grep -xE '## (Daily backup|Restore|Restore drill)' guides/backup-restore.md; } | wc -l` prints 6.
+- [x] `git grep -nE '^#{2,} +[0-9]' guides/deploy.md guides/backup-restore.md guides/postgres-upgrade.md` prints nothing.
+- [x] `git grep -nE 'deploy\.md, Roll back|backup-restore\.md, Restore' scripts/prod-init.sh` prints two lines.
+- [x] `git grep -n 'Usage (first deploy and every update' templates/` shows both compose files naming `guides/deploy.md`.
+- [x] `for f in dev-machine new-project provision-server deploy backup-restore postgres-upgrade maintenance monitoring; do awk '/^## Journeys/{j=1;next} /^## /{j=0} j' README.md | grep -q "guides/$f.md" || echo "$f"; done` prints nothing.
+- [x] `for t in '<angle-brackets>' '50 to 150' 'never numbers'; do grep -qF -- "$t" .claude/rules/guides.md || echo "$t"; done` prints nothing.
+- [x] `awk '/^## Journeys/{j=1;next} /^## /{j=0} j' README.md | grep -oE '\.md#[a-z0-9-]+' | sort -u | grep -vxE '\.md#(prerequisites|verify|tls-variants|update|roll-back|daily-backup|restore|restore-drill)'` prints nothing.
+- [x] `make check` passes.
 
 ## Phase 3: Project gate templates
 
