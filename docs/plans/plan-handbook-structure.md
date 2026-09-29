@@ -61,6 +61,9 @@ Guards land first, so each later move runs under the anchor, folder-coverage and
 - The bootstrap content moves verbatim into the README and the two new runbooks; only headings change. The journeys plan rewrites it.
 - The scripts rule widens to `.claude/skills/**/*.sh` in phase 5, the one phase owning `.claude/rules/`, so the audiobook scripts keep the script conventions after phase 7.
 - The plan names no handbook raw URL literally and links no file, so the new stages never trip on it.
+- Owner ruling 2026-09-29: `install-dotfiles.sh --check` stays, with its all-or-nothing pre-flight.
+- `guides/dev-machine.md` and `guides/deploy.md` get `## Prerequisites` and `## Verify` now: the PRD defines `guides/` as runbooks.
+- Anchor checking keeps GitHub's duplicate-slug suffixes: the PRD names GitHub heading slugs.
 
 ## Open questions / Risks
 

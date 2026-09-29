@@ -59,6 +59,9 @@ Outbound and destructive commands always prompt, and Node and Python read-only t
 - prog is untouched: the PRD names only prune and reflect, and prog step 3 states the current-state rule, not the memory rule.
 - The guide links the official errors page for failure strings and `lead.md#failures` for the agent's response.
 - Zero clarification questions: the PRD, the two earlier plans and the Claude Code docs settle every fork.
+- Owner ruling 2026-09-29: `claude/CLAUDE.md` takes the two-fix threshold; implement-plan step 8 stays.
+- Owner ruling 2026-09-29: the runbook keeps the `CLAUDE_CODE_RETRY_WATCHDOG=1` step.
+- Owner ruling 2026-09-29: the phase 1 probe keeps all three commands.
 
 ## Open questions / Risks
 

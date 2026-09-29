@@ -83,10 +83,13 @@ Every README journey (new dev machine, new project, fresh server, deploy, then b
 - The template Makefile `be-check` runs the uv gate and `fe-check` the pnpm gate, in the order `reference/stack-conventions.md` documents; a commented block shows the Go gate.
 - The existing `backend-integration-tests` job becomes stack-neutral: Python steps (setup-uv, `uv sync`, `uv run pytest -m <marker>` with the opt-in marker from the Python conventions) sit beside the Go steps and share its Postgres service and `migrate up`.
 - `templates/dependabot.yml` keeps its docker entry commented; its enable line already tells the copier when.
-- Dev-machine install methods match the owner's laptop: Node as the `node` snap `26/stable`, pnpm via `npm install -g` with prefix `~/.local`, uv via pipx, Claude Code via its native installer. gh keeps the apt repo the moved bootstrap step names; the laptop's `gh` is a binary in `~/.local/bin`, so this one method differs.
+- Dev-machine install methods match the owner's laptop: Node as the `node` snap `26/stable`, pnpm via `npm install -g` with prefix `~/.local`, uv via pipx, Claude Code via its native installer. gh uses GitHub's apt repo, which the moved bootstrap step names; the owner moves the laptop to it.
 - Maintenance is the single home of the OOM and lingering explanation; `provision-server.md` holds the lingering step; `reference/tmux.md` links both.
 - No new `check-repo.sh` stage: line counts, heading numbers and journey endings are checked by one-shot commands in the criteria.
 - Java settings in `claude/settings.json` belong to the agent-layer plan.
+- Owner ruling 2026-09-29: `scripts/test-dockerfiles.sh` and `make test-dockerfiles` stay as the re-runnable guard on base-image bumps.
+- Owner ruling 2026-09-29: gh installs from GitHub's apt repository; the owner's laptop moves to it.
+- Runbook steps stay numbered lists; only headings are unnumbered, so the glossary's "numbered steps" holds.
 
 ## Open questions / Risks
 
