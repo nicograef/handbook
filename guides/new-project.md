@@ -1,7 +1,6 @@
 # Set Up a New Project Repository
 
-This is the "New project" journey of the [README](../README.md#journeys).
-It ends in a repository that lists its make targets and holds a parsing production Compose file.
+This is the "New project" journey of the [README](../README.md#journeys). It ends in a repository whose `make check` passes.
 
 ## Prerequisites
 
@@ -85,18 +84,22 @@ A React repository skips [Copy the production files](#copy-the-production-files)
    (cd backend && go get -tool golang.org/x/tools/cmd/goimports github.com/sqlc-dev/sqlc/cmd/sqlc golang.org/x/vuln/cmd/govulncheck)
    ```
 
-## Pin the toolchain versions
+## Set up the toolchain
 
-1. Pin Node and pnpm, then install the frontend. Expected: `.node-version` holds `<node-major>`, and `frontend/pnpm-lock.yaml` exists.
+1. Pin Node and pnpm, then add the frontend gate the [Node/TypeScript](../reference/stack-conventions.md#nodetypescript) conventions name. Expected: `pnpm --dir frontend test` passes.
    ```bash
-   echo <node-major> > frontend/.node-version
-   pnpm --dir frontend pkg set packageManager="pnpm@$(pnpm --version)"
-   pnpm --dir frontend install
+   echo <node-major> > frontend/.node-version && cd frontend
+   npm pkg set packageManager="pnpm@$(pnpm --version)"
+   pnpm add -D typescript@~7.0 oxlint-tsgolint prettier vitest     # writes pnpm-lock.yaml
+   npm pkg set scripts.format="prettier --write ." "scripts.format:check=prettier --check ." scripts.lint="oxlint --type-aware --deny-warnings" scripts.typecheck="tsc -b" scripts.test="vitest run"
+   printf 'pnpm-lock.yaml\n' > .prettierignore     # pnpm owns the lockfile format
+   printf "import { expect, test } from 'vitest'\nimport App from './App'\n\ntest('App is a component', () => {\n  expect(typeof App).toBe('function')\n})\n" > src/App.test.tsx && pnpm run format && cd ..
    ```
-2. Set the uv floor for the Python backend and add its dev tools. Expected: `backend/.python-version` holds `<project-python-version>`, and `backend/uv.lock` names `pytest`.
+2. Set the uv floor for the Python backend, add its dev tools and a smoke test. Expected: `backend/.python-version` holds `<project-python-version>`, and `backend/uv.lock` names `pytest`.
    ```bash
    printf '\n[tool.uv]\nrequired-version = ">=<uv-version>"\n' >> backend/pyproject.toml
    uv add --directory backend --dev pytest ruff ty    # a uv below <uv-version> fails: "Required uv version"
+   mkdir -p backend/tests && printf 'from backend import main\n\n\ndef test_main_prints(capsys):\n    main()\n    assert capsys.readouterr().out\n' > backend/tests/test_smoke.py
    ```
 
 ## Copy the production files
@@ -111,8 +114,7 @@ A React repository skips [Copy the production files](#copy-the-production-files)
    ```
    The nginx + Certbot stack swaps in the files [deploy.md#tls-variants](deploy.md#tls-variants) lists; the name fill below covers them.
 2. Delete the tiers your row lacks from `docker-compose.prod.yml`, the `release.yml` matrix and the Caddyfile. Expected: `docker compose -f docker-compose.prod.yml config --services` lists only your tiers, `postgres` and `reverse-proxy`.
-
-Both production Compose templates pin the app images at `v0.1.0`. Push that as the first release tag, or bump the pins to it first, as [deploy.md#update](deploy.md#update) does.
+   Both production Compose templates pin the app images at `v0.1.0`. Push that as the first release tag, or bump the pins to it first, as [deploy.md#update](deploy.md#update) does.
 
 ## Fill the templates
 
@@ -143,8 +145,6 @@ Both production Compose templates pin the app images at `v0.1.0`. Push that as t
 
 ```bash
 make help                                             # DEVELOPER and PRODUCTION sections list the targets
+make check                                            # every gate of the stack passes
 docker compose -f docker-compose.prod.yml --env-file .env.example config --quiet && echo ok   # -> ok
-head -1 CLAUDE.md                                     # -> @AGENTS.md
-git symbolic-ref --short HEAD                         # -> main
-uv lock --check --directory backend                   # Python only: exit 0
 ```
