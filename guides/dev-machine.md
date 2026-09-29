@@ -4,7 +4,11 @@ Set up a developer machine with the handbook's CLI tools, dotfiles, Claude confi
 
 ## Prerequisites
 
-An Ubuntu machine with a `sudo` user.
+An Ubuntu machine with a `sudo` user. Cloning needs `git`; `install.sh` stops before any change without `jq`:
+
+```bash
+sudo apt install -y git jq
+```
 
 ## Set up
 
