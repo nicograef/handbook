@@ -20,4 +20,4 @@ Header, then `set -euo pipefail`:
 
 - Idempotent; configurable values as env-var defaults at the top (`VAR="${VAR:-default}"`); a `log()` helper for status output; pre-flight checks before anything destructive.
 - Quote every variable, use `[[ ]]`; `make lint` runs shellcheck.
-- File name `<verb>-<noun>.sh`, executable (`chmod +x`).
+- File name lowercase with hyphens, verb first for a one-shot task (`backup-postgres.sh`), noun for a tool or hook (`agent-bus.sh`); executable (`chmod +x`).

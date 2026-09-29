@@ -1,8 +1,14 @@
 #!/usr/bin/env bash
 # check-repo.sh – repo self-check for the handbook knowledge base.
 #
-# Every stage except `all` has a same-named Makefile target; `all` is reached as `make check`.
+# Usage:
+#   scripts/check-repo.sh [all|links|lint|readme|language|skills|compose|prose|history]
 #
+# What it does:
+#   1. Runs the named stage, or every stage for `all` (the default)
+#   2. Logs each violation and exits non-zero if any stage found one
+#
+# Every stage except `all` has a same-named Makefile target; `all` is reached as `make check`.
 # Idempotent: reads only, never writes.
 
 set -euo pipefail
