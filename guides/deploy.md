@@ -1,152 +1,149 @@
 # Deploy
 
-Deploy a web app with TLS and a reverse proxy on a provisioned VPS, update it, and roll it back.
+Take a provisioned server to a running app with TLS, update it, and roll it back.
 TLS runs entirely inside Docker: Caddy, or nginx with a Certbot webroot challenge.
 
 ## Prerequisites
 
-- The server passes [provision-server.md#verify](provision-server.md#verify).
-- DNS records for the domain and its `www` subdomain point at the VPS, per host type:
-  - Dual-stack server: an A record to its IPv4. Any AAAA record points to its IPv6 or is removed, since Let's Encrypt prefers IPv6.
-  - IPv6-only server: an AAAA record only. IPv4-only clients cannot reach it; see [ipv6-only-vps.md](ipv6-only-vps.md#limits-no-on-box-workaround).
-
-Collect these before starting:
-
-| Placeholder | Description | Example |
-| ----------- | ----------- | ------- |
-| `<project-name>` | Compose project name — the top-level `name:` in every Compose file (replaces `myapp`) | `myapp` |
-| `<domain>` | Public domain in `nginx-tls.conf` or the `Caddyfile` (replaces `example.com`) | `example.com` |
-
-> Volume names are prefixed with the project name (e.g. `myapp_letsencrypt`).
-> `docker-compose.initial-cert.yml` and `docker-compose.prod.yml` carry the **same** `name:`,
-> so both share `certbot-challenges` and `letsencrypt`.
+- The server passes [provision-server.md#verify](provision-server.md#verify), plus [ipv6-only-vps.md](ipv6-only-vps.md) on an IPv6-only box.
+- DNS for `<domain>` and `www.<domain>` on a dual-stack server: an A record, and an AAAA record or none.
+  Any AAAA record must point at this server too, since Let's Encrypt prefers IPv6.
+- DNS on an IPv6-only server: an AAAA record only. IPv4-only clients cannot reach it.
+- A release tag `v<X.Y.Z>` pushed with `make prod-release`, and its [release.yml](../templates/release.yml) run green.
+- The project repo holds its variant's Compose and proxy files, as [new-project.md](new-project.md) copies them.
+- Placeholders: `<username>` and `<host>` from provisioning, `<owner>/<project>` the GitHub repo, `<github-user>` your GitHub login.
 
 ## TLS variants
 
 | Variant | Templates | Pick it when |
 | ------- | --------- | ------------ |
-| Caddy | [docker-compose.prod-caddy.yml](../templates/docker-compose.prod-caddy.yml), [Caddyfile](../templates/Caddyfile) | Default for a new stack: Caddy issues and renews the certificate itself, with no initial-cert step |
+| Caddy | [docker-compose.prod-caddy.yml](../templates/docker-compose.prod-caddy.yml), [Caddyfile](../templates/Caddyfile) | Default for a new project: Caddy issues and renews the certificate itself |
 | nginx + Certbot | [docker-compose.prod.yml](../templates/docker-compose.prod.yml), [docker-compose.initial-cert.yml](../templates/docker-compose.initial-cert.yml), [nginx-tls.conf](../templates/nginx-tls.conf), [nginx-initial-cert.conf](../templates/nginx-initial-cert.conf) | You need per-client rate limiting (`limit_req`), or the team already runs nginx configs |
 
-A project copies its variant's Compose template to `docker-compose.prod.yml`. Only this handbook names the Caddy file differently.
-
-Caddy's core has no rate limiter. The Certbot variant pings `CERT_PING_URL` after each renewal; the Caddy variant has no such heartbeat.
+Either variant's Compose template is copied to `docker-compose.prod.yml`. Only the Certbot variant pings `CERT_PING_URL` per renewal.
 
 ## First deploy
 
-1. **Deploy TLS + reverse proxy** (web app only).
-   First deploy: [scripts/prod-init.sh](../scripts/prod-init.sh) with the production Compose template of the
-   [chosen variant](#tls-variants), copied to `docker-compose.prod.yml`.
-   It runs the first deploy and every update for both variants, and requests the Certbot certificate only when none exists.
+Run every step on the server as `<username>`, logged in with `ssh <username>@<host>`.
 
-## Update
+1. **Create the project directory**, owned by you. Expected: `ls -ld /opt/<project>` shows `<username> <username>`.
 
-- Every image in `docker-compose.prod.yml` carries an explicit tag, never `latest`; the deploy refuses anything else.
-- The app images come from the registry under a `vX.Y.Z` tag that [release.yml](../templates/release.yml) built. The server builds nothing.
-- `postgres` uses a major-series tag and `nginx` a minor-series tag. `certbot` and `caddy` are pinned exactly.
-- Never pull on a schedule. A deploy is the only moment images change, so it also prunes the superseded ones.
-
-### Before you update
-
-- The release tag pushed with `make prod-release VERSION=X.Y.Z`, and its images built.
-- The tag change committed to the repo, so the running stack matches source. Edit the Compose file in git, not on the box.
-- `BACKUP_DIR` (default `/opt/backups/postgres`) owned by the deploy user, for the pre-update backup.
-- `.deploy-state` in `.gitignore`. [`prod-init.sh`](../scripts/prod-init.sh) records the last healthy tag there.
-
-### Steps
-
-1. **Bump the tag explicitly** in the Compose file. Pin to a concrete version,
-   not a moving tag:
-
-   ```diff
-   -    image: ghcr.io/<owner>/<project>-backend:v1.4.0
-   +    image: ghcr.io/<owner>/<project>-backend:v1.5.0
+   ```bash
+   sudo install -d -o "$USER" -g "$USER" -m 0750 /opt/<project>
    ```
 
-2. **Run the guarded deploy.** [`prod-init.sh`](../scripts/prod-init.sh) runs the safe deploy flow:
+2. **Add a read-only deploy key**: paste the printed line under the repo's Settings → Deploy keys, **Allow write access** off.
+   Expected: the key is listed as read-only ([GitHub deploy keys](https://docs.github.com/en/authentication/connecting-to-github-with-ssh/managing-deploy-keys)).
 
-   - It refuses a `build:`, an untagged or `latest` image, and a downgrade below the recorded tag.
-   - Migrations are forward-only, so an older release fails on a newer schema. A failed attempt counts too.
-   - It takes a verified backup with [`backup-postgres.sh`](../scripts/backup-postgres.sh) before any container changes.
-   - It pulls the pinned images and starts the stack with `up --wait`, which polls every healthcheck.
-   - It polls `https://<domain>`, then records the tag in `.deploy-state`. On a failure it prints the rollback path.
+   ```bash
+   ssh-keygen -t ed25519 -N '' -C '<project>-deploy@<host>' -f ~/.ssh/<project>-deploy
+   cat ~/.ssh/<project>-deploy.pub
+   ```
+
+3. **Clone the repo** with that key; `git pull` keeps using it. Expected: ssh asks once to trust github.com; accept only [GitHub's published fingerprint](https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/githubs-ssh-key-fingerprints).
+
+   ```bash
+   git clone -c core.sshCommand="ssh -i $HOME/.ssh/<project>-deploy -o IdentitiesOnly=yes" \
+     git@github.com:<owner>/<project>.git /opt/<project> && cd /opt/<project>
+   ```
+
+4. **Log in to the registry** with a classic personal access token scoped to `read:packages` only. GitHub Packages accepts no other token type ([Container registry docs](https://docs.github.com/en/packages/working-with-a-github-packages-registry/working-with-the-container-registry), checked 2026-09-29).
+   Expected: `Login Succeeded`; Docker keeps the token in `~/.docker/config.json`.
+
+   ```bash
+   read -rs GHCR_TOKEN   # paste the token, press Enter
+   printf '%s' "$GHCR_TOKEN" | docker login ghcr.io -u <github-user> --password-stdin; unset GHCR_TOKEN
+   ```
+
+5. **Create `.env`** readable by you only, then set every `<placeholder>`; the ping URLs follow in [monitoring.md](monitoring.md).
+   Expected: `docker compose config --images` lists `ghcr.io/<owner>/<project>-backend:v<X.Y.Z>`, so plain `docker compose` targets production.
+
+   ```bash
+   cp .env.example .env && chmod 600 .env
+   ```
+
+   ```diff
+   -# COMPOSE_FILE=docker-compose.prod.yml
+   +COMPOSE_FILE=docker-compose.prod.yml
+   ```
+
+6. **Confirm the variant's proxy files** name your project and domain. Expected: each comment's result.
+   Fix a mismatch in git on your machine, then `git pull` here; the server edits no tracked file.
+
+   ```bash
+   docker compose config | head -1                  # name: <project>
+   grep -c '<domain>' reverse-proxy/*               # Caddyfile:3+, or nginx.conf:6+ beside nginx.initial-cert.conf:0
+   ```
+
+7. **Deploy the release.** The [prod-init.sh](../scripts/prod-init.sh) header lists every check and step it runs. Expected: the last lines read `Deployed v<X.Y.Z> — https://<domain>`, exit 0.
 
    ```bash
    DOMAIN=<domain> make prod-deploy
    ```
 
-   Expected: the last lines read `Deployed v1.5.0 — https://<domain>`, exit 0.
-   `Downgrade refused` changes nothing; to go back, follow [Roll back](#roll-back).
+8. **Schedule the backup** per [backup-restore.md#daily-backup](backup-restore.md#daily-backup), with `COMPOSE_DIR=/opt/<project>`; updates back up there too.
+   Expected: `crontab -l` shows the backup line.
 
-3. **Prune the superseded images:**
+## Update
 
-   ```bash
-   docker image prune -f
+The server builds nothing and never pulls on a schedule; a deploy is the only moment images change.
+`postgres` uses a major-series tag and `nginx` a minor-series tag; `certbot` and `caddy` are pinned exactly.
+
+1. **Bump the app image tags** in `docker-compose.prod.yml` on your machine, then commit and push.
+   Expected: `git log -1 --stat` names `docker-compose.prod.yml`.
+
+   ```diff
+   -    image: ghcr.io/<owner>/<project>-backend:v<X.Y.Z>
+   +    image: ghcr.io/<owner>/<project>-backend:v<X.Y.Z+1>
    ```
 
-   Expected: dangling images left untagged by the bump are removed; the summary
-   ends with a `Total reclaimed space: <N>` line (`0B` if nothing was orphaned).
+2. **Pull, deploy and prune** on the server. Expected: `Deployed v<X.Y.Z+1> — https://<domain>`, then `Total reclaimed space`.
+   `Downgrade refused` changes nothing; follow [Roll back](#roll-back).
 
-> To reclaim more aggressively, use `docker system prune -af`. Its `--volumes` flag
-> prunes only **anonymous** volumes — `postgres-data`, being named, survives it.
-> **`docker volume prune --all` or `docker compose down --volumes` remove it too.**
-> After `down` drops the containers, that includes the database. Deleting a volume
-> needs a human decision, never an agent's.
+   ```bash
+   cd /opt/<project> && git pull --ff-only && DOMAIN=<domain> make prod-deploy && docker image prune -f
+   ```
+
+> `docker volume prune --all` and `docker compose down --volumes` delete the database; only a human decides that.
 
 ## Roll back
 
-The failed deploy printed the pre-update dump and the tag to return to. The same steps undo a healthy deploy.
+A failed update prints the pre-update dump and the tag to return to. The same steps undo a healthy update.
 
-1. **Set the app image tags back** to the previous release in git, and pull that commit on the server:
-
-   ```diff
-   -    image: ghcr.io/<owner>/<project>-backend:v1.5.0
-   +    image: ghcr.io/<owner>/<project>-backend:v1.4.0
-   ```
-
-2. **Restore the pre-update dump** with the [full-restore commands](backup-restore.md#restore).
-   The dump must come from the release you return to, or earlier.
-   Skip the final `start backend`: step 3 starts the older release.
-
-3. **Deploy with the override.** `ROLLBACK=1` asserts that step 2 happened; the script lifts the downgrade guard for this run only:
+1. **Revert the tag bump** in git on your machine and push it. Expected: `git show --stat` names `docker-compose.prod.yml`.
 
    ```bash
-   ROLLBACK=1 DOMAIN=<domain> make prod-deploy
+   git revert <bump-commit> && git push
    ```
 
-   Expected: a `ROLLBACK=1` warning block, then `Deployed v1.4.0 — https://<domain>`, exit 0.
+2. **Restore the pre-update dump** per [backup-restore.md#restore](backup-restore.md#restore), skipping the final `start backend`.
+   Expected: `pg_restore` exits 0. The dump must come from the release you return to, or earlier.
+
+3. **Pull and deploy with the override.** `ROLLBACK=1` asserts step 2 happened and lifts the downgrade guard once.
+   Expected: a `ROLLBACK=1` warning block, then `Deployed v<X.Y.Z> — https://<domain>`, exit 0.
+
+   ```bash
+   cd /opt/<project> && git pull --ff-only && ROLLBACK=1 DOMAIN=<domain> make prod-deploy
+   ```
 
 ## Verify
 
-nginx + Certbot:
-
 ```bash
-# cert was issued (expect a live/<domain>/ directory)
-docker run --rm -v myapp_letsencrypt:/etc/letsencrypt alpine \
-  ls /etc/letsencrypt/live/
-
-# staging dry-run against the running stack — must print
-# "Congratulations, all simulated renewals succeeded"
-docker compose -f docker-compose.prod.yml exec certbot certbot renew --dry-run
-```
-
-Caddy:
-
-```bash
-# expect a "certificate obtained successfully" line per domain
-docker compose -f docker-compose.prod.yml logs reverse-proxy | grep 'certificate obtained'
-
-# expect HTTP/2 200
-curl -sI https://example.com | head -1
+cd /opt/<project>                                        # each comment states the expected result
+docker compose ps --format '{{.Service}}: {{.Status}}'   # every service Up, each healthcheck (healthy)
+curl -sI https://<domain> | head -1                      # HTTP/2 200
+curl -sI http://<domain> | head -1                       # 301 or 308, redirect to HTTPS
+cat .deploy-state                                        # deployed=v<X.Y.Z> and an empty attempted=
+docker compose logs reverse-proxy | grep -c 'certificate obtained successfully'   # Caddy: 1 or more
+docker compose exec certbot certbot renew --dry-run      # nginx: all simulated renewals succeeded
 ```
 
 ## Troubleshooting
 
 ```bash
-# check cert expiry
-docker run --rm -v myapp_letsencrypt:/etc/letsencrypt alpine \
-  cat /etc/letsencrypt/live/example.com/fullchain.pem | openssl x509 -noout -dates
-
-# common failure: DNS not pointing to this server
-curl http://example.com/.well-known/acme-challenge/test
+docker compose pull            # "denied": the token expired or lacks read:packages; log in again
+echo | openssl s_client -connect <domain>:443 -servername <domain> 2>/dev/null | openssl x509 -noout -enddate
+getent ahosts <domain>; ip -brief address                        # ACME fails: DNS must name this server
+curl -sI http://<domain>/.well-known/acme-challenge/test | head -1   # nginx: a 404 proves port 80 reaches it
+docker compose logs reverse-proxy | grep -i error                # Caddy: the ACME error names the challenge
 ```
