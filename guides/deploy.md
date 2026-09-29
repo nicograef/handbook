@@ -6,10 +6,10 @@ TLS runs entirely inside Docker: Caddy, or nginx with a Certbot webroot challeng
 ## Prerequisites
 
 - The server passes [provision-server.md#verify](provision-server.md#verify), plus [ipv6-only-vps.md](ipv6-only-vps.md) on an IPv6-only box.
-- DNS for `<domain>` and `www.<domain>` on a dual-stack server: an A record, and an AAAA record or none.
-  Any AAAA record must point at this server too, since Let's Encrypt prefers IPv6.
+- DNS for `<domain>` and `www.<domain>` on a dual-stack server: an A record, and an AAAA record or none. Any AAAA record must point at this server too, since Let's Encrypt prefers IPv6.
 - DNS on an IPv6-only server: an AAAA record only. IPv4-only clients cannot reach it.
 - A release tag `v<X.Y.Z>` pushed with `make prod-release`, and its [release.yml](../templates/release.yml) run green.
+- `docker-compose.prod.yml` in git pins the backend and frontend images to that `v<X.Y.Z>`, bumped as in [Update](#update).
 - The project repo holds its variant's Compose and proxy files, as [new-project.md](new-project.md) copies them.
 - Placeholders: `<username>` and `<host>` from provisioning, `<owner>/<project>` the GitHub repo, `<github-user>` your GitHub login.
 
@@ -17,23 +17,23 @@ TLS runs entirely inside Docker: Caddy, or nginx with a Certbot webroot challeng
 
 | Variant | Templates | Pick it when |
 | ------- | --------- | ------------ |
-| Caddy | [docker-compose.prod-caddy.yml](../templates/docker-compose.prod-caddy.yml), [Caddyfile](../templates/Caddyfile) | Default for a new project: Caddy issues and renews the certificate itself |
-| nginx + Certbot | [docker-compose.prod.yml](../templates/docker-compose.prod.yml), [docker-compose.initial-cert.yml](../templates/docker-compose.initial-cert.yml), [nginx-tls.conf](../templates/nginx-tls.conf), [nginx-initial-cert.conf](../templates/nginx-initial-cert.conf) | You need per-client rate limiting (`limit_req`), or the team already runs nginx configs |
+| Caddy | [docker-compose.prod-caddy.yml](../templates/docker-compose.prod-caddy.yml) → `docker-compose.prod.yml`, [Caddyfile](../templates/Caddyfile) → `reverse-proxy/Caddyfile` | Default for a new project: Caddy issues and renews the certificate itself |
+| nginx + Certbot | [docker-compose.prod.yml](../templates/docker-compose.prod.yml) → `docker-compose.prod.yml`, [docker-compose.initial-cert.yml](../templates/docker-compose.initial-cert.yml) → `docker-compose.initial-cert.yml`, [nginx-tls.conf](../templates/nginx-tls.conf) → `reverse-proxy/nginx.conf`, [nginx-initial-cert.conf](../templates/nginx-initial-cert.conf) → `reverse-proxy/nginx.initial-cert.conf` | You need per-client rate limiting (`limit_req`), or the team already runs nginx configs |
 
-Either variant's Compose template is copied to `docker-compose.prod.yml`. Only the Certbot variant pings `CERT_PING_URL` per renewal.
+Each template is copied to the project path after its arrow. Both nginx Compose files carry the same top-level `name:`. Only the Certbot variant pings `CERT_PING_URL` per renewal.
 
 ## First deploy
 
 Run every step on the server as `<username>`, logged in with `ssh <username>@<host>`.
 
-1. **Create the project directory**, owned by you. Expected: `ls -ld /opt/<project>` shows `<username> <username>`.
+1. **Create the project and backup directories**, owned by you. Expected: `ls -ld` on both shows `<username> <username>`.
 
    ```bash
    sudo install -d -o "$USER" -g "$USER" -m 0750 /opt/<project>
+   sudo install -d -o "$USER" -g "$USER" -m 0700 /opt/backups/postgres
    ```
 
-2. **Add a read-only deploy key**: paste the printed line under the repo's Settings → Deploy keys, **Allow write access** off.
-   Expected: the key is listed as read-only ([GitHub deploy keys](https://docs.github.com/en/authentication/connecting-to-github-with-ssh/managing-deploy-keys)).
+2. **Add a read-only deploy key**: paste the printed line under the repo's Settings → Deploy keys, **Allow write access** off. Expected: the key is listed as read-only ([GitHub deploy keys](https://docs.github.com/en/authentication/connecting-to-github-with-ssh/managing-deploy-keys)).
 
    ```bash
    ssh-keygen -t ed25519 -N '' -C '<project>-deploy@<host>' -f ~/.ssh/<project>-deploy
@@ -72,6 +72,7 @@ Run every step on the server as `<username>`, logged in with `ssh <username>@<ho
 
    ```bash
    docker compose config | head -1                  # name: <project>
+   docker compose -f docker-compose.initial-cert.yml config | head -1   # nginx: the same name: <project>
    grep -c '<domain>' reverse-proxy/*               # Caddyfile:3+, or nginx.conf:6+ beside nginx.initial-cert.conf:0
    ```
 
@@ -81,8 +82,7 @@ Run every step on the server as `<username>`, logged in with `ssh <username>@<ho
    DOMAIN=<domain> make prod-deploy
    ```
 
-8. **Schedule the backup** per [backup-restore.md#daily-backup](backup-restore.md#daily-backup), with `COMPOSE_DIR=/opt/<project>`; updates back up there too.
-   Expected: `crontab -l` shows the backup line.
+8. **Schedule the backup** per [backup-restore.md#daily-backup](backup-restore.md#daily-backup). Expected: `crontab -l` shows the backup line.
 
 ## Update
 
@@ -134,7 +134,7 @@ docker compose ps --format '{{.Service}}: {{.Status}}'   # every service Up, eac
 curl -sI https://<domain> | head -1                      # HTTP/2 200
 curl -sI http://<domain> | head -1                       # 301 or 308, redirect to HTTPS
 cat .deploy-state                                        # deployed=v<X.Y.Z> and an empty attempted=
-docker compose logs reverse-proxy | grep -c 'certificate obtained successfully'   # Caddy: 1 or more
+echo | openssl s_client -connect <domain>:443 -servername <domain> 2>/dev/null | openssl x509 -noout -issuer -enddate   # issuer Let's Encrypt, notAfter ahead
 docker compose exec certbot certbot renew --dry-run      # nginx: all simulated renewals succeeded
 ```
 
@@ -142,8 +142,9 @@ docker compose exec certbot certbot renew --dry-run      # nginx: all simulated 
 
 ```bash
 docker compose pull            # "denied": the token expired or lacks read:packages; log in again
-echo | openssl s_client -connect <domain>:443 -servername <domain> 2>/dev/null | openssl x509 -noout -enddate
 getent ahosts <domain>; ip -brief address                        # ACME fails: DNS must name this server
-curl -sI http://<domain>/.well-known/acme-challenge/test | head -1   # nginx: a 404 proves port 80 reaches it
+docker compose -f docker-compose.initial-cert.yml up -d reverse-proxy   # nginx, failed issuance: challenge server
+curl -sI http://<domain>/.well-known/acme-challenge/test | head -1       # a 404 proves DNS and port 80 reach it
+docker compose -f docker-compose.initial-cert.yml down
 docker compose logs reverse-proxy | grep -i error                # Caddy: the ACME error names the challenge
 ```
