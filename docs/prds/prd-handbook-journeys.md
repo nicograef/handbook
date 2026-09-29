@@ -5,11 +5,9 @@ Layout: [prd-handbook-structure.md](prd-handbook-structure.md). Agent config: [p
 
 ## Problem Statement
 
-When I follow the handbook end to end, I get stuck or I get a broken result. The Python service path produces an image that fails its own production healthcheck. The second deploy fails because the backup directory belongs to root.
+When I follow the handbook end to end, I get stuck halfway. Provisioning a server never gets my app onto it. No step clones the project, logs in to the registry or creates `.env`. A new project gets no production or release files, and a new laptop never installs Node, pnpm or uv.
 
-Some journeys stop halfway. Provisioning a server never gets my app onto it. No step clones the project, logs in to the registry or creates `.env`. A new project gets no production or release files, and a new laptop never installs Node, pnpm or uv.
-
-Other pages contradict each other or the setup I actually use. Monitoring assumes the nginx stack, although Caddy is the default. TLS asks for an IPv4 record on an IPv6-only server. Deploy steps are spread over three pages, and a server setup step hides in the tmux sheet.
+Deploy steps are spread over three pages, and a server setup step hides in the tmux sheet.
 
 The stack material leads with Go and Java, while my daily work is Node/TypeScript and Python. Java costs upkeep on every version bump. I am learning Linux server administration, yet no page teaches services, logs or networking basics.
 
@@ -29,21 +27,11 @@ A reference page on Linux services teaches the commands the runbooks already use
 2. As the reader starting a Python and React project, I want matching production files, so that it deploys unedited.
 3. As the reader with a new server, I want one deploy runbook, so that my app runs.
 4. As the reader deploying an update, I want rollback in the same runbook, so that I find it under pressure.
-5. As the reader on an IPv6-only server, I want DNS steps for my host type, so that TLS works.
-6. As the reader on the Caddy stack, I want monitoring steps for Caddy, so that every monitor turns green.
-7. As the reader, I want backups that the deploy user can write, so that deploys and cron backups both succeed.
-8. As the reader, I want a restore drill runbook, so that I know a backup can be restored.
-9. As the reader learning Linux administration, I want a services and logs reference, so that I can inspect a server.
-10. As the maintainer, I want each behaviour described once, so that a script change updates exactly one doc.
+5. As the reader, I want a restore drill runbook, so that I know a backup can be restored.
+6. As the reader learning Linux administration, I want a services and logs reference, so that I can inspect a server.
+7. As the maintainer, I want each behaviour described once, so that a script change updates exactly one doc.
 
 ## Implementation Decisions
-
-### Critical fixes first
-
-- The backend healthcheck comes from each image's own `HEALTHCHECK`, not from a `wget` call in Compose.
-- The deploy user owns the backup directory, and the backup cron line goes into that user's crontab.
-- Monitoring distinguishes the nginx and Caddy variants, including the expected monitor count.
-- The DNS prerequisite names the record per host type: A plus AAAA for dual-stack, AAAA for IPv6-only.
 
 ### Runbook set
 
