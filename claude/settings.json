@@ -169,7 +169,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "jq -c '{t:(now|todate),cwd,tool:.tool_name,cmd:(.tool_input.command // .tool_input.file_path // \"\"),reason:.denial_reason}' >> \"$HOME/.claude/denials.log\" 2>/dev/null; exit 0"
+            "command": "jq -c '{t:(now|todate),cwd,tool:.tool_name,cmd:(.tool_input.command // .tool_input.file_path // \"\"),reason:.denial_reason,verdict:.classifier_verdict}' >> \"$HOME/.claude/denials.log\" 2>/dev/null; exit 0"
           }
         ]
       }
