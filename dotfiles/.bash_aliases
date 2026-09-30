@@ -10,7 +10,13 @@ sss() {
   fi
   ssh-add
 }
-alias gfp='git fetch --prune && git pull'
+alias gfp='git pull --prune'
+# Pull (rebase + autostash from install-dotfiles.sh), then push. Retries once
+# when another machine pushed between the pull and the push.
+gfpp() {
+  git pull --prune || return
+  git push || { git pull && git push; }
+}
 alias gct='git checkout test'
 alias gcm='git checkout main || git checkout master'
 alias gbv='git branch -vv'
