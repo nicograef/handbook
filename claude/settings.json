@@ -120,8 +120,7 @@
       "Bash(find *-exec*)",
       "Bash(find *-ok*)",
       "Bash(find *-fprint*)",
-      "Bash(find *-fls*)",
-      "Bash(docker compose *down *-v*)"
+      "Bash(find *-fls*)"
     ],
     "deny": [
       "Bash(rm -rf /*)",
