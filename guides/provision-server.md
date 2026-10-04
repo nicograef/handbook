@@ -14,6 +14,7 @@ also use placeholders not in that block:
 - `<username>` — the `USERNAME` the script creates
 - Hetzner cloud-init path only: `<name>`, `<type>`, `<key-name>` — server name, server
   type, and the name of the SSH key to inject
+- netcup path only: `<server>` — the server's id or name in the SCP, for [`scripts/netcup.sh`](../scripts/netcup.sh)
 
 ## Provision with cloud-init
 
@@ -66,6 +67,16 @@ The fallback for a provider with no user-data field, such as netcup. Netcup supp
    [`scripts/setup-server.sh`](../scripts/setup-server.sh). The script creates `<username>` and disables root login.
 
    Expected: the run prints the `Setup complete` summary.
+
+3. **Close the netcup firewall from your laptop**, in a handbook clone ([why](../reference/netcup.md#firewall-model)). A host serving nothing applies `netcup-firewall-ssh.json` and attaches `ssh-only`:
+
+   ```bash
+   scripts/netcup.sh login
+   scripts/netcup.sh policy-apply templates/netcup-firewall-web.json
+   scripts/netcup.sh firewall-attach <server> web-server
+   ```
+
+   Expected: the firewall JSON lists `web-server` under `userPolicies`, with `"ingressImplicitRule": "DROP_ALL"`.
 
 ## Turn on lingering
 
@@ -122,6 +133,7 @@ loginctl show-user "$USER" -p Linger
 | SSH login | Succeeds as `<username>`, fails as `root` |
 | `ufw status verbose` | `Status: active` with `22/tcp (LIMIT)` |
 | `ss -tlnp` | Only 22, 80 and 443 on `0.0.0.0`/`[::]`; everything else on loopback |
+| netcup: `scripts/netcup.sh firewall-get <server>`, on the laptop | The netcup default policies, then the user policy; `"consistent": true` |
 | `sshd -T` | `no` three times: password, root login, keyboard-interactive |
 | `fail2ban` | Reports `active` |
 | `fail2ban-client get sshd journalmatch` | Includes `_COMM=sshd-session` |

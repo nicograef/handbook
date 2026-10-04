@@ -12,6 +12,7 @@ The health-ping heartbeat alerts while `/var/run/reboot-required` exists; the re
 - SSH access as `<username>` to a server that passed [provision-server.md#verify](provision-server.md#verify).
 - The app deployed per [deploy.md](deploy.md) in `/opt/<project>`, whose `.env` sets `COMPOSE_FILE`.
 - A low-traffic window: the reboot drops all connections for about a minute.
+- On netcup: [`scripts/netcup.sh`](../scripts/netcup.sh) logged in on your laptop, and `<server>`, the server's id or name.
 
 ## Monthly checklist
 
@@ -47,7 +48,7 @@ The health-ping heartbeat alerts while `/var/run/reboot-required` exists; the re
 
 ## Verify
 
-Run each check on the server, in `/opt/<project>`; run the HTTPS check from your own machine.
+Run each check on the server, in `/opt/<project>`; run the HTTPS and netcup checks from your own machine.
 [linux-services.md](../reference/linux-services.md) explains each command.
 
 ```bash
@@ -55,6 +56,8 @@ test -f /var/run/reboot-required && echo "reboot required" || echo "no flag set"
 systemctl --failed
 docker compose ps
 curl -sI https://<domain> | head -1
+# netcup only, from a handbook clone
+scripts/netcup.sh firewall-get <server> | jq '{policies: [(.copiedPolicies + .userPolicies)[].name], ingressImplicitRule, egressImplicitRule, consistent}'
 df -h /
 swapon --show
 findmnt -no FSTYPE /tmp
@@ -68,12 +71,14 @@ sudo ufw status verbose
 | `systemctl --failed` | `0 loaded units listed.` | Read the unit's log: `sudo journalctl -u <unit> -b` |
 | `docker compose ps` | Every service `Up`, `postgres` `(healthy)`; none `Restarting` or `Exit` | `docker compose logs <service>` |
 | HTTPS | `HTTP/2 200`, or the deliberate `301`/`308` of a redirecting root | `docker compose logs reverse-proxy`; a hang means the proxy is down |
+| netcup firewall | The netcup default policies, then `web-server`; `DROP_ALL` ingress, `ACCEPT_ALL` egress; `consistent` `true` | Re-run `firewall-attach` as [provision-server.md](provision-server.md#provision-over-ssh) does |
 | `df -h /` | `Use%` under 80 % | Run `docker image prune -af`, or grow the volume the same day |
 | `swapon --show` | One swap row | Create a swapfile as the swap block of [`setup-server.sh`](../scripts/setup-server.sh) does |
 | `findmnt /tmp` | `tmpfs` (the Debian 13 default) or nothing (a directory on disk) | On a box running builds or agents, a tmpfs `/tmp` eats RAM: `sudo systemctl mask tmp.mount`, then reboot |
 | fail2ban | A `Status for the jail: sshd` block; a non-zero `Total banned` is normal | `sudo systemctl restart fail2ban` |
 | `ufw status verbose` | `Status: active`, `Default: deny (incoming)`, `22/tcp LIMIT`, `80/tcp` and `443/tcp` `ALLOW IN` | Re-add the UFW rules from [`setup-server.sh`](../scripts/setup-server.sh) |
 
+The monthly netcup read also keeps its refresh token inside the 30 days it lives unused.
 A full disk stops Postgres writes and breaks certificate renewal.
 The swap and tmpfs comments in [`setup-server.sh`](../scripts/setup-server.sh) explain why both matter.
 

@@ -16,7 +16,6 @@ cd /opt/<project>
 ## Daily backup
 
 [scripts/backup-postgres.sh](../scripts/backup-postgres.sh) takes, verifies and prunes the dumps; its header lists each step and setting.
-Cron runs the clone's own copy, so `git pull` keeps it current.
 
 1. **Create the backup directory**, owned by the deploy user:
 
@@ -49,6 +48,7 @@ When that stops being enough, push the dumps offsite with [restic](https://resti
 ## Restore
 
 A restore replaces the live database with a dump. Use it after data loss or for a [roll back](deploy.md#roll-back).
+A netcup snapshot is no backup: it sits on netcup's storage beside the server ([why](../reference/netcup.md#snapshots-are-not-backups)). Take one from your laptop with `scripts/netcup.sh snapshot-create` as the step back right before risky host work.
 
 1. **Pick the dump:** the newest one taken before the loss, or the pre-update dump a failed deploy printed.
 

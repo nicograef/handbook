@@ -81,11 +81,15 @@ Provision, deploy, back up, monitor and maintain a VPS.
 | [reference/postgresql.md](reference/postgresql.md) | PostgreSQL: queries, indexes, golang-migrate migrations |
 | [reference/linux-services.md](reference/linux-services.md) | Linux services: systemd, journalctl, Compose, ports and firewall, cron |
 | [reference/system-resources.md](reference/system-resources.md) | System info and resource usage |
+| [reference/netcup.md](reference/netcup.md) | netcup server API: auth, firewall model, endpoints, snapshots, DNS API |
 | [templates/cloud-init.yml](templates/cloud-init.yml) | cloud-init user-data that fetches & runs `setup-server.sh` |
 | [scripts/setup-server.sh](scripts/setup-server.sh) | Provision a fresh Debian/Ubuntu VPS (user, SSH, swap, UFW, fail2ban, Docker) |
 | [scripts/prod-init.sh](scripts/prod-init.sh) | Production deploy and update: pin and downgrade guard, backup, health poll |
 | [scripts/backup-postgres.sh](scripts/backup-postgres.sh) | Verified, retained PostgreSQL backups for a Compose stack (cron) |
 | [scripts/report-health.sh](scripts/report-health.sh) | Hourly dead-man health ping (reboot-required + unattended-upgrades + OOM check) |
+| [scripts/netcup.sh](scripts/netcup.sh) | netcup server API from the laptop: login, servers, firewall policies, snapshots |
+| [templates/netcup-firewall-web.json](templates/netcup-firewall-web.json) | netcup firewall policy for a web server: inbound SSH, HTTP, HTTPS, HTTP/3, NTP replies |
+| [templates/netcup-firewall-ssh.json](templates/netcup-firewall-ssh.json) | netcup firewall policy for an SSH-only host: inbound SSH and NTP replies |
 | [templates/docker-compose.prod.yml](templates/docker-compose.prod.yml) | Production Compose (nginx + Certbot, pinned registry images) |
 | [templates/docker-compose.prod-caddy.yml](templates/docker-compose.prod-caddy.yml) | Production Compose with Caddy: automatic TLS, healthchecks, resource limits |
 | [templates/Caddyfile](templates/Caddyfile) | Caddy site config: www redirect, security headers, API and SPA routes |

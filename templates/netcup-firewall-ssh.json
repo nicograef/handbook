@@ -1,0 +1,32 @@
+{
+  "name": "ssh-only",
+  "description": "Inbound SSH only, for a host that serves nothing else, such as a backup puller. No egress rule, so egress stays ACCEPT_ALL.",
+  "rules": [
+    {
+      "direction": "INGRESS",
+      "protocol": "TCP",
+      "action": "ACCEPT",
+      "destinationPorts": "22",
+      "description": "SSH; sshd takes keys only and fail2ban bans brute force"
+    },
+    {
+      "direction": "INGRESS",
+      "protocol": "UDP",
+      "action": "ACCEPT",
+      "sourcePorts": "123",
+      "description": "NTP replies; the firewall tracks state for TCP only, so UDP replies need their own rule"
+    },
+    {
+      "direction": "INGRESS",
+      "protocol": "TCP",
+      "action": "DROP",
+      "description": "Every other inbound TCP; replies to outbound connections pass as established"
+    },
+    {
+      "direction": "INGRESS",
+      "protocol": "UDP",
+      "action": "DROP",
+      "description": "Every other inbound UDP; DNS from netcup's resolvers passes netcup's fixed rules first"
+    }
+  ]
+}
