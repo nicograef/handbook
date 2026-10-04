@@ -25,7 +25,7 @@
 #   2. Every other command trades the refresh token for an access token and stores a
 #      rotated refresh token when the response carries one. Any use keeps the 30-day window open.
 #   3. /users/{userId} paths need the SCP userId: NETCUP_USER_ID, else the cached value,
-#      else the executing user of the newest task, else the access token's id claim.
+#      else the executing user of one task, else the access token's id claim, checked against /users.
 #   4. firewall-attach keeps the server's copied (netcup default) policies, replaces the user
 #      policies with the named ones, sets the firewall active and waits for the task.
 #   5. JSON goes to stdout, status to stderr; any HTTP error stops the script.
@@ -71,7 +71,7 @@ store() {
 # ── Auth ──
 
 cmd_login() {
-  local device code interval expires waited=0 token err
+  local device code interval expires waited=0 token err rt
   device="$(curl -sS --fail-with-body "$OIDC/auth/device" \
     --data-urlencode "client_id=$CLIENT_ID" \
     --data-urlencode "scope=openid offline_access")" || error "device request failed: $device"
@@ -90,7 +90,8 @@ cmd_login() {
     err="$(jq -r '.error // empty' <<<"$token")"
     case "$err" in
       "")
-        store "$REFRESH_FILE" "$(jq -er '.refresh_token' <<<"$token")"
+        rt="$(jq -er '.refresh_token' <<<"$token")" || error "login answered no refresh token: $token"
+        store "$REFRESH_FILE" "$rt"
         log "Refresh token stored in $REFRESH_FILE"
         return ;;
       authorization_pending) ;;
@@ -102,17 +103,21 @@ cmd_login() {
 }
 
 ACCESS_TOKEN=""
+# Epoch second the access token is treated as expired, 30 s before its expires_in.
+ACCESS_EXPIRES=0
 
+# access_token: refreshes when needed. Secrets go through stdin, never onto curl's command line.
 access_token() {
-  [[ -n "$ACCESS_TOKEN" ]] && return
+  [[ -n "$ACCESS_TOKEN" ]] && (( $(date +%s) < ACCESS_EXPIRES )) && return
   [[ -f "$REFRESH_FILE" ]] || error "no refresh token in $REFRESH_FILE; run: $0 login"
   local response rotated
-  response="$(curl -sS "$OIDC/token" \
+  response="$(printf '%s' "$(<"$REFRESH_FILE")" | curl -sS "$OIDC/token" \
     --data-urlencode "grant_type=refresh_token" \
-    --data-urlencode "refresh_token=$(<"$REFRESH_FILE")" \
+    --data-urlencode "refresh_token@-" \
     --data-urlencode "client_id=$CLIENT_ID")"
   ACCESS_TOKEN="$(jq -r '.access_token // empty' <<<"$response")"
   [[ -n "$ACCESS_TOKEN" ]] || error "token refresh failed: $(jq -r '.error_description // .error // .' <<<"$response"); run: $0 login"
+  ACCESS_EXPIRES=$(( $(date +%s) + $(jq -r '.expires_in // 300' <<<"$response") - 30 ))
   rotated="$(jq -r '.refresh_token // empty' <<<"$response")"
   if [[ -n "$rotated" && "$rotated" != "$(<"$REFRESH_FILE")" ]]; then
     store "$REFRESH_FILE" "$rotated"
@@ -133,10 +138,10 @@ jwt_claims() {
 # api <method> <path> [json-body]: prints the response body; an HTTP status >= 400 stops the script.
 api() {
   access_token
-  local status args=(-sS -o "$TMP" -w '%{http_code}' -X "$1"
-    -H "Authorization: Bearer $ACCESS_TOKEN" -H "Accept: application/json")
+  local status args=(-sS -o "$TMP" -w '%{http_code}' -X "$1" -H "Accept: application/json")
   [[ $# -ge 3 ]] && args+=(-H "Content-Type: application/json" --data-binary "$3")
-  status="$(curl "${args[@]}" "$API$2")"
+  # The header file stays on the curl line: a process substitution in an assignment closes before curl reads it.
+  status="$(curl "${args[@]}" -H @<(printf 'Authorization: Bearer %s\n' "$ACCESS_TOKEN") "$API$2")"
   if (( status >= 400 )); then
     cat "$TMP" >&2; echo >&2
     error "$1 $2 answered HTTP $status"
@@ -148,6 +153,8 @@ api() {
 wait_task() {
   local task state="" waited=0
   while (( waited < TASK_TIMEOUT )); do
+    # Refresh in this shell: api runs in a subshell, and a long task can outlive one access token.
+    access_token
     task="$(api GET "/tasks/$1")"
     state="$(jq -r '.state' <<<"$task")"
     case "$state" in
@@ -267,18 +274,18 @@ cmd_snapshot_create() {
 [[ $# -ge 1 ]] || usage
 command="$1"
 shift
-# One refresh per run: command substitutions are subshells and would each refresh again.
+# Refresh up front: command substitutions are subshells and would each refresh again.
 [[ "$command" == login ]] || access_token
 case "$command" in
   login)           [[ $# -eq 0 ]] || usage; cmd_login ;;
   token)           [[ $# -eq 0 ]] || usage; access_token; echo "$ACCESS_TOKEN" ;;
   claims)          [[ $# -eq 0 ]] || usage; jwt_claims ;;
   servers)         [[ $# -eq 0 ]] || usage; api GET "/servers?limit=1000" | jq . ;;
-  server)          [[ $# -eq 1 ]] || usage; api GET "/servers/$(server_id "$1")" | jq . ;;
+  server)          [[ $# -eq 1 ]] || usage; id="$(server_id "$1")"; api GET "/servers/$id" | jq . ;;
   firewall-get)    [[ $# -eq 1 ]] || usage; cmd_firewall_get "$1" ;;
   policy-apply)    [[ $# -eq 1 ]] || usage; cmd_policy_apply "$1" ;;
   firewall-attach) [[ $# -ge 2 ]] || usage; cmd_firewall_attach "$@" ;;
   snapshot-create) [[ $# -eq 2 ]] || usage; cmd_snapshot_create "$1" "$2" ;;
-  snapshots)       [[ $# -eq 1 ]] || usage; api GET "/servers/$(server_id "$1")/snapshots" | jq . ;;
+  snapshots)       [[ $# -eq 1 ]] || usage; id="$(server_id "$1")"; api GET "/servers/$id/snapshots" | jq . ;;
   *)               usage ;;
 esac

@@ -78,7 +78,7 @@ sudo ufw status verbose
 | fail2ban | A `Status for the jail: sshd` block; a non-zero `Total banned` is normal | `sudo systemctl restart fail2ban` |
 | `ufw status verbose` | `Status: active`, `Default: deny (incoming)`, `22/tcp LIMIT`, `80/tcp` and `443/tcp` `ALLOW IN` | Re-add the UFW rules from [`setup-server.sh`](../scripts/setup-server.sh) |
 
-The monthly netcup read also keeps its refresh token inside the 30 days it lives unused.
+Run the netcup read at least every four weeks: its refresh token dies after 30 days unused, then needs `scripts/netcup.sh login`.
 A full disk stops Postgres writes and breaks certificate renewal.
 The swap and tmpfs comments in [`setup-server.sh`](../scripts/setup-server.sh) explain why both matter.
 

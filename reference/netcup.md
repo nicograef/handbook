@@ -31,7 +31,7 @@ Steps: [provision-server.md](../guides/provision-server.md#provision-over-ssh), 
 | Reach | No scopes, no API keys: one token powers off, reinstalls, reverts and opens every server on the account |
 | Token home | The laptop only: `~/.config/netcup/refresh-token`, mode 0600. Never on a server |
 | 2FA | Unresolved: a forum report (June 2026) has the device login fail with CCP 2FA on. Test it first |
-| `userId` lookup | `netcup.sh` reads the newest task's `executingUser.id`, else the token's `id` claim; `NETCUP_USER_ID` overrides |
+| `userId` lookup | `netcup.sh` reads `executingUser.id` from one task of `GET /tasks`, else the token's `id` claim, and checks it against `GET /users/{userId}`; `NETCUP_USER_ID` overrides |
 
 ## Firewall model
 
@@ -80,7 +80,7 @@ Paths sit under `/scp-core/api/v1`. A mutation answers `202` with a TaskInfo; po
 | rDNS | `POST /rdns/ipv4`, `GET`, `DELETE /rdns/ipv4/{ip}`; the same under `ipv6` | Reverse DNS per address |
 | Metrics | `GET /servers/{serverId}/metrics/cpu`, `…/disk`, `…/network` | `hours` up to 1440 |
 | SSH keys | `GET`, `POST /users/{userId}/ssh-keys`, `DELETE …/{id}` | The keys an image install injects |
-| Tasks | `GET /tasks`, `GET /tasks/{uuid}`, `PUT /tasks/{uuid}:cancel` | States `PENDING`, `RUNNING`, `FINISHED`, `ERROR`, `CANCELED`, `ROLLBACK` |
+| Tasks | `GET /tasks`, `GET /tasks/{uuid}`, `PUT /tasks/{uuid}:cancel` | States `PENDING`, `RUNNING`, `FINISHED`, `ERROR`, `WAITING_FOR_CANCEL`, `CANCELED`, `ROLLBACK` |
 
 Whether `customScript` runs as root at first boot is unverified.
 
