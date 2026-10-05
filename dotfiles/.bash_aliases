@@ -65,7 +65,10 @@ if command -v fzf >/dev/null; then
   eval "$(fzf --bash 2>/dev/null)"
 fi
 
-# Sourced after the stock .bashrc history block, so these settings win.
+# The stock .bashrc sets HISTFILESIZE=2000 before sourcing this file, and bash
+# truncates HISTFILE on that assignment. A separate file escapes the cut.
+mkdir -p "$HOME/.local/state"
+HISTFILE="$HOME/.local/state/bash_history"
 HISTSIZE=100000
 HISTFILESIZE=200000
 HISTCONTROL=ignoreboth:erasedups
