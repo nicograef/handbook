@@ -357,6 +357,7 @@ const readResults = await parallel(
 const seedKeys = new Set(seedItems.map((s) => s.key))
 const read = []
 const unreadable = []
+const readKeys = new Set()
 readResults.forEach((r, b) => {
   if (!r) {
     log(`reader ${b + 1} died; its items are deferred to the next run`)
@@ -364,6 +365,9 @@ readResults.forEach((r, b) => {
     return
   }
   for (const item of r.items) {
+    // A reader may return an item another batch also holds; the first reading stands.
+    if (readKeys.has(canon(item.url))) continue
+    readKeys.add(canon(item.url))
     const tagged = { ...item, seed: seedKeys.has(canon(item.url)) }
     if (item.read_as === 'unreadable') unreadable.push({ ...tagged, reason: item.skip_reason || 'unreadable' })
     else read.push(tagged)
