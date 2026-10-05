@@ -1,7 +1,7 @@
 # Linux Services
 
 The commands the server runbooks run, in the form they run them.
-Steps: [provision-server.md](../guides/provision-server.md), [deploy.md](../guides/deploy.md), [maintenance.md](../guides/maintenance.md). Hardware and live usage: [system-resources.md](system-resources.md).
+Steps: [provision-server.md](../guides/provision-server.md), [deploy.md](../guides/deploy.md), [maintenance.md](../guides/maintenance.md). Live usage: [system-resources.md](system-resources.md).
 
 ## systemd units
 

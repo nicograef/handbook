@@ -82,7 +82,7 @@ Provision, deploy, back up, monitor and maintain a VPS.
 | [guides/maintenance.md](guides/maintenance.md) | Server maintenance: monthly checklist, OOM diagnosis |
 | [reference/postgresql.md](reference/postgresql.md) | PostgreSQL: queries, indexes, golang-migrate migrations |
 | [reference/linux-services.md](reference/linux-services.md) | Linux services: systemd, journalctl, Compose, ports and firewall, cron |
-| [reference/system-resources.md](reference/system-resources.md) | System info and resource usage |
+| [reference/system-resources.md](reference/system-resources.md) | Live resource usage: CPU, RAM, disk, I/O, top processes |
 | [reference/netcup.md](reference/netcup.md) | netcup server API: auth, firewall model, endpoints, snapshots, DNS API |
 | [scripts/setup-server.sh](scripts/setup-server.sh) | Provision a fresh Debian/Ubuntu VPS (user, SSH, swap, UFW, fail2ban, Docker) |
 | [scripts/prod-init.sh](scripts/prod-init.sh) | Production deploy and update: pin and downgrade guard, backup, health poll |

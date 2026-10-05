@@ -1,21 +1,10 @@
-# System Info and Resource Usage
+# Resource Usage
 
 Monthly thresholds and fixes: [maintenance.md](../guides/maintenance.md#verify).
 
 ```bash
-sudo apt install fastfetch btop ncdu nvtop sysstat   # friendlier add-ons; the rest ships with Ubuntu
+sudo apt install btop ncdu sysstat   # add-ons for the live view, ncdu and iostat; the rest ships with Ubuntu
 ```
-
-## What is this machine
-
-| Question                       | Command                              |
-| ------------------------------ | ------------------------------------ |
-| OS, kernel, VM or bare metal   | `hostnamectl`                        |
-| CPU model and core count       | `lscpu`, short `nproc`               |
-| RAM total                      | `free -h`                            |
-| Disks and partitions           | `lsblk`                              |
-| GPU                            | `lspci \| grep -iE 'vga\|display'`   |
-| All of the above on one screen | `fastfetch`                          |
 
 ## What is it doing now
 
@@ -28,27 +17,5 @@ sudo apt install fastfetch btop ncdu nvtop sysstat   # friendlier add-ons; the r
 | Disk I/O          | `iostat -xz 2`                 | `%util`                     | near 100 for minutes              |
 | Top processes     | `ps aux --sort=-%cpu \| head`  | `%CPU`, `RSS`               | one process pins a core for hours |
 | Everything live   | `btop`                         | one panel per resource      |                                   |
-| GPU live          | `nvtop`                        | engine and memory use       |                                   |
 
 `free` looks low because Linux fills spare RAM with file cache. The kernel frees it on demand.
-
-## Reading htop
-
-| Element               | Meaning                                                                   |
-| --------------------- | ------------------------------------------------------------------------- |
-| `0[` … `N[` bars      | one bar per core                                                          |
-| `Mem` bar colours     | green programs, blue buffers, yellow file cache; the number counts programs only |
-| `Load average`        | processes running or waiting on CPU or disk; compare to the core count    |
-| `CPU%`                | 100 is one full core; the maximum is 100 × cores                          |
-| `RES`                 | RAM the process really uses; ignore `VIRT`, which counts reservations      |
-| `S`                   | `R` running, `S` sleeping, `D` waiting on disk                            |
-| Green process rows    | threads of the process above, not separate processes                      |
-
-| Key       | Action                          |
-| --------- | ------------------------------- |
-| `H`       | hide threads, the biggest declutter |
-| `F5`      | tree view                       |
-| `P` / `M` | sort by CPU / memory            |
-| `F3`      | search                          |
-| `F9`      | send a signal, e.g. kill        |
-| `q`       | quit                            |
