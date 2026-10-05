@@ -102,8 +102,9 @@ prod-release:  ## Push tag v$(VERSION); .github/workflows/release.yml builds the
 db-shell:      ## Open psql shell in running PostgreSQL container (needs the .env include above)
 	docker compose exec postgres psql -U $(POSTGRES_USER) -d $(POSTGRES_DB)
 
+# Enable once the server is provisioned.
 # ssh-prod:    ## SSH into production server
-# 	ssh user@your-server-ip
+# 	ssh <username>@<host>
 
 # ── Help ──
 

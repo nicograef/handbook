@@ -61,7 +61,7 @@ services:
       postgres:
         condition: service_healthy
     # The image's HEALTHCHECK probes /api/health with a tool the image ships; `up --wait` polls it
-    # after every deploy. Dockerfiles: templates/Dockerfile.python and templates/Dockerfile.go.
+    # after every deploy. Dockerfile: backend/Dockerfile.
     deploy:
       resources:
         limits:
@@ -71,7 +71,7 @@ services:
 
   # ── Frontend ──
   # Static SPA served by its own nginx (no TLS here — reverse-proxy handles it).
-  # The image's HEALTHCHECK probes / (templates/Dockerfile.spa).
+  # The image's HEALTHCHECK probes / (frontend/Dockerfile).
   frontend:
     image: ghcr.io/<owner>/<project>-frontend:v0.1.0 # same tag as backend
     restart: unless-stopped
