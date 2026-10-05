@@ -217,4 +217,4 @@ Move the hardware table, battery, PAM, Wi-Fi and firmware lines into `~/.claude/
 
 - [x] `ssh-keygen -y -P '' -f ~/.ssh/id_ed25519` fails
 - [x] `ssh -T git@github.com` authenticates and `git commit -S --allow-empty -m probe` in a scratch repo signs without a prompt
-- [ ] `grep -cE 'SSID|Battery|fprintd' ~/.claude/rules/machine.md` prints 0
+- [x] `grep -cE 'SSID|Battery|fprintd' ~/.claude/rules/machine.md` prints 0
