@@ -77,9 +77,11 @@ Sources: [`:help 'langmap'`](https://neovim.io/doc/user/options.html#'langmap'),
 
 ## Optional
 
-| Change                     | Command                                                                              | Trade-off                                          |
-| -------------------------- | ------------------------------------------------------------------------------------ | -------------------------------------------------- |
-| Caps Lock as Esc           | `gsettings set org.gnome.desktop.input-sources xkb-options "['caps:escape']"`        | System-wide                                        |
+Caps Lock as Esc, system-wide:
+
+```bash
+gsettings set org.gnome.desktop.input-sources xkb-options "['caps:escape']"
+```
 
 ## Plugins
 

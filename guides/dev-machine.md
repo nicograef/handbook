@@ -98,11 +98,11 @@ Placeholders: `<name>` and `<email>` are your git identity; `<title>` names this
     cd ~/r/handbook && ./install.sh
     ```
 
-12. **SSH config** — copy the [ssh_config](../templates/ssh_config) template; `-n` keeps an existing config.
+12. **SSH config** — copy the [ssh_config](../templates/ssh_config) template; `--update=none` keeps an existing config.
     Host entries go above its defaults. `ssh -G github.com | grep identitiesonly` then prints `identitiesonly yes`:
 
     ```bash
-    cp -n ~/r/handbook/templates/ssh_config ~/.ssh/config && chmod 600 ~/.ssh/config
+    cp --update=none ~/r/handbook/templates/ssh_config ~/.ssh/config && chmod 600 ~/.ssh/config
     ```
 
 13. **Signing key** — grant gh the signing-key scope, then upload the same key as a signing key.
