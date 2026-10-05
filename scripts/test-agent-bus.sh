@@ -111,16 +111,16 @@ as_a announce "phase 6 continued" 2>/dev/null
 ok "arrays survive a task-only re-announce" "$(jq -c .paths "$BUS/peers/$A.json")" "shared.txt"
 ok "task is updated" "$(jq -r .task "$BUS/peers/$A.json")" "phase 6 continued"
 
-log "a corrupt registry entry never crashes a read"
-echo '{{{ not json' > "$BUS/peers/corrupt.json"
-quiet "corrupt entry ignored by the session-start hook" \
-  bash -c "printf '%s' '$(hookjson "$A")' | CLAUDE_PID='$FAKE_PID' '$BUS_SCRIPT' hook session-start"
-rm -f "$BUS/peers/corrupt.json"
-
 log "a second session claims the same file and port"
 as_b announce "phase 3" --paths "shared.txt" --resources "127.0.0.1:5433" 2>/dev/null
 jq '.branch="branch-b"' "$BUS/peers/$B.json" > "$BUS/peers/$B.tmp"
 mv "$BUS/peers/$B.tmp" "$BUS/peers/$B.json"
+
+# The name sorts before B's entry, so a read that aborts on it never reaches B.
+log "a corrupt registry entry never hides a live peer"
+echo '{{{ not json' > "$BUS/peers/0-corrupt.json"
+ok "peer listed past a corrupt entry" "$(hook "$A" session-start)" "branch-b"
+rm -f "$BUS/peers/0-corrupt.json"
 
 log "messaging commands are gone"
 USAGE_RC=0
