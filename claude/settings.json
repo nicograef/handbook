@@ -151,7 +151,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "payload=$(cat); cmd=$(printf '%s' \"$payload\" | jq -r '.tool_input.command // empty' 2>/dev/null); [ -z \"$cmd\" ] && cmd=\"$payload\"; segs=$(printf '%s' \"$cmd\" | jq -Rrs 'gsub(\"\\\"[^\\\"]*\\\"\"; \"\") | ([39] | implode) as $q | gsub($q + \"[^\" + $q + \"]*\" + $q; \"\")' | tr ';&|()' '\\n\\n\\n\\n\\n'); g='(^|[[:space:]])git([[:space:]]+-[Cc][[:space:]]+[^[:space:]]+|[[:space:]]+-[^[:space:]]+)*[[:space:]]+'; if printf '%s\\n' \"$segs\" | grep -E \"${g}push([[:space:]]|$)\" | grep -Eq -- '(^|[[:space:]])(--force[^[:space:]]*|--mirror|--no-verify|-[46nquv]*f[^[:space:]]*|\\+[^[:space:]]+)'; then echo 'Blocked: git push with force, +refspec, --mirror or --no-verify is not allowed.' >&2; exit 2; fi; if printf '%s\\n' \"$segs\" | grep -E \"${g}commit([[:space:]]|$)\" | grep -Eq -- '(^|[[:space:]])(--no-verify|-[aeiopqsvz]*n[^[:space:]]*)'; then echo 'Blocked: git commit with -n or --no-verify is not allowed.' >&2; exit 2; fi; exit 0"
+            "command": "[ -x \"$HOME/.claude/git-guard.sh\" ] || exit 0; exec \"$HOME/.claude/git-guard.sh\""
           }
         ]
       }
@@ -162,7 +162,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "jq -c '{t:(now|todate),cwd,tool:.tool_name,cmd:(.tool_input.command // .tool_input.file_path // \"\"),reason:.denial_reason,verdict:.classifier_verdict}' >> \"$HOME/.claude/denials.log\" 2>/dev/null; exit 0"
+            "command": "jq -c '{t:(now|todate),cwd,tool:.tool_name,cmd:(.tool_input.command // .tool_input.file_path // \"\"),reason}' >> \"$HOME/.claude/denials.log\" 2>/dev/null; exit 0"
           }
         ]
       }
@@ -177,23 +177,9 @@
         ]
       }
     ],
-    "UserPromptSubmit": [
-      {
-        "hooks": [
-          {
-            "type": "command",
-            "command": "[ -x \"$HOME/.claude/agent-bus.sh\" ] || exit 0; \"$HOME/.claude/agent-bus.sh\" hook user-prompt-submit || exit 0"
-          }
-        ]
-      }
-    ],
     "Stop": [
       {
         "hooks": [
-          {
-            "type": "command",
-            "command": "[ -x \"$HOME/.claude/agent-bus.sh\" ] || exit 0; \"$HOME/.claude/agent-bus.sh\" hook stop || exit 0"
-          },
           {
             "type": "command",
             "command": "[ -x \"$HOME/.claude/plan-run-guard.sh\" ] || exit 0; \"$HOME/.claude/plan-run-guard.sh\" || exit 0"
