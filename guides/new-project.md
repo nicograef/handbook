@@ -55,7 +55,8 @@ A React repository skips [Copy the production files](#copy-the-production-files)
     "rules": [{"type": "non_fast_forward"}, {"type": "deletion"}]}
    EOF
    ```
-   It requires no status checks, so a direct push to `main` still lands. The [rulesets API](https://docs.github.com/en/rest/repos/rules#create-a-repository-ruleset) lists further rules.
+   It requires no status checks, so a direct push to `main` still lands. A private repository needs GitHub Pro, Team or Enterprise for [rulesets](https://docs.github.com/en/repositories/configuring-branches-and-merges-in-your-repository/managing-rulesets/about-rulesets).
+   The [rulesets API](https://docs.github.com/en/rest/repos/rules#create-a-repository-ruleset) lists further rules.
 
 ## Copy the base files
 
