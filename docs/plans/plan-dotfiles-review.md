@@ -46,7 +46,7 @@ Fix the bugs found in `dotfiles/.bash_aliases`, track the dotfiles the laptop ha
 - [x] provision-server.md install step; guide stays 50–150 lines
 - [x] README index, installer header updated
 - [x] `make check` green; shellcheck on `.bash_aliases`; `bash -ic` smoke test of every alias
-- [ ] Laptop: migrate history, unset `core.editor` and `core.excludesfile`, re-run `install.sh`, remove `.bashrc` PATH line, update machine.md
-- [ ] staging, gyva-prod: pull, `install.sh`, history copy, unset `core.editor`; verify links and line counts
+- [x] Laptop: migrate history, unset `core.editor` and `core.excludesfile`, re-run `install.sh`, remove `.bashrc` PATH line, update machine.md
+- [x] staging, gyva-prod: pull, `install.sh`, history copy, unset `core.editor`; verify links and line counts
 - [ ] gyva-backup: apt install (user runs the sudo line), https clone, `install.sh`, verify
 - [ ] Delete this plan
