@@ -20,7 +20,7 @@ Fix the bugs found in `dotfiles/.bash_aliases`, track the dotfiles the laptop ha
 - **Comments**: trimmed to the 2-sentence rule (fzf block, history block).
 - **Git ignore**: `dotfiles/gitignore-global` linked to `~/.config/git/ignore`; the manual `core.excludesfile` is unset (git reads that path by default).
 - **inputrc**: `dotfiles/.inputrc` linked: `$include /etc/inputrc`, prefix history search on Up/Down, completion-ignore-case, show-all-if-ambiguous, colored-stats, mark-symlinked-directories.
-- **SSH**: `templates/ssh-config` holds the generic `Host *` block; dev-machine.md copies it once. Host entries never enter the public repo.
+- **SSH**: `templates/ssh_config` holds the generic `Host *` block; dev-machine.md copies it once. Host entries never enter the public repo.
 - **EDITOR**: `EDITOR`/`VISUAL` = nvim where installed, else nano. The installer stops setting `core.editor`; rollout unsets it per machine.
 - **Laptop `.bashrc`**: the hand-added PATH line goes; `~/.claude/rules/machine.md` follows.
 - **Servers**: provision-server.md gains a step: https clone of the handbook, `install.sh`. It applies to every server, gyva-backup included.
@@ -31,21 +31,21 @@ Fix the bugs found in `dotfiles/.bash_aliases`, track the dotfiles the laptop ha
 
 - `dotfiles/.bash_aliases`, `dotfiles/.inputrc` (new), `dotfiles/gitignore-global` (new)
 - `scripts/install-dotfiles.sh` (links, header, drop `core.editor`)
-- `templates/ssh-config` (new)
+- `templates/ssh_config` (new)
 - `guides/dev-machine.md`, `guides/provision-server.md`, `README.md`
 - Machine-local: `~/.bashrc`, `~/.claude/rules/machine.md`
 
 ## Checklist
 
-- [ ] History fix in `.bash_aliases` (own commit: `fix(bash)`)
-- [ ] Alias changes: ls/ll/la, pci, sss, gfp, gfpp, gcm, gct, gba, p/m completion, diffi, gp/gs/gd, comments
-- [ ] EDITOR/VISUAL in `.bash_aliases`; `core.editor` removed from installer; grep repo for `nano` references
-- [ ] `dotfiles/.inputrc` + link
-- [ ] `dotfiles/gitignore-global` + link
-- [ ] `templates/ssh-config` + dev-machine.md step
-- [ ] provision-server.md install step; guide stays 50–150 lines
-- [ ] README index, installer header updated
-- [ ] `make check` green; shellcheck on `.bash_aliases`; `bash -ic` smoke test of every alias
+- [x] History fix in `.bash_aliases` (own commit: `fix(bash)`)
+- [x] Alias changes: ls/ll/la, pci, sss, gfp, gfpp, gcm, gct, gba, p/m completion, diffi, gp/gs/gd, comments
+- [x] EDITOR/VISUAL in `.bash_aliases`; `core.editor` removed from installer; grep repo for `nano` references
+- [x] `dotfiles/.inputrc` + link
+- [x] `dotfiles/gitignore-global` + link
+- [x] `templates/ssh_config` + dev-machine.md step
+- [x] provision-server.md install step; guide stays 50–150 lines
+- [x] README index, installer header updated
+- [x] `make check` green; shellcheck on `.bash_aliases`; `bash -ic` smoke test of every alias
 - [ ] Laptop: migrate history, unset `core.editor` and `core.excludesfile`, re-run `install.sh`, remove `.bashrc` PATH line, update machine.md
 - [ ] staging, gyva-prod: pull, `install.sh`, history copy, unset `core.editor`; verify links and line counts
 - [ ] gyva-backup: apt install (user runs the sudo line), https clone, `install.sh`, verify
