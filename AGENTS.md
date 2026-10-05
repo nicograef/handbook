@@ -15,18 +15,7 @@ Rules for maintaining this repo. Setting up a machine, project or server starts 
 
 ## Layout
 
-One document kind per folder:
-
-| Folder | Holds |
-| --- | --- |
-| `guides/` | Runbooks: prerequisites, numbered steps, verify |
-| `reference/` | Reference pages to look up: command tables and rule lists |
-| `templates/` | Files a project or server copies once and adapts |
-| `dotfiles/` | Files `install.sh` links into `$HOME` outside `~/.claude` |
-| `scripts/` | Server, repo and agent scripts |
-| `claude/` | Global Claude Code config: `CLAUDE.md`, settings, status line |
-| `.claude/` | Repo rules, the repo Stop hook, skills and agents |
-| `docs/` | PRDs, plans and their glossary |
-
-- `install.sh` links the `~/.claude` payload from `claude/`, `scripts/`, `.claude/agents` and `.claude/skills`; `scripts/install-dotfiles.sh --check` lists every link.
+- One document kind per folder.
+- `claude/` is the global Claude Code config. `.claude/` holds the repo rules and Stop hook, plus the shared skills and agents.
+- `install.sh` links `dotfiles/` into `$HOME` and the `~/.claude` payload from `claude/`, `scripts/`, `.claude/agents` and `.claude/skills`. `scripts/install-dotfiles.sh --check` lists every link.
 - Frozen paths: `scripts/setup-server.sh` and `scripts/report-health.sh`. Servers fetch them by raw URL, so they never move.
