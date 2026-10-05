@@ -1,0 +1,14 @@
+# Global ignore — OS, editor and tooling junk. Project-specific rules stay in the repo.
+# Linked to ~/.config/git/ignore, git's default global ignore path, by scripts/install-dotfiles.sh.
+.DS_Store
+Thumbs.db
+*~
+*.swp
+.idea/
+.vscode/*
+!.vscode/settings.json
+!.vscode/extensions.json
+.direnv/
+.env.local
+
+**/.claude/.cc-writes/

@@ -31,7 +31,9 @@ A developer laptop: dotfiles linked into `$HOME`, editor, terminal multiplexer.
 | [guides/dev-machine.md](guides/dev-machine.md) | Set up a dev machine: gh, Node, pnpm, uv, Claude Code, Docker, CLI tools, dotfiles, Claude config, editor |
 | [install.sh](install.sh) | Dotfiles entrypoint; runs `scripts/install-dotfiles.sh` |
 | [scripts/install-dotfiles.sh](scripts/install-dotfiles.sh) | Symlink shell and Claude config on a dev machine; `--check` lists the links |
-| [dotfiles/.bash_aliases](dotfiles/.bash_aliases) | Shell aliases (git, make, pnpm), history tuning, git prompt |
+| [dotfiles/.bash_aliases](dotfiles/.bash_aliases) | Shell aliases (git, make, pnpm), editor, history tuning, git prompt |
+| [dotfiles/.inputrc](dotfiles/.inputrc) | Readline: prefix history search on Up/Down, case-insensitive completion |
+| [dotfiles/gitignore-global](dotfiles/gitignore-global) | Global git ignore: OS, editor and tooling junk |
 | [dotfiles/.tmux.conf](dotfiles/.tmux.conf) | tmux defaults for remote work (mouse, scrollback, escape-time) |
 | [dotfiles/init.lua](dotfiles/init.lua) | Neovim config: prose defaults, 2-space indent, German keyboard remaps |
 | [guides/neovim.md](guides/neovim.md) | Neovim for text editing |

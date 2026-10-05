@@ -10,7 +10,8 @@
 #
 # What it does:
 #   1. Pre-flight: jq present, every link origin exists; any failure exits 1 before a change
-#   2. Symlinks .bash_aliases, .tmux.conf, the Neovim init.lua and repo-status into $HOME;
+#   2. Symlinks .bash_aliases, .tmux.conf, .inputrc, the global git ignore, the Neovim
+#      init.lua and repo-status into $HOME;
 #      a real file or directory in the way is moved to <name>.bak
 #   3. Symlinks Claude Code config (global CLAUDE.md, settings, agents, skills,
 #      agent-bus.sh, plan-run-guard.sh and check-agents.sh — the global hooks in
@@ -44,6 +45,8 @@ log() { printf '\033[1;34m▸ %s\033[0m\n' "$1"; }
 LINKS=(
   "dotfiles/.bash_aliases .bash_aliases"
   "dotfiles/.tmux.conf .tmux.conf"
+  "dotfiles/.inputrc .inputrc"
+  "dotfiles/gitignore-global .config/git/ignore"
   "dotfiles/init.lua .config/nvim/init.lua"
   "scripts/report-repo-status.sh .local/bin/repo-status"
   "claude/CLAUDE.md .claude/CLAUDE.md"
