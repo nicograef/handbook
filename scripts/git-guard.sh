@@ -8,7 +8,7 @@
 #   1. Allows at once when the payload cannot hold a git call.
 #   2. Unwraps sh/bash/zsh -c payloads and eval arguments, then folds each quoted string into one word.
 #      A command substitution inside double quotes or a heredoc is checked like a top-level command.
-#      A heredoc read by a bare cat is data; any other heredoc body is checked as commands.
+#      A heredoc body is data unless a shell reads it or its line pipes it into one.
 #   3. Finds git behind a path, env, command or -C/-c options, per command segment.
 #   4. Blocks pushes with force, +refspec, --mirror, --no-verify or a core.hooksPath override.
 #   5. Blocks commits with -n, --no-verify or a core.hooksPath override.
@@ -53,13 +53,15 @@ def enc:
 def tok:
   "\\$\\(|\\$'|<<<|<<-?[ \\t]*(?:'[^'\\n]*'|\"[^\"\\n]*\"|\\\\?[^\\s;&|()<>'\"`\\\\$]+)"
   + "|[^\\\\'\"$`()\\n;&|<>]+|[\\s\\S]";
+# A word that runs its input as shell commands, behind sudo, env, command, exec or nohup.
+def shell: "(?:(?:sudo|env|command|exec|nohup)\\s+)*(?:\\S*/)?(?:(?:ba|da|k|z)?sh|eval|source|\\.)(?=\\s|$)";
 def ord: test("^[^\\\\'\"$`()\\n;&|<>]+$");
 # Returns the base text t and the bodies o to check as commands. It reads line by line and
 # skips heredoc lines that hold no expansion. State: frame stack k over the base frame,
 # position [l, p] as line and column, base text edits ed, and the capture of a body from depth e.
 # Frames: base, p for $(, g for (, b for a backtick, s, a ($'), d for quotes, h for a heredoc.
-# A body is a substitution in a top-level double quote or heredoc, or a heredoc not fed to
-# a bare cat. A bare cat heredoc is data. Unclosed text runs to the end.
+# A body is a substitution in a top-level double quote or heredoc, or a heredoc a shell
+# reads. Any other heredoc is data. Unclosed text runs to the end.
 def scan_cmd:
   split("\n") as $L
   | def cut($a; $b):
@@ -77,13 +79,11 @@ def scan_cmd:
         else . end;
     def emit($to): .o += [cut(.bs; $to)] | .e = null;
     def pop: .k |= .[:-1] | if .e != null and n < .e then emit(at) else . end;
-    # ms is where the current command of a command frame starts. A non-blank token after a
-    # heredoc operator on its line means the heredoc does not feed a bare cat.
+    # ms is where the current command of a command frame starts.
     def cmd($c):
       if top | IN("base", "p", "g") then
         after($c) as $end
-        | .k[-1] |= ((if $c | test("^[ \\t]+$") then . else .hd |= map(.i = false) end)
-            | if $c | test("^[;&|()`\\n]$") then .ms = $end else . end)
+        | .k[-1] |= (if $c | test("^[;&|()`\\n]$") then .ms = $end else . end)
       else . end;
     def quote($c; $f): cmd($c) | (if n == 1 then .qa = at else . end) | push($f; null);
     def close($c):
@@ -97,11 +97,11 @@ def scan_cmd:
        else . end)
       | cmd($ch);
     def here($c):
-      (cut(.k[-1].ms; at) | test("^\\s*cat\\s+$")) as $i
+      (cut(.k[-1].ms; at) | test("^\\s*" + shell) | not) as $i
       | ($c | capture("^<<(?<tab>-?)[ \\t]*(?:'(?<s>[^']*)'|\"(?<d>[^\"]*)\"|(?<x>\\\\?)(?<u>.+))$")) as $m
       | cmd($c)
       | .k[-1].hd += [{c: "h", w: ($m.s // $m.d // $m.u), q: ($m.s != null or $m.d != null or $m.x != ""),
-                       tab: ($m.tab != ""), i: $i}];
+                       tab: ($m.tab != ""), i: $i, oe: after($c)}];
     def act($c; $f):
       if $f.c == "h" then
         if $c == "\n" then
@@ -132,7 +132,9 @@ def scan_cmd:
       elif $c == "\n" then
         $f.hd as $hs | after($c) as $at
         | cmd($c) | .k[-1].hd = []
-        | reduce ($hs | reverse[]) as $h (.; push($h + {hs: $at, i: ($h.i and ($hs | length) == 1)}; $at))
+        | at as $nl
+        | reduce ($hs | reverse[]) as $h (.;
+            push($h + {hs: $at, i: ($h.i and ($hs | length) == 1 and (cut($h.oe; $nl) | test("\\|\\s*" + shell) | not))}; $at))
       elif ($c | startswith("<<")) and $c != "<<<" then here($c)
       elif $f.c == "base" then cmd($c)
       elif $c == "$(" then cmd($c) | push({c: "p", ms: after($c), hd: []}; after($c))

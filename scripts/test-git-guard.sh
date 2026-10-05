@@ -104,6 +104,10 @@ expect 2 "commit with core.hooksPath" 'git -c core.hooksPath=/dev/null commit -m
 expect 2 "push with core.hooksPath" 'git -c core.hookspath= push'
 expect 2 "\$(...) inside double quotes" "echo \"\$(git push -f)\""
 expect 2 "backticks inside double quotes" "echo \"\`git push --force\`\""
+expect 2 "heredoc read by bash" $'bash <<\'EOF\'\ngit push -f\nEOF'
+expect 2 "heredoc read by sudo sh" $'sudo sh <<\'EOF\'\ngit push -f\nEOF'
+expect 2 "top-level cat heredoc piped to sh" $'cat <<\'EOF\' | sh\ngit push -f\nEOF'
+expect 2 "\$(...) in an unquoted python heredoc" $'python3 - <<EOF\nx = "$(git push -f)"\nEOF'
 expect 2 "cat heredoc piped to a shell" $'echo "$(cat <<\'EOF\' | bash\ngit push -f\nEOF\n)"'
 expect 2 "command after an empty cat heredoc" $'echo "$(cat <<\'EOF\'\nEOF\ngit push -f\nEOF\n)"'
 expect 2 "heredoc text in plain double quotes" $'echo "cat <<\'EOF\'\n$(git push -f)\nEOF"'
@@ -120,6 +124,8 @@ expect 0 "git push -f only inside echo" 'echo "git push -f"'
 expect 0 "commit --amend --no-edit" 'git commit --amend --no-edit'
 expect 0 "core.hooksPath in a commit message" 'git commit -m "set core.hooksPath"'
 expect 0 "single-quoted \$(...) in a commit message" "git commit -m 'x \$(git push -f)'"
+expect 0 "python heredoc that names a force push" $'python3 - <<\'EOF\'\nprint("bash -c \'git push --force\'")\nEOF'
+expect 0 "cat heredoc written to a file" $'cat > notes.md <<\'EOF\'\ngit push -f\nEOF'
 expect 0 "quoted cat heredoc as a commit message" $'git commit -m "$(cat <<\'EOF\'\nblock git push -f\nEOF\n)"'
 expect 0 "quotes and backticks in a quoted cat heredoc" \
   $'git commit -m "$(cat <<\'EOF\'\ndon\'t "x" `git push -f`\nEOF\n)"'
