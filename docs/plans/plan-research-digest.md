@@ -70,11 +70,11 @@ Write a new `page.html` of about 100 lines. It has light and dark tokens on `:ro
 
 ### Acceptance criteria
 
-- [ ] `wc -l .claude/skills/research-digest/page.html` reports 120 lines or fewer
-- [ ] At 375 px and 1440 px, in both themes, Playwright reads `scrollWidth <= clientWidth` on the filled fixture page
-- [ ] A fixture line `<img src=x onerror="document.title='pwned'">` leaves `document.title` unchanged
-- [ ] On the filled fixture page, Playwright reads `document.querySelectorAll('nav a').length === document.querySelectorAll('main h2, main h3').length`
-- [ ] `make check` passes
+- [x] `wc -l .claude/skills/research-digest/page.html` reports 120 lines or fewer
+- [x] At 375 px and 1440 px, in both themes, Playwright reads `scrollWidth <= clientWidth` on the filled fixture page
+- [x] A fixture line `<img src=x onerror="document.title='pwned'">` leaves `document.title` unchanged
+- [x] On the filled fixture page, Playwright reads `document.querySelectorAll('nav a').length === document.querySelectorAll('main h2, main h3').length`
+- [x] `make check` passes
 
 ## Phase 2: Skill and profile template
 
@@ -101,11 +101,11 @@ The researcher prompt carries the project summary, the lane, the 40-search cap, 
 
 ### Acceptance criteria
 
-- [ ] `ls .claude/skills/research-digest` lists only `SKILL.md` and `page.html`
-- [ ] `awk '/^---$/{n++; next} n>=2' .claude/skills/research-digest/SKILL.md | wc -l` reports 120 or fewer
-- [ ] `grep -rnE 'project-researcher|digest\.workflow|research-digest/sources' . --exclude-dir=.git --exclude-dir=docs` prints nothing
-- [ ] `grep -c '^## ' templates/research-digest.md` reports 3: Project, Lanes, Reports
-- [ ] `make check` passes, its skills and readme index checks included
+- [x] `ls .claude/skills/research-digest` lists only `SKILL.md` and `page.html`
+- [x] `awk '/^---$/{n++; next} n>=2' .claude/skills/research-digest/SKILL.md | wc -l` reports 120 or fewer
+- [x] `grep -rnE 'project-researcher|digest\.workflow|research-digest/sources' . --exclude-dir=.git --exclude-dir=docs` prints nothing
+- [x] `grep -c '^## ' templates/research-digest.md` reports 3: Project, Lanes, Reports
+- [x] `make check` passes, its skills and readme index checks included
 
 ## Phase 3: jotti profile
 
@@ -123,9 +123,9 @@ In `~/r/jotti`, write `.claude/research-digest.md` in the profile shape. It has 
 
 ### Acceptance criteria
 
-- [ ] `grep -c '^### ' .claude/research-digest.md` reports 4
-- [ ] `grep -rn jotti-researcher . --exclude-dir=.git` prints nothing
-- [ ] After `git add .claude/research-digest.md`, `make check-repo` passes
+- [x] `grep -c '^### ' .claude/research-digest.md` reports 4
+- [x] `grep -rn jotti-researcher . --exclude-dir=.git` prints nothing
+- [x] After `git add .claude/research-digest.md`, `make check-repo` passes
 
 ## Phase 4: gyva profile
 
@@ -142,9 +142,9 @@ In a gyva worktree, write `.claude/research-digest.md` in the profile shape. It 
 
 ### Acceptance criteria
 
-- [ ] `grep -c '^### ' .claude/research-digest.md` reports 4
-- [ ] `grep -rn gyva-researcher . --exclude-dir=.git --exclude-dir=data` prints nothing
-- [ ] After `git add .claude/research-digest.md`, `make lint-docrefs` passes
+- [x] `grep -c '^### ' .claude/research-digest.md` reports 4
+- [x] `grep -rn gyva-researcher . --exclude-dir=.git --exclude-dir=data` prints nothing
+- [x] After `git add .claude/research-digest.md`, `make lint-docrefs` passes
 
 ## Phase 5: Remove old outputs
 
