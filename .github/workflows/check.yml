@@ -1,0 +1,36 @@
+# The repo self-check and the hook fixture tests, as `make check` runs them locally.
+# Every `uses:` is pinned to a full commit SHA, as in templates/ci.yml.
+# ubuntu-latest ships every tool the targets call: shellcheck, docker compose, jq, perl.
+name: Check
+
+on:
+  push:
+    branches: ['**']
+
+permissions:
+  contents: read
+
+concurrency:
+  group: check-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Repo self-check
+        run: make check
+
+      - name: Agent bus fixture test
+        run: make test-agent-bus
+
+      - name: Plan-run guard fixture test
+        run: make test-plan-run-guard
+
+      - name: Git guard fixture test
+        run: make test-git-guard

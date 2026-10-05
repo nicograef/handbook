@@ -33,6 +33,7 @@ INDEX_DIRS=(guides reference templates dotfiles scripts claude)
 INDEX_EXCLUDE=(
   ".claude|the skills stage indexes skills; rules and agents are harness config"
   "docs|PRDs, plans and their glossary are work files"
+  ".github|the handbook's own CI workflow, not a file a project copies"
 )
 
 LANG_ALLOW=(
