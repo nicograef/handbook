@@ -11,7 +11,7 @@ Minimal Neovim for prose, Markdown, YAML and JSON: one config file, no plugins, 
 
 - The latest Neovim release, from [github.com/neovim/neovim/releases](https://github.com/neovim/neovim/releases/latest).
   apt lags a major version behind (Debian 13 ships 0.10) and is not used.
-- The handbook cloned and [`install.sh`](../install.sh) run — [dev-machine.md](dev-machine.md).
+- The handbook cloned and [`install.sh`](../install.sh) run — [dev-machine.md](dev-machine.md). It is idempotent; re-run it when the clone predates the Neovim link.
 - A desktop clipboard needs `xclip`; the clipboard comment in [dotfiles/init.lua](../dotfiles/init.lua) says why.
 
 ## Steps
@@ -33,15 +33,7 @@ Minimal Neovim for prose, Markdown, YAML and JSON: one config file, no plugins, 
    The tarball does not refresh itself; the [release page](https://github.com/neovim/neovim/releases/latest)
    shows when a re-run is due. Source: [INSTALL.md](https://github.com/neovim/neovim/blob/master/INSTALL.md).
 
-2. **Link the config.** Run `./install.sh` from the handbook clone; it is idempotent, so re-run it when the clone predates the link.
-
-3. **Check the providers.** A desktop lists `xclip`; a server reports no tool, which is expected.
-
-   ```bash
-   nvim +'checkhealth vim.provider'
-   ```
-
-4. **Start the tutorial.**
+2. **Start the tutorial.**
 
    ```bash
    nvim +Tutor
@@ -73,5 +65,5 @@ Sources: [`:help 'langmap'`](https://neovim.io/doc/user/options.html#'langmap'),
 nvim --version | head -1                                             # → the tag of the latest release
 readlink -f ~/.config/nvim/init.lua                                  # → <clone>/dotfiles/init.lua
 nvim --headless -c 'lua print(vim.o.shiftwidth, vim.o.clipboard)' -c q   # → 2 unnamedplus (desktop) / 2 (server)
-nvim +'checkhealth vim.provider'                                     # Clipboard: xclip (desktop)
+nvim +'checkhealth vim.provider'                                     # Clipboard: xclip (desktop); no tool (server)
 ```

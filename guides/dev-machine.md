@@ -1,7 +1,6 @@
 # New Dev Machine
 
 Take a fresh Ubuntu laptop to a working toolchain in one pass.
-It installs git, gh, Node, pnpm, uv, Claude Code, Docker, the CLI tools, the handbook dotfiles and the editor.
 
 ## Prerequisites
 
@@ -78,9 +77,8 @@ Placeholders: `<name>` and `<email>` are your git identity; `<title>` names this
    sudo usermod -aG docker "$USER"
    ```
 
-9. **CLI tools** — tmux, the modern tools the shell aliases expect, and `make` and `shellcheck` for the handbook's `make check`.
-   gitleaks lets the git guard hook scan each agent commit for secrets. Without bat, eza, fd-find or fzf, their aliases stay inactive.
-   [dotfiles/.bash_aliases](../dotfiles/.bash_aliases) holds those aliases. `rg --version` then prints a version:
+9. **CLI tools** — tmux, the tools [dotfiles/.bash_aliases](../dotfiles/.bash_aliases) aliases, and `make` and `shellcheck` for the handbook's `make check`.
+   gitleaks lets the git guard hook scan each agent commit for secrets. `rg --version` then prints a version:
 
    ```bash
    sudo apt install -y tmux bat eza fzf fd-find ripgrep git-delta make shellcheck gitleaks
@@ -138,6 +136,4 @@ docker run --rm hello-world | grep Hello           # → Hello from Docker!
 
 | Symptom | Cause | Fix |
 | --- | --- | --- |
-| `pnpm`, `uv` or `claude`: command not found | The shell predates `pipx ensurepath` | Open a new terminal |
-| `docker`: permission denied on the socket | The session predates the `docker` group | Log out and back in |
 | `install.sh` reports signing skipped | `~/.ssh/id_ed25519.pub` was missing | Create the key, then re-run `./install.sh` |

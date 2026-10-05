@@ -1,5 +1,3 @@
-# Handbook dev interface.
-
 .PHONY: check links lint readme language skills compose prose history contracts test-agent-bus test-plan-run-guard test-git-guard test-dockerfiles help
 
 ## check: run the full repo self-check (links, shellcheck, README index, language, skills, compose, prose, history words, contracts)

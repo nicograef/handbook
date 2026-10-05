@@ -1,7 +1,6 @@
 #!/usr/bin/env bash
-# This script intentionally omits `set -euo pipefail`: a status line should degrade
-# gracefully (print what it can) rather than crash the whole line on a missing field
-# or a failed subcommand.
+# No `set -euo pipefail`: a status line prints what it can rather than die on a missing
+# field or a failed subcommand.
 
 input=$(cat)
 

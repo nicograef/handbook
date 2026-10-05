@@ -14,7 +14,7 @@ Applies to an [implement-plan](../.claude/skills/implement-plan/SKILL.md) run, a
 
 ## Choose the posture
 
-Pick the row that matches the run; the mode is what the session starts with.
+The mode is what the session starts with.
 Source: [Permission modes](https://code.claude.com/docs/en/permission-modes).
 
 | Posture | Mode | Stops on | Use for |
@@ -25,7 +25,6 @@ Source: [Permission modes](https://code.claude.com/docs/en/permission-modes).
 
 - The `auto` pause thresholds are not configurable.
 - A `-p` run without `--permission-prompt-tool` never pauses; a blocked action does not run, and Claude keeps working.
-- `dontAsk` denies every call that would prompt, so the run cannot ask you anything.
 
 ## Confirm the denial log
 
@@ -142,7 +141,7 @@ Committed work survives every stop; the session does not. The messages are liste
 
 | Symptom | Recovery |
 | --- | --- |
-| `You've hit your session limit` or `weekly limit`, session still open | It continues at the reset, as the usage-limit section above says |
+| `You've hit your session limit` or `weekly limit`, session still open | [Wait out the limit](#let-an-open-session-wait-out-a-usage-limit) |
 | A limit stopped a `--bg` or `-p` run, or the reset is over 24 hours away | At the reset, [resume from the last commit](../.claude/skills/implement-plan/git.md#pickup). An open interactive session that armed its [hourly recovery job](../.claude/skills/implement-plan/lead.md#lead-upkeep) resumes on its own |
 | `Repeated 529 Overloaded errors` or `Request rejected (429)` ended the run | Restart it with `CLAUDE_CODE_RETRY_WATCHDOG=1`, then [resume from the last commit](../.claude/skills/implement-plan/git.md#pickup) |
 | `Agent terminated early due to an API error` | [Respond per error kind](../.claude/skills/implement-plan/lead.md#failures): the work restarts from its branch's last commit |

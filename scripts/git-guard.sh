@@ -195,7 +195,6 @@ dec() { # dec <word>
   printf '%b' "${s//%/\\x}"
 }
 
-# Resolves a path argument against a base directory.
 resolve() { # resolve <base> <path>
   case "$2" in
     /*) printf '%s' "$2" ;;

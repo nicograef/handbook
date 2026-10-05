@@ -11,9 +11,7 @@ Two gaps need closing:
 ## Prerequisites
 
 - IPv6-only Debian/Ubuntu VPS with sudo access
-- Provisioned via [provision-server.md](provision-server.md)
-- [`setup-server.sh`](../scripts/setup-server.sh) configures Docker IPv6 itself when it detects no IPv4 route (its step 6b)
-- The DNS64 resolvers stay manual, since they are a third-party trust decision
+- Provisioned via [provision-server.md](provision-server.md); the DNS64 resolvers stay manual, since they are a third-party trust decision
 
 ## Set DNS64 resolvers
 

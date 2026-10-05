@@ -1,4 +1,3 @@
-# Copy to .github/workflows/release.yml and replace the <angle-bracket> placeholders.
 # A vX.Y.Z tag (`make prod-release VERSION=X.Y.Z`) builds the app images and pushes them to
 # GHCR under that tag; docker-compose.prod.yml pins the same tag. The tag goes on a main commit
 # CI already checked, so this workflow runs no tests.

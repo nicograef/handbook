@@ -13,5 +13,5 @@ paths: "guides/**"
 - Headings name tasks, never numbers. Links target headings, never another file's step number.
 - Placeholders are `<angle-brackets>` everywhere, Verify blocks included.
 - Agent vocabulary (gate, lane, fold, lead) stays out of runbooks.
-- Link to templates, scripts and reference pages instead of inlining them. Cite the source URL when a guide is based on an external resource.
+- Cite the source URL when a guide is based on an external resource.
 - File name `<topic>.md`, lowercase, hyphens, no numbering.

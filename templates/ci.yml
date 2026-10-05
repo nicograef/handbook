@@ -1,6 +1,5 @@
-# All jobs are active. Each stack's jobs and steps sit between a `# >>> stack: NAME` and a
-# `# <<< stack: NAME` line (go, python, frontend, database); delete the stacks your project lacks.
-# Fill the angle-bracket placeholders. Validate locally before pushing: actionlint .github/workflows/ci.yml
+# Each stack's jobs and steps sit between a `# >>> stack: NAME` and a `# <<< stack: NAME` line
+# (go, python, frontend, database). Validate locally before pushing: actionlint .github/workflows/ci.yml
 #
 # Toolchain versions come from the project's own pins, so CI and a dev machine agree:
 # Go from go.mod, Node from .node-version, pnpm from packageManager in package.json,
@@ -94,7 +93,6 @@ jobs:
       - name: Verify dependencies
         run: go mod verify
 
-      # Fails if go.mod/go.sum drift from the source (edited without re-tidying).
       - name: Verify go.mod/go.sum are tidy
         run: go mod tidy -diff
 
@@ -110,7 +108,6 @@ jobs:
             exit 1
           fi
 
-      # goimports is a go.mod tool: `go get -tool golang.org/x/tools/cmd/goimports`.
       - name: Check format
         run: |
           UNFORMATTED="$(go tool goimports -l .)"
@@ -177,7 +174,6 @@ jobs:
 
       - uses: pnpm/action-setup@ea17c68df8912ef543352723c149a84f56e3d413 # v6.1.0
         with:
-          # pnpm reads its version from the packageManager field.
           package_json_file: frontend/package.json  # relative to the repo root
           run_install: false
 
@@ -297,7 +293,6 @@ jobs:
           go-version-file: ${{ matrix.module }}/go.mod
           cache-dependency-path: ${{ matrix.module }}/go.sum
 
-      # govulncheck is a go.mod tool: `go get -tool golang.org/x/vuln/cmd/govulncheck`.
       # It fails only on vulnerabilities the module's code can reach.
       - name: govulncheck
         run: go tool govulncheck ./...

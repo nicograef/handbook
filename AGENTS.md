@@ -9,7 +9,7 @@ Rules for maintaining this repo. Setting up a machine, project or server starts 
 - `README.md` indexes every guide, reference page, template, dotfile and script, grouped by area. Update it after every add, remove or rename.
 - After renaming or deleting a file, `grep -r '<filename>' .` and fix every reference.
 - When a tool version changes, grep the repo and update every occurrence.
-- `make check` verifies links with their anchors, shellcheck, both indexes, top-level folder coverage, language and compose files. It checks the contracts: raw URLs, install origins and settings script paths. It also enforces the prose caps (sentence ≤ 20 words, paragraph ≤ 3 lines) and flags history words.
+- `make check` runs every repo self-check, the prose caps (sentence ≤ 20 words, paragraph ≤ 3 lines) and history words included; `make help` lists the stages.
 - English only. Exceptions: German phrases in `.claude/skills/audiobook/writing.md`, umlaut key names in `guides/neovim.md` and `dotfiles/init.lua`, the proper noun in `claude/CLAUDE.md` and `claude/settings.json`.
 - A multi-file change starts with `docs/plans/plan-<slug>.md` (goal, files, checklist), ticked as you go and deleted when done. A single-file edit skips the plan.
 
@@ -17,5 +17,5 @@ Rules for maintaining this repo. Setting up a machine, project or server starts 
 
 - One document kind per folder.
 - `claude/` is the global Claude Code config. `.claude/` holds the repo rules and Stop hook, and the shared skills and agents.
-- `install.sh` links `dotfiles/` into `$HOME` and the `~/.claude` payload from `claude/`, `scripts/`, `.claude/agents` and `.claude/skills`. `scripts/install-dotfiles.sh --check` lists every link.
+- `scripts/install-dotfiles.sh --check` lists every link `install.sh` creates in `$HOME`.
 - Frozen paths: `scripts/setup-server.sh` and `scripts/report-health.sh`. Servers fetch them by raw URL, so they never move.

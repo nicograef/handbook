@@ -13,8 +13,7 @@ if ! declare -F _comp_load >/dev/null && ! declare -F _completion_loader >/dev/n
 fi
 
 alias gfp='git pull --all'
-# Pull (rebase + autostash from install-dotfiles.sh) when the branch tracks a
-# remote, then push. Retries once when another machine pushed in between.
+# Pull when the branch tracks a remote, then push. Retries once when another machine pushed in between.
 gfpp() {
   if git rev-parse --abbrev-ref '@{u}' >/dev/null 2>&1; then
     git pull --all || return
@@ -55,8 +54,6 @@ pci() {
 
 alias update='sudo apt update && sudo apt full-upgrade -y && sudo apt autoremove -y'
 
-# Modern CLI tools – only activate when the tool is actually installed,
-# so this stays safe on minimal machines.
 # bat as a colorized cat (apt binary: batcat, cargo binary: bat)
 if command -v batcat >/dev/null; then
   alias cat='batcat --paging=never --style=plain'
@@ -111,7 +108,6 @@ if declare -F __git_ps1 >/dev/null; then
   # shellcheck disable=SC2034  # read by __git_ps1
   GIT_PS1_SHOWDIRTYSTATE=1
   PS1='\[\e[32m\]\w\[\e[33m\]$(__git_ps1 " (%s)")\[\e[0m\] \$ '
-  # terminal window title: path only
   case "$TERM" in
     xterm*|rxvt*|tmux*|screen*) PS1="\[\e]0;\w\a\]$PS1" ;;
   esac

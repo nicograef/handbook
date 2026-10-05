@@ -6,9 +6,9 @@ argument-hint: "<path to plan file>"
 
 # Implement Plan
 
-Progress is durable only once committed and ticked. The run owns the turn: no human turn between phases, folds and landing. The Stop hook `plan-run-guard.sh` blocks a stop while `plan/<slug>` still has an unticked criterion, for the session that claimed the run. Claim it with `~/.claude/plan-run-guard.sh claim <slug>` once the run branch exists, and again on every pickup. An unclaimed run nudges every session in the repo.
+Progress is durable only once committed and ticked. The run owns the turn: no human turn between phases, folds and landing. Claim the run for the Stop hook with `~/.claude/plan-run-guard.sh claim <slug>` once the run branch exists, and again on every pickup. An unclaimed run nudges every session in the repo.
 
-Open [lead.md](lead.md) before the first dispatch, on a stop and before landing. It holds lead upkeep, failures, dispatch, the verification budget and the landing protocol.
+Open [lead.md](lead.md) before the first dispatch, on a stop and before landing.
 
 ## Gotchas
 
@@ -23,13 +23,13 @@ Open [lead.md](lead.md) before the first dispatch, on a stop and before landing.
 1. Resume first, on every invocation: run the pickup sequence in [git.md](git.md). Finish or abort a half-open rebase or merge in its owning worktree. Redoing finished work is the most expensive failure.
 2. Read the plan. Detect the base branch with `git symbolic-ref --short refs/remotes/origin/HEAD`, then `git ls-remote --symref origin HEAD`; ask if neither resolves. Pin it.
 3. Review every unmet phase in one pass: ambiguous criteria, missing files, criteria no command verifies, shell commands the allowlist lacks.
-4. Ask how the plan runs fast and lean, then choose the shape. Run the concurrency test in [git.md](git.md) on every phase pair. Each pair that passes becomes a lane, up to the [writer cap](lead.md#dispatch); sequential is the fallback. Set each phase's [review tier](lead.md#verification-budget).
+4. Choose the shape. Run the concurrency test in [git.md](git.md) on every phase pair. Each pair that passes becomes a lane, up to the [writer cap](lead.md#dispatch); sequential is the fallback. Set each phase's [review tier](lead.md#verification-budget).
 5. Present the run contract once: plan, base and sha, phases with grouping and tiers, worktrees and branches. Also the verify command, stop conditions, open questions and missing allowlist commands. This is the run's only planned human turn.
 6. Create `../<repo>-wt/plan-<slug>` on branch `plan/<slug>` from `$BASE`. Confirm the verify command passes on unchanged code.
 7. Execute phases in order. Sequential phases run in the run worktree; a concurrent group gets one worktree, branch and agent per phase. No two agents write one file; only the lead writes the plan file.
 8. Commit per criterion that names its own change, then tick. Workers batch verification: one targeted test run per criterion, the full gate once per phase, scoped to the languages touched. No gate, build or review after a single edit. Tick a phase's criteria in one commit when it closes, and only what a tool result proves. Verification failing twice for one reason: debug root-cause first, then stop.
 9. Fold each group into `plan/<slug>` in phase order with the fold sequence in [git.md](git.md). Re-verify after each fold.
-10. Remove `## Run state` in its own commit, then land `plan/<slug>` as [lead.md](lead.md#landing) says. `git rm` the plan file after landing only when every criterion is ticked. Remove the run's worktrees and `-d` its merged branches.
+10. Remove `## Run state` in its own commit, then land `plan/<slug>` as [lead.md](lead.md#landing) says. `git rm` the plan file after landing only when every criterion is ticked.
 11. Report: `3 phases — 2 complete, 1 blocked; 9 criteria ticked; 11 commits landed`, then phases, dropped agents, unticked items and the plan file's fate.
 
 ## Stops

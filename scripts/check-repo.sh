@@ -8,14 +8,12 @@
 #   1. Runs the named stage, or every stage for `all` (the default)
 #   2. Logs each violation and exits non-zero if any stage found one
 #
-# Every stage except `all` has a same-named Makefile target; `all` is reached as `make check`.
 # Idempotent: reads only, never writes.
 
 set -euo pipefail
 
 STAGE="${1:-all}"
 
-# Run from the repo root regardless of the caller's cwd.
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$REPO_ROOT"
 
@@ -202,7 +200,6 @@ check_readme() {
 # Handbook raw URLs, host and repo written with escaped dots so this file never matches itself.
 RAW_URL_RE='raw\.githubusercontent\.com/nicograef/handbook/[^/[:space:]]+/[^[:space:]"'\''`)<>|]+'
 
-# The Claude settings files whose script paths check_contracts resolves.
 SETTINGS_FILES=(claude/settings.json .claude/settings.json)
 
 # resolve_home_claude maps a ~/.claude/<rest> path to its repo origin through the install
@@ -365,14 +362,10 @@ check_history() {
   done < <(prose_md)
 }
 
-# prose_scan prints one violation per line for a single Markdown file.
-#
-# It strips YAML frontmatter, fenced code, HTML comments, table rows, inline code spans and
-# link URLs, then flags paragraphs over PROSE_MAX_PARA_LINES and sentences over
-# PROSE_MAX_WORDS. Sentence splitting keeps `e.g.`, `i.e.`, `etc.`, `vs.` and `cf.` intact.
+# prose_scan prints one violation per line for a single Markdown file. Frontmatter, fenced
+# code, HTML comments, table rows, inline code and link URLs are not prose.
 prose_scan() {
   LC_ALL=C awk -v file="$1" -v maxwords="$PROSE_MAX_WORDS" -v maxpara="$PROSE_MAX_PARA_LINES" '
-    # clean strips inline code, images, link URLs, autolinks and emphasis markers.
     function clean(s,   pre, mid, post) {
       gsub(/`[^`]*`/, " ", s)
       gsub(/!\[[^]]*\]\([^)]*\)/, " ", s)
@@ -403,12 +396,9 @@ prose_scan() {
       return (s ~ /(^|[ (])(e\.g|i\.e|etc|vs|cf|approx|resp|Dr|Mr|Ms|No)\.$/)
     }
 
-    # sentences splits a joined block into a[1..n]; returns n.
-    #
-    # A period only ends a sentence when a space follows it, so version numbers and
-    # decimals (`1.26`, `v2.1.197`) never split. That space rule is why no extra
-    # digit-before-period guard is needed: such a guard would merge legitimate
-    # sentence ends like "on PostgreSQL 17." into the sentence that follows.
+    # sentences splits a joined block into a[1..n]; returns n. A period ends a sentence only
+    # before a space, so `1.26` and `v2.1.197` never split; a digit-before-period guard would
+    # merge a sentence end like "on PostgreSQL 17." into the next sentence.
     function sentences(s, a,   i, c, cur, n, nxt) {
       n = 0
       cur = ""
@@ -426,7 +416,6 @@ prose_scan() {
       return n
     }
 
-    # snippet returns the first few words of a sentence, for the violation message.
     function snippet(s,   n, i, a, out) {
       sub(/^[ \t]+/, "", s)
       n = split(s, a, /[ \t]+/)
@@ -465,10 +454,9 @@ prose_scan() {
     raw ~ /^[ \t]*(```|~~~)/ { flushpara(); checkblock(); prevtype = ""; fence = !fence; next }
     fence { next }
 
-    # Inline code spans go first: a backticked `<!--` is prose, not a comment opener,
-    # and treating it as one would silently mute the rest of the file. The `@` keeps the
-    # line non-blank (a code-span-only line still occupies a rendered paragraph line)
-    # while contributing no word to any sentence count.
+    # Inline code spans go first: a backticked `<!--` read as a comment opener would mute the
+    # rest of the file. The `@` keeps a code-span-only line non-blank, as it renders, and adds
+    # no word to any sentence count.
     { gsub(/`[^`]*`/, "@", raw) }
 
     {

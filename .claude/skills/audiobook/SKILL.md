@@ -7,7 +7,7 @@ disable-model-invocation: true
 
 # Audiobook
 
-Subject: **$ARGUMENTS**. Open [pipeline.md](pipeline.md) before rendering: ElevenReader limits, pandoc setup, render, verify and troubleshooting. Prose rules, German narration and review contracts: [writing.md](writing.md).
+Subject: **$ARGUMENTS**. Open [pipeline.md](pipeline.md) before rendering. Prose rules, German narration and review contracts: [writing.md](writing.md).
 
 ## Hard rules
 

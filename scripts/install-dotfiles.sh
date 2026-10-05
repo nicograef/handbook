@@ -5,22 +5,14 @@
 #   scripts/install-dotfiles.sh           # link, merge and configure; install.sh runs this
 #   scripts/install-dotfiles.sh --check   # pre-flight only: print "<origin> <dest>" per link
 #
-# Run after cloning the repo:
-#   git clone https://github.com/nicograef/handbook.git && cd handbook && ./install.sh
-#
 # What it does:
 #   1. Pre-flight: jq present, every link origin exists; any failure exits 1 before a change
-#   2. Symlinks .bash_aliases, .tmux.conf, .inputrc, the global git ignore, the Neovim
-#      init.lua and repo-status into $HOME;
-#      a real file or directory in the way is moved to <name>.bak
-#   3. Symlinks Claude Code config (global CLAUDE.md, settings, agents, skills,
-#      agent-bus.sh, plan-run-guard.sh, git-guard.sh and check-agents.sh at fixed
-#      ~/.claude paths for hooks and skills)
-#   4. Sets git config defaults (pull.rebase, fetch.prune, etc.)
-#   5. Sets up SSH commit signing when ~/.ssh/id_ed25519.pub exists
-#   6. Points to the gh install docs if gh is missing
+#   2. Symlinks every LINKS entry below into $HOME: shell dotfiles, Neovim, repo-status and the
+#      Claude Code config; a real file or directory in the way is moved to <name>.bak
+#   3. Sets git config defaults (pull.rebase, fetch.prune, etc.)
+#   4. Sets up SSH commit signing when ~/.ssh/id_ed25519.pub exists
+#   5. Points to the gh install docs if gh is missing
 #
-# --check touches nothing; its origins are relative to the repo, its dests to $HOME.
 # .bashrc is left alone: the Ubuntu default sources ~/.bash_aliases.
 set -euo pipefail
 
@@ -61,7 +53,6 @@ LINKS=(
   ".claude/skills .agents/skills"
 )
 
-# Checks every precondition before the first change; exits 1 naming each failure.
 preflight() {
   local entry origin ok=true
   if ! command -v jq >/dev/null 2>&1; then
@@ -97,7 +88,6 @@ if [[ "$CHECK" == true ]]; then
   exit 0
 fi
 
-# ── Symlink dotfiles and Claude Code config ─────────────────────────────────
 for entry in "${LINKS[@]}"; do
   link "${entry%% *}" "${entry#* }"
 done
@@ -110,7 +100,6 @@ tmp="$(mktemp)"
 jq '. + {leftArrowOpensAgents: false}' "$CLAUDE_JSON" > "$tmp" && mv "$tmp" "$CLAUDE_JSON"
 log "Merged /config prefs into $CLAUDE_JSON"
 
-# ── Git config defaults ─────────────────────────────────────────────────────
 log "Setting git config defaults…"
 git config --global init.defaultBranch main
 git config --global pull.rebase true
@@ -124,7 +113,6 @@ git config --global interactive.diffFilter 'delta --color-only || cat'
 git config --global delta.navigate true
 git config --global delta.line-numbers true
 
-# ── Commit signing ──────────────────────────────────────────────────────────
 SIGNING_KEY="$HOME/.ssh/id_ed25519.pub"
 if [[ -f "$SIGNING_KEY" ]]; then
   ALLOWED_SIGNERS="$HOME/.config/git/allowed-signers"
@@ -144,7 +132,6 @@ else
   log "SKIP: $SIGNING_KEY not found, commit signing not configured"
 fi
 
-# ── GitHub CLI ──────────────────────────────────────────────────────────────
 if command -v gh >/dev/null 2>&1; then
   log "gh already installed: $(gh --version | head -1)"
 else

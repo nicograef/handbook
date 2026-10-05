@@ -3,7 +3,7 @@
 #
 # Usage (installed as /usr/local/bin/report-health, run by cron):
 #   report-health
-#   DEFAULTS_FILE=/dev/null HEALTH_PING_URL=<heartbeat-url> report-health   # ad-hoc override; the env value only applies when the defaults file is absent or leaves HEALTH_PING_URL unset
+#   DEFAULTS_FILE=/dev/null HEALTH_PING_URL=<heartbeat-url> report-health   # ad-hoc override
 #
 # What it does:
 #   1. Reads HEALTH_PING_URL from /etc/default/report-health (env is the fallback).
@@ -55,18 +55,10 @@ if [[ -f "$UNATTENDED_UPGRADES_LOG" ]]; then
   fi
 fi
 
-# An OOM kill is exactly what this ping exists to catch: nothing fails, no unit
-# stays down, and the box looks fine afterwards — while the kill may have taken
-# every session on it, because systemd stops user@.service when the kill lands on
-# the user manager. The cgroup counters under /sys/fs/cgroup are cumulative since
-# boot and carry no timestamps, so a bounded journal window is the only reading
-# that distinguishes "killed something last night" from "killed something in May".
-# Three patterns are matched: two kernel spellings (Out of memory: Killed
-# process, oom-kill:) and systemd's unit-level "killed by the OOM killer".
-# Counted, not `grep -q`: under `set -o pipefail` a quiet grep exits at the first
-# match, journalctl dies of SIGPIPE, and the non-zero pipeline makes the condition
-# false — the check would silently never fire. `grep -c` drains the stream instead,
-# and `|| true` absorbs its exit 1 on zero matches.
+# An OOM kill leaves no failed unit, yet may have taken every session: guides/maintenance.md#after-an-oom-kill.
+# The cgroup counters carry no timestamps, so a bounded journal window is the only reading that dates a kill.
+# Counted, not `grep -q`: a quiet grep exits early, journalctl dies of SIGPIPE and pipefail hides every hit.
+# `|| true` absorbs grep -c's exit 1 on zero matches.
 if command -v journalctl >/dev/null 2>&1; then
   oom_hits="$(journalctl --since "$OOM_WINDOW" --no-pager --quiet 2>/dev/null \
     | grep -cE 'killed by the OOM killer|Out of memory: Killed process|oom-kill:' || true)"

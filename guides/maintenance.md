@@ -49,7 +49,7 @@ The health-ping heartbeat alerts while `/var/run/reboot-required` exists; the re
 ## Verify
 
 Run each check on the server, in `/opt/<project>`; run the HTTPS and netcup checks from your own machine.
-[linux-services.md](../reference/linux-services.md) explains each command.
+Sharp edges of these commands: [linux-services.md](../reference/linux-services.md).
 
 ```bash
 test -f /var/run/reboot-required && echo "reboot required" || echo "no flag set"
@@ -124,7 +124,7 @@ it without root.
 
 The manager dies when the OOM killer takes `systemd --user` itself, which runs with `OOMScoreAdjust=100`.
 Its `KillMode=mixed` then kills the rest of the slice. Swap keeps the OOM killer off the manager.
-The swap comment in [`setup-server.sh`](../scripts/setup-server.sh) details it.
+`user@.service` runs with `OOMPolicy=continue`, so a kill inside it does not stop the unit.
 
 Lingering covers the other path. tmux runs each pane in a `tmux-spawn-*.scope` under `user@<uid>.service`.
 Without lingering, the last logout stops that unit and every pane, whatever `KillUserProcesses=` says.

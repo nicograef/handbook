@@ -6,7 +6,7 @@ allowed-tools: Bash(git *), Bash(~/.claude/agent-bus.sh *), SendMessage, ListAge
 
 # Parallel Sessions
 
-Claims and radar: `~/.claude/agent-bus.sh` (source: `scripts/agent-bus.sh`; its usage header lists every command). It must be in `permissions.allow`, or coordination stalls silently. The bus path is derived from the repo's common git dir, so both sides compute the same one.
+Claims and radar: `~/.claude/agent-bus.sh` (source: `scripts/agent-bus.sh`; its usage header lists every command). It must be in `permissions.allow`, or coordination stalls silently.
 
 Messages: native SendMessage. ListAgents lists every session on the machine; `agent-bus.sh peers` narrows that to this repo. Its `NAME` column is the SendMessage address.
 

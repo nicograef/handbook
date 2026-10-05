@@ -16,7 +16,7 @@
 #      abandoned branch can never trap the repo.
 #   5. Nudges the session that claimed the run and no other. Sessions share a
 #      repo, and a bystander told to continue a peer's run would write its files.
-#      A run nobody claimed nudges whoever stops, as a run without the claim does.
+#      A run nobody claimed nudges whoever stops.
 #   6. Never nudges while a top-level subagent, a workflow run, or a /tmp task
 #      is live — the harness re-invokes on completion, so that stop is safe.
 #   7. Opt out per repo: touch "$(git rev-parse --git-dir)/plan-run-guard-off".
@@ -59,7 +59,6 @@ fi
 
 session="$(printf '%s' "$payload" | jq -r '.session_id // "nosession"')"
 
-# A stop with live background work is safe: the harness re-invokes on completion.
 # A transcript touched inside the window is work still running.
 CONFIG_DIR="${CLAUDE_CONFIG_DIR:-$HOME/.claude}"
 IDLE_MIN="${PLAN_RUN_GUARD_IDLE_MIN:-10}"
@@ -101,7 +100,6 @@ while IFS= read -r branch; do
     continue
   fi
 
-  # The run's own copy of the plan, not the calling checkout's stale one.
   planbody="$(git -C "$cwd" show "$branch:docs/plans/plan-$slug.md" 2>/dev/null || true)"
   [[ -n "$planbody" ]] || continue
 
@@ -109,7 +107,6 @@ while IFS= read -r branch; do
   [[ -n "$next" ]] || continue
   next="${next#- \[ \] }"
 
-  # One nudge per tip: a run that stops advancing stops being nudged.
   tip="$(git -C "$cwd" rev-parse "$branch" 2>/dev/null || echo unknown)"
   marker="$state/$session-$slug-$tip"
   [[ -e "$marker" ]] && continue

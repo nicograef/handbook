@@ -3,9 +3,8 @@
 #
 # Called by devcontainer.json postCreateCommand, or run manually.
 #
-# Each stack's section sits between `# >>> stack: NAME` and `# <<< stack: NAME` lines, as in
-# ci.yml; delete the stacks your project lacks. Each section hard-requires its runtime,
-# so a leftover Go section fails the postCreateCommand of a frontend-only repo.
+# Each `# >>> stack: NAME` section hard-requires its runtime, so a leftover Go section fails the
+# postCreateCommand of a frontend-only repo.
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -56,8 +55,7 @@ else
   hash -r
 fi
 
-# goimports, sqlc and govulncheck are go.mod tools, pinned in go.mod and run through `go tool`:
-# go get -tool golang.org/x/tools/cmd/goimports github.com/sqlc-dev/sqlc/cmd/sqlc golang.org/x/vuln/cmd/govulncheck
+# goimports, sqlc and govulncheck are go.mod tools, pinned in go.mod and run through `go tool`.
 
 echo "  go:             $(go version)"
 echo "  golangci-lint:  $(golangci-lint --version | head -n 1)"
@@ -105,5 +103,4 @@ info "Syncing Python dependencies..."
 echo "  uv:             $(uv --version)"
 # <<< stack: python
 
-# ── Summary ──────────────────────────────────────────────────────────────────
 info "Setup complete. Next step: make check"

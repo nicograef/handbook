@@ -1,4 +1,3 @@
-# Dockerfile.spa — React SPA image: pnpm + Vite build, served by nginx
 # Copy to frontend/Dockerfile, the name release.yml builds, and copy .dockerignore beside it.
 # Copy nginx-spa.conf to frontend/nginx.conf; this file COPYs it unedited.
 # The build writes dist/; nginx answers GET / on port 80, which its healthcheck probes.

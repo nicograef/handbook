@@ -1,6 +1,6 @@
 // Docs: https://containers.dev/implementors/json_reference/
 {
-  "name": "my-project-dev", // TODO: rename to your project
+  "name": "my-project-dev",
 
   "image": "mcr.microsoft.com/devcontainers/base:ubuntu24.04",
 
@@ -20,7 +20,6 @@
   },
 
   // ── Post-create setup ─────────────────────────────────────────────────────
-  // Install project-specific tools.
   "postCreateCommand": "bash scripts/setup-dev-tools.sh",
 
   "customizations": {

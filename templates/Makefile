@@ -1,6 +1,3 @@
-# Makefile template — Full-Stack Project
-# Usage: copy to project root and adapt targets
-#
 # In a recipe, $$ escapes the $ so the shell expands it, not make. A make variable
 # holding shell output needs $(shell ...); `VAR := $$(cmd)` stores the literal text.
 
@@ -8,7 +5,6 @@
 # include .env
 # export
 
-# Source directories, relative to the project root.
 BACKEND_DIR ?= backend
 FRONTEND_DIR ?= frontend
 
@@ -49,7 +45,7 @@ be-check:      ## Backend: uv gate (sync, lint, format, types, tests, audit)
 # 	cd $(BACKEND_DIR) && go build ./...
 # 	cd $(BACKEND_DIR) && go test -race ./...
 
-# The package.json scripts reference/stack-conventions.md names; `test` is `vitest run`, which exits.
+# The package.json scripts named in reference/stack-conventions.md (Node/TypeScript).
 fe-check:      ## Frontend: pnpm gate (install, format, lint, types, tests, build)
 	cd $(FRONTEND_DIR) && pnpm install --frozen-lockfile
 	cd $(FRONTEND_DIR) && pnpm run format:check
@@ -116,7 +112,6 @@ db-shell:      ## Open psql shell in running PostgreSQL container (needs the .en
 CLASS_developer := db be fe be-check fe-check check up down logs db-shell help
 CLASS_production := prod-deploy prod-down prod-logs prod-release
 
-# Column the help text wraps at.
 HELP_WIDTH ?= 96
 
 # `$(firstword $(MAKEFILE_LIST))`, not the whole list: `include .env` would put `.env` in it.

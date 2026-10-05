@@ -31,17 +31,16 @@ Arguments: `$ARGUMENTS`. Output is a file, never code. `/plan <task or PRD path>
 1. Split a request that bundles independently shippable features into separate PRDs before anything else.
 2. Explore the code to check the user's assertions, then clarify (≤ 3 rounds).
 3. Work out two or three approaches with effort, risk and reversibility; pick one and record why.
-4. Sketch the modules: deep modules behind small interfaces, dependencies injected, values returned instead of inputs mutated.
-5. Write the whole PRD in one pass. Problem Statement and User Stories are prose because their readers are non-technical; the rest follows the usual caps.
-6. Domain terms the PRD introduces go into the repo's existing glossary. Without one, they go into `docs/UBIQUITOUS_LANGUAGE.md`: one table per topic with term, one-sentence definition, aliases to avoid. Pick one word per concept; skip module and class names unless they carry domain meaning.
-7. Run the [self-review](#self-review).
+4. Write the whole PRD in one pass. Problem Statement and User Stories are prose because their readers are non-technical; the rest follows the usual caps.
+5. Domain terms the PRD introduces go into the repo's existing glossary. Without one, they go into `docs/UBIQUITOUS_LANGUAGE.md`: one table per topic with term, one-sentence definition, aliases to avoid. Pick one word per concept; skip module and class names unless they carry domain meaning.
+6. Run the [self-review](#self-review).
 
 ## Self-review
 
 One pass over the written file, in both modes:
 
 - Fix placeholders inline: TBD, "add appropriate validation", "similar to phase N".
-- Find simplifications: over-engineering, needless complexity, KISS and YAGNI violations. Propose each change with its reason; the user decides through the decide skill.
+- Find simplifications (KISS, YAGNI). Propose each change with its reason; the user decides through the decide skill.
 
 ## Plan template
 

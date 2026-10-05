@@ -35,13 +35,6 @@ FROM pg_statio_user_tables;
 
 ## Migrations with golang-migrate
 
-### Install
-
-```bash
-curl -fsSL "https://github.com/golang-migrate/migrate/releases/download/v4.20.1/migrate.linux-amd64.tar.gz" \
-  | sudo tar -xz -C /usr/local/bin migrate
-```
-
 ### Forward-only
 
 - Write only `.up.sql` files. The rollback restores the backup taken before the deploy: [Roll back](../guides/deploy.md#roll-back).
@@ -53,8 +46,6 @@ curl -fsSL "https://github.com/golang-migrate/migrate/releases/download/v4.20.1/
 
 ### Create a migration
 
-`migrate create` writes an up and a down file; delete the down file.
-
 ```bash
 migrate create -ext sql -dir database/migrations -seq add_users_table
 rm database/migrations/*_add_users_table.down.sql
@@ -62,13 +53,8 @@ rm database/migrations/*_add_users_table.down.sql
 
 ### Run migrations
 
-- The wrapper below shadows the binary installed above; that install serves the
-  published-port form at the end of this section.
-- Run `migrate` as a throwaway container **on the compose network**.
-- It then reaches the database by its service name (`postgres`), no published port
-  required.
-- Replace `<project>` with your Compose project name (the volume/network prefix).
-- The network is `<project>_db-network`.
+Run `migrate` as a throwaway container on the Compose network `<project>_db-network`, where `<project>` is the Compose project name.
+It reaches the database by its service name, `postgres`, with no published port.
 
 ```bash
 DB_URL="postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}?sslmode=disable"
@@ -84,15 +70,11 @@ migrate() {
 migrate up                 # apply all pending
 ```
 
-> **Published-port form.** If the `postgres` service publishes `5432` to the host, you
-> can instead point a locally installed `migrate` binary at `@localhost:5432`.
-> Replace `@postgres:5432` with `@localhost:5432` in `DB_URL`, and drop the
-> `docker run` wrapper.
-
-### Check the version
+**Published-port form.** If `postgres` publishes `5432` to the host, install `migrate` and use `@localhost:5432` in `DB_URL` instead of the `docker run` wrapper.
 
 ```bash
-migrate version
+curl -fsSL "https://github.com/golang-migrate/migrate/releases/download/v4.20.1/migrate.linux-amd64.tar.gz" \
+  | sudo tar -xz -C /usr/local/bin migrate
 ```
 
 ### Recover a dirty database

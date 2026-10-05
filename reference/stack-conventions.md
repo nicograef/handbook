@@ -4,8 +4,6 @@ Heading-grouped rules for the four stacks this handbook builds on — not a runb
 
 ## Node/TypeScript
 
-Applies to every TypeScript package; React adds its own rules below.
-
 Run the current Active LTS, and move within a month of a new LTS. Node executes `.ts` files directly:
 [type stripping](https://nodejs.org/api/typescript.html) is on by default.
 
@@ -64,9 +62,6 @@ Every package carries these scripts; the Makefile and CI call them by name:
 | `test` | `vitest run`: plain `vitest` watches and never exits |
 | `build` | `tsc -b && vite build`, as create-vite writes it |
 
-The gate runs in this order: `pnpm install --frozen-lockfile`, then `pnpm run` with `format:check`, `lint`,
-`typecheck`, `test` and `build`.
-
 ## React
 
 Organise by feature, not by type:
@@ -90,7 +85,7 @@ package to conditionally combine Tailwind classes.
 
 Components call their feature's API functions; no raw `fetch` in components or hooks.
 
-Use **Vitest** + **@testing-library/react**; test utility setup goes in `src/test/`.
+Test components with **@testing-library/react**.
 
 Tests fake the single API client and render with a real query client. They never mock the project's
 own modules, so a refactor behind the API client breaks no test.
@@ -138,11 +133,7 @@ addopts = ["-m", "not <marker>"]
 `strict = true` turns unregistered markers and unknown config keys into errors. `uv.lock` pins pytest,
 so new strictness options arrive only with a bump.
 
-An opt-in marker names a real backend or a paid provider. `addopts` deselects it, so the gate stays
-offline by default.
-
-The gate runs in this order: `uv sync --locked`, `ruff check .`, `ruff format --check .`, `ty check .`,
-`pytest`, `uv audit`. `uv audit` runs last because it depends on an outside vulnerability service.
+`addopts` deselects the opt-in marker, so the gate stays offline by default.
 
 `uv audit` is a preview feature and prints an experimental warning; its output may change.
 
@@ -175,18 +166,10 @@ Unit tests carry no build tag; only integration test files start with `//go:buil
 gopls loads untagged files by default, so a tagged unit test loses editor support
 ([gopls settings](https://go.dev/gopls/settings#buildflags)).
 
-`go test ./...` runs the unit tests. CI runs `go test -tags=integration ./...` as a separate job
-with a database.
-
 Write migrations in `database/migrations/` and sqlc queries in `sqlc/queries/`.
-
-Use the standard `testing` package: `t.Fatalf` for setup failures, `t.Errorf` for assertions.
 
 Lint with golangci-lint v2 from [templates/golangci.yml](../templates/golangci.yml). Its forbidigo rule
 shows how to guard a layer boundary.
-
-CI and hooks format with goimports. The editor keeps the gopls defaults and organizes imports on save,
-so both agree without gofumpt.
 
 The `go` directive in `go.mod` is the pin. CI reads it through `go-version-file`; the `Dockerfile.go` base tag
 repeats its minor.

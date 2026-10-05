@@ -1,9 +1,5 @@
-# docker-compose.prod.yml template
 # Production stack with Caddy: automatic Let's Encrypt TLS.
 # The app runs pinned registry images built by CI; the server builds nothing.
-#
-# Usage (first deploy and every update; see guides/deploy.md):
-#   DOMAIN=<domain> make prod-deploy
 
 name: myapp
 
@@ -129,7 +125,7 @@ networks:
     driver: bridge
   db-network:
     driver: bridge
-    internal: true   # database not reachable from outside
+    internal: true
 
 volumes:
   postgres-data:

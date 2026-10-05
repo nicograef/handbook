@@ -5,9 +5,7 @@
 #   scripts/backup-postgres.sh                        # defaults below
 #   BACKUP_DIR=<dir> RETENTION_DAYS=<days> scripts/backup-postgres.sh
 #
-#   Cron runs the clone's own copy, so `git pull` keeps it current
-#   (see guides/backup-restore.md, Daily backup):
-#     0 3 * * * /opt/<project>/scripts/backup-postgres.sh >> /opt/backups/postgres/backup.log 2>&1
+#   Cron runs the clone's own copy, so `git pull` keeps it current (guides/backup-restore.md, Daily backup).
 #
 # What it does:
 #   1. Reads BACKUP_PING_URL from the Compose .env in COMPOSE_DIR, without sourcing it.
@@ -64,7 +62,6 @@ timestamp="$(date +%Y%m%d-%H%M)"
 final_file="$BACKUP_DIR/backup-$timestamp.dump"
 temp_file="$BACKUP_DIR/.backup-$timestamp.dump.tmp"
 
-# Never leave a stray temp file behind, whatever happens.
 cleanup() { rm -f "$temp_file"; }
 trap cleanup EXIT
 
@@ -75,14 +72,13 @@ docker compose exec -T postgres sh -c \
   'pg_dump -U "$POSTGRES_USER" -d "$POSTGRES_DB" -Fc' \
   > "$temp_file"
 
-# Restoring to /dev/null reads every data block, so a truncated or corrupt dump fails
-# here. Run it in the container so the host needs no postgresql-client.
+# Restoring to /dev/null reads every data block, so a truncated or corrupt dump fails here.
 log "Verifying dump by restoring it to /dev/null…"
 if ! docker compose exec -T postgres pg_restore -f /dev/null < "$temp_file" >/dev/null 2>&1; then
   error "Dump verification failed — corrupt or truncated archive. Not keeping it."
 fi
 
-# ── Promote to the final name (only now is the dump trustworthy) ──
+# ── Promote to the final name ──
 mv "$temp_file" "$final_file"
 log "Verified backup written: $final_file"
 

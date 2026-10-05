@@ -15,10 +15,8 @@
 #
 # Messages between sessions go through Claude Code's native SendMessage, not this bus.
 #
-# The channel is derived, never negotiated: every worktree of a repo resolves
-# `git rev-parse --git-common-dir` to the same directory, so both sides compute the
-# same bus path without agreeing on one. Two sessions that negotiate a channel can
-# deadlock by each adopting the other's; a derived path cannot.
+# The bus path derives from `git rev-parse --git-common-dir`, which every worktree resolves alike.
+# Sessions that negotiate a channel can deadlock by each adopting the other's; a derived path cannot.
 
 set -euo pipefail
 

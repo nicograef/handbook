@@ -1,5 +1,4 @@
-# ~/.ssh/config template
-# Usage: copy to ~/.ssh/config (mode 600); host entries stay local, never in a repo.
+# Host entries stay local, never in a repo.
 
 # ── Hosts ──
 # ssh takes the first value it finds per option, so host blocks go above the defaults.

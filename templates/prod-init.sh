@@ -11,9 +11,8 @@
 #   3. Pulls the pinned images, starts the stack and polls every healthcheck.
 #   4. Polls https://DOMAIN, then records the tag as deployed; on a failure, prints the rollback path.
 #
-# Not checked below: the DNS records for DOMAIN (A and AAAA on dual-stack, AAAA only on
-# IPv6-only) must already point at this server, or Caddy's ACME challenge fails
-# (see guides/deploy.md, Prerequisites).
+# Not checked below: DNS for DOMAIN must already point at this server, or Caddy's ACME
+# challenge fails (see guides/deploy.md, Prerequisites).
 set -euo pipefail
 
 # ── Configuration ──
@@ -63,7 +62,6 @@ log "Checking prerequisites…"
 [[ -f .env ]] || error ".env file not found. Copy .env.example and fill in your credentials."
 
 # Verify required keys without sourcing .env (Compose reads it directly; never exec it here).
-# Each must appear as a KEY=value line with a non-empty value.
 for key in POSTGRES_USER POSTGRES_PASSWORD POSTGRES_DB; do
   grep -Eq "^${key}=.+" .env || error "$key not set in .env"
 done

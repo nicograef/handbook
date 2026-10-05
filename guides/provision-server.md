@@ -99,12 +99,11 @@ scripts/netcup.sh firewall-get <server>
 
 | Check | Expected |
 | --- | --- |
-| `host-audit.sh` | Ends with `no FAIL`. Each `FAIL` names the expected and the read value; read every `note` and raw list once |
+| `host-audit.sh` | Ends with `no FAIL`; read every `note` and raw list once |
 | `readlink` | `<home>/r/handbook/dotfiles/.bash_aliases` |
 | `hello-world` | Prints the Docker confirmation message |
 | `ssh root@<host>` | `Permission denied (publickey)` |
 | netcup `firewall-get` | The netcup default policies, then the user policy; `"consistent": true` |
 
-[linux-services.md](../reference/linux-services.md) explains the commands the audit runs.
-The script adds no upgrade origins; the stock `50unattended-upgrades` ones apply.
-On Debian they include the `label=Debian` stable point releases.
+The audit's checks are in [host-audit.sh](../scripts/host-audit.sh).
+On Debian the stock `50unattended-upgrades` origins include the `label=Debian` stable point releases.

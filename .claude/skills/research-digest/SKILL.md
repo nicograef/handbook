@@ -7,7 +7,7 @@ disable-model-invocation: true
 
 # Research digest
 
-One invocation is one run: read the profile, research, write the report, publish the page. The run changes no code and commits nothing.
+The run changes no code and commits nothing.
 
 ## Hard rules
 

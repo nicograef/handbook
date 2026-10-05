@@ -11,12 +11,6 @@ One HTTPS uptime monitor watches the site; cron heartbeats watch backup, server 
 - A Better Stack account on the free plan, with email alerts and optionally Slack configured once.
 - Free plan room: the stack uses 1 monitor and 3 heartbeats, of 10 each.
 
-| Placeholder | Description |
-| ----------- | ----------- |
-| `<project>` | Directory name of the clone under `/opt` |
-| `<domain>` | Public domain the stack serves over HTTPS |
-| `<heartbeat-url>` | Secret URL from a heartbeat's detail page |
-
 Every heartbeat is a dead-man's switch: its job pings the URL only after full success.
 A failure, a dead cron or a dead box withholds the ping, and the missed window alerts.
 Heartbeat URLs are secrets and per-server configuration, so they never enter the repository.

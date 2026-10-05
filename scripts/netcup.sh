@@ -19,16 +19,13 @@
 #   <server> is the numeric server id, or a server's name, nickname or hostname.
 #
 # What it does:
-#   1. login runs the OIDC device flow against the realm scp with the public client scp.
-#      It prints the URL to open, polls the token endpoint and stores the refresh token
-#      in NETCUP_CONFIG_DIR/refresh-token, mode 0600.
-#   2. Every other command trades the refresh token for an access token and stores a
-#      rotated refresh token when the response carries one. Any use keeps the 30-day window open.
-#   3. /users/{userId} paths need the SCP userId: NETCUP_USER_ID, else the cached value,
-#      else the executing user of one task, else the access token's id claim, checked against /users.
-#   4. firewall-attach keeps the server's copied (netcup default) policies, replaces the user
+#   1. login runs the OIDC device flow and stores the refresh token in
+#      NETCUP_CONFIG_DIR/refresh-token, mode 0600.
+#   2. Every other command trades the refresh token for an access token; auth and the
+#      userId lookup: reference/netcup.md.
+#   3. firewall-attach keeps the server's copied (netcup default) policies, replaces the user
 #      policies with the named ones, sets the firewall active and waits for the task.
-#   5. JSON goes to stdout, status to stderr; any HTTP error stops the script.
+#   4. JSON goes to stdout, status to stderr; any HTTP error stops the script.
 
 set -euo pipefail
 

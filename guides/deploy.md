@@ -1,7 +1,6 @@
 # Deploy
 
 Take a provisioned server to a running app with TLS, update it, and roll it back.
-TLS runs entirely inside Docker: Caddy issues and renews the certificate itself.
 
 ## Prerequisites
 
@@ -15,7 +14,7 @@ TLS runs entirely inside Docker: Caddy issues and renews the certificate itself.
 
 ## First deploy
 
-Run every step on the server as `<username>`, logged in with `ssh <username>@<host>`. Command reference: [linux-services.md](../reference/linux-services.md).
+Run every step on the server as `<username>`, logged in with `ssh <username>@<host>`. Sharp edges: [linux-services.md](../reference/linux-services.md).
 
 1. **Create the project and backup directories**, owned by you. Expected: `ls -ld` on both shows `<username> <username>`.
 

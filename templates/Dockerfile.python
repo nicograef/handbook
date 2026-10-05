@@ -1,4 +1,3 @@
-# Dockerfile.python — Python (uv) backend image, single stage
 # Copy to backend/Dockerfile, the name release.yml builds, and copy .dockerignore beside it.
 # Fill <package>: the import name under src/ that `uv init --package` created, `backend` by default.
 # The app answers GET /api/health on port 8080; the production Compose files poll its healthcheck.
@@ -17,7 +16,6 @@ ENV UV_COMPILE_BYTECODE=1 \
 WORKDIR /app
 
 # Dependencies alone, keyed on the two files that pin them: a source edit rebuilds nothing here.
-# --frozen installs what uv.lock pins and never re-resolves; --no-dev leaves pytest, ruff and ty out.
 COPY pyproject.toml uv.lock ./
 RUN --mount=type=cache,target=/root/.cache/uv \
     uv sync --frozen --no-dev --no-install-project

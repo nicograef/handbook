@@ -6,7 +6,7 @@ argument-hint: "[all] [dry-run]"
 
 # Prune
 
-A user asking "all cleaned up?", "all pruned?" or "can I close this session?" invokes this skill. Three steps: persist, sweep, review. Nothing is asked; every finding is applied. The answer ends with a close verdict.
+Nothing is asked; every finding is applied. The answer ends with a close verdict.
 
 - Never delete uncommitted work, unpushed commits, stashes or a dirty worktree. Git's own refusals are the guard; never force them.
 - Skip every branch and worktree that this session or a live peer holds. `~/.claude/agent-bus.sh peers` lists the peers.
@@ -21,7 +21,7 @@ Run steps 1–3 of [prog](../prog/SKILL.md) first: every state file then holds t
 
 ## 2. Sweep
 
-Runs without asking. Everything here is a cache, regenerable or already dead:
+Everything here is a cache, regenerable or already dead:
 
 - Docker: dangling images, dangling build cache, unused networks.
 - Git: stale worktree entries, remote-tracking refs of deleted remote branches.
@@ -48,7 +48,7 @@ Content, not age. Every finding carries target, cited evidence and its action: d
 
 With `all`, review each other project that has a local repo through one `opus` subagent. Projects without a repo get the memory index checks only.
 
-Apply every finding without asking. A memory deletion removes the file and its index line together.
+A memory deletion removes the file and its index line together.
 
 A blocked action goes to the user as [prog](../prog/SKILL.md) step 7 says, never worked around. Once the user ran them, re-check every target and update the verdict.
 

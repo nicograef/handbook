@@ -1,5 +1,4 @@
 # Readline config for bash and every other readline program (python, psql).
-# Symlinked into $HOME by scripts/install-dotfiles.sh.
 $include /etc/inputrc
 
 # Up/Down search history for lines that start with what is already typed.

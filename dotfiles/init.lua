@@ -1,7 +1,5 @@
--- init.lua – minimal Neovim for prose, Markdown, YAML and JSON. Latest Neovim release.
--- scripts/install-dotfiles.sh links it to ~/.config/nvim/init.lua; guides/neovim.md
--- covers install and use. Only non-defaults are set: `:help nvim-defaults` lists what
--- is already on (syntax, filetype detection, incsearch, hlsearch, mouse, editorconfig).
+-- init.lua – minimal Neovim for prose, Markdown, YAML and JSON; install and use: guides/neovim.md.
+-- Only non-defaults are set: `:help nvim-defaults` lists what is already on.
 
 -- ── Editing ──────────────────────────────────────────────────────────────────
 vim.o.number = true
@@ -44,10 +42,9 @@ if vim.env.DISPLAY and vim.fn.executable('xclip') == 1 then
 end
 
 -- ── German keyboard (xkb de) ─────────────────────────────────────────────────
--- [ ] { } / sit behind AltGr or Shift; the umlaut keys are free in Normal mode and
--- take over. 'langmap' covers built-in commands and text objects (diö = di[); the
--- keymaps cover mapped commands such as [<Space>, hence remap = true. f, t, r and
--- marks still take the literal umlaut, and Insert mode is untouched.
+-- 'langmap' covers built-in commands and text objects (diö = di[); the keymaps cover
+-- mapped commands such as [<Space>, hence remap = true. f, t, r and marks still take
+-- the literal umlaut, and Insert mode is untouched. Key table: guides/neovim.md.
 local de = { ['ö'] = '[', ['ä'] = ']', ['Ö'] = '{', ['Ä'] = '}', ['ß'] = '/' }
 local from, to = '', ''
 for lhs, rhs in pairs(de) do

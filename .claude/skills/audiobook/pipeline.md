@@ -43,16 +43,14 @@ sudo apt install ./pandoc-<version>-1-amd64.deb
 
 ## Step 1 — Render the EPUB
 
-```bash
-~/.claude/skills/audiobook/md-to-epub.sh --strict audiobook/ book.epub
-```
-
 Drop `--strict` only for hand-written chapters, where warnings are a to-do list.
 Each finding names its chapter, not a line: search that chapter for the element.
 
+Usage: the header of [md-to-epub.sh](md-to-epub.sh).
+
 ## Step 2 — Load it into ElevenReader
 
-1. Pick a **multilingual** voice. A German-only voice mangles the English terms.
+Pick a **multilingual** voice. A German-only voice mangles the English terms.
 
 ## Verify
 
@@ -71,8 +69,6 @@ Expected: plain text reads as continuous prose, both counts equal.
 ## Troubleshooting
 
 ```bash
-# "pandoc 3.1.10 or newer required" → apt pandoc is too old; install the release .deb (Prerequisites).
-
-# A YAML error in meta.yml aborts the render instead.
+# A YAML error in meta.yml aborts the render.
 pandoc --metadata-file audiobook/meta.yml -f markdown -t plain /dev/null   # exit 0 = valid
 ```

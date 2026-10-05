@@ -43,12 +43,11 @@ cd /opt/<project>
 
 The dumps sit on the disk they protect, so losing the server loses them too.
 The daily verified dump and the quarterly drill cover the common failures: bad migration, dropped table, corruption.
-When that stops being enough, push the dumps offsite with [restic](https://restic.net/).
 
 ## Restore
 
 A restore replaces the live database with a dump. Use it after data loss or for a [roll back](deploy.md#roll-back).
-A netcup snapshot is no backup: it sits on netcup's storage beside the server ([why](../reference/netcup.md#snapshots-are-not-backups)). Take one from your laptop with `scripts/netcup.sh snapshot-create` as the step back right before risky host work.
+A netcup snapshot is no backup ([why](../reference/netcup.md#snapshots-are-not-backups)). Take one from your laptop with `scripts/netcup.sh snapshot-create` as the step back right before risky host work.
 
 1. **Pick the dump:** the newest one taken before the loss, or the pre-update dump a failed deploy printed.
 

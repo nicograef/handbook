@@ -1,8 +1,4 @@
-# Dependabot template – copy to .github/dependabot.yml
 # Monthly + grouped: one batched PR per ecosystem instead of per-dependency noise.
-# Each stack's ecosystem sits between `# >>> stack: NAME` and `# <<< stack: NAME` lines, as in
-# ci.yml; delete the stacks your project lacks.
-# The github-actions updater also keeps pinned action refs from rotting.
 version: 2
 updates:
   # ── GitHub Actions ──

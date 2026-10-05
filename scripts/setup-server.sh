@@ -76,8 +76,6 @@ if [[ -z "$SSH_PUBLIC_KEY" ]]; then
   exit 1
 fi
 
-# Password-prompted sudo needs an account password; abort now, before any writes,
-# if the operator opted out of NOPASSWD but did not supply one.
 if [[ "$PASSWORDLESS_SUDO" != "true" ]]; then
   if [[ -z "$USER_PASSWORD_HASH" ]]; then
     echo "ERROR: USER_PASSWORD_HASH is not set. Set it, or pass PASSWORDLESS_SUDO=true for NOPASSWD sudo." >&2
@@ -101,13 +99,8 @@ run apt install -y \
   ufw fail2ban
 
 # ── 1b. Swap ────────────────────────────────────────────────────────────────
-# A stock VPS image ships with no swap, which leaves the kernel no reclaim path:
-# under memory pressure its only move is to kill the largest process. That is how
-# a box loses every session at once rather than one: user@.service runs with
-# OOMPolicy=continue, so a kill inside it does not stop the unit — but the
-# slice-wide wipe happens when the OOM killer takes systemd --user itself
-# (OOMScoreAdjust=100), after which KillMode=mixed SIGKILLs the rest of the
-# cgroup, every tmux server included.
+# A stock VPS image ships with no swap, so under memory pressure the kernel's only move is to kill.
+# Why one kill can take every tmux session: guides/maintenance.md#after-an-oom-kill.
 log "Configuring swap"
 if [[ "$SWAP_SIZE_GB" == "0" ]]; then
   echo "  SWAP_SIZE_GB=0 — skipping swap by request."
@@ -135,12 +128,8 @@ else
     || run bash -c "echo '/swapfile none swap sw 0 0' >> /etc/fstab"
 fi
 
-# A tmpfs /tmp is RAM, and systemd's tmp.mount sizes it at half of it. Everything
-# written there — build caches, virtualenvs, git worktrees, downloads — is
-# RAM- and swap-backed: it cannot be dropped like page cache, but the swapfile
-# above lets it be swapped out. Report it and leave it: moving /tmp to disk
-# makes it survive a reboot, and that is a behaviour change the operator should
-# choose.
+# A tmpfs /tmp is RAM- and swap-backed; it cannot be dropped like page cache.
+# Report it and leave it: a disk /tmp survives a reboot, a change the operator should choose.
 if findmnt -no FSTYPE /tmp 2>/dev/null | grep -q tmpfs; then
   echo "  NOTE: /tmp is a tmpfs — everything written there is RAM."
   echo "        For build or agent workloads: systemctl mask tmp.mount && reboot"
@@ -168,12 +157,10 @@ run usermod -aG sudo "$USERNAME"
 run passwd -l root
 
 if [[ "$PASSWORDLESS_SUDO" == "true" ]]; then
-  # Convenience: sudo never prompts. The account stays passwordless.
   write_file "/etc/sudoers.d/$USERNAME" <<< "$USERNAME ALL=(ALL) NOPASSWD:ALL"
   run chmod 440 "/etc/sudoers.d/$USERNAME"
 else
-  # Default: password-prompted sudo. Set the account password so prompts work
-  # (adduser --disabled-password leaves it unset, which locks sudo out).
+  # adduser --disabled-password leaves the password unset, which locks prompted sudo out.
   if [[ "$DRY_RUN" == "true" ]]; then
     printf '  \033[0;33m[DRY-RUN]\033[0m set password hash for %s via chpasswd -e\n' "$USERNAME"
   else
@@ -200,10 +187,8 @@ log "Hardening sshd via drop-in"
 SSHD_CONFIG="/etc/ssh/sshd_config"
 SSHD_DROPIN="/etc/ssh/sshd_config.d/00-hardening.conf"
 
-# sshd uses first-obtained-value semantics; cloud images ship 50-cloud-init.conf,
-# so the 00- prefix guarantees our hardening wins. Ensure the main config actually
-# includes the drop-in dir — some minimal images omit the Include directive. It goes
-# on line 1, so the drop-ins precede every directive in the main config.
+# sshd keeps the first value it reads and cloud images ship 50-cloud-init.conf, so the 00- drop-in wins.
+# Some minimal images omit the Include; line 1 puts the drop-ins ahead of every main-config directive.
 INCLUDE_LINE="Include /etc/ssh/sshd_config.d/*.conf"
 if [[ "$DRY_RUN" == "true" ]]; then
   printf '  \033[0;33m[DRY-RUN]\033[0m ensure %s starts with "%s"\n' "$SSHD_CONFIG" "$INCLUDE_LINE"
@@ -258,8 +243,6 @@ run systemctl restart fail2ban
 # ── 6. Docker ───────────────────────────────────────────────────────────────
 log "Installing Docker"
 
-# determine distro base (works for Debian and Ubuntu) — needed for both the
-# keyring URL and the apt source, so resolve it before either write.
 # shellcheck source=/dev/null
 . /etc/os-release
 REPO_URL="https://download.docker.com/linux/${ID}"
@@ -288,13 +271,10 @@ run apt install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin do
 run usermod -aG docker "$USERNAME"
 
 # ── 6b. Docker daemon config ────────────────────────────────────────────────
-# Every host gets container-log rotation (unbounded json-file logs fill the
-# disk). IPv6-only hosts additionally need IPv6 container networking:
-# without an IPv4 default route, the default bridge (IPv4 NAT only)
-# leaves containers with no egress at all. New networks (Compose) become
-# IPv6-only: keeping a dead IPv4 in the container makes RFC 6724 address
-# selection prefer it over a ULA source for dual-stack targets, so IPv4 must go
-# entirely. ULA subnets are NAT66-masqueraded by default. See guides/ipv6-only-vps.md.
+# Unbounded json-file logs fill the disk, so every host gets log rotation. Without an IPv4 default
+# route the default bridge leaves containers no egress, so IPv6-only hosts get IPv6 networking.
+# New (Compose) networks drop IPv4 entirely: RFC 6724 selection would prefer a dead IPv4 over a ULA
+# source for dual-stack targets. See guides/ipv6-only-vps.md.
 if [[ -f /etc/docker/daemon.json ]]; then
   echo "  /etc/docker/daemon.json already exists — merge the log-rotation (and on IPv6-only hosts the IPv6) keys manually (the keys are in the daemon.json block below)."
 elif ! ip -4 route get 1.1.1.1 &>/dev/null; then
@@ -329,9 +309,8 @@ fi
 log "Configuring unattended upgrades"
 run apt install -y unattended-upgrades
 
-# Run apt's update + unattended-upgrade steps every day. The stock
-# 50unattended-upgrades origins apply; there is no Automatic-Reboot, so reboots
-# stay manual and the health ping surfaces a pending one.
+# The stock 50unattended-upgrades origins apply. No Automatic-Reboot: reboots stay manual and the
+# health ping surfaces a pending one.
 write_file /etc/apt/apt.conf.d/20auto-upgrades <<'EOF'
 APT::Periodic::Update-Package-Lists "1";
 APT::Periodic::Unattended-Upgrade "1";
@@ -346,7 +325,6 @@ else
   chmod +x /usr/local/bin/report-health
 fi
 
-# Persist HEALTH_PING_URL so the cron job finds it; the script+cron install either way.
 # The URL is a secret: anyone holding it can fake a healthy ping.
 if [[ -n "$HEALTH_PING_URL" ]]; then
   write_file /etc/default/report-health <<EOF
@@ -389,9 +367,8 @@ else
   echo "  Health:   hourly check installed (no ping URL — set /etc/default/report-health to enable)"
 fi
 echo ""
-# Route-based lookup returns the source address of real outbound traffic, so
-# virtual bridges (e.g. docker0's 172.17.0.1) can never win; IPv6-only hosts
-# have no IPv4 route, so fall back to the IPv6 source address.
+# The route lookup returns the source of real outbound traffic, so docker0's 172.17.0.1 never wins.
+# IPv6-only hosts have no IPv4 route and fall back to the IPv6 source.
 SERVER_IP="$(ip -4 route get 1.1.1.1 2>/dev/null | grep -oP 'src \K\S+' || true)"
 [[ -n "$SERVER_IP" ]] || SERVER_IP="$(ip -6 route get 2606:4700:4700::1111 2>/dev/null | grep -oP 'src \K\S+' || true)"
 echo "  → Log in:  ssh $USERNAME@${SERVER_IP:-<server-ip>}"

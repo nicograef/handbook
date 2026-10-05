@@ -1,11 +1,6 @@
-# The body of `make help`. Input: one line per documented target, as the Makefile prints them:
-#
-#     <name>:<anything>## <description>
-#
-# The CLASS_* lists arrive as the awk variables `developer` and `production`. A target in
-# neither prints under UNCLASSIFIED rather than vanishing, so a missing classification shows
-# in the interface itself. `width` is the wrap column: a description wraps under the name
-# column instead of being truncated, because its trailing qualifier is what a reader needs.
+# The body of `make help`. Input: one line per documented target, `<name>:<anything>## <description>`;
+# the Makefile passes its CLASS_* lists as `developer` and `production`, and the wrap column as `width`.
+# A description wraps under the name column instead of being truncated: its trailing qualifier is what a reader needs.
 
 function assign(list, group,    parts, i, n) {
     n = split(list, parts, " ")

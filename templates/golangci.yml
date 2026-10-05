@@ -1,6 +1,6 @@
 version: "2"
 
-# Copy to backend/.golangci.yml. Pin golangci-lint to the version in setup-dev-tools.sh and ci.yml.
+# Pin golangci-lint to the version in setup-dev-tools.sh and ci.yml.
 
 # ── Run ──────────────────────────────────────────────────────────────────────
 # Integration test files carry `//go:build integration`; without the tag they go unlinted.

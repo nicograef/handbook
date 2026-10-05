@@ -1,6 +1,6 @@
 # Set Up a New Project Repository
 
-This is the "New project" journey of the [README](../README.md#journeys). It ends in a repository whose `make check` passes.
+Take an empty directory to a repository whose `make check` passes. Index: [README Journeys](../README.md#journeys).
 
 ## Prerequisites
 
@@ -22,7 +22,7 @@ This is the "New project" journey of the [README](../README.md#journeys). It end
 
 ## Pick the stack
 
-Each row names its Dockerfile templates, devcontainer features, [stack conventions](../reference/stack-conventions.md) sections and the template blocks it deletes. Every backend runs Postgres.
+Every backend runs Postgres.
 
 | Stack | Dockerfile templates | devcontainer features | Stack sections | `<other-stacks>` |
 |-------|----------------------|-----------------------|----------------|------------------|
@@ -91,7 +91,7 @@ A React repository skips [Copy the production files](#copy-the-production-files)
 
 ## Set up the toolchain
 
-1. Pin Node and pnpm, then add the frontend gate the [Node/TypeScript](../reference/stack-conventions.md#nodetypescript) conventions name. Expected: `pnpm --dir frontend test` passes.
+1. Pin Node and pnpm, then add the frontend checks the [Node/TypeScript](../reference/stack-conventions.md#nodetypescript) conventions name. Expected: `pnpm --dir frontend test` passes.
    ```bash
    echo <node-major> > frontend/.node-version && cd frontend && npm pkg set packageManager="pnpm@$(pnpm --version)"
    pnpm add -D typescript@~7.0 oxlint-tsgolint prettier vitest     # writes pnpm-lock.yaml
@@ -145,6 +145,6 @@ A React repository skips [Copy the production files](#copy-the-production-files)
 
 ```bash
 make help                                             # DEVELOPER and PRODUCTION sections list the targets
-make check                                            # every gate of the stack passes
+make check                                            # every check of the stack passes
 docker compose -f docker-compose.prod.yml --env-file .env.example config --quiet && echo ok   # -> ok
 ```

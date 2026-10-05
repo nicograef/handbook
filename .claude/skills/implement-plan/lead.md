@@ -1,6 +1,6 @@
 # Lead mechanics
 
-A session with background agents, a workflow or lanes is a lead. This file serves an implement-plan run and a programme alike. The run's status file is the plan file of an implement-plan run, or `docs/plans/programme.md` of a programme. Git command sequences live in [git.md](git.md).
+This file serves an implement-plan run and a programme alike. The run's status file is the plan file of an implement-plan run, or `docs/plans/programme.md` of a programme. Git command sequences live in [git.md](git.md).
 
 ## Lead upkeep
 
@@ -45,7 +45,6 @@ Record the harness's message verbatim in the handoff; match it by kind, not by e
 
 - Cap writers at 4, one checkout, install and fold each. Read-only scouts and reviewers run at the runtime's cap.
 - While one writer works, a read-only scout may prepare the next phase.
-- Spawn parallel agents in one message.
 - A defect a review finds goes back to the owning agent via SendMessage. Re-review after the fix, one review per fix round.
 - Carry the defect classes into the next prompt of that agent or phase.
 

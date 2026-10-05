@@ -9,7 +9,6 @@ Nico Gräf, full-stack developer at gyva (AugRep GmbH, Freiburg), since 2026-09-
 - EditorConfig: spaces except Go (tabs), LF, UTF-8.
 - Conventional Commits. A multi-file change gets a bullet body; PR bodies are bullet lists.
 - Commit every completed task without asking, `main` included. Push feature branches and `main`.
-- Never force-push (`--force`, `-f`, `--force-with-lease`), never `--no-verify`.
 - No AI attribution in commits or PRs: no `Co-Authored-By: Claude`, no "Generated with" trailers.
 - The proper fix is the only fix. No quick fix that leaves the cause, no TODO in place of asked work. No test weakened or skipped to go green. No workaround without naming and fixing what forced it. A real problem found mid-task gets fixed in its own commit. Too large for that: finish the task, then report it with evidence.
 

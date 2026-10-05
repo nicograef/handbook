@@ -1,6 +1,4 @@
-# Caddyfile template
-# Copy to reverse-proxy/Caddyfile and replace example.com with your domain.
-# Caddy obtains and renews the Let's Encrypt certificate itself, once DNS points here.
+# Replace example.com with your domain.
 
 # ── Global options ──
 # {
@@ -28,7 +26,6 @@ example.com {
 		reverse_proxy backend:8080
 	}
 
-	# Frontend SPA, served by its own nginx
 	handle {
 		reverse_proxy frontend:80
 	}

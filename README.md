@@ -1,13 +1,10 @@
 # handbook
 
-Setting something up? Start at [Journeys](#journeys); the file index follows, grouped by area.
-
 ## Journeys
 
 Start here when you (or an agent) are told "follow the handbook to set up X".
 
 - Gather the runbook's Prerequisites **before** step 1, so nothing is discovered mid-run.
-- This section is routing only — every command lives in the linked runbook.
 
 | Journey | Follow | Done when |
 | --- | --- | --- |
@@ -24,8 +21,6 @@ A web app on a fresh server chains Fresh server, Deploy, Monitoring, then Backup
 
 ## Dev machine
 
-A developer laptop: dotfiles linked into `$HOME`, editor, terminal multiplexer.
-
 | File | Description |
 | --- | --- |
 | [guides/dev-machine.md](guides/dev-machine.md) | Set up a dev machine: gh, Node, pnpm, uv, Claude Code, Docker, CLI tools, dotfiles, Claude config, editor |
@@ -41,8 +36,6 @@ A developer laptop: dotfiles linked into `$HOME`, editor, terminal multiplexer.
 | [scripts/report-repo-status.sh](scripts/report-repo-status.sh) | Repos under `~/r` with unpushed, uncommitted or stashed work; `repo-status` |
 
 ## Project
-
-Copy-once files and conventions for a new project repository.
 
 | File | Description |
 | --- | --- |
@@ -69,8 +62,6 @@ Copy-once files and conventions for a new project repository.
 
 ## Server
 
-Provision, deploy, back up, monitor and maintain a VPS.
-
 | File | Description |
 | --- | --- |
 | [guides/provision-server.md](guides/provision-server.md) | Provision & harden a new VPS |
@@ -81,8 +72,7 @@ Provision, deploy, back up, monitor and maintain a VPS.
 | [guides/monitoring.md](guides/monitoring.md) | External monitoring (Better Stack) |
 | [guides/maintenance.md](guides/maintenance.md) | Server maintenance: monthly checklist, OOM diagnosis |
 | [reference/postgresql.md](reference/postgresql.md) | PostgreSQL: queries, indexes, golang-migrate migrations |
-| [reference/linux-services.md](reference/linux-services.md) | Linux services: systemd, journalctl, Compose, ports and firewall, cron |
-| [reference/system-resources.md](reference/system-resources.md) | Live resource usage: CPU, RAM, disk, I/O, top processes |
+| [reference/linux-services.md](reference/linux-services.md) | Linux services: command sharp edges and resource-usage thresholds |
 | [reference/netcup.md](reference/netcup.md) | netcup server API: auth, firewall model, endpoints, snapshots, DNS API |
 | [scripts/setup-server.sh](scripts/setup-server.sh) | Provision a fresh Debian/Ubuntu VPS (user, SSH, swap, UFW, fail2ban, Docker) |
 | [templates/prod-init.sh](templates/prod-init.sh) | Production deploy and update: pin and downgrade guard, backup, health poll |
@@ -96,8 +86,6 @@ Provision, deploy, back up, monitor and maintain a VPS.
 | [templates/Caddyfile](templates/Caddyfile) | Caddy site config: www redirect, security headers, API and SPA routes |
 
 ## Agents
-
-Global Claude Code config, skills, agents and the scripts they call.
 
 | File | Description |
 | --- | --- |
@@ -114,8 +102,6 @@ Global Claude Code config, skills, agents and the scripts they call.
 | [scripts/plan-run-guard.sh](scripts/plan-run-guard.sh) | Stop hook that keeps a live plan run from yielding the turn |
 
 ## Handbook upkeep
-
-Rules and checks for maintaining this repo.
 
 | File | Description |
 | --- | --- |
