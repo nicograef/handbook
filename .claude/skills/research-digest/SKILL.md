@@ -40,7 +40,8 @@ Lane: <lane name>
 Covers: <the lane's Covers line>
 Feeds: <the lane's Feeds line>
 Queries: <the lane's Queries line>
-(Link mode: "Material: <the user's links or topic>. Read it, then what it connects to.")
+(Link mode: replace the Covers, Feeds and Queries lines with
+"Material: <the user's links or topic>. Read it, then what it connects to.")
 
 Lookback: work published since <today minus 30 days>. An older source is welcome
 when it still bears on the field. (Link mode: no lookback.)
@@ -70,9 +71,9 @@ Return the drafts only; write files only to a temp directory.
 
 ## 3. Report
 
-Write the report from the drafts. Drop weak drafts; order stories by importance within each lane.
+Once every researcher has returned, write the report from all drafts. Drop weak drafts; order stories by importance within each lane.
 
-Path: the profile's `## Reports` folder, `~` expanded, created when missing. File `<YYYY-MM-DD>.md`; when it exists, `<YYYY-MM-DD>-2.md`, then `-3`.
+Path: the profile's `## Reports` folder, `~` expanded, relative to the repo root, created when missing. File `<YYYY-MM-DD>.md`; when it exists, `<YYYY-MM-DD>-2.md`, then `-3`.
 
 Shape, exactly in this order:
 
@@ -114,7 +115,7 @@ Fill [page.html](page.html) into the session scratchpad:
 
 ```sh
 python3 -c 'import sys, json, html; t, md, title = open(sys.argv[1]).read(), open(sys.argv[2]).read(), sys.argv[3]; print(t.replace("{{TITLE}}", html.escape(title)).replace("{{REPORT}}", json.dumps(md).replace("<", "\\u003c")), end="")' \
-  ~/.claude/skills/research-digest/page.html <report path> "<Project> research <today>" > <scratchpad>/research-<project>-<today>.html
+  ~/.claude/skills/research-digest/page.html <report path> "<Project> research <today>" > <scratchpad>/research-<project>-<report basename>.html
 ```
 
 Publish that file with the Artifact tool, `icon: "news"` and a one-sentence description of what it covers. The design is fixed in the template; build no page of your own.

@@ -50,6 +50,7 @@ main blockquote { margin: 0 0 14px; padding-left: 16px; border-left: 3px solid v
 main code { font: .84em var(--mono); background: var(--code-bg); border-radius: 4px; padding: .05em .3em; overflow-wrap: anywhere; }
 main pre { background: var(--surface); border: 1px solid var(--rule); border-radius: 8px; padding: 12px; white-space: pre-wrap; overflow-wrap: anywhere; }
 main pre code { background: none; padding: 0; }
+main table { display: block; overflow-x: auto; border-collapse: collapse; }
 main img { max-width: 100%; }
 main hr { border: 0; border-top: 1px solid var(--rule); margin: 32px 0; }
 @media (max-width: 760px) {
@@ -87,7 +88,7 @@ main hr { border: 0; border-top: 1px solid var(--rule); margin: 32px 0; }
     return;
   }
   // Fetched titles and quotes reach the page, so the rendered HTML is sanitised.
-  main.innerHTML = DOMPurify.sanitize(marked.parse(md));
+  main.innerHTML = DOMPurify.sanitize(marked.parse(md), { FORBID_TAGS: ['style', 'form', 'input', 'button', 'textarea', 'select'], FORBID_ATTR: ['style'] });
   var toc = document.getElementById('toc'), used = {};
   main.querySelectorAll('h2, h3').forEach(function (h) {
     var label = h.textContent.trim();
