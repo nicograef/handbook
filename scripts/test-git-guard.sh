@@ -105,6 +105,12 @@ expect 2 "push with core.hooksPath" 'git -c core.hookspath= push'
 expect 2 "\$(...) inside double quotes" "echo \"\$(git push -f)\""
 expect 2 "backticks inside double quotes" "echo \"\`git push --force\`\""
 expect 2 "cat heredoc piped to a shell" $'echo "$(cat <<\'EOF\' | bash\ngit push -f\nEOF\n)"'
+expect 2 "command after an empty cat heredoc" $'echo "$(cat <<\'EOF\'\nEOF\ngit push -f\nEOF\n)"'
+expect 2 "heredoc text in plain double quotes" $'echo "cat <<\'EOF\'\n$(git push -f)\nEOF"'
+expect 2 "nested quotes in \$(...)" $'echo "$(echo "a"; git push -f)"'
+expect 2 "nested quotes in a commit message \$(...)" $'git commit -m "$(printf "%s" x && git push --force)"'
+expect 2 "nested quotes in backticks" $'echo "`echo "a"; git push -f`"'
+expect 2 "\$(...) in an unquoted cat heredoc" $'git commit -m "$(cat <<EOF\nrun $(git push -f)\nEOF\n)"'
 
 # 2. Calls the guard lets through.
 expect 0 "quoted -f in a commit message" 'git commit -m "drop the -f flag"'
@@ -115,6 +121,9 @@ expect 0 "commit --amend --no-edit" 'git commit --amend --no-edit'
 expect 0 "core.hooksPath in a commit message" 'git commit -m "set core.hooksPath"'
 expect 0 "single-quoted \$(...) in a commit message" "git commit -m 'x \$(git push -f)'"
 expect 0 "quoted cat heredoc as a commit message" $'git commit -m "$(cat <<\'EOF\'\nblock git push -f\nEOF\n)"'
+expect 0 "quotes and backticks in a quoted cat heredoc" \
+  $'git commit -m "$(cat <<\'EOF\'\ndon\'t "x" `git push -f`\nEOF\n)"'
+expect 0 "unquoted cat heredoc as a commit message" $'git commit -m "$(cat <<EOF\nnever run git push -f\nEOF\n)"'
 
 # 3. A command without git never reaches jq or gitleaks.
 expect 0 "no git" 'ls -la'
