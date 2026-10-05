@@ -116,15 +116,14 @@ A React repository skips [Copy the production files](#copy-the-production-files)
 
 1. Copy the Caddy production stack, the env template and the deploy scripts. Expected: `docker-compose.prod.yml` and `reverse-proxy/Caddyfile` exist.
    ```bash
-   cp "$HANDBOOK/templates/docker-compose.prod-caddy.yml" docker-compose.prod.yml
+   cp "$HANDBOOK/templates/docker-compose.prod.yml" .
    mkdir -p reverse-proxy && cp "$HANDBOOK/templates/Caddyfile" reverse-proxy/Caddyfile
    cp "$HANDBOOK/templates/.env.example" .
    cp "$HANDBOOK"/scripts/{prod-init.sh,backup-postgres.sh} scripts/
    cp "$HANDBOOK/templates/release.yml" .github/workflows/release.yml
    ```
-   The nginx + Certbot stack swaps in the files [deploy.md#tls-variants](deploy.md#tls-variants) lists; the name fill below covers them.
 2. Delete the tiers your row lacks from `docker-compose.prod.yml`, the `release.yml` matrix and the Caddyfile. Expected: `docker compose -f docker-compose.prod.yml config --services` lists only your tiers, `postgres` and `reverse-proxy`.
-   Both production Compose templates pin the app images at `v0.1.0`. Push that as the first release tag, or bump the pins to it first, as [deploy.md#update](deploy.md#update) does.
+   The production Compose template pins the app images at `v0.1.0`. Push that as the first release tag, or bump the pins to it first, as [deploy.md#update](deploy.md#update) does.
 
 ## Fill the templates
 

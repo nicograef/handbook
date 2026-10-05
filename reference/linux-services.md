@@ -37,13 +37,12 @@ Run them in `/opt/<project>`: its `.env` sets `COMPOSE_FILE`, so plain `docker c
 | `docker compose config --volumes` | Resolves the Compose file and prints its named volumes | Includes `postgres-data` |
 | `docker compose pull` | Pulls every image the file names | `denied`: log in to `ghcr.io` again |
 | `docker compose up -d --wait postgres` | Starts one service and waits for its healthcheck | `Healthy` |
-| `docker compose up -d certbot` | Recreates a service whose config or `.env` changed | Compose leaves unchanged services alone |
+| `docker compose up -d backend` | Recreates a service whose config or `.env` changed | Compose leaves unchanged services alone |
 | `docker compose stop backend` | Stops one service, keeping its container | `Stopped` |
 | `docker compose start backend` | Starts a stopped service | `Started` |
 | `docker compose exec postgres sh -c` | Runs a shell command inside a running service | Single quotes make `$POSTGRES_USER` expand inside the container |
 | `docker compose exec -T postgres sh -c` | The same without a TTY | Required when stdin is a file, such as `< "$DUMP"` |
 | `docker compose down` | Removes the stack's containers and network, keeping volumes | The database survives |
-| `docker compose -f docker-compose.initial-cert.yml up -d reverse-proxy` | Starts a second Compose file of the same project | nginx variant: the ACME challenge server alone |
 | `docker system df` | Disk use of images, containers, volumes and build cache | The `RECLAIMABLE` column |
 | `docker image prune -af` | Deletes every image no container uses, old release tags included | Volumes stay; a roll back re-pulls its tag from GHCR |
 | `docker volume ls` | Lists volumes | `<project>_postgres-data` holds the database |
@@ -66,7 +65,6 @@ Docker-published ports bypass UFW, so only the reverse proxy publishes ports ([D
 | `ip -brief address` | This server's own addresses | The one DNS must return |
 | `curl -sI https://<domain>` | Response headers over HTTPS | `HTTP/2 200` |
 | `curl -sI http://<domain>` | Response headers over plain HTTP | `301` or `308` to HTTPS |
-| `curl -sI http://<domain>/.well-known/acme-challenge/test` | Probes the ACME challenge path | nginx: `404` means DNS and port 80 reach the proxy |
 
 ## Cron
 

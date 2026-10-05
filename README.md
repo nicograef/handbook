@@ -14,7 +14,7 @@ Start here when you (or an agent) are told "follow the handbook to set up X".
 | New dev machine | [dev-machine.md](guides/dev-machine.md) | [Verify](guides/dev-machine.md#verify) passes |
 | New project | [new-project.md](guides/new-project.md) | [Verify](guides/new-project.md#verify) passes |
 | Fresh server | [provision-server.md](guides/provision-server.md), then [ipv6-only-vps.md](guides/ipv6-only-vps.md) on an IPv6-only box | [Verify](guides/provision-server.md#verify) passes |
-| Deploy | [deploy.md](guides/deploy.md): pick one of the [TLS variants](guides/deploy.md#tls-variants), deploy, then [Update](guides/deploy.md#update) or [Roll back](guides/deploy.md#roll-back) | [Verify](guides/deploy.md#verify) passes |
+| Deploy | [deploy.md](guides/deploy.md): deploy, then [Update](guides/deploy.md#update) or [Roll back](guides/deploy.md#roll-back) | [Verify](guides/deploy.md#verify) passes |
 | Backup and restore | [backup-restore.md](guides/backup-restore.md): the [Daily backup](guides/backup-restore.md#daily-backup), and [Restore](guides/backup-restore.md#restore) on data loss | The quarterly [Restore drill](guides/backup-restore.md#restore-drill) passes |
 | Postgres upgrade | [postgres-upgrade.md](guides/postgres-upgrade.md) | The app runs on the new major version |
 | Maintenance | [maintenance.md](guides/maintenance.md), monthly | Every check shows its expected result |
@@ -94,12 +94,8 @@ Provision, deploy, back up, monitor and maintain a VPS.
 | [scripts/netcup.sh](scripts/netcup.sh) | netcup server API from the laptop: login, servers, firewall policies, snapshots |
 | [templates/netcup-firewall-web.json](templates/netcup-firewall-web.json) | netcup firewall policy for a web server: inbound SSH, HTTP, HTTPS, HTTP/3, NTP replies |
 | [templates/netcup-firewall-ssh.json](templates/netcup-firewall-ssh.json) | netcup firewall policy for an SSH-only host: inbound SSH and NTP replies |
-| [templates/docker-compose.prod.yml](templates/docker-compose.prod.yml) | Production Compose (nginx + Certbot, pinned registry images) |
-| [templates/docker-compose.prod-caddy.yml](templates/docker-compose.prod-caddy.yml) | Production Compose with Caddy: automatic TLS, healthchecks, resource limits |
+| [templates/docker-compose.prod.yml](templates/docker-compose.prod.yml) | Production Compose with Caddy: automatic TLS, pinned registry images, healthchecks, resource limits |
 | [templates/Caddyfile](templates/Caddyfile) | Caddy site config: www redirect, security headers, API and SPA routes |
-| [templates/docker-compose.initial-cert.yml](templates/docker-compose.initial-cert.yml) | Minimal Compose for first-time cert issuance (ACME challenge only) |
-| [templates/nginx-initial-cert.conf](templates/nginx-initial-cert.conf) | Catch-all nginx config for the initial ACME challenge |
-| [templates/nginx-tls.conf](templates/nginx-tls.conf) | Nginx TLS reverse proxy config |
 
 ## Agents
 

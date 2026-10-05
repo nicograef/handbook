@@ -1,41 +1,34 @@
 #!/usr/bin/env bash
 # prod-init.sh — First production deploy and every later update, both guarded
 #
-# Usage (DOMAIN is required; EMAIL is optional and only receives account notices):
+# Usage (DOMAIN is required):
 #   DOMAIN=example.com make prod-deploy
-#   DOMAIN=example.com EMAIL=you@example.com make prod-deploy
 #   ROLLBACK=1 DOMAIN=example.com make prod-deploy   # only after restoring a backup
 #
 # What it does:
 #   1. Checks prerequisites, and that every image carries a pinned tag (the app a vX.Y.Z one).
 #   2. After an earlier deploy: refuses a downgrade unless ROLLBACK=1, then takes a verified backup.
-#   3. nginx variant without a certificate: requests one through the initial-cert stack.
-#   4. Pulls the pinned images, starts the stack and polls every healthcheck.
-#   5. Polls https://DOMAIN, then records the tag as deployed; on a failure, prints the rollback path.
+#   3. Pulls the pinned images, starts the stack and polls every healthcheck.
+#   4. Polls https://DOMAIN, then records the tag as deployed; on a failure, prints the rollback path.
 #
 # Not checked below: the DNS records for DOMAIN (A and AAAA on dual-stack, AAAA only on
-# IPv6-only) must already point at this server, or the ACME challenge fails
+# IPv6-only) must already point at this server, or Caddy's ACME challenge fails
 # (see guides/deploy.md, Prerequisites).
 set -euo pipefail
 
 # ── Configuration ──
 DOMAIN="${DOMAIN:-}"
-EMAIL="${EMAIL:-}"
 ROLLBACK="${ROLLBACK:-}"                    # 1: the operator restored a backup that fits the older tag
 APP_SERVICE="${APP_SERVICE:-backend}"       # its image tag is the release version
 HEALTH_TIMEOUT="${HEALTH_TIMEOUT:-180}"     # seconds `up --wait` polls the healthchecks
 BACKUP_DIR="${BACKUP_DIR:-/opt/backups/postgres}"
 
-# Either variant is copied to docker-compose.prod.yml, so this name holds for both.
 PROD_FILE="docker-compose.prod.yml"
-CERT_FILE="docker-compose.initial-cert.yml"
 # Last healthy tag and the tag of an unfinished attempt. Written by this script only; gitignore it.
 STATE_FILE=".deploy-state"
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-# Both files carry the same top-level `name:`, so they address one Compose project.
 COMPOSE_PROD=(docker compose -f "$PROD_FILE")
-COMPOSE_CERT=(docker compose -f "$CERT_FILE")
 
 RED='\033[0;31m'
 GREEN='\033[0;32m'
@@ -79,26 +72,13 @@ command -v docker >/dev/null 2>&1      || error "docker is not installed."
 docker compose version >/dev/null 2>&1 || error "docker compose plugin is not installed."
 command -v curl >/dev/null 2>&1        || error "curl is not installed."
 command -v jq >/dev/null 2>&1          || error "jq is not installed (setup-server.sh installs it)."
-[[ -f "$PROD_FILE" ]]                  || error "$PROD_FILE not found. Copy one production Compose template to it."
+[[ -f "$PROD_FILE" ]]                  || error "$PROD_FILE not found. Copy the docker-compose.prod.yml template."
+# A missing bind source becomes an empty directory inside the container, and the proxy fails.
+[[ -f reverse-proxy/Caddyfile ]]       || error "reverse-proxy/Caddyfile not found. Copy the Caddyfile template there and set your domain."
 
 [[ -n "$DOMAIN" ]] || error "DOMAIN is required. Set it via 'DOMAIN=example.com make prod-deploy'."
 
 CONFIG="$("${COMPOSE_PROD[@]}" config --format json)"
-
-# The certbot service marks the nginx variant; the Caddy variant issues certificates itself.
-# A missing bind source becomes an empty directory inside the container, and the proxy fails.
-if jq -e '.services | has("certbot")' <<<"$CONFIG" >/dev/null; then
-  USES_CERTBOT=true
-  [[ -f "$CERT_FILE" ]] || error "$CERT_FILE not found. Copy the docker-compose.initial-cert.yml template."
-  [[ -f reverse-proxy/nginx.initial-cert.conf ]] || \
-    error "reverse-proxy/nginx.initial-cert.conf not found. Copy the nginx-initial-cert.conf template there."
-  [[ -f reverse-proxy/nginx.conf ]] || \
-    error "reverse-proxy/nginx.conf not found. Copy the nginx-tls.conf template there and set your domain."
-else
-  USES_CERTBOT=false
-  [[ -f reverse-proxy/Caddyfile ]] || \
-    error "reverse-proxy/Caddyfile not found. Copy the Caddyfile template there and set your domain."
-fi
 
 # A `build:`, a missing tag or `latest` lets the stack change under an unchanged Compose file.
 BUILT="$(jq -r '.services | to_entries[] | select(.value.build) | .key' <<<"$CONFIG")"
@@ -117,12 +97,7 @@ TARGET_TAG="${TARGET_IMAGE##*:}"
 is_release_tag "$TARGET_TAG" || \
   error "$APP_SERVICE image '$TARGET_IMAGE' is not pinned to a vX.Y.Z tag in $PROD_FILE."
 
-# Without --email, certbot registers the ACME account with no contact address.
-EMAIL_ARGS=()
-[[ -z "$EMAIL" ]] || EMAIL_ARGS=(--email "$EMAIL")
-
 log "Domain:  $DOMAIN"
-log "Email:   ${EMAIL:-none}"
 log "Target:  $TARGET_TAG"
 echo ""
 
@@ -167,47 +142,6 @@ else
   [[ -n "$PRE_UPDATE_DUMP" ]] || error "No backup found in $BACKUP_DIR. Nothing was changed."
   PRE_UPDATE_DUMP="$BACKUP_DIR/$PRE_UPDATE_DUMP"
   log "Pre-update backup: $PRE_UPDATE_DUMP"
-fi
-
-# ── Certificate (nginx variant, first time only) ──
-request_certificate() {
-  log "Starting nginx for the ACME challenge…"
-  "${COMPOSE_CERT[@]}" up -d reverse-proxy
-
-  for i in {1..15}; do
-    if "${COMPOSE_CERT[@]}" exec -T reverse-proxy nginx -t >/dev/null 2>&1; then
-      break
-    fi
-    if [[ $i -eq 15 ]]; then
-      "${COMPOSE_CERT[@]}" down
-      error "Nginx did not become ready in time."
-    fi
-    sleep 1
-  done
-
-  log "Requesting Let's Encrypt certificate…"
-  # The prod certbot service supplies the image pin and volumes; --no-deps keeps its proxy down.
-  if ! "${COMPOSE_PROD[@]}" run --rm --no-deps --entrypoint certbot certbot \
-    certonly \
-      --webroot -w /var/www/certbot \
-      -d "$DOMAIN" -d "www.$DOMAIN" \
-      "${EMAIL_ARGS[@]}" \
-      --agree-tos \
-      --non-interactive; then
-    "${COMPOSE_CERT[@]}" down
-    error "Certbot failed. Check that DNS for $DOMAIN points to this server."
-  fi
-  "${COMPOSE_CERT[@]}" down
-  log "Certificate obtained."
-}
-
-if [[ "$USES_CERTBOT" == true ]]; then
-  if "${COMPOSE_PROD[@]}" run --rm --no-deps --entrypoint test certbot \
-    -f "/etc/letsencrypt/live/$DOMAIN/fullchain.pem" 2>/dev/null; then
-    log "Certificate for $DOMAIN exists."
-  else
-    request_certificate
-  fi
 fi
 
 # ── Start and health polling ──
