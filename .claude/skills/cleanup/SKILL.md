@@ -25,7 +25,23 @@ Named files or area, else staged changes, else unstaged, else the last commit, e
 | Cross-layer (`repo` only) | Trace frontend call → API client → handler → service → repository → SQL. Shapes, nullability, validation limits and enum values must agree at every hop; name the layer that is the source of truth |
 | UX (`ux` only) | At 375×667 (Playwright if the app runs, else a static review labelled so): components that break, tables without a mobile fallback, touch targets under 44×44 px, primary action below the fold, one concept labelled two ways, inconsistent loading/empty/error states, labels diverging from the repo's glossary, else `docs/UBIQUITOUS_LANGUAGE.md` |
 
-Test files get the readability pass only; retagging or deleting tests is the testing skill's job.
+## Tests
+
+Test files get the readability pass and one tag per test. The first matching row wins:
+
+| Signal | Tag |
+| --- | --- |
+| No meaningful assertion, or asserts only on values the test itself set up | Delete |
+| Reaches private methods or fields | Delete; a public-API test replaces it if the behaviour matters |
+| Asserts internal call counts, argument order or mock invocations | Delete, or Refactor to assert on output |
+| Mocks internal collaborators, or verifies state by bypassing the public interface (raw SQL, file reads) | Refactor |
+| Named for how ("calls X", "sets flag") rather than what | Refactor |
+| Same behaviour as two or more other tests with trivially different inputs | Merge into one table-driven test |
+| Asserts exact error strings | Refactor |
+| Otherwise | Keep, unreported |
+
+A Merge finding names its target. A Delete that removes a behaviour's only coverage says so.
+Apply per file: Merge, then Refactor, then Delete. Then run the full suite; a failure restores the test.
 
 ## Report
 
