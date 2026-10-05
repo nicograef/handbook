@@ -10,7 +10,7 @@ Rules for maintaining this repo. Setting up a machine, project or server starts 
 - After renaming or deleting a file, `grep -r '<filename>' .` and fix every reference.
 - When a tool version changes, grep the repo and update every occurrence.
 - `make check` verifies links with their anchors, shellcheck, both indexes, top-level folder coverage, language and compose files. It checks the contracts: raw URLs, install origins and settings script paths. It also enforces the prose caps (sentence ≤ 20 words, paragraph ≤ 3 lines) and flags history words.
-- English only. Exceptions: German phrases in `.claude/skills/audiobook/writing.md`, umlaut key names in `guides/neovim.md` and `dotfiles/init.lua`, the proper noun in `claude/CLAUDE.md` and `claude/settings.json`.
+- English only. Exceptions: German phrases in `.claude/skills/audiobook/writing.md`, umlaut key names in `guides/neovim.md`, the proper noun in `claude/CLAUDE.md`.
 - A multi-file change starts with `docs/plans/plan-<slug>.md` (goal, files, checklist), ticked as you go and deleted when done. A single-file edit skips the plan.
 
 ## Layout
