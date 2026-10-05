@@ -113,6 +113,7 @@ Global Claude Code config, skills, agents and the scripts they call.
 | [claude/statusline.sh](claude/statusline.sh) | Status line script |
 | [.claude/skills/README.md](.claude/skills/README.md) | Skills index |
 | [.claude/agents/web-researcher.md](.claude/agents/web-researcher.md) | Web research agent |
+| [templates/project-researcher.md](templates/project-researcher.md) | Project researcher agent for the research-digest skill: topics, rulings, issue directory |
 | [scripts/agent-bus.sh](scripts/agent-bus.sh) | Coordination bus for concurrent Claude Code sessions in one repo |
 | [scripts/check-agents.sh](scripts/check-agents.sh) | Last activity of background agents, read off their task transcripts |
 | [scripts/plan-run-guard.sh](scripts/plan-run-guard.sh) | Stop hook that keeps a live plan run from yielding the turn |
