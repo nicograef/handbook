@@ -12,8 +12,8 @@ How each platform is searched and how a found item is read. Open it before disco
 
 | Platform | How | Signal |
 | --- | --- | --- |
-| arXiv export API | `https://export.arxiv.org/api/query?search_query=(cat:cs.IR+OR+cat:cs.CL)+AND+abs:%22<phrase>%22+AND+submittedDate:%5B<since>0000+TO+<today>2359%5D&sortBy=submittedDate&sortOrder=descending&max_results=100`. Atom with abstracts. At most one request per 3 s (arXiv API terms). | High with phrase queries. German terms find nothing on arXiv. |
-| arXiv listing | `https://arxiv.org/list/<cat>/pastweek?show=2000`: one page per category and week. | Best density for a small category such as cs.IR; query large ones such as cs.CL by phrase instead. |
+| arXiv export API | `https://export.arxiv.org/api/query?search_query=(cat:cs.IR+OR+cat:cs.CL)+AND+abs:%22<phrase>%22+AND+submittedDate:%5B<since>0000+TO+<today>2359%5D&sortBy=submittedDate&sortOrder=descending&max_results=100`. Dates go in without dashes (`20260921`). Atom with abstracts. One request at a time, 3 s apart (arXiv API terms); parallel lanes earn HTTP 429. | High with phrase queries. German terms find nothing on arXiv. |
+| arXiv listing | `https://arxiv.org/list/<cat>/<YYYY-MM>?show=2000`: one page per category and month; `pastweek` covers seven days only. | Best density for a small category such as cs.IR; query large ones such as cs.CL by phrase instead. |
 | Hugging Face papers | `https://huggingface.co/api/daily_papers?date=<YYYY-MM-DD>`, one call per day. | Low for retrieval; upvotes rank attention. |
 | Semantic Scholar | `/graph/v1/paper/search/bulk?query=<q>&publicationDateOrYear=<since>:` | Lookups of venue and citations; noisy as a sweep. |
 | GitHub releases | `https://github.com/<owner>/<repo>/releases.atom`, or `tags.atom` for repos that only tag. No auth. | The primary record of a dependency's change. |

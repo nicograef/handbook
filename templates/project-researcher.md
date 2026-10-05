@@ -12,7 +12,7 @@ You read outside work for **<project>**: <one paragraph: what the project does, 
 
 Read every source in full, never the abstract alone. The routes per source family are in `~/.claude/skills/research-digest/sources.md`. Label each claim fact (quoted), inference or guess. "Nothing relevant" is a complete answer.
 
-## ── Brief ──
+## Brief
 
 Before judging, read these to know the project as the code has it:
 
@@ -20,7 +20,7 @@ Before judging, read these to know the project as the code has it:
 - <the docs that describe the pipeline, the data and the evaluation>
 - <the open plans or issues that name current problems>
 
-## ── Topics ──
+## Topics
 
 One line per discovery lane, at most four; the digest sweeps each lane separately. Name the lanes for the project. Each line names its topics and where to look.
 
@@ -29,28 +29,27 @@ One line per discovery lane, at most four; the digest sweeps each lane separatel
   - Queries: <tested names and phrases; names beat topic words>
   - Avoid: <terms that drew noise in testing, with the noise they drew>
 
-## ── Rulings ──
+## Rulings
 
 Owner decisions every judgement holds to, beyond what the docs state:
 
-- <ruling, owner, date>
+- <ruling> (<owner>, <date>)
 
-## ── Judging ──
+## Judging
 
 - Relevance is none, low, medium or high, judged against a named path in the repo.
 - An item read off its abstract alone caps at medium.
 - A vendor claim is a claim, not a measurement.
-- Propose no tooling without a defect behind it.
 
-## ── Reports ──
+## Reports
 
 Reports: `<dir for reports, e.g. data/research-digest/>`
 
-First window from: `<YYYY-MM-DD: e.g. the date the project last checked its sources>`
+First window from: `<YYYY-MM-DD: e.g. the date the project last checked its sources>`; used until the first report carries a window.
 
 <Whether that dir is committed, and where a run's spend is recorded, if anywhere.>
 
-## ── One source, ad hoc ──
+## One source, ad hoc
 
 Asked to read a single source, return these fields:
 

@@ -43,7 +43,8 @@ nav.toc a:hover, nav.toc a:focus-visible { color: var(--accent); text-decoration
 main { min-width: 0; padding-block: 24px; max-width: 68ch; }
 main h2 { font: 700 24px/1.25 var(--display); margin: 48px 0 12px; padding-top: 12px; border-top: 2px solid var(--fg); text-wrap: balance; }
 main h3 { font: 600 19px/1.35 var(--display); margin: 32px 0 6px; text-wrap: balance; }
-main h3 + p { font: 13px/1.5 var(--mono); color: var(--muted); }
+main h4 { font: 600 17px/1.35 var(--display); margin: 24px 0 6px; text-wrap: balance; }
+main h4 + p { font: 13px/1.5 var(--mono); color: var(--muted); }
 main p, main li { margin: 0 0 12px; }
 main a { color: var(--accent); text-underline-offset: 2px; }
 main code { font: 0.86em var(--mono); background: var(--surface); border: 1px solid var(--rule); border-radius: 4px; padding: 0 4px; overflow-wrap: anywhere; }
@@ -71,42 +72,47 @@ html { scroll-behavior: smooth; }
 
 <div class="wrap">
   <header class="mast">
-    <div class="eyebrow">Research digest</div>
+    <div class="eyebrow">Recherche</div>
     <h1 id="title">{{TITLE}}</h1>
     <div class="window" id="window"></div>
   </header>
-  <nav class="toc" aria-label="Contents"><ol id="toc"></ol></nav>
+  <nav class="toc" aria-label="Inhalt"><ol id="toc"></ol></nav>
   <main id="issue-body"></main>
 </div>
 
-<script type="text/markdown" id="issue">{{ISSUE}}</script>
+<script type="application/json" id="report">{{REPORT}}</script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/marked/18.0.14/lib/marked.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.4.16/purify.min.js"></script>
 <script>
 (function () {
-  var md = document.getElementById('issue').textContent.replace(/<\\\//g, '</');
+  document.documentElement.lang = 'de';
+  // The report arrives as a JSON string; its closing ledger comment is the next run's, not the reader's.
+  var md = JSON.parse(document.getElementById('report').textContent).replace(/\n*<!--[\s\S]*?-->\s*$/, '\n');
   var lines = md.split('\n');
   // The issue's own H1 and Window line move into the masthead.
   if (/^# /.test(lines[0])) { document.getElementById('title').textContent = lines.shift().slice(2).trim(); }
-  var wi = lines.findIndex(function (l) { return /^Window:/.test(l.trim()); });
-  if (wi > -1 && wi < 4) { document.getElementById('window').textContent = lines.splice(wi, 1)[0].trim().replace(' to ', ' → '); }
+  var wi = lines.findIndex(function (l) { return /^Zeitraum:/.test(l.trim()); });
+  if (wi > -1 && wi < 4) { document.getElementById('window').textContent = lines.splice(wi, 1)[0].trim().replace(' bis ', ' → '); }
   var main = document.getElementById('issue-body');
-  main.innerHTML = window.marked ? marked.parse(lines.join('\n')) : '<pre>' + lines.join('\n').replace(/[&<]/g, function (c) { return c === '&' ? '&amp;' : '&lt;'; }) + '</pre>';
+  var esc = function (t) { return t.replace(/[&<]/g, function (c) { return c === '&' ? '&amp;' : '&lt;'; }); };
+  // Fetched titles and quotes reach the page, so rendered HTML is sanitised; without both libraries the text shows plain.
+  main.innerHTML = window.marked && window.DOMPurify ? DOMPurify.sanitize(marked.parse(lines.join('\n'))) : '<pre>' + esc(lines.join('\n')) + '</pre>';
   main.querySelectorAll('table').forEach(function (t) { var d = document.createElement('div'); d.className = 'table'; t.parentNode.insertBefore(d, t); d.appendChild(t); });
   main.querySelectorAll('a[href^="http"]').forEach(function (a) { a.target = '_blank'; a.rel = 'noopener'; });
-  // Relevance labels become chips: "Relevance: low", "relevance high" and the like.
+  // Relevance labels become chips: "Relevanz: hoch", "Relevanz: mittel".
   var walker = document.createTreeWalker(main, NodeFilter.SHOW_TEXT);
   var hits = [], n;
-  while ((n = walker.nextNode())) { if (/\b(relevance)\b[:\s*]*\b(high|medium|low|none)\b/i.test(n.nodeValue)) hits.push(n); }
+  while ((n = walker.nextNode())) { if (n.parentNode.closest('a, code, pre')) continue; if (/(Relevanz)[:\s*]*(hoch|mittel|niedrig)/.test(n.nodeValue)) hits.push(n); }
   hits.forEach(function (node) {
     var span = document.createElement('span');
     span.innerHTML = node.nodeValue.replace(/[&<]/g, function (c) { return c === '&' ? '&amp;' : '&lt;'; })
-      .replace(/\b(relevance)\b([:\s*]*)\b(high|medium|low|none)\b/ig, function (_, w, sep, lvl) { return w + sep + '<span class="rel rel-' + lvl.toLowerCase() + '">' + lvl + '</span>'; });
+      .replace(/(Relevanz)([:\s*]*)(hoch|mittel|niedrig)/g, function (_, w, sep, lvl) { return w + sep + '<span class="rel rel-' + { hoch: 'high', mittel: 'medium', niedrig: 'low' }[lvl] + '">' + lvl + '</span>'; });
     node.parentNode.replaceChild(span, node);
   });
   var toc = document.getElementById('toc'), used = {};
   main.querySelectorAll('h2, h3').forEach(function (h) {
     var base = (h.textContent || 'section').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '').slice(0, 48) || 'section';
-    var id = base, i = 2; while (used[id]) id = base + '-' + i++; used[id] = 1; h.id = id;
+    var id = 's-' + base, i = 2; while (used[id]) id = 's-' + base + '-' + i++; used[id] = 1; h.id = id;
     var li = document.createElement('li'); li.className = h.tagName.toLowerCase();
     var a = document.createElement('a'); a.href = '#' + id; a.textContent = h.textContent; li.appendChild(a); toc.appendChild(li);
   });

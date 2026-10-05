@@ -1,39 +1,42 @@
 export const meta = {
   name: 'research-digest',
-  description: 'Sweep the profile topics or expand from given material, read the best items in full, judge them against the project and write the report.',
-  whenToUse: 'Once per research-digest run, with {today, since, repo, profile, out, covered, seeds?, notes?} as args.',
+  description: 'Sweep the profile topics or expand from given material, read the best items in full, judge them against the project and write a German report with recommendations.',
+  whenToUse: 'Once per research-digest run, with {today, since, repo, profile, out, covered, carried?, seeds?, notes?} as args.',
   phases: [
     { title: 'Brief', detail: 'the project and its open problems, off the tree', model: 'opus' },
-    { title: 'Discover', detail: 'one lane per topic line of the project agent', model: 'sonnet' },
+    { title: 'Discover', detail: 'one lane per topic line of the profile, or one lane from the user material', model: 'sonnet' },
     { title: 'Read', detail: 'full text, critique, applicability per item', model: 'opus' },
     { title: 'Skeptic', detail: 'every applicability claim against the code', model: 'opus' },
-    { title: 'Write', detail: 'the issue file', model: 'opus' },
+    { title: 'Recommend', detail: 'one to three reasoned changes or experiments', model: 'opus' },
+    { title: 'Write', detail: 'the German report, relevant items only', model: 'opus' },
   ],
 }
 
-// One issue of the research digest (SKILL.md beside this file). Every agent reads the project's
-// researcher profile first, by path: an agent file loads into the registry only at session start,
-// and a digest may run from another checkout. Today and the window arrive in `args`: a script
-// that read the clock could not replay from its journal.
+// One research-digest run (SKILL.md beside this file). Every agent reads the project's researcher
+// profile first, by path: an agent file loads into the registry only at session start, and a run
+// may target another checkout. Today and the window arrive in `args`: a script that read the clock
+// could not replay from its journal.
 
 const { today, since, repo, profile, out } = args
 const covered = args.covered || []
-// Every run is a deep dive. Given the user's links or text, discovery expands from them over no
-// window; without, it sweeps the profile's topics since the last report.
+// Candidates an earlier run deferred over its reading cap: they rejoin the pool whatever the window.
+const carried = args.carried || []
+// Given the user's links or text, discovery expands from them over no window; without, it sweeps
+// the profile's topics since the last report.
 const seeds = args.seeds || []
 const notes = args.notes || ''
 const seeded = seeds.length > 0 || Boolean(notes)
 
-// Reading is the expensive stage, so discovery is cut to a cap and the cut is logged and listed
-// in the issue's skipped section.
-const READ_CAP = 12
+const READ_CAP = 20
 const BATCH = 4
 
 const ROUTES = 'Read ~/.claude/skills/research-digest/sources.md first: it says how each source family is found and read.'
 const WINDOW = seeded
   ? 'There is no window: age matters only where a newer source supersedes an older one.'
-  : `The window is ${since} to ${today}: an item published or released before ${since} is out of it.`
-const SEEDS = seeded ? ['THE USER\'S MATERIAL (read each link in full):', ...seeds.map((u) => `- ${u}`), notes ? `THE USER\'S NOTES:\n${notes}` : ''].join('\n') : ''
+  : `The window is ${since} to ${today}: an item published or released before ${since} or after ${today} is out of it.`
+const SEEDS = seeded
+  ? ["THE USER'S MATERIAL (read each link in full):", ...seeds.map((u) => `- ${u}`), notes ? `THE USER'S NOTES:\n${notes}` : ''].join('\n')
+  : ''
 const READ_ONLY = [
   `First read the project profile ${profile}: its Brief, Topics, Rulings and Judging sections bind you.`,
   `The repository is at ${repo}; run every command from there.`,
@@ -45,7 +48,7 @@ const READ_ONLY = [
 const BRIEF_SCHEMA = {
   type: 'object',
   properties: {
-    stack: { type: 'string', description: 'the stack as the tree has it: store, search, models, pipeline, evaluation' },
+    stack: { type: 'string', description: 'the stack as the tree has it: store, search, models, pipeline, evaluation; for each served stage the shape it actually runs (query form, filters, models), with file:line' },
     open_problems: {
       type: 'array',
       items: {
@@ -157,40 +160,60 @@ const SKEPTIC_SCHEMA = {
         required: ['url', 'claim', 'verdict', 'evidence', 'relevance'],
       },
     },
+    leads: {
+      type: 'array',
+      description: 'follow-ups the code evidence points to that no item states: a newer fix, a missed risk',
+      items: {
+        type: 'object',
+        properties: { lead: { type: 'string' }, evidence: { type: 'string' }, url: { type: 'string' } },
+        required: ['lead', 'evidence'],
+      },
+    },
   },
-  required: ['checks'],
+  required: ['checks', 'leads'],
 }
+
 
 // One key per document, so the same paper reached as abs, html or pdf, any version, is one item.
 const canon = (url) => {
   const u = String(url).trim().replace(/#.*$/, '').replace(/^https?:\/\//i, '').replace(/^www\./i, '')
-  const arxiv = u.match(/^(?:export\.)?arxiv\.org\/(?:abs|html|pdf)\/([0-9]{4}\.[0-9]{4,5})(?:v[0-9]+)?(?:\.pdf)?\/?$/i)
-  if (arxiv) return `arxiv:${arxiv[1]}`
+  const arxiv = u.replace(/\?.*$/, '').match(
+    /^(?:export\.)?arxiv\.org\/(?:abs|html|pdf)\/([0-9]{4}\.[0-9]{4,5}|[a-z-]+(?:\.[a-z]{2})?\/[0-9]{7})(?:v[0-9]+)?(?:\.pdf)?(?:\/index\.html)?\/?$/i,
+  )
+  if (arxiv) return `arxiv:${arxiv[1].toLowerCase()}`
   return u.replace(/\/+$/, '').toLowerCase()
 }
+// The same story reached in two languages or on two mirrors shares its title.
+const titleKey = (t) => String(t || '').toLowerCase().replace(/[^a-z0-9äöüß]+/g, ' ').trim()
+const ISO = /^\d{4}-\d{2}-\d{2}/
 
 phase('Brief')
 const brief = await agent(
   [
     READ_ONLY,
-    'Write the brief every later reader of this digest judges against. Read what the Brief section of',
-    'the profile names, and `git log --oneline -40`. Name the stack as the code has it and',
-    'the open problems with the path where each stands. Turn each line of the Topics section into a',
-    'discovery lane whose focus copies that line with its Sources, Queries and Avoid lines verbatim. Then',
-    'the search terms that would surface outside work on the open problems.',
+    'Write the brief every later reader of this run judges against. Read what the Brief section of the',
+    'profile names, and `git log --oneline -40`. Name the stack as the code has it, with the shape each',
+    'served stage actually runs, and the open problems with the path where each stands. Turn each line',
+    'of the Topics section into a discovery lane whose focus copies that line with its Sources, Queries',
+    'and Avoid lines verbatim. Then the search terms that would surface outside work on the open problems.',
   ].join('\n'),
   { label: 'brief', model: 'opus', schema: BRIEF_SCHEMA },
 )
 if (!brief) return { aborted: 'brief' }
 
 const LANES = seeded
-  ? [{ key: 'connected', focus: [
-      'Expand from the user\'s material below, within the profile\'s topics and rulings: their code repositories, papers, model cards, benchmarks and',
-      'datasets they cite, independent critiques and replications, practitioner discussion (Hacker News,',
-      'Reddit), and the strongest competing approaches. Prefer primary sources and measurements.',
-      SEEDS,
-    ].join(' ') }]
+  ? [{
+      key: 'connected',
+      focus: [
+        "Expand from the user's material below, within the profile's topics and rulings: the code",
+        'repositories, papers, model cards, benchmarks and datasets it cites, independent critiques and',
+        'replications, practitioner discussion, and the strongest competing approaches. Prefer primary',
+        'sources and measurements.',
+        SEEDS,
+      ].join(' '),
+    }]
   : brief.lanes.slice(0, 4)
+if (!LANES.length) return { aborted: 'discovery', reason: 'the brief named no lane' }
 const BRIEF = [
   'THE PROJECT, as the tree has it:',
   brief.stack,
@@ -198,80 +221,105 @@ const BRIEF = [
   ...brief.open_problems.map((p) => `- ${p.problem} (${p.locus})`),
 ].join('\n')
 
+const discoverPrompt = (lane, retry) => [
+  READ_ONLY,
+  `You are the ${lane.key} discovery lane of a research run. ${WINDOW}`,
+  lane.focus,
+  `Terms tied to the open problems: ${brief.watch_terms.join('; ')}.`,
+  'There is no time limit. Try every source the lane names, then search wider by the Discovery',
+  'routes of sources.md that fit the lane. Query arXiv only when the lane names it: one request at a',
+  'time with `sleep 3` between requests; prefer the monthly listing. Return one route entry per source',
+  'the lane names; a source you did not reach is a failed route, never a silent gap.',
+  'Return candidates, not readings: the canonical primary URL, its date as YYYY-MM-DD (empty when the',
+  'page gives none), and one sentence on why the project might care. One candidate per event: the',
+  'primary source, with press summaries named in its `why`.',
+  'Priority by rule: high for a crash, security or data-loss fix in a dependency the project pins,',
+  'and for an item that touches an open problem by its path; medium for anything else on the',
+  "project's stack or rulings; low otherwise. Skip SEO listicles and vendor pages without substance.",
+  retry ? 'An earlier attempt left sources untried. Reach every one of them this time.' : '',
+  '',
+  BRIEF,
+  '',
+  ROUTES,
+].join('\n')
+const untried = (r) => r && r.routes.some((x) => /not tried|lack of time|no time/i.test(`${x.route} ${x.note}`))
+
 phase('Discover')
 const lanes = await parallel(
-  LANES.map((lane) => () =>
-    agent(
-      [
-        READ_ONLY,
-        `You are the ${lane.key} discovery lane of a research digest. ${WINDOW}`,
-        lane.focus,
-        `Terms tied to the open problems: ${brief.watch_terms.join('; ')}.`,
-        'Sweep every Discovery platform of sources.md that fits this lane: web search in every language the',
-        'project works in, Google News, arXiv, Hugging Face, Hacker News, Medium, Reddit, GitHub, registries,',
-        'regulators. Follow the pages they link. Return candidates, not readings: the canonical URL, its date, and one sentence',
-        'on why the project might care. Priority high means it bears on an open problem or the stack',
-        'directly. Skip SEO listicles, vendor pages without substance and anything outside the window.',
-        'Try every source the lane names before searching wider; a source you did not reach is a failed',
-        'route in your report, never a silent gap. One arXiv API request per 3 s, never in parallel.',
-        'Report each route you tried and whether it answered.',
-        '',
-        BRIEF,
-        '',
-        ROUTES,
-      ].join('\n'),
-      { label: `discover:${lane.key}`, phase: 'Discover', model: 'sonnet', schema: CANDIDATES_SCHEMA },
-    ),
-  ),
+  LANES.map((lane) => async () => {
+    const opts = { label: `discover:${lane.key}`, phase: 'Discover', model: 'sonnet', schema: CANDIDATES_SCHEMA }
+    const first = await agent(discoverPrompt(lane, false), opts)
+    if (first && !untried(first)) return first
+    log(`discovery lane ${lane.key} ${first ? 'left sources untried' : 'died'}; dispatched once more`)
+    const second = await agent(discoverPrompt(lane, true), { ...opts, label: `discover:${lane.key}:retry` })
+    if (!first) return second
+    if (!second) return first
+    return { items: [...first.items, ...second.items], routes: [...first.routes, ...second.routes] }
+  }),
 )
+if (!seeded && lanes.every((r) => !r)) return { aborted: 'discovery', reason: 'every lane died' }
 
-// Barrier: the dedup needs every lane's candidates at once.
-const seen = new Set(covered.map(canon))
+// Barrier: the dedup needs every lane's candidates at once. The user's links come first and are
+// read even when an earlier report covered them.
+const seen = new Set()
+const seenTitles = new Set()
 const seedItems = []
 for (const url of seeds) {
   const key = canon(url)
   if (seen.has(key)) continue
   seen.add(key)
-  seedItems.push({ key, url, title: '', published: '', why: 'named by the user', priority: 'high' })
+  seedItems.push({ key, url, title: '', published: '', why: 'named by the user', priority: 'high', seed: true })
 }
+covered.forEach((u) => seen.add(canon(u)))
 
-const skipped = []
+const outside = [] // read as covered by later runs
+const deferred = [] // rejoins the next run's pool
 const routes = []
 const pools = { high: [], medium: [], low: [] }
+const admit = (item, lane, exemptWindow) => {
+  const key = canon(item.url)
+  const tkey = titleKey(item.title)
+  if (seen.has(key) || (tkey.length > 12 && seenTitles.has(tkey))) return
+  seen.add(key)
+  if (tkey.length > 12) seenTitles.add(tkey)
+  const dated = ISO.test(item.published || '')
+  if (!seeded && !exemptWindow && dated) {
+    const day = item.published.slice(0, 10)
+    if (day < since || day > today) {
+      outside.push({ url: item.url, reason: `dated ${day}, outside ${since} to ${today}` })
+      return
+    }
+  }
+  const priority = pools[item.priority] ? item.priority : 'medium'
+  pools[priority].push({ ...item, key, lane, dated })
+}
+carried.forEach((c) => admit({ url: c.url, title: c.title || '', published: '', why: 'deferred by the last run', priority: c.priority || 'medium' }, -1, true))
 lanes.forEach((result, i) => {
   if (!result) {
-    log(`discovery lane ${LANES[i].key} died; its family is unswept this issue`)
+    log(`discovery lane ${LANES[i].key} died; its family is unswept this run`)
     routes.push({ route: `lane ${LANES[i].key}`, worked: false, note: 'the lane died' })
     return
   }
   routes.push(...result.routes.map((r) => ({ ...r, route: `${LANES[i].key}: ${r.route}` })))
-  for (const item of result.items) {
-    const key = canon(item.url)
-    if (seen.has(key)) continue
-    seen.add(key)
-    if (!seeded && item.published && item.published < since) {
-      skipped.push({ url: item.url, title: item.title, reason: `published ${item.published}, before the window` })
-      continue
-    }
-    pools[item.priority].push({ ...item, key, lane: LANES[i].key })
-  }
+  result.items.forEach((item) => admit(item, i, false))
 })
 
-// Interleave the lanes inside each priority so the cap never fills from one family alone.
+// Inside each priority: dated before undated, and the lanes interleaved so the cap never fills
+// from one family alone. Lanes are told apart by index, since the brief may repeat a key.
 const interleave = (items) => {
-  const byLane = LANES.map((l) => items.filter((it) => it.lane === l.key))
+  const order = [-1, ...LANES.map((_, i) => i)]
+  const byLane = order.map((l) => [...items.filter((it) => it.lane === l && it.dated), ...items.filter((it) => it.lane === l && !it.dated)])
   const picked = []
   for (let i = 0; byLane.some((b) => i < b.length); i++) byLane.forEach((b) => i < b.length && picked.push(b[i]))
   return picked
 }
 const ranked = [...interleave(pools.high), ...interleave(pools.medium), ...interleave(pools.low)]
 const chosen = ranked.slice(0, READ_CAP)
-const capped = ranked.slice(READ_CAP)
-capped.forEach((it) => skipped.push({ url: it.url, title: it.title, reason: `over the reading cap (priority ${it.priority})` }))
-log(`discovered ${ranked.length} new candidates; reading ${chosen.length} plus ${seedItems.length} of the user's links; ${capped.length} over the cap, ${skipped.length - capped.length} outside the window`)
+ranked.slice(READ_CAP).forEach((it) => deferred.push({ url: it.url, priority: it.priority }))
+log(`${ranked.length} new candidates: reading ${chosen.length} plus ${seedItems.length} of the user's links; ${deferred.length} deferred to the next run, ${outside.length} outside the window`)
 
 const toRead = [...seedItems, ...chosen]
-if (!toRead.length) log('nothing new to read; the issue reports an empty window')
+if (!toRead.length) log('nothing new to read')
 const batches = []
 for (let i = 0; i < toRead.length; i += BATCH) batches.push(toRead.slice(i, i + BATCH))
 
@@ -281,8 +329,9 @@ const readResults = await parallel(
     agent(
       [
         READ_ONLY,
-        'You are a deep reader for a research digest. Read each item below IN FULL by the routes in',
-        'sources.md: the paper, not its abstract; the release notes, not the headline. Then, per item:',
+        'You are a deep reader for a research run. Read each item below IN FULL by the routes in',
+        'sources.md: the paper, not its abstract; the release notes, not the headline. Before you claim',
+        'how the project works, open the code: the brief names the shape each served stage runs. Per item:',
         '- summary: one paragraph on what it does and what it measured, with the numbers that matter;',
         '- critique: are the baselines current, tuned and fair; is the gain outside noise; does the',
         "  benchmark resemble the project's data; what is missing; label each claim fact (quoted),",
@@ -305,16 +354,19 @@ const readResults = await parallel(
     ),
   ),
 )
+const seedKeys = new Set(seedItems.map((s) => s.key))
 const read = []
+const unreadable = []
 readResults.forEach((r, b) => {
   if (!r) {
-    log(`reader ${b + 1} died; its items go to skipped`)
-    batches[b].forEach((it) => skipped.push({ url: it.url, title: it.title, reason: 'the reader died' }))
+    log(`reader ${b + 1} died; its items are deferred to the next run`)
+    batches[b].forEach((it) => deferred.push({ url: it.url, priority: it.priority }))
     return
   }
   for (const item of r.items) {
-    if (item.read_as === 'unreadable') skipped.push({ url: item.url, title: item.title, reason: item.skip_reason || 'unreadable' })
-    else read.push(item)
+    const tagged = { ...item, seed: seedKeys.has(canon(item.url)) }
+    if (item.read_as === 'unreadable') unreadable.push({ ...tagged, reason: item.skip_reason || 'unreadable' })
+    else read.push(tagged)
   }
 })
 
@@ -324,7 +376,7 @@ const skeptic = claims.length
   ? await agent(
       [
         READ_ONLY,
-        'You are the skeptic of a research digest. Each claim below says an outside item would change or',
+        'You are the skeptic of a research run. Each claim below says an outside item would change or',
         'confirm something in the project. Try to refute every one against the code: open the path it',
         'names and what that path calls, and quote the line your verdict rests on.',
         '- holds: the code has the gap or the fit the claim says;',
@@ -333,14 +385,111 @@ const skeptic = claims.length
         '- already-in-project: the tree does this already;',
         '- conflicts-with-ruling: it would loosen an invariant or a ruling of the profile.',
         'Default to overstated when the code does not settle it. Set the relevance the item deserves.',
+        'Name as leads the follow-ups your reading of the code points to that no item states, such as a',
+        'newer fix of a pinned dependency or a risk the claims missed.',
         '',
         'CLAIMS:',
         JSON.stringify(claims.map((it) => ({ url: it.url, title: it.title, relevance: it.relevance, applicability: it.applicability })), null, 1),
       ].join('\n'),
       { label: 'skeptic', phase: 'Skeptic', model: 'opus', schema: SKEPTIC_SCHEMA },
     )
-  : { checks: [] }
-if (!skeptic) log('the skeptic died; the issue marks every applicability claim unverified')
+  : { checks: [], leads: [] }
+if (!skeptic) log('the skeptic died; every applicability claim stays unverified')
+
+// The report carries only what matters: an item stays when its relevance, the skeptic's where it
+// checked, is medium or high. The user's own links always stay, so each gets a visible verdict.
+const RANK = { none: 0, low: 1, medium: 2, high: 3 }
+const checksByKey = {}
+for (const c of skeptic ? skeptic.checks : []) (checksByKey[canon(c.url)] = checksByKey[canon(c.url)] || []).push(c)
+const finalRelevance = (it) => {
+  const cs = checksByKey[canon(it.url)]
+  if (!cs || !cs.length) return it.relevance
+  return cs.reduce((best, c) => (RANK[c.relevance] > RANK[best] ? c.relevance : best), 'none')
+}
+const judged = read.map((it) => ({ ...it, relevance: finalRelevance(it), checks: checksByKey[canon(it.url)] || [] }))
+const relevant = [
+  ...judged.filter((it) => it.seed || RANK[it.relevance] >= RANK.medium),
+  ...unreadable.filter((it) => it.seed),
+]
+const dropped = judged.filter((it) => !relevant.includes(it))
+const leads = skeptic ? skeptic.leads : []
+const failedRoutes = routes.filter((r) => !r.worked)
+log(`${relevant.length} items in the report; ${dropped.length} read and left out; ${leads.length} leads`)
+if (failedRoutes.length) log(`failed routes: ${failedRoutes.map((r) => r.route).join('; ')}`)
+
+// The ledger closes the report as an HTML comment, appended by the main session verbatim. The next
+// run reads every URL in it as covered, except those under "deferred:", which rejoin its pool.
+const commentSafe = (t) => String(t).replace(/--!?>/g, '-- >')
+const LEDGER = [
+  '<!--',
+  'read-not-relevant:',
+  ...dropped.map((it) => commentSafe(`${it.url} (${it.relevance})`)),
+  'unreadable:',
+  ...unreadable.filter((it) => !it.seed).map((it) => commentSafe(`${it.url} (${it.reason})`)),
+  'outside-window:',
+  ...outside.map((it) => commentSafe(`${it.url} (${it.reason})`)),
+  'failed-routes:',
+  ...failedRoutes.map((r) => commentSafe(`${r.route}: ${r.note}`)),
+  'deferred:',
+  ...deferred.map((it) => commentSafe(`${it.url} (${it.priority})`)),
+  '-->',
+].join('\n')
+
+const REC_SCHEMA = {
+  type: 'object',
+  properties: {
+    recommendations: {
+      type: 'array',
+      description: 'one to three, strongest first',
+      items: {
+        type: 'object',
+        properties: {
+          title: { type: 'string', description: 'the change, as an imperative' },
+          kind: { type: 'string', enum: ['change', 'experiment'] },
+          what: { type: 'string', description: 'what to change or measure, with the repo paths' },
+          why: { type: 'string', description: 'the reasoning: which items, verdicts and leads carry it, and what in the code makes it apply' },
+          gain: { type: 'string', description: 'the expected effect, and how sure that is' },
+          cost: { type: 'string', description: 'effort, spend and risk, including what it could break' },
+          verify: { type: 'string', description: 'how to tell it worked: the measurement or test' },
+          rulings: { type: 'string', description: 'how it respects the profile rulings and invariants' },
+          sources: { type: 'array', items: { type: 'string' } },
+        },
+        required: ['title', 'kind', 'what', 'why', 'gain', 'cost', 'verify', 'rulings', 'sources'],
+      },
+    },
+  },
+  required: ['recommendations'],
+}
+
+phase('Recommend')
+const evidence = relevant.filter((it) => RANK[it.relevance] >= RANK.medium)
+const recs = evidence.length || leads.length
+  ? await agent(
+      [
+        READ_ONLY,
+        'Recommend one to three changes to the project that this research justifies, strongest first. Read',
+        'the code each one touches before you write it. A recommendation names the change and its paths,',
+        'reasons from the items, skeptic verdicts and leads below, and states gain, cost, risk and how to',
+        'verify it. It respects every ruling and invariant of the profile. When no item justifies a code',
+        'change, recommend the cheapest experiment that would settle the most promising item, as kind',
+        '"experiment", and say why no change is due yet. Never recommend what the code already does.',
+        '',
+        BRIEF,
+        '',
+        'RELEVANT ITEMS:',
+        JSON.stringify(evidence, null, 1),
+        '',
+        'LEADS FROM THE SKEPTIC:',
+        JSON.stringify(leads, null, 1),
+      ].join('\n'),
+      { label: 'recommend', phase: 'Recommend', model: 'opus', schema: REC_SCHEMA },
+    )
+  : null
+const REC_NOTE = !evidence.length && !leads.length
+  ? 'Write under "## Empfehlungen" exactly: "Keine Empfehlung: dieser Lauf fand nichts, das für das Projekt relevant ist."'
+  : !recs
+    ? 'Write under "## Empfehlungen" exactly: "Keine Empfehlung: der Empfehlungsschritt ist ausgefallen."'
+    : ''
 
 phase('Write')
 const written = await agent(
@@ -348,36 +497,45 @@ const written = await agent(
     `First read the project profile ${profile}. The repository is at ${repo}. Write exactly one file,`,
     `${out} (create its directory if absent), and touch nothing else. Commit nothing.`,
     '',
-    `Write a research report for the project's developer, who reads it to keep up, judge and learn.`,
-    'English; short sentences; every claim links its source. Structure, in this order:',
+    "Write the report in German for the project's developer, who reads it to decide, keep up and learn.",
+    'Source titles, quotes, code paths and terms of art stay as they are. Short sentences; every claim',
+    'links its source. The report holds only the items below; add none and mention no other source.',
+    'Structure, in this order:',
     seeded
-      ? '1. "# Deep dive — <a short name for the subject>", then one line on what was read.'
-      : `1. "# Research digest — ${today}", then the line "Window: ${since} to ${today}" verbatim, then one line on what was swept.`,
-    '2. "## What matters": at most five bullets, highest verified relevance first, each one sentence,',
-    '   its next step and a link to its entry below. Only items whose claims the skeptic let stand.',
-    '3. "## Items", the user\'s material first, then grouped by topic: per item "### <title>", then the',
-    '   link, date, source, how it was read, relevance; a one-paragraph summary; "Critique:"; "For the',
-    '   project:" with each claim, its path and the skeptic verdict and evidence (a claim the skeptic',
-    '   did not check reads "unverified"). Use the skeptic relevance where it differs from the reader.',
-    '4. "## Learn": a reading path from foundations to frontier, each concept with its best link.',
-    '5. "## Skipped": every skipped URL with its reason.',
-    '6. "## Sources health": routes that failed or answered oddly, one line each.',
-    'Keep the fact, inference and guess labels the readers gave. Add nothing the material below does',
-    'not carry. Return the path and the headline bullets.',
+      ? '1. "# Recherche: <a short German name for the subject of the user\'s material>", then one line on what was read.'
+      : `1. "# Recherche ${today}", then the line "Zeitraum: ${since} bis ${today}" verbatim, then one line on what was swept.`,
+    '2. "## Empfehlungen": each recommendation below as "### <n>. <title>" with the paragraphs "Was:",',
+    '   "Warum:", "Gewinn:", "Kosten und Risiko:", "Prüfen:" and "Leitplanken:", linking its sources.',
+    '   Mark an experiment as "(Experiment)" in its heading.',
+    '3. "## Funde": the user\'s material first, then the rest grouped by topic as "### <Thema>". Per item',
+    '   "#### <title>", then one plain line with link, date, source and "Relevanz: hoch", "Relevanz:',
+    '   mittel" or "Relevanz: niedrig" (never bold); a one-paragraph summary; "Kritik:"; "Für das',
+    '   Projekt:" with each claim, its path and the skeptic verdict and evidence (a claim the skeptic',
+    '   did not check reads "ungeprüft").',
+    '4. "## Lernen": the concepts behind these items, from foundations to frontier, each with its best link.',
+    'Write nothing after "## Lernen"; a ledger is appended later.',
+    'Keep the readers\' labels as Fakt, Schluss and Vermutung. Return the recommendation titles.',
+    REC_NOTE,
     '',
-    'READ ITEMS:',
-    JSON.stringify(read, null, 1),
+    seeded ? SEEDS : '',
     '',
-    'SKEPTIC:',
-    JSON.stringify(skeptic ? skeptic.checks : 'the skeptic died: every claim is unverified', null, 1),
+    'RECOMMENDATIONS:',
+    JSON.stringify(recs ? recs.recommendations : [], null, 1),
     '',
-    'SKIPPED:',
-    JSON.stringify(skipped, null, 1),
-    '',
-    'ROUTES:',
-    JSON.stringify(routes.filter((r) => !r.worked || r.note), null, 1),
+    'ITEMS (seed: true marks the user\'s own links; one with read_as "unreadable" gets its title, link and',
+    'the reason it could not be read, nothing more):',
+    JSON.stringify(relevant, null, 1),
   ].join('\n'),
   { label: 'writer', phase: 'Write', model: 'opus' },
 )
+if (!written) return { aborted: 'writer', ledger: LEDGER }
 
-return { path: out, headlines: written, read: read.length, skipped: skipped.length }
+return {
+  path: out,
+  headlines: written,
+  ledger: LEDGER,
+  failedRoutes: failedRoutes.map((r) => r.route),
+  relevant: relevant.length,
+  read: read.length,
+  deferred: deferred.length,
+}
