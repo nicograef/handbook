@@ -37,7 +37,6 @@ Run them in `/opt/<project>`: its `.env` sets `COMPOSE_FILE`, so plain `docker c
 | `docker compose config --volumes` | Resolves the Compose file and prints its named volumes | Includes `postgres-data` |
 | `docker compose pull` | Pulls every image the file names | `denied`: log in to `ghcr.io` again |
 | `docker compose up -d --wait postgres` | Starts one service and waits for its healthcheck | `Healthy` |
-| `docker compose up -d backend` | Recreates a service whose config or `.env` changed | Compose leaves unchanged services alone |
 | `docker compose stop backend` | Stops one service, keeping its container | `Stopped` |
 | `docker compose start backend` | Starts a stopped service | `Started` |
 | `docker compose exec postgres sh -c` | Runs a shell command inside a running service | Single quotes make `$POSTGRES_USER` expand inside the container |
