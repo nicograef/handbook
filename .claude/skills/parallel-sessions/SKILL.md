@@ -35,7 +35,7 @@ Messages: native SendMessage. ListAgents lists every session on the machine; `ag
    | A lockfile or index in `SHARED PATHS` | Treat as a conflict even when clean |
    | `RESOURCES` non-empty | Settle ownership before running tests |
 
-4. SendMessage to the peer's name the moment you learn something that changes its next action; never route it through the user. Open the first line with the kind.
+4. SendMessage the peer by name as soon as you learn what changes its next action. Never route it through the user. Open the first line with the kind.
 
    | Kind | Peer's response |
    | --- | --- |
