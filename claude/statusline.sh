@@ -9,7 +9,7 @@ input=$(cat)
 export LC_NUMERIC=C
 
 # One jq call; the unit separator keeps empty fields in place, unlike tab or space.
-IFS=$'\x1f' read -r model cwd effort pct cost added removed five_h seven_d < <(
+IFS=$'\x1f' read -r model cwd effort pct cost added removed five_h five_h_reset seven_d < <(
   echo "$input" | jq -r '[
     (.model.display_name // .model.id // "unknown"),
     (.workspace.current_dir // .cwd // ""),
@@ -19,6 +19,7 @@ IFS=$'\x1f' read -r model cwd effort pct cost added removed five_h seven_d < <(
     (.cost.total_lines_added // 0),
     (.cost.total_lines_removed // 0),
     (.rate_limits.five_hour.used_percentage // ""),
+    (try (.rate_limits.five_hour.resets_at | localtime | strftime("%H:%M")) catch ""),
     (.rate_limits.seven_day.used_percentage // "")
   ] | map(tostring) | join("\u001f")' 2>/dev/null
 )
@@ -79,6 +80,9 @@ for pair in "5h:$five_h" "7d:$seven_d"; do
   [[ -z "$used" ]] && continue
   sep=""; [[ -n "$line2" ]] && sep=" ${DIM}·${RESET} "
   line2="$line2$(printf "${sep}${DIM}%s %.0f%%${RESET}" "$label" "$used")"
+  if [[ "$label" == "5h" ]] && [[ -n "$five_h_reset" ]]; then
+    line2="$line2$(printf " ${DIM}↻%s${RESET}" "$five_h_reset")"
+  fi
 done
 
 if [[ -n "$line2" ]]; then
