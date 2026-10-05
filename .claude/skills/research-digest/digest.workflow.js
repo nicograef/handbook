@@ -1,7 +1,7 @@
 export const meta = {
   name: 'research-digest',
-  description: 'Sweep the web since the last issue, read the best items in full, judge them against the project and write the issue.',
-  whenToUse: 'Once per issue of the research-digest skill, with {today, since, repo, agent, out, covered, urls?} as args.',
+  description: 'Sweep the profile topics or expand from given material, read the best items in full, judge them against the project and write the report.',
+  whenToUse: 'Once per research-digest run, with {today, since, repo, profile, out, covered, seeds?, notes?} as args.',
   phases: [
     { title: 'Brief', detail: 'the project and its open problems, off the tree', model: 'opus' },
     { title: 'Discover', detail: 'one lane per topic line of the project agent', model: 'sonnet' },
@@ -11,22 +11,31 @@ export const meta = {
   ],
 }
 
-// One issue of the research digest (SKILL.md beside this file). Every agent runs as the project's
-// researcher agent, whose definition carries the topics, rulings and brief sources. Today and the
-// window arrive in `args`: a script that read the clock could not replay from its journal.
+// One issue of the research digest (SKILL.md beside this file). Every agent reads the project's
+// researcher profile first, by path: an agent file loads into the registry only at session start,
+// and a digest may run from another checkout. Today and the window arrive in `args`: a script
+// that read the clock could not replay from its journal.
 
-const { today, since, repo, agent: agentType, out } = args
+const { today, since, repo, profile, out } = args
 const covered = args.covered || []
-const ownerUrls = args.urls || []
+// Every run is a deep dive. Given the user's links or text, discovery expands from them over no
+// window; without, it sweeps the profile's topics since the last report.
+const seeds = args.seeds || []
+const notes = args.notes || ''
+const seeded = seeds.length > 0 || Boolean(notes)
 
 // Reading is the expensive stage, so discovery is cut to a cap and the cut is logged and listed
-// in the issue's skipped section. Owner URLs are exempt from the cap.
+// in the issue's skipped section.
 const READ_CAP = 12
 const BATCH = 4
 
 const ROUTES = 'Read ~/.claude/skills/research-digest/sources.md first: it says how each source family is found and read.'
-const WINDOW = `The window is ${since} to ${today}: an item published or released before ${since} is out of it.`
+const WINDOW = seeded
+  ? 'There is no window: age matters only where a newer source supersedes an older one.'
+  : `The window is ${since} to ${today}: an item published or released before ${since} is out of it.`
+const SEEDS = seeded ? ['THE USER\'S MATERIAL (read each link in full):', ...seeds.map((u) => `- ${u}`), notes ? `THE USER\'S NOTES:\n${notes}` : ''].join('\n') : ''
 const READ_ONLY = [
+  `First read the project profile ${profile}: its Brief, Topics, Rulings and Judging sections bind you.`,
   `The repository is at ${repo}; run every command from there.`,
   'READ ONLY: write no file in the repository, make no commit, call no paid provider API, run nothing',
   'that spends. /tmp is yours for downloads. Quote what a claim stands on.',
@@ -50,7 +59,7 @@ const BRIEF_SCHEMA = {
     },
     lanes: {
       type: 'array',
-      description: 'one per topic line of your agent definition, at most four',
+      description: 'one per topic line of the profile, at most four',
       items: {
         type: 'object',
         properties: { key: { type: 'string' }, focus: { type: 'string', description: 'what this lane sweeps and where' } },
@@ -165,15 +174,23 @@ const brief = await agent(
   [
     READ_ONLY,
     'Write the brief every later reader of this digest judges against. Read what the Brief section of',
-    'your agent definition names, and `git log --oneline -40`. Name the stack as the code has it and',
-    'the open problems with the path where each stands. Turn each line of your Topics section into a',
-    'discovery lane. Then the search terms that would surface outside work on the open problems.',
+    'the profile names, and `git log --oneline -40`. Name the stack as the code has it and',
+    'the open problems with the path where each stands. Turn each line of the Topics section into a',
+    'discovery lane whose focus copies that line with its Sources, Queries and Avoid lines verbatim. Then',
+    'the search terms that would surface outside work on the open problems.',
   ].join('\n'),
-  { label: 'brief', model: 'opus', agentType, schema: BRIEF_SCHEMA },
+  { label: 'brief', model: 'opus', schema: BRIEF_SCHEMA },
 )
 if (!brief) return { aborted: 'brief' }
 
-const LANES = brief.lanes.slice(0, 4)
+const LANES = seeded
+  ? [{ key: 'connected', focus: [
+      'Expand from the user\'s material below, within the profile\'s topics and rulings: their code repositories, papers, model cards, benchmarks and',
+      'datasets they cite, independent critiques and replications, practitioner discussion (Hacker News,',
+      'Reddit), and the strongest competing approaches. Prefer primary sources and measurements.',
+      SEEDS,
+    ].join(' ') }]
+  : brief.lanes.slice(0, 4)
 const BRIEF = [
   'THE PROJECT, as the tree has it:',
   brief.stack,
@@ -190,30 +207,33 @@ const lanes = await parallel(
         `You are the ${lane.key} discovery lane of a research digest. ${WINDOW}`,
         lane.focus,
         `Terms tied to the open problems: ${brief.watch_terms.join('; ')}.`,
-        'Search widely: the routes in sources.md, WebSearch in every language the project works in, the',
-        'pages they link. Return candidates, not readings: the canonical URL, its date, and one sentence',
+        'Sweep every Discovery platform of sources.md that fits this lane: web search in every language the',
+        'project works in, Google News, arXiv, Hugging Face, Hacker News, Medium, Reddit, GitHub, registries,',
+        'regulators. Follow the pages they link. Return candidates, not readings: the canonical URL, its date, and one sentence',
         'on why the project might care. Priority high means it bears on an open problem or the stack',
         'directly. Skip SEO listicles, vendor pages without substance and anything outside the window.',
+        'Try every source the lane names before searching wider; a source you did not reach is a failed',
+        'route in your report, never a silent gap. One arXiv API request per 3 s, never in parallel.',
         'Report each route you tried and whether it answered.',
         '',
         BRIEF,
         '',
         ROUTES,
       ].join('\n'),
-      { label: `discover:${lane.key}`, phase: 'Discover', model: 'sonnet', agentType, schema: CANDIDATES_SCHEMA },
+      { label: `discover:${lane.key}`, phase: 'Discover', model: 'sonnet', schema: CANDIDATES_SCHEMA },
     ),
   ),
 )
 
 // Barrier: the dedup needs every lane's candidates at once.
 const seen = new Set(covered.map(canon))
-const owner = []
-for (const url of ownerUrls) {
+const seedItems = []
+for (const url of seeds) {
   const key = canon(url)
-  if (owner.some((o) => o.key === key)) continue
-  owner.push({ key, url, title: '', published: '', kind: 'owner', topic: 'owner', why: 'named by the owner', priority: 'high' })
+  if (seen.has(key)) continue
+  seen.add(key)
+  seedItems.push({ key, url, title: '', published: '', why: 'named by the user', priority: 'high' })
 }
-owner.forEach((o) => seen.add(o.key))
 
 const skipped = []
 const routes = []
@@ -229,7 +249,7 @@ lanes.forEach((result, i) => {
     const key = canon(item.url)
     if (seen.has(key)) continue
     seen.add(key)
-    if (item.published && item.published < since) {
+    if (!seeded && item.published && item.published < since) {
       skipped.push({ url: item.url, title: item.title, reason: `published ${item.published}, before the window` })
       continue
     }
@@ -247,10 +267,10 @@ const interleave = (items) => {
 const ranked = [...interleave(pools.high), ...interleave(pools.medium), ...interleave(pools.low)]
 const chosen = ranked.slice(0, READ_CAP)
 const capped = ranked.slice(READ_CAP)
-capped.forEach((it) => skipped.push({ url: it.url, title: it.title, reason: `over the reading cap (priority ${it.priority}); pass it as an owner URL to read it` }))
-log(`discovered ${ranked.length} new candidates; reading ${chosen.length} plus ${owner.length} owner URLs; ${capped.length} over the cap, ${skipped.length - capped.length} outside the window`)
+capped.forEach((it) => skipped.push({ url: it.url, title: it.title, reason: `over the reading cap (priority ${it.priority})` }))
+log(`discovered ${ranked.length} new candidates; reading ${chosen.length} plus ${seedItems.length} of the user's links; ${capped.length} over the cap, ${skipped.length - capped.length} outside the window`)
 
-const toRead = [...owner, ...chosen]
+const toRead = [...seedItems, ...chosen]
 if (!toRead.length) log('nothing new to read; the issue reports an empty window')
 const batches = []
 for (let i = 0; i < toRead.length; i += BATCH) batches.push(toRead.slice(i, i + BATCH))
@@ -268,8 +288,8 @@ const readResults = await parallel(
         "  benchmark resemble the project's data; what is missing; label each claim fact (quoted),",
         '  inference or guess;',
         '- applicability: what it would change or confirm in the project, each with the repo path it',
-        '  touches, found by reading that code. Judge against the brief and your Rulings section;',
-        '- relevance per your Judging section;',
+        '  touches, found by reading that code. Judge against the brief and the profile Rulings;',
+        '- relevance per the profile Judging section;',
         '- learn: the concept worth understanding from it, if any.',
         'An item you cannot read gets read_as "unreadable" and a skip_reason naming the route that failed.',
         '',
@@ -277,10 +297,11 @@ const readResults = await parallel(
         '',
         ROUTES,
         '',
+        notes ? `THE USER'S NOTES (a claim here is a claim to check, not a fact):\n${notes}\n` : '',
         'ITEMS:',
         ...batch.map((it) => `- ${it.url}${it.title ? ` | ${it.title}` : ''}${it.published ? ` | ${it.published}` : ''} | ${it.why}`),
       ].join('\n'),
-      { label: `read:${b + 1}`, phase: 'Read', model: 'opus', agentType, schema: READ_SCHEMA },
+      { label: `read:${b + 1}`, phase: 'Read', model: 'opus', schema: READ_SCHEMA },
     ),
   ),
 )
@@ -310,13 +331,13 @@ const skeptic = claims.length
         '- overstated: a real fit, smaller than claimed;',
         '- wrong: the code does not work the way the claim assumes;',
         '- already-in-project: the tree does this already;',
-        '- conflicts-with-ruling: it would loosen an invariant or a ruling of your agent definition.',
+        '- conflicts-with-ruling: it would loosen an invariant or a ruling of the profile.',
         'Default to overstated when the code does not settle it. Set the relevance the item deserves.',
         '',
         'CLAIMS:',
         JSON.stringify(claims.map((it) => ({ url: it.url, title: it.title, relevance: it.relevance, applicability: it.applicability })), null, 1),
       ].join('\n'),
-      { label: 'skeptic', phase: 'Skeptic', model: 'opus', agentType, schema: SKEPTIC_SCHEMA },
+      { label: 'skeptic', phase: 'Skeptic', model: 'opus', schema: SKEPTIC_SCHEMA },
     )
   : { checks: [] }
 if (!skeptic) log('the skeptic died; the issue marks every applicability claim unverified')
@@ -324,19 +345,20 @@ if (!skeptic) log('the skeptic died; the issue marks every applicability claim u
 phase('Write')
 const written = await agent(
   [
-    `The repository is at ${repo}. Write exactly one file, ${out} (create its directory if absent;`,
-    'overwrite a file of the same day), and touch nothing else. Commit nothing.',
+    `First read the project profile ${profile}. The repository is at ${repo}. Write exactly one file,`,
+    `${out} (create its directory if absent), and touch nothing else. Commit nothing.`,
     '',
-    `Write issue ${today} of the research digest, a newsletter for the project's developer, who reads it`,
-    `to keep up and to learn. Window: ${since} to ${today}. English; short sentences; every item links its source.`,
-    'Structure, in this order:',
-    `1. "# Research digest — ${today}", then one line: the window and what was swept.`,
+    `Write a research report for the project's developer, who reads it to keep up, judge and learn.`,
+    'English; short sentences; every claim links its source. Structure, in this order:',
+    seeded
+      ? '1. "# Deep dive — <a short name for the subject>", then one line on what was read.'
+      : `1. "# Research digest — ${today}", then the line "Window: ${since} to ${today}" verbatim, then one line on what was swept.`,
     '2. "## What matters": at most five bullets, highest verified relevance first, each one sentence,',
     '   its next step and a link to its entry below. Only items whose claims the skeptic let stand.',
-    '3. "## Items", grouped by topic: per item "### <title>", then the link, date, source, how it was',
-    '   read, relevance; a one-paragraph summary; "Critique:"; "For the project:" with each claim, its',
-    '   path and the skeptic verdict and evidence (a claim the skeptic did not check reads',
-    '   "unverified"). Use the skeptic relevance where it differs from the reader.',
+    '3. "## Items", the user\'s material first, then grouped by topic: per item "### <title>", then the',
+    '   link, date, source, how it was read, relevance; a one-paragraph summary; "Critique:"; "For the',
+    '   project:" with each claim, its path and the skeptic verdict and evidence (a claim the skeptic',
+    '   did not check reads "unverified"). Use the skeptic relevance where it differs from the reader.',
     '4. "## Learn": a reading path from foundations to frontier, each concept with its best link.',
     '5. "## Skipped": every skipped URL with its reason.',
     '6. "## Sources health": routes that failed or answered oddly, one line each.',
@@ -355,7 +377,7 @@ const written = await agent(
     'ROUTES:',
     JSON.stringify(routes.filter((r) => !r.worked || r.note), null, 1),
   ].join('\n'),
-  { label: 'writer', phase: 'Write', model: 'opus', agentType },
+  { label: 'writer', phase: 'Write', model: 'opus' },
 )
 
 return { path: out, headlines: written, read: read.length, skipped: skipped.length }

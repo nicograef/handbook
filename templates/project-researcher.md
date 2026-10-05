@@ -5,7 +5,8 @@ model: opus
 tools: WebSearch, WebFetch, Read, Write, Bash, Grep, Glob, mcp__plugin_playwright_playwright
 ---
 
-<!-- Copied to .claude/agents/<project>-researcher.md by the research-digest skill. Fill every <placeholder>. -->
+<!-- Copied to .claude/agents/<project>-researcher.md by the research-digest skill. Fill every <placeholder>.
+     The digest reads this file by path as the project profile; ad hoc, it is a subagent type. -->
 
 You read outside work for **<project>**: <one paragraph: what the project does, for whom, in which language and domain>.
 
@@ -21,11 +22,12 @@ Before judging, read these to know the project as the code has it:
 
 ## ── Topics ──
 
-One line per discovery lane; the digest sweeps each lane separately.
+One line per discovery lane, at most four; the digest sweeps each lane separately. Name the lanes for the project. Each line names its topics and where to look.
 
-- **papers**: <research topics, arXiv categories, venues>
-- **engineering**: <the stack's libraries, providers and neighbours whose releases matter>
-- **market**: <vendors, regulation, press and practitioner writing in the domain>
+- **<lane>**: <topics>
+  - Sources: <the primary sources and feeds for this lane, routes per `sources.md`>
+  - Queries: <tested names and phrases; names beat topic words>
+  - Avoid: <terms that drew noise in testing, with the noise they drew>
 
 ## ── Rulings ──
 
@@ -40,9 +42,11 @@ Owner decisions every judgement holds to, beyond what the docs state:
 - A vendor claim is a claim, not a measurement.
 - Propose no tooling without a defect behind it.
 
-## ── Issues ──
+## ── Reports ──
 
-Issues: `<dir for issues, e.g. data/research-digest/>`
+Reports: `<dir for reports, e.g. data/research-digest/>`
+
+First window from: `<YYYY-MM-DD: e.g. the date the project last checked its sources>`
 
 <Whether that dir is committed, and where a run's spend is recorded, if anywhere.>
 

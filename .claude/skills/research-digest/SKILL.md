@@ -1,44 +1,60 @@
 ---
 name: research-digest
-description: Sweeps papers, releases and articles since the last issue, reads the best in full, judges each against this project's code and rulings, and writes a newsletter issue. Use for a research digest, sweep or newsletter, or to judge a URL list.
-argument-hint: "[URLs to read in full]"
+description: Deep-dives the project's research topics on arXiv, web search, Hacker News, GitHub and regulators, or expands from links and text the user gives. Reads the best finds in full, judges them against the code and publishes a report page.
+argument-hint: "[links or text to expand from]"
 disable-model-invocation: true
 ---
 
 # Research digest
 
-One issue per run: a newsletter on outside work since the last issue. Each item is read critically and judged against this repo. It changes no code and commits nothing. An item rated high is a lead for the owner, not a task for this run.
+Every run is one deep dive with one report. Without input it sweeps the profile's topics since the last report. Given links or text, it reads that material in full and expands from it. Each item is read critically and judged against this repo. The run changes no code and commits nothing. An item rated high is a lead for the owner, not a task for this run.
 
 ## Hard rules
 
-- The project's researcher agent holds the project context: topics, rulings, brief sources, issue directory. Without it, the issue judges nothing.
-- WebFetch is triage only. The reading of record is the raw page, the arXiv HTML or the PDF: [sources.md](sources.md).
+- The project profile holds the project context: topics, rulings, brief sources, report directory. Without it, the report judges nothing.
+- Discovery uses the platforms of [sources.md](sources.md), never a hand-kept link list. The user's links feed one run; nothing stores them as a source.
+- WebFetch is triage only. The reading of record is the raw page, the arXiv HTML or the PDF.
 - Never log in, submit a form or post anything. A walled source is skipped with its reason.
-- Owner URLs are read in full, every one, inside the window or not.
 
-## 1. The project agent
+## 1. The project profile
 
-Look for `.claude/agents/*-researcher.md`. None: copy [the template](../../../templates/project-researcher.md) there and fill it from `AGENTS.md`, the docs and memory. Show the filled rulings to the user before the run. A new agent file loads at the next session start; until then, run in a fresh session.
+The profile is the project's researcher agent, `.claude/agents/<project>-researcher.md`. None: copy [the template](../../../templates/project-researcher.md) there and fill it from `AGENTS.md`, the docs and memory. Show the filled rulings to the user before the run.
 
-Read its `Issues:` line for the issue directory.
+The workflow reads the profile by path, so a new profile works without a session restart. Its `Reports:` line names the report directory.
 
-## 2. The window and what was covered
+## 2. The window and the report path
 
-The window runs from the newest issue's date to today; with no issue, the last two weeks. Every URL the newest issue names, its skipped list included, is covered and is not read again. An owner URL is read even when covered.
+A sweep's report carries the line `Window: <since> to <today>` under its title. The next sweep starts at the newest window's end. A run expanding from the user's material has no window and moves none. With no window on record, start at the profile's `First window from:` date, else two weeks back.
+
+Every URL the reports name, skipped lists included, is covered and is not read again unless the user names it.
+
+The report path is `<report dir>/<today>.md`; when that exists, `<today>-2.md`, and so on.
 
 ## 3. Run the workflow
 
-Run the saved [digest.workflow.js](digest.workflow.js) by its script path with:
+Copy [digest.workflow.js](digest.workflow.js) into the session scratchpad and run that copy by its script path. The Workflow tool takes a script path only under the working directory or the scratchpad. Args:
 
 ```
-args = {today, since, repo: <absolute checkout path>, agent: <the agent's name>,
-        out: <issue dir>/<today>.md, covered: [<URLs of step 2>], urls: [<owner URLs>]}
+args = {today, since, repo: <absolute checkout path>, profile: <absolute profile path>,
+        out: <absolute report path>, covered: [<URLs of step 2>],
+        seeds: [<the user's links>], notes: "<the user's text or topic>"}
 ```
 
-It returns `{path, headlines, read, skipped}`, or `{aborted: 'brief'}` when the brief died; then run it again.
+`seeds` and `notes` are present only when the user gave material; pasted text without a link goes into `notes`. The workflow returns `{path, headlines, read, skipped}`, or `{aborted: 'brief'}` when the brief died; then run it again.
 
-Report the path and the headlines. The issue is the record; the chat gets no recap.
+## 4. Publish the page
+
+Where the Artifact tool is available, publish the report as a private page. Fill [page.html](page.html) into the scratchpad:
+
+```sh
+python3 -c 'import sys; t, md, title = open(sys.argv[1]).read(), open(sys.argv[2]).read(), sys.argv[3]; print(t.replace("{{TITLE}}", title).replace("{{ISSUE}}", md.replace("</", "<\\/")), end="")' \
+  ~/.claude/skills/research-digest/page.html <report path> "<Project> research <today>" > <scratchpad>/research-<project>-<today>.html
+```
+
+Publish that file with `icon: "news"` and a one-sentence description of what it covers. The design is fixed in the template; build no page of your own.
+
+Report the page URL, the report path and the headlines. The report is the record; the chat gets no recap.
 
 ## Spend
 
-A run costs model tokens only and buys nothing from a provider. Where the project keeps a spend ledger, its agent file says whether a run is recorded there.
+A run costs model tokens only and buys nothing from a provider. Where the project keeps a spend ledger, its profile says whether a run is recorded there.
