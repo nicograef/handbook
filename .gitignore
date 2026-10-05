@@ -10,7 +10,6 @@
 **/.claude/first-run
 **/.claude/assistant-daemon-state.json
 **/.claude/settings.local.json
-**/.claude/skills/synced/
 
 # Playwright MCP session artifacts
 .playwright-mcp/
