@@ -43,7 +43,7 @@ args = {today, since, repo: <absolute checkout path>, profile: <absolute profile
 
 `seeds` and `notes` are present only when the user gave material; pasted text without a link goes into `notes`.
 
-The workflow returns `{headlines, ledger, failedRoutes}`. Append `ledger` verbatim to the report file. On `{aborted}`, relaunch it with its run id as `resumeFromRunId`, so the finished agents replay from the journal.
+The workflow returns `{recommendations, ledger, failedRoutes}`. Append `ledger` verbatim to the report file. On `{aborted}`, relaunch it with its run id as `resumeFromRunId`, so the finished agents replay from the journal.
 
 ## 4. Publish the page
 

@@ -567,7 +567,7 @@ const written = await agent(
 if (!written) return { aborted: 'writer' }
 
 return {
-  headlines: written,
+  recommendations: written,
   ledger: LEDGER,
   failedRoutes: failedRoutes.map((r) => r.route),
 }
