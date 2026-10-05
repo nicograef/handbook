@@ -107,7 +107,7 @@ Global Claude Code config, skills, agents and the scripts they call.
 | [claude/statusline.sh](claude/statusline.sh) | Status line script |
 | [.claude/skills/README.md](.claude/skills/README.md) | Skills index |
 | [.claude/agents/web-researcher.md](.claude/agents/web-researcher.md) | Web research agent |
-| [templates/project-researcher.md](templates/project-researcher.md) | Project researcher agent for the research-digest skill: topics, rulings, report directory |
+| [templates/research-digest.md](templates/research-digest.md) | Project profile for the research-digest skill: project, lanes, reports folder |
 | [scripts/agent-bus.sh](scripts/agent-bus.sh) | Coordination bus for concurrent Claude Code sessions in one repo |
 | [scripts/check-agents.sh](scripts/check-agents.sh) | Last activity of background agents, read off their task transcripts |
 | [scripts/git-guard.sh](scripts/git-guard.sh) | PreToolUse hook that blocks force pushes, skipped hooks and commits gitleaks flags |
