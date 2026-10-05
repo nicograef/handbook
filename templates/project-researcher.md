@@ -45,8 +45,6 @@ Owner decisions every judgement holds to, beyond what the docs state:
 
 Reports: `<dir for reports, e.g. data/research-digest/>`
 
-First window from: `<YYYY-MM-DD: e.g. the date the project last checked its sources>`; used until the first report carries a window.
-
 <Whether that dir is committed, and where a run's spend is recorded, if anywhere.>
 
 ## One source, ad hoc

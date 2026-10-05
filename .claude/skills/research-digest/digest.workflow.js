@@ -14,15 +14,15 @@ export const meta = {
 
 // One research-digest run (SKILL.md beside this file). Every agent reads the project's researcher
 // profile first, by path: an agent file loads into the registry only at session start, and a run
-// may target another checkout. Today and the window arrive in `args`: a script that read the clock
-// could not replay from its journal.
+// may target another checkout. Today and the lookback start arrive in `args`: a script that read
+// the clock could not replay from its journal.
 
 const { today, since, repo, profile, out } = args
 const covered = args.covered || []
-// Candidates an earlier run deferred over its reading cap: they rejoin the pool whatever the window.
+// Candidates an earlier run deferred over its reading cap: they rejoin the pool.
 const carried = args.carried || []
-// Given the user's links or text, discovery expands from them over no window; without, it sweeps
-// the profile's topics since the last report.
+// Given the user's links or text, discovery expands from them; without, it sweeps the profile's
+// topics for work published since the lookback start. No candidate is dropped for its age.
 const seeds = args.seeds || []
 const notes = args.notes || ''
 const seeded = seeds.length > 0 || Boolean(notes)
@@ -31,9 +31,11 @@ const READ_CAP = 20
 const BATCH = 4
 
 const ROUTES = 'Read ~/.claude/skills/research-digest/sources.md first: it says how each source family is found and read.'
-const WINDOW = seeded
-  ? 'There is no window: age matters only where a newer source supersedes an older one.'
-  : `The window is ${since} to ${today}: an item published or released before ${since} or after ${today} is out of it.`
+const AGE = [
+  seeded ? '' : `Search for new work published since ${since}, with the date filters the routes take.`,
+  'An older item that bears on the topics or the open problems is a candidate too: no item is out',
+  'for its age, which matters only where a newer source supersedes an older one.',
+].join(' ')
 const SEEDS = seeded
   ? ["THE USER'S MATERIAL (read each link in full):", ...seeds.map((u) => `- ${u}`), notes ? `THE USER'S NOTES:\n${notes}` : ''].join('\n')
   : ''
@@ -223,7 +225,7 @@ const BRIEF = [
 
 const discoverPrompt = (lane, retry) => [
   READ_ONLY,
-  `You are the ${lane.key} discovery lane of a research run. ${WINDOW}`,
+  `You are the ${lane.key} discovery lane of a research run. ${AGE}`,
   lane.focus,
   `Terms tied to the open problems: ${brief.watch_terms.join('; ')}.`,
   'There is no time limit. Try every source the lane names, then search wider by the Discovery',
@@ -272,28 +274,20 @@ for (const url of seeds) {
 }
 covered.forEach((u) => seen.add(canon(u)))
 
-const outside = [] // read as covered by later runs
 const deferred = [] // rejoins the next run's pool
 const routes = []
 const pools = { high: [], medium: [], low: [] }
-const admit = (item, lane, exemptWindow) => {
+const admit = (item, lane) => {
   const key = canon(item.url)
   const tkey = titleKey(item.title)
   if (seen.has(key) || (tkey.length > 12 && seenTitles.has(tkey))) return
   seen.add(key)
   if (tkey.length > 12) seenTitles.add(tkey)
   const dated = ISO.test(item.published || '')
-  if (!seeded && !exemptWindow && dated) {
-    const day = item.published.slice(0, 10)
-    if (day < since || day > today) {
-      outside.push({ url: item.url, reason: `dated ${day}, outside ${since} to ${today}` })
-      return
-    }
-  }
   const priority = pools[item.priority] ? item.priority : 'medium'
   pools[priority].push({ ...item, key, lane, dated })
 }
-carried.forEach((c) => admit({ url: c.url, title: c.title || '', published: '', why: 'deferred by the last run', priority: c.priority || 'medium' }, -1, true))
+carried.forEach((c) => admit({ url: c.url, title: c.title || '', published: '', why: 'deferred by the last run', priority: c.priority || 'medium' }, -1))
 lanes.forEach((result, i) => {
   if (!result) {
     log(`discovery lane ${LANES[i].key} died; its family is unswept this run`)
@@ -301,14 +295,15 @@ lanes.forEach((result, i) => {
     return
   }
   routes.push(...result.routes.map((r) => ({ ...r, route: `${LANES[i].key}: ${r.route}` })))
-  result.items.forEach((item) => admit(item, i, false))
+  result.items.forEach((item) => admit(item, i))
 })
 
-// Inside each priority: dated before undated, and the lanes interleaved so the cap never fills
-// from one family alone. Lanes are told apart by index, since the brief may repeat a key.
+// Inside each priority: newest first, undated last, and the lanes interleaved so the cap never
+// fills from one family alone. Lanes are told apart by index, since the brief may repeat a key.
+const newestFirst = (x, y) => (y.dated ? y.published.slice(0, 10) : '').localeCompare(x.dated ? x.published.slice(0, 10) : '')
 const interleave = (items) => {
   const order = [-1, ...LANES.map((_, i) => i)]
-  const byLane = order.map((l) => [...items.filter((it) => it.lane === l && it.dated), ...items.filter((it) => it.lane === l && !it.dated)])
+  const byLane = order.map((l) => items.filter((it) => it.lane === l).sort(newestFirst))
   const picked = []
   for (let i = 0; byLane.some((b) => i < b.length); i++) byLane.forEach((b) => i < b.length && picked.push(b[i]))
   return picked
@@ -316,7 +311,7 @@ const interleave = (items) => {
 const ranked = [...interleave(pools.high), ...interleave(pools.medium), ...interleave(pools.low)]
 const chosen = ranked.slice(0, READ_CAP)
 ranked.slice(READ_CAP).forEach((it) => deferred.push({ url: it.url, priority: it.priority }))
-log(`${ranked.length} new candidates: reading ${chosen.length} plus ${seedItems.length} of the user's links; ${deferred.length} deferred to the next run, ${outside.length} outside the window`)
+log(`${ranked.length} new candidates: reading ${chosen.length} plus ${seedItems.length} of the user's links; ${deferred.length} deferred to the next run`)
 
 const toRead = [...seedItems, ...chosen]
 if (!toRead.length) log('nothing new to read')
@@ -430,8 +425,6 @@ const LEDGER = [
   ...dropped.map((it) => commentSafe(`${it.url} (${it.relevance})`)),
   'unreadable:',
   ...unreadable.filter((it) => !it.seed).map((it) => commentSafe(`${it.url} (${it.reason})`)),
-  'outside-window:',
-  ...outside.map((it) => commentSafe(`${it.url} (${it.reason})`)),
   'failed-routes:',
   ...failedRoutes.map((r) => commentSafe(`${r.route}: ${r.note}`)),
   'deferred:',
@@ -506,7 +499,7 @@ const written = await agent(
     'and mention no other source. Structure, in this order:',
     seeded
       ? '1. "# Research: <a short name for the subject of the user\'s material>", then one line on what was read.'
-      : `1. "# Research ${today}", then the line "Window: ${since} to ${today}" verbatim, then one line on what was swept.`,
+      : `1. "# Research ${today}", then one line on what was swept for work since ${since}.`,
     '2. "## Recommendations": each recommendation below as "### <n>. <title>" with the paragraphs "What:",',
     '   "Why:", "Gain:", "Cost and risk:", "Verify:" and "Guardrails:", linking its sources. Mark an',
     '   experiment as "(experiment)" in its heading.',

@@ -34,7 +34,6 @@ body { background: var(--bg); color: var(--fg); font: 17px/1.6 var(--body); padd
 header.mast { grid-column: 1 / -1; padding-block: 40px 20px; border-bottom: 1px solid var(--rule); display: grid; gap: 8px; }
 .eyebrow { font: 500 12px/1.4 var(--mono); letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
 h1 { font: 700 clamp(28px, 4.5vw, 44px)/1.1 var(--display); margin: 0; text-wrap: balance; }
-.window { font: 500 14px/1.4 var(--mono); color: var(--accent); font-variant-numeric: tabular-nums; }
 nav.toc { position: sticky; top: calc(env(safe-area-inset-top, 0px) + 24px); align-self: start; max-height: calc(100vh - 48px); overflow: auto; padding-block: 24px; font: 14px/1.45 var(--display); }
 nav.toc ol { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
 nav.toc li.h3 { padding-left: 12px; font-size: 13px; color: var(--muted); }
@@ -74,7 +73,6 @@ html { scroll-behavior: smooth; }
   <header class="mast">
     <div class="eyebrow">Research</div>
     <h1 id="title">{{TITLE}}</h1>
-    <div class="window" id="window"></div>
   </header>
   <nav class="toc" aria-label="Contents"><ol id="toc"></ol></nav>
   <main id="issue-body"></main>
@@ -88,10 +86,8 @@ html { scroll-behavior: smooth; }
   // The report arrives as a JSON string; its closing ledger comment is the next run's, not the reader's.
   var md = JSON.parse(document.getElementById('report').textContent).replace(/\n*<!--[\s\S]*?-->\s*$/, '\n');
   var lines = md.split('\n');
-  // The issue's own H1 and Window line move into the masthead.
+  // The issue's own H1 moves into the masthead.
   if (/^# /.test(lines[0])) { document.getElementById('title').textContent = lines.shift().slice(2).trim(); }
-  var wi = lines.findIndex(function (l) { return /^Window:/.test(l.trim()); });
-  if (wi > -1 && wi < 4) { document.getElementById('window').textContent = lines.splice(wi, 1)[0].trim().replace(' to ', ' → '); }
   var main = document.getElementById('issue-body');
   var esc = function (t) { return t.replace(/[&<]/g, function (c) { return c === '&' ? '&amp;' : '&lt;'; }); };
   // Fetched titles and quotes reach the page, so rendered HTML is sanitised; without both libraries the text shows plain.

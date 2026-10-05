@@ -7,7 +7,7 @@ disable-model-invocation: true
 
 # Research digest
 
-Every run is one deep dive with one report. Without input it sweeps the profile's topics since the last report. Given links or text, it reads that material in full and expands from it. Each item is read critically and judged against this repo. The run changes no code and commits nothing.
+Every run is one deep dive with one report. Without input it sweeps the profile's topics for work of the last 30 days. Given links or text, it reads that material in full and expands from it. Each item is read critically and judged against this repo. The run changes no code and commits nothing.
 
 The report opens with one to three reasoned recommendations. Each is a change, or the cheapest experiment when no change is due yet. It shows only items of medium or high relevance. The rest of what was read or skipped sits in a closing HTML comment. The page hides it; the next run reads it as covered.
 
@@ -24,9 +24,9 @@ The profile is the project's researcher agent, `.claude/agents/<project>-researc
 
 The workflow reads the profile by path, so a new profile works without a session restart. Its `Reports:` line names the report directory.
 
-## 2. The window, covered, carried and the report path
+## 2. Lookback, covered, carried and the report path
 
-A sweep's report carries the line `Window: <since> to <today>` under its title. The next sweep starts at the newest window's end. A run expanding from the user's material has no window and moves none. With no window on record, start at the profile's `First window from:` date, else two weeks back.
+A sweep searches for work published in the 30 days before today; `since` is that start. No candidate is dropped for its age: an older paper or statute that still bears on the project is read. Runs never depend on each other's dates.
 
 Every report closes with a ledger comment. Its URLs under `deferred:` are carried: candidates an earlier run deferred over its reading cap, with their priority. Every other URL the reports name is covered and is not read again unless the user names it.
 
