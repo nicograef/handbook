@@ -9,7 +9,7 @@ disable-model-invocation: true
 
 Every run is one deep dive with one report. Without input it sweeps the profile's topics since the last report. Given links or text, it reads that material in full and expands from it. Each item is read critically and judged against this repo. The run changes no code and commits nothing.
 
-The report is German. It opens with one to three reasoned recommendations: a change, or the cheapest experiment when no change is due yet. It shows only items of medium or high relevance. The rest of what was read or skipped sits in a closing HTML comment. The page hides it; the next run reads it as covered.
+The report opens with one to three reasoned recommendations. Each is a change, or the cheapest experiment when no change is due yet. It shows only items of medium or high relevance. The rest of what was read or skipped sits in a closing HTML comment. The page hides it; the next run reads it as covered.
 
 ## Hard rules
 
@@ -26,7 +26,7 @@ The workflow reads the profile by path, so a new profile works without a session
 
 ## 2. The window, covered, carried and the report path
 
-A sweep's report carries the line `Zeitraum: <since> bis <today>` under its title. The next sweep starts at the newest window's end. A run expanding from the user's material has no window and moves none. With no window on record, start at the profile's `First window from:` date, else two weeks back.
+A sweep's report carries the line `Window: <since> to <today>` under its title. The next sweep starts at the newest window's end. A run expanding from the user's material has no window and moves none. With no window on record, start at the profile's `First window from:` date, else two weeks back.
 
 Every report closes with a ledger comment. Its URLs under `deferred:` are carried: candidates an earlier run deferred over its reading cap, with their priority. Every other URL the reports name is covered and is not read again unless the user names it.
 
@@ -52,7 +52,7 @@ Where the Artifact tool is available, publish the report as a private page. Fill
 
 ```sh
 python3 -c 'import sys, json, html; t, md, title = open(sys.argv[1]).read(), open(sys.argv[2]).read(), sys.argv[3]; print(t.replace("{{TITLE}}", html.escape(title)).replace("{{REPORT}}", json.dumps(md).replace("<", "\\u003c")), end="")' \
-  ~/.claude/skills/research-digest/page.html <report path> "<Project> Recherche <today>" > <scratchpad>/research-<project>-<today>.html
+  ~/.claude/skills/research-digest/page.html <report path> "<Project> research <today>" > <scratchpad>/research-<project>-<today>.html
 ```
 
 Publish that file with `icon: "news"` and a one-sentence description of what it covers. The design is fixed in the template; build no page of your own.

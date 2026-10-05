@@ -1,6 +1,6 @@
 export const meta = {
   name: 'research-digest',
-  description: 'Sweep the profile topics or expand from given material, read the best items in full, judge them against the project and write a German report with recommendations.',
+  description: 'Sweep the profile topics or expand from given material, read the best items in full, judge them against the project and write a report with recommendations.',
   whenToUse: 'Once per research-digest run, with {today, since, repo, profile, out, covered, carried?, seeds?, notes?} as args.',
   phases: [
     { title: 'Brief', detail: 'the project and its open problems, off the tree', model: 'opus' },
@@ -8,7 +8,7 @@ export const meta = {
     { title: 'Read', detail: 'full text, critique, applicability per item', model: 'opus' },
     { title: 'Skeptic', detail: 'every applicability claim against the code', model: 'opus' },
     { title: 'Recommend', detail: 'one to three reasoned changes or experiments', model: 'opus' },
-    { title: 'Write', detail: 'the German report, relevant items only', model: 'opus' },
+    { title: 'Write', detail: 'the report, relevant items only', model: 'opus' },
   ],
 }
 
@@ -490,9 +490,9 @@ const recs = evidence.length || leads.length
     )
   : null
 const REC_NOTE = !evidence.length && !leads.length
-  ? 'Write under "## Empfehlungen" exactly: "Keine Empfehlung: dieser Lauf fand nichts, das für das Projekt relevant ist."'
+  ? 'Write under "## Recommendations" exactly: "No recommendation: this run found nothing relevant to the project."'
   : !recs
-    ? 'Write under "## Empfehlungen" exactly: "Keine Empfehlung: der Empfehlungsschritt ist ausgefallen."'
+    ? 'Write under "## Recommendations" exactly: "No recommendation: the recommendation step failed."'
     : ''
 
 phase('Write')
@@ -501,24 +501,23 @@ const written = await agent(
     `First read the project profile ${profile}. The repository is at ${repo}. Write exactly one file,`,
     `${out} (create its directory if absent), and touch nothing else. Commit nothing.`,
     '',
-    "Write the report in German for the project's developer, who reads it to decide, keep up and learn.",
-    'Source titles, quotes, code paths and terms of art stay as they are. Short sentences; every claim',
-    'links its source. The report holds only the items below; add none and mention no other source.',
-    'Structure, in this order:',
+    "Write the report in English for the project's developer, who reads it to decide, keep up and learn.",
+    'Short sentences; every claim links its source. The report holds only the items below; add none',
+    'and mention no other source. Structure, in this order:',
     seeded
-      ? '1. "# Recherche: <a short German name for the subject of the user\'s material>", then one line on what was read.'
-      : `1. "# Recherche ${today}", then the line "Zeitraum: ${since} bis ${today}" verbatim, then one line on what was swept.`,
-    '2. "## Empfehlungen": each recommendation below as "### <n>. <title>" with the paragraphs "Was:",',
-    '   "Warum:", "Gewinn:", "Kosten und Risiko:", "Prüfen:" and "Leitplanken:", linking its sources.',
-    '   Mark an experiment as "(Experiment)" in its heading.',
-    '3. "## Funde": the user\'s material first, then the rest grouped by topic as "### <Thema>". Per item',
-    '   "#### <title>", then one plain line with link, date, source and "Relevanz: hoch", "Relevanz:',
-    '   mittel" or "Relevanz: niedrig" (never bold); a one-paragraph summary; "Kritik:"; "Für das',
-    '   Projekt:" with each claim, its path and the skeptic verdict and evidence (a claim the skeptic',
-    '   did not check reads "ungeprüft").',
-    '4. "## Lernen": the concepts behind these items, from foundations to frontier, each with its best link.',
-    'Write nothing after "## Lernen"; a ledger is appended later.',
-    'Keep the readers\' labels as Fakt, Schluss and Vermutung. Return the recommendation titles.',
+      ? '1. "# Research: <a short name for the subject of the user\'s material>", then one line on what was read.'
+      : `1. "# Research ${today}", then the line "Window: ${since} to ${today}" verbatim, then one line on what was swept.`,
+    '2. "## Recommendations": each recommendation below as "### <n>. <title>" with the paragraphs "What:",',
+    '   "Why:", "Gain:", "Cost and risk:", "Verify:" and "Guardrails:", linking its sources. Mark an',
+    '   experiment as "(experiment)" in its heading.',
+    '3. "## Findings": the user\'s material first, then the rest grouped by topic as "### <topic>". Per',
+    '   item "#### <title>", then one plain line with link, date, source and "Relevance: high",',
+    '   "Relevance: medium" or "Relevance: low" (never bold); a one-paragraph summary; "Critique:";',
+    '   "For the project:" with each claim, its path and the skeptic verdict and evidence (a claim the',
+    '   skeptic did not check reads "unverified").',
+    '4. "## Learn": the concepts behind these items, from foundations to frontier, each with its best link.',
+    'Write nothing after "## Learn"; a ledger is appended later.',
+    "Keep the readers' fact, inference and guess labels. Return the recommendation titles.",
     REC_NOTE,
     '',
     seeded ? SEEDS : '',
