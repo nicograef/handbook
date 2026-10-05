@@ -175,7 +175,7 @@ Apply the ruleset to `nicograef/handbook` through `gh api`. `guides/new-project.
 ### Acceptance criteria
 
 - [ ] `gh run list --workflow check.yml --limit 1 --json conclusion -q '.[0].conclusion'` prints `success`
-- [ ] `gh api repos/nicograef/handbook/rules/branches/main -q '[.[].type] | sort | join(",")'` prints `deletion,non_fast_forward`
+- [x] `gh api repos/nicograef/handbook/rules/branches/main -q '[.[].type] | sort | join(",")'` prints `deletion,non_fast_forward`
 - [ ] `actionlint templates/ci.yml .github/workflows/check.yml` passes
 - [ ] `make check` passes
 
