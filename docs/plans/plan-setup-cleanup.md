@@ -22,7 +22,7 @@ Remove what the setup and the handbook carry without use. Fix the overbroad `rm 
 
 ### What to build
 
-`claude/settings.json`: enabledPlugins keeps playwright only. The `Bash(rm -rf /*)` deny becomes exact denies for `rm -rf /`, `rm -rf ~` and `rm -rf ~/*`. `web-researcher.md` drops the context7 tools.
+`claude/settings.json`: enabledPlugins keeps playwright only. The `Bash(rm -rf /*)` deny becomes exact denies for `rm -rf /`, `rm -rf ~` and `rm -rf ~/`. `web-researcher.md` drops the context7 tools.
 
 Delete the reflect, mentor and testing skills. The testing skill's Keep/Refactor/Delete/Merge table moves into cleanup. prune loses its duplicate sweep bullet. plan merges its repeated self-review steps.
 
@@ -58,7 +58,7 @@ Nothing here is committed in the handbook.
 
 ### What to build
 
-Uninstall context7, frontend-design, typescript-lsp and gopls-lsp at user scope. Remove the `nicograef` marketplace and the plugin trash. In jotti, uninstall the project-scope plugins and drop the block from its settings. The owner disconnects Claude Docs and disables the unused account skills. Node moves to 26; `machine.md` follows.
+Uninstall context7, frontend-design, typescript-lsp and gopls-lsp at user scope. Remove the `nicograef` marketplace and the plugin trash. In jotti, uninstall the project-scope plugins and drop the block from its settings. Settings keep claude.ai connectors, skills and plugins out of the CLI. Node moves to 26 through `snap switch`; `machine.md` follows.
 
 ### Acceptance criteria
 
