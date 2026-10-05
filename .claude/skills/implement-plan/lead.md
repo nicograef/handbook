@@ -15,7 +15,7 @@ The check-in reads:
 
 - the agents' last tool calls, through `~/.claude/check-agents.sh <tasks-dir> <id>=<label> ...`;
 - the workflow runs;
-- the bus inbox and `agent-bus.sh peers`;
+- ListAgents for busy or idle agents and sessions, and `agent-bus.sh peers` for this repo's peers;
 - `free -m` and the detached units;
 - the base branch's log.
 
@@ -73,9 +73,9 @@ Budget verification by blast radius. Set a tier per phase or lane before dispatc
 
 One protocol for a run branch and a lane alike. Commands: [git.md](git.md#land-on-the-base-branch).
 
-1. Peers commit to the base mid-landing. Follow [parallel-sessions](../parallel-sessions/SKILL.md) steps 3 and 8 before every rebase and landing. A conflict with a peer is settled by landing order, the later branch rebasing.
+1. Peers commit to the base mid-landing. Follow [parallel-sessions](../parallel-sessions/SKILL.md) steps 3 and 9 before every rebase and landing. A conflict with a peer is settled by landing order, the later branch rebasing.
 2. Pin the base and rebase the branch onto it. A rebase that brings code means a full re-gate. Docs only means the lints plus the suites naming the changed directory.
 3. The gate runs on the rebased branch. Green means a complete run.
 4. Apply the confirmed findings of the tier's review, verified as [Verification budget](#verification-budget) says.
-5. Fast-forward the base, push it, and send `landed` on the bus. The base tip then equals the gated tip, so no second gate runs. A fast-forward refused because the base moved means one more rebase.
+5. Fast-forward the base, push it, and SendMessage `landed` to each live peer `agent-bus.sh peers` lists. The base tip then equals the gated tip, so no second gate runs. A fast-forward refused because the base moved means one more rebase.
 6. Remove the branch's worktree and delete the branch with `-d`. Cleanup that a permission rule or the auto-mode classifier refuses goes to the owner as a `! <command>` line in the handoff.

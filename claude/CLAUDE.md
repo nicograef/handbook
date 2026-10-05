@@ -37,6 +37,7 @@ Lead with the answer or the problem. Sentences ≤ 20 words, one claim each. Par
 - A finished branch: run the tests, then offer merge, PR, keep or discard. Delete a branch only after merge or discard.
 - Isolated work lives in `../<repo>-wt/<branch>`, via the project's worktree target where it has one (gyva: `make worktree`), else `git worktree add`. A sibling directory keeps linters that walk `.` out of the lanes.
 - Other sessions may share the repo. `~/.claude/agent-bus.sh peers` lists them; with a peer present, follow the parallel-sessions skill.
+- Message another session with native SendMessage, addressed by the name ListAgents shows.
 - No autonomous outbound actions: no emails, posts or external submissions; drafts stay drafts. Committing and pushing are exempt.
 - Add an integration test only where a unit test cannot cover the boundary, and keep it fast.
 

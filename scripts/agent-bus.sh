@@ -2,7 +2,7 @@
 # agent-bus.sh – coordination bus for concurrent Claude Code sessions in one repo.
 #
 # Usage:
-#   agent-bus.sh peers                       list live sessions sharing this repo
+#   agent-bus.sh peers                       live sessions sharing this repo, by SendMessage name
 #   agent-bus.sh announce <task> [flags]     publish what this session is doing
 #   agent-bus.sh radar [base-ref]            conflicts and collisions against peers
 #   agent-bus.sh sweep                       drop registry entries of dead sessions
@@ -194,7 +194,7 @@ cmd_peers() {
     echo "No other live session is working in this repo."
     return 0
   fi
-  printf '%-24s %-8s %-20s %s\n' SESSION STATUS BRANCH TASK
+  printf '%-24s %-8s %-20s %s\n' NAME STATUS BRANCH TASK
   printf '%s' "$rows"
 }
 

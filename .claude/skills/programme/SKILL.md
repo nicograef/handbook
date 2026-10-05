@@ -46,7 +46,7 @@ Cut waves by file ownership: a phase waits only for phases it depends on. Lanes 
 7. When a lane reports, review it as [lead.md](../implement-plan/lead.md#verification-budget) says. Confirmed findings go back to the lane's own agent, as [lead.md](../implement-plan/lead.md#dispatch) says.
 8. Land in the wave's order as [lead.md](../implement-plan/lead.md#landing) says. The gate runs detached, against the lane's own store, under the host-wide lock. A rebase that brings a lower migration number re-initialises the lane's store. Flip the lane's status rows with the landed sha and the migration numbers taken, and stop its store. A lane that waits for another is created from the new base at that landing, with its own brief.
 9. A spend leg is projected at list price in a commit body and put to the user. It is bought only on yes. A diff the owner must read stays in its own commit until read.
-10. After the wave: status rows flipped, every lane's worktree, branch and store gone, the bus told, memory updated. Delete both jobs after the last wave. Run `prog compact` before the next wave so the next session starts from a resume file.
+10. After the wave: status rows flipped, every lane's worktree, branch and store gone, live peers sent `landed` by SendMessage, memory updated. Delete both jobs after the last wave. Run `prog compact` before the next wave so the next session starts from a resume file.
 
 ## Report
 
