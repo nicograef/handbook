@@ -48,6 +48,8 @@ Phases i and j may run concurrently only if all hold:
 
 ## Fold a phase branch into the run branch
 
+`$BR` is the phase branch, checked out in `$WT`. `$TRUNK_TIP` is the tip of the run branch, checked out in `$RUN_WT`.
+
 ```bash
 git -C "$MAIN" merge-tree --write-tree --messages "$TRUNK_TIP" "$BR"                   # dry run
 git -C "$WT" -c rerere.enabled=false rebase --onto "$TRUNK_TIP" "$(git merge-base "$TRUNK_TIP" "$BR")" "$BR"
@@ -82,4 +84,4 @@ List with `git diff --name-only --diff-filter=U`; classify by porcelain code. Ab
 | `branch -D` | Skips the merged check | `branch -d`; note the sha first |
 | `worktree remove --force` | Removes a worktree holding staged work | plain form; read its refusal |
 | Deleting a foreign `index.lock` | Staleness cannot be proven | report and stop |
-| Force-push, `--no-verify` | Denied by settings | never |
+| Force-push, `--no-verify` | Denied by settings and blocked by `git-guard.sh` | never |
