@@ -72,7 +72,7 @@ diff <last-audit-file> "audit-$(hostname)-$(date +%F).txt"
 | `systemctl --failed` | `0 loaded units listed.` | Read the unit's log: `sudo journalctl -u <unit> -b` |
 | `docker compose ps` | Every service `Up`, `postgres` `(healthy)`; none `Restarting` or `Exit` | `docker compose logs <service>` |
 | HTTPS | `HTTP/2 200`, or the deliberate `301`/`308` of a redirecting root | `docker compose logs reverse-proxy`; a hang means the proxy is down |
-| netcup firewall | The netcup default policies, then `web-server`; `DROP_ALL` ingress, `ACCEPT_ALL` egress; `consistent` `true` | Re-run `firewall-attach` as [provision-server.md](provision-server.md#provision-over-ssh) does |
+| netcup firewall | The netcup default policies, then `web-server` (`ssh-only` on a host serving nothing); `DROP_ALL` ingress, `ACCEPT_ALL` egress; `consistent` `true` | Re-run `firewall-attach` as [provision-server.md](provision-server.md#provision-over-ssh) does |
 | `df -h /` | `Use%` under 80 % | Run `docker image prune -af`, or grow the volume the same day |
 | `host-audit.sh` | Ends with `no FAIL` | Restore the setting the `FAIL` line names with the step of [`setup-server.sh`](../scripts/setup-server.sh) that applies it |
 | `diff` | Only the timestamp line and readings you changed on purpose | Read the changed lines: a new key, login user or public port nobody added is an incident |
