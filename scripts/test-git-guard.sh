@@ -6,7 +6,8 @@
 #
 # What it does:
 #   1. Puts a gitleaks stub first on PATH that logs its arguments and reports
-#      a finding while a marker file exists.
+#      a finding while a marker file exists. Under a scratch index it also logs
+#      the paths git diff shows there.
 #   2. Feeds synthetic PreToolUse payloads and asserts block (exit 2) vs allow.
 #   3. Asserts which repo and which diff each commit scan covers.
 
@@ -28,7 +29,14 @@ FIX="$(mktemp -d)"
 trap 'rm -rf "$FIX"' EXIT
 
 WORK="$FIX/work"
-mkdir -p "$WORK/sub" "$FIX/other" "$FIX/bin"
+mkdir -p "$WORK/sub" "$FIX/other" "$FIX/my repo" "$FIX/bin"
+# A repo with a staged, then edited file, an untracked file and an ignored one.
+git -C "$WORK" init -q
+printf 'ignored.txt\n' > "$WORK/.gitignore"
+echo one > "$WORK/tracked.txt"
+git -C "$WORK" add .gitignore tracked.txt
+echo two >> "$WORK/tracked.txt"
+touch "$WORK/untracked.txt" "$WORK/ignored.txt"
 CALLS="$FIX/calls"
 LEAK="$FIX/leak"
 BROKEN="$FIX/broken"
@@ -36,14 +44,19 @@ BROKEN="$FIX/broken"
 # The stub honours --exit-code like gitleaks, so the guard's leak code reaches it.
 cat > "$FIX/bin/gitleaks" <<EOF
 #!/usr/bin/env bash
-echo "\$*" >> "$CALLS"
-[[ -e "$BROKEN" ]] && { echo "FTL stub failure" >&2; exit 1; }
-[[ -e "$LEAK" ]] || exit 0
-code=1
+args="\$*" code=1 src=.
 while [[ \$# -gt 0 ]]; do
   [[ "\$1" == --exit-code ]] && code="\$2"
+  [[ "\$1" == --source ]] && src="\$2"
   shift
 done
+if [[ -n "\${GIT_INDEX_FILE:-}" ]]; then
+  echo "index \$args| \$(git -C "\$src" diff --name-only | tr '\n' ' ')" >> "$CALLS"
+else
+  echo "\$args" >> "$CALLS"
+fi
+[[ -e "$BROKEN" ]] && { echo "FTL stub failure" >&2; exit 1; }
+[[ -e "$LEAK" ]] || exit 0
 echo "Finding:     aws_access_key_id = REDACTED"
 echo "File:        creds.txt"
 exit "\$code"
@@ -80,6 +93,15 @@ expect 2 "push in a later segment" 'make check && git push -f origin main'
 expect 2 "commit -n" 'git commit -n -m x'
 expect 2 "commit --no-verify" 'git commit --no-verify -m x'
 expect 2 "commit -an cluster" 'git commit -an -m x'
+expect 2 "bash -c --" "bash -c -- 'git push -f'"
+expect 2 "shell option with an argument" "bash -o pipefail -c 'git push -f'"
+expect 2 "ANSI-C quoted wrapper" "bash -c \$'git push -f'"
+expect 2 "quoted git word" '"git" push -f'
+expect 2 "backslashed git word" '\git push -f'
+expect 2 "quoted -f flag" 'git push "-f"'
+expect 2 "line continuation" $'git push \\\n  -f'
+expect 2 "commit with core.hooksPath" 'git -c core.hooksPath=/dev/null commit -m x'
+expect 2 "push with core.hooksPath" 'git -c core.hookspath= push'
 
 # 2. Calls the guard lets through.
 expect 0 "quoted -f in a commit message" 'git commit -m "drop the -f flag"'
@@ -87,6 +109,7 @@ expect 0 "quoted -n in a wrapped commit message" 'bash -c "git commit -m \"a -n 
 expect 0 "plain push" 'git push origin main'
 expect 0 "git push -f only inside echo" 'echo "git push -f"'
 expect 0 "commit --amend --no-edit" 'git commit --amend --no-edit'
+expect 0 "core.hooksPath in a commit message" 'git commit -m "set core.hooksPath"'
 
 # 3. A command without git never reaches jq or gitleaks.
 expect 0 "no git" 'ls -la'
@@ -100,8 +123,8 @@ else
   fail "staged commit: unexpected scans: $(cat "$CALLS")"
 fi
 
-# 5. -a/--all adds the tracked working-tree changes.
-for cmd in 'git commit -am x' 'git commit --all -m x'; do
+# 5. -a, --all and paths add the tracked working-tree changes.
+for cmd in 'git commit -am x' 'git commit --all -m x' 'git commit -m "a b" tracked.txt'; do
   run "$cmd"
   if [[ "$(sed -n 2p "$CALLS")" == "protect --source $WORK "* && "$(wc -l < "$CALLS")" -eq 2 ]]; then
     log "$cmd -> staged and working-tree scans"
@@ -110,20 +133,36 @@ for cmd in 'git commit -am x' 'git commit --all -m x'; do
   fi
 done
 
-# 6. The scan follows -C and cd to the repo the commit runs in.
+# 6. A git add earlier in the call has not run at hook time: a scratch index shows
+#    the tracked edits and the untracked files it can stage, but no ignored file.
+for cmd in 'git add untracked.txt && git commit -m x' 'bash -c "git add -A; git commit -m x"'; do
+  run "$cmd"
+  if [[ "$(sed -n 2p "$CALLS")" == "index protect --source $WORK "*"| tracked.txt untracked.txt " \
+    && "$(wc -l < "$CALLS")" -eq 2 ]]; then
+    log "$cmd -> staged and scratch-index scans"
+  else
+    fail "$cmd: unexpected scans: $(cat "$CALLS")"
+  fi
+done
+
+# 7. The scan follows -C and cd to the repo the commit runs in, quoted or not.
 run 'git -C sub commit -m x'
 if grep -q -- "--source $WORK/sub " "$CALLS"; then log "-C sub -> scans sub"; else fail "-C: $(cat "$CALLS")"; fi
 run "cd $FIX/other && git commit -m x"
 if grep -q -- "--source $FIX/other " "$CALLS"; then log "cd dir -> scans dir"; else fail "cd: $(cat "$CALLS")"; fi
+run "git -C \"$FIX/my repo\" commit -m x" /
+if grep -q -- "--source $FIX/my repo " "$CALLS"; then log "quoted -C -> scans it"; else fail "quoted -C: $(cat "$CALLS")"; fi
+run "cd '$FIX/my repo' && git commit -m x" /
+if grep -q -- "--source $FIX/my repo " "$CALLS"; then log "quoted cd -> scans it"; else fail "quoted cd: $(cat "$CALLS")"; fi
 
-# 7. A finding blocks, and stderr carries the gitleaks summary.
+# 8. A finding blocks, and stderr carries the gitleaks summary.
 touch "$LEAK"
 expect 2 "gitleaks finding" 'git commit -m "add creds"'
 if grep -q 'creds.txt' "$ERR"; then log "finding -> summary on stderr"; else fail "finding: no summary: $(cat "$ERR")"; fi
 expect 2 "gitleaks finding inside a wrapper" "bash -c 'git commit -m x'"
 rm "$LEAK"
 
-# 8. A broken or absent gitleaks warns and allows.
+# 9. A broken or absent gitleaks warns and allows.
 touch "$BROKEN"
 expect 0 "gitleaks failure" 'git commit -m x'
 if grep -q 'gitleaks failed' "$ERR"; then log "failure -> warning"; else fail "failure: no warning: $(cat "$ERR")"; fi
@@ -137,7 +176,7 @@ else
   fail "gitleaks absent: rc $rc, stderr: $(cat "$ERR")"
 fi
 
-# 9. A payload that is not JSON is checked as the command itself.
+# 10. A payload that is not JSON is checked as the command itself.
 rc=0
 printf 'git push -f' | bash "$GUARD" 2> /dev/null || rc=$?
 if [[ "$rc" -eq 2 ]]; then log "raw payload -> block"; else fail "raw payload: expected exit 2, got $rc"; fi
