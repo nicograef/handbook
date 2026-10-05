@@ -63,7 +63,8 @@ Source: [Development containers](https://code.claude.com/docs/en/devcontainer).
    "postCreateCommand": "bash scripts/setup-dev-tools.sh",
 +  "mounts": [
 +    "source=claude-code-config-${devcontainerId},target=/home/vscode/.claude,type=volume",
-+    "source=<handbook>/claude/settings.json,target=/etc/handbook/settings.json,type=bind,readonly"
++    "source=<handbook>/claude/settings.json,target=/etc/handbook/settings.json,type=bind,readonly",
++    "source=<handbook>/scripts/git-guard.sh,target=/home/vscode/.claude/git-guard.sh,type=bind,readonly"
 +  ],
 +  "containerEnv": { "CLAUDE_CONFIG_DIR": "/home/vscode/.claude" },
 ```
@@ -72,7 +73,8 @@ Source: [Development containers](https://code.claude.com/docs/en/devcontainer).
 Expected: `devcontainer up --workspace-folder .` builds the container without errors.
 
 - The volume keeps the login and the bypass acceptance across rebuilds; `CLAUDE_CONFIG_DIR` puts `.claude.json` in it too.
-- The settings stay read-only in the container; `--settings` loads them on every start.
+- The settings and the guard stay read-only in the container; `--settings` loads the settings on every start.
+- The settings' PreToolUse hook allows every command when `~/.claude/git-guard.sh` is missing, so keep the guard mount.
 
 ## Start the run in the container
 
@@ -123,15 +125,16 @@ Expected: the next stop in that checkout ends the turn without a nudge. Source: 
 
 ```bash
 claude auto-mode config | jq -e '.environment | any(startswith("Source control"))'
-```
-
-Expected: `true`.
-
-```bash
 jq -e '.hooks.PermissionDenied and (.autoMode.environment | index("$defaults") == 0)' ~/.claude/settings.json
 ```
 
-Expected: `true`.
+Expected: `true` from each command.
+
+```bash
+devcontainer exec --workspace-folder <repo> bash -c 'echo "git push -f" | ~/.claude/git-guard.sh; echo "exit $?"'
+```
+
+Expected: a `Blocked:` line, then `exit 2`.
 
 ## Troubleshooting
 
