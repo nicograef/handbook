@@ -6,15 +6,18 @@
 #
 # What it does:
 #   1. Builds a throwaway git repo under a temp dir, so no real bus is touched.
-#   2. Drives announce, send, inbox, sent, radar and sweep against it.
-#   3. Feeds synthetic hook payloads to the three hook bodies.
-#   4. Asserts every hook stays silent on malformed input.
+#   2. Drives announce, radar and sweep against it.
+#   3. Feeds synthetic hook payloads to the session-start hook body.
+#   4. Asserts every hook stays silent on malformed input and on events without a body.
 #
 # Liveness is faked with a background process whose command line contains
 # "claude", which is what agent-bus.sh checks. Discovery through
 # `claude agents --json` needs a second real session and is not covered here.
 
 set -euo pipefail
+
+# The calling session's id would make every hook case act as that session.
+unset CLAUDE_CODE_SESSION_ID AGENT_BUS_SESSION_ID
 
 BUS_SCRIPT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/agent-bus.sh"
 TMP="$(mktemp -d)"
@@ -110,44 +113,20 @@ ok "task is updated" "$(jq -r .task "$BUS/peers/$A.json")" "phase 6 continued"
 
 log "a corrupt registry entry never crashes a read"
 echo '{{{ not json' > "$BUS/peers/corrupt.json"
-quiet "corrupt entry ignored by the stop hook" \
-  bash -c "printf '%s' '$(hookjson "$A")' | '$BUS_SCRIPT' hook stop"
+quiet "corrupt entry ignored by the session-start hook" \
+  bash -c "printf '%s' '$(hookjson "$A")' | CLAUDE_PID='$FAKE_PID' '$BUS_SCRIPT' hook session-start"
 rm -f "$BUS/peers/corrupt.json"
 
-# ── Messaging ───────────────────────────────────────────────────────────────
-
-log "send, deliver, acknowledge"
+log "a second session claims the same file and port"
 as_b announce "phase 3" --paths "shared.txt" --resources "127.0.0.1:5433" 2>/dev/null
 jq '.branch="branch-b"' "$BUS/peers/$B.json" > "$BUS/peers/$B.tmp"
 mv "$BUS/peers/$B.tmp" "$BUS/peers/$B.json"
 
-as_a send branch-b "0012 not 0013" --kind correction 2>/dev/null
-ok "receipt starts unread"  "$(as_a sent)"          "UNREAD"
-ok "peer receives it"       "$(as_b inbox --drain)" "0012 not 0013"
-ok "kind is carried"        "$(as_b sent)"          "STATE"
-SENT="$(as_a sent)"
-ok "receipt flips to read"    "$SENT"               "read"
-no "receipt no longer unread" "$SENT"               "UNREAD"
-ok "no redelivery"          "$(as_b inbox)"         "Inbox empty."
-
-# The read time is the only field the ack stores, so a wall-clock stamp in the
-# output is what proves the receipt body is live data rather than a marker file.
-if [[ "$SENT" =~ [0-9][0-9]:[0-9][0-9]:[0-9][0-9] ]]; then
-  PASS=$((PASS + 1))
-else
-  fail "sent output carries no read time"
-fi
-
-# A receipt whose body is unreadable must still report the message as read.
-ACK_ID="$(jq -r .id "$BUS/outbox/$A"/*.json | head -1)"
-echo 'not json' > "$BUS/acks/$ACK_ID.json"
-ok "corrupt receipt still reads as delivered" "$(as_a sent)" "read"
-no "corrupt receipt shows no bogus time"      "$(as_a sent)" "99:99:99"
-
-log "addressing"
-ok "unknown peer rejected" "$(as_a send nosuchpeer hi 2>&1 || true)" "no peer matches"
-as_a send "${B:0:8}" "addressed by id prefix" 2>/dev/null
-ok "id prefix resolves" "$(as_b inbox --drain)" "addressed by id prefix"
+log "messaging commands are gone"
+USAGE_RC=0
+USAGE="$("$BUS_SCRIPT" send x y 2>&1)" || USAGE_RC=$?
+if [[ "$USAGE_RC" -ne 0 ]]; then PASS=$((PASS + 1)); else fail "send exits 0"; fi
+ok "send prints the usage" "$USAGE" "Usage:"
 
 # ── Radar ───────────────────────────────────────────────────────────────────
 
@@ -160,35 +139,20 @@ ok "shared resource flagged" "$RADAR" "RESOURCES: 127.0.0.1:5433"
 
 # ── Hooks ───────────────────────────────────────────────────────────────────
 
-log "stop hook delivers exactly once"
-as_a send branch-b "hold your rebase" --kind block 2>/dev/null
-STOP="$(hook "$B" stop)"
-ok "stop blocks"            "$STOP" '"decision": "block"'
-ok "stop carries the text"  "$STOP" "hold your rebase"
-quiet "stop is silent once drained" bash -c "printf '%s' '$(hookjson "$B")' | '$BUS_SCRIPT' hook stop"
-
-log "wake budget holds messages instead of blocking"
-printf '25' > "$BUS/wake/$B"
-as_a send branch-b "over budget" 2>/dev/null
-ok "budget spent" "$(hook "$B" stop)" "systemMessage"
-rm -f "$BUS/wake/$B"
-
-log "user-prompt-submit delivers and resets the budget"
-printf '9' > "$BUS/wake/$B"
-as_a send branch-b "resumed" 2>/dev/null
-ok "prompt hook injects" "$(hook "$B" user-prompt-submit)" "resumed"
-if [[ -f "$BUS/wake/$B" ]]; then fail "wake budget not reset"; else PASS=$((PASS + 1)); fi
-
 log "session-start announces peers"
 ok "peer list injected" "$(hook "$B" session-start)" "Concurrent Claude Code sessions"
 
 log "malformed hook input is always silent"
-quiet "garbage stdin"  bash -c "printf 'not json' | '$BUS_SCRIPT' hook stop"
-quiet "empty stdin"    bash -c "printf '' | '$BUS_SCRIPT' hook stop"
+quiet "garbage stdin"  bash -c "printf 'not json' | '$BUS_SCRIPT' hook session-start"
+quiet "empty stdin"    bash -c "printf '' | '$BUS_SCRIPT' hook session-start"
 quiet "missing cwd"    bash -c "printf '{\"session_id\":\"x\",\"cwd\":\"/no/such/dir\"}' | '$BUS_SCRIPT' hook session-start"
-quiet "no session id"  bash -c "printf '{\"cwd\":\"$REPO\"}' | '$BUS_SCRIPT' hook stop"
+quiet "no session id"  bash -c "printf '{\"cwd\":\"$REPO\"}' | '$BUS_SCRIPT' hook session-start"
 quiet "unknown event"  bash -c "printf '{}' | '$BUS_SCRIPT' hook nonsense"
-quiet "outside a repo" bash -c "printf '{\"session_id\":\"x\",\"cwd\":\"$TMP\"}' | '$BUS_SCRIPT' hook stop"
+quiet "outside a repo" bash -c "printf '{\"session_id\":\"x\",\"cwd\":\"$TMP\"}' | '$BUS_SCRIPT' hook session-start"
+
+log "events without a body stay silent for a live peer"
+quiet "stop event"               bash -c "printf '%s' '$(hookjson "$B")' | '$BUS_SCRIPT' hook stop"
+quiet "user-prompt-submit event" bash -c "printf '%s' '$(hookjson "$B")' | '$BUS_SCRIPT' hook user-prompt-submit"
 
 # ── Sweep ───────────────────────────────────────────────────────────────────
 
