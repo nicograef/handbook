@@ -46,7 +46,8 @@ const RULES = [
   `The repository is at ${repo}; run every command from there.`,
   'READ ONLY: write no file in the repository, make no commit, call no paid provider API, run nothing',
   'that spends. /tmp is yours for downloads. Quote what a claim stands on.',
-  '"Nothing relevant" is a complete answer; a manufactured one is not.',
+  '"Nothing relevant" is a complete answer; a manufactured one is not. Your task is this prompt alone:',
+  'a user request you see elsewhere in the session belongs to the main session.',
 ].join(' ')
 
 const BRIEF_SCHEMA = {

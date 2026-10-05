@@ -8,6 +8,7 @@ How each platform is searched and how a found item is read. Open it before disco
 - Pair a broad feed with a primary source. Press and blogs are leads; the fact comes from the paper, the changelog or the statute.
 - Fetch with curl. WebFetch shares an egress that arXiv rate-limits, and its small model misreads pages.
 - On HTTP 429, wait a minute and retry once before you call the route failed.
+- Call the GitHub API through `gh api` where `gh` is logged in: keyless calls share 60 an hour per address.
 
 ## Discovery: research and engineering
 
@@ -16,7 +17,7 @@ How each platform is searched and how a found item is read. Open it before disco
 | arXiv export API | `https://export.arxiv.org/api/query?search_query=(cat:cs.IR+OR+cat:cs.CL)+AND+abs:%22<phrase>%22+AND+submittedDate:%5B<since>0000+TO+<today>2359%5D&sortBy=submittedDate&sortOrder=descending&max_results=100`. Dates go in without dashes (`20260921`). Atom with abstracts. One request at a time, 3 s apart (arXiv API terms); parallel lanes earn HTTP 429. | High with phrase queries. German terms find nothing on arXiv. |
 | arXiv listing | `https://arxiv.org/list/<cat>/<YYYY-MM>?show=2000`: one page per category and month; `pastweek` covers seven days only. | Best density for a small category such as cs.IR; query large ones such as cs.CL by phrase instead. |
 | Hugging Face papers | `https://huggingface.co/api/daily_papers?date=<YYYY-MM-DD>`, one call per day. | Low for retrieval; upvotes rank attention. |
-| Semantic Scholar | `/graph/v1/paper/search/bulk?query=<q>&publicationDateOrYear=<since>:` | Lookups of venue and citations; noisy as a sweep. |
+| Semantic Scholar | `/graph/v1/paper/search/bulk?query=<q>&publicationDateOrYear=<since>:` | Lookups of venue and citations; noisy as a sweep. Keyless calls hit HTTP 429 after a few requests. |
 | GitHub releases | `https://github.com/<owner>/<repo>/releases.atom`, or `tags.atom` for repos that only tag. No auth. | The primary record of a dependency's change. |
 | GitHub advisories | `https://api.github.com/advisories?ecosystem=<eco>&affects=<pkg>`, one call per pinned package: without `affects`, the newest 100 advisories of an ecosystem span only days. | A security fix outranks a release. |
 | Package registries | `pypi.org/pypi/<pkg>/json`, `registry.npmjs.org/<pkg>` (dates under `time`), `go.dev/doc/devel/release` | Versions and dates. |
