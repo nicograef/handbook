@@ -28,10 +28,10 @@ Delete the reflect, mentor and testing skills. The testing skill's Keep/Refactor
 
 ### Acceptance criteria
 
-- [ ] `jq -r '.enabledPlugins | keys | join(",")' claude/settings.json` prints `playwright@claude-plugins-official`
-- [ ] `jq -r '.permissions.deny[]' claude/settings.json | grep -c 'rm -rf /\*'` prints 0
-- [ ] `grep -rnE 'skills/(reflect|mentor|testing)\b|/(reflect|mentor)\b|context7' --include='*.md' --include='*.json' . | grep -v docs/plans/` prints nothing
-- [ ] `make check` passes
+- [x] `jq -r '.enabledPlugins | keys | join(",")' claude/settings.json` prints `playwright@claude-plugins-official`
+- [x] `jq -r '.permissions.deny[]' claude/settings.json | grep -c 'rm -rf /\*'` prints 0
+- [x] `grep -rnE 'skills/(reflect|mentor|testing)\b|/(reflect|mentor)\b|context7' --include='*.md' --include='*.json' . | grep -v docs/plans/` prints nothing
+- [x] `make check` passes
 
 ## Phase 2: Content
 
@@ -45,10 +45,10 @@ Move `prod-init.sh` and `backup-postgres.sh` to `templates/`. `guides/new-projec
 
 ### Acceptance criteria
 
-- [ ] `git ls-files | grep -cE 'nginx-tls|nginx-initial-cert|initial-cert|cloud-init|UBIQUITOUS|reference/tmux.md|scripts/(prod-init|backup-postgres)'` prints 0
-- [ ] `wc -l < guides/new-project.md` prints 150 or less
-- [ ] `grep -c 'unalias pci' dotfiles/.bash_aliases` prints 0
-- [ ] `make check` and `make test-dockerfiles` pass
+- [x] `git ls-files | grep -cE 'nginx-tls|nginx-initial-cert|initial-cert|cloud-init|UBIQUITOUS|reference/tmux.md|scripts/(prod-init|backup-postgres)'` prints 0
+- [x] `wc -l < guides/new-project.md` prints 150 or less
+- [x] `grep -c 'unalias pci' dotfiles/.bash_aliases` prints 0
+- [x] `make check` and `make test-dockerfiles` pass
 
 ## Phase 3: Machine and account
 
@@ -62,6 +62,6 @@ Uninstall context7, frontend-design, typescript-lsp and gopls-lsp at user scope.
 
 ### Acceptance criteria
 
-- [ ] `claude plugin list` shows playwright as the only plugin
-- [ ] `claude plugin marketplace list` does not list `nicograef`
+- [x] `claude plugin list` shows playwright as the only plugin
+- [x] `claude plugin marketplace list` does not list `nicograef`
 - [ ] `node --version` prints `v26`
