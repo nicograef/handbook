@@ -1,4 +1,5 @@
 ---
-type: tool_used
-tool: AskUserQuestion
+type: regex
+target: trace
+pattern: '"name":"AskUserQuestion"|"query":"[^"]*AskUserQuestion'
 ---
