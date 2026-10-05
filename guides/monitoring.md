@@ -57,7 +57,7 @@ That heartbeat then exists already; reuse it instead of creating a second one.
 3. Write the URL to the defaults file, readable by root only:
 
    ```bash
-   echo 'HEALTH_PING_URL=<heartbeat-url>' | sudo tee /etc/default/report-health >/dev/null
+   echo 'HEALTH_PING_URL="<heartbeat-url>"' | sudo tee /etc/default/report-health >/dev/null
    sudo chmod 600 /etc/default/report-health
    ```
 
