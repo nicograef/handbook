@@ -108,13 +108,6 @@
       "Bash(git fsck:*)",
       "Bash(git rm:*)"
     ],
-    "ask": [
-      "Bash(gh api *-X*)",
-      "Bash(gh api *--method*)",
-      "Bash(gh api *-f*)",
-      "Bash(gh api *-F*)",
-      "Bash(gh api *--input*)"
-    ],
     "deny": [
       "Bash(rm -rf /*)",
       "Bash(sudo rm:*)",
@@ -135,6 +128,13 @@
       "Bash(git stash pop:*)",
       "Bash(git stash drop:*)",
       "Bash(git stash clear:*)"
+    ],
+    "ask": [
+      "Bash(gh api *-X*)",
+      "Bash(gh api *--method*)",
+      "Bash(gh api *-f*)",
+      "Bash(gh api *-F*)",
+      "Bash(gh api *--input*)"
     ],
     "defaultMode": "auto"
   },
@@ -202,7 +202,6 @@
       }
     ]
   },
-  "enableArtifact": false,
   "enableWorkflows": true,
   "statusLine": {
     "type": "command",
