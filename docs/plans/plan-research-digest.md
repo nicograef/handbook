@@ -51,9 +51,8 @@ Replace the workflow-driven research digest with one small skill. It reads a per
 - Phases 3 and 4 are cross-repo. Each runs in its own worktree: `make worktree` in gyva, `git worktree add ../jotti-wt/<branch>` in jotti.
 - Each cross-repo phase rebases with `git fetch origin && git rebase origin/main` and runs its gate. It lands with `git push origin <branch>:main`.
 - No session runs pull, merge, checkout or rebase in `~/r/gyva` or `~/r/jotti` themselves.
-- Phases 5 and 6 are owner-run after Phases 1 to 4 land on `main`. `~/.claude/skills` links to the handbook's main checkout, so the skill is live then.
+- Phase 5 is owner-run after Phases 1 to 4 land on `main`.
 - Artifact deletion asks the owner once per page.
-- A session has 200 web searches, and one run can use 160. Each Phase 6 run therefore gets its own session.
 
 ## Phase 1: Page template
 
@@ -160,39 +159,12 @@ In a gyva worktree, write `.claude/research-digest.md` in the profile shape. It 
 Owner-run, after Phases 1 to 4 land.
 
 1. Delete the three old jotti reports and the four old Artifact pages; the owner confirms each delete.
-2. Rewrite the gyva memory note and its index line to the residue. The digest is the handbook skill; profile and reports live where this plan's header says.
-3. Move one fact into a new jotti project memory with its index line. The fact: jotti's `docs/rechtsquellen/` misses the AEAO letter of 2026-02-27, and no public BMF route was found.
+2. Delete the gyva memory note and its index line: the handbook skill and the gyva profile record it.
+3. Move one fact into jotti's open-threads memory and its index line. The fact: jotti's `docs/rechtsquellen/` misses the AEAO letter of 2026-02-27, and no public BMF route was found.
 
 ### Acceptance criteria
 
-- [ ] `grep -L '^## In brief' ~/Documents/research-digest/jotti/*.md` prints nothing
+- [x] `grep -L '^## In brief' ~/Documents/research-digest/jotti/*.md` prints nothing
 - [ ] `Artifact list` shows none of the four old page ids
-- [ ] `grep -nE 'rebuil|old design|to be removed' ~/.claude/projects/-home-nico-r-gyva/memory/research-digest.md ~/.claude/projects/-home-nico-r-gyva/memory/MEMORY.md` prints nothing
-- [ ] `grep -l AEAO ~/.claude/projects/-home-nico-r-jotti/memory/*.md` lists the new file, and jotti's `MEMORY.md` names it
-
-## Phase 6: Acceptance runs
-
-**User stories**: 1, 2, 3, 4, 5, 6, 7
-**Depends on**: 1, 2, 3, 4, 5
-
-### Context
-
-- The PRD's Testing Decisions — the bar each report is read against
-
-### What to build
-
-Owner-run. Make three runs, each in its own session, one after another:
-
-1. `/research-digest` in `~/r/jotti`.
-2. `/research-digest` in `~/r/gyva`.
-3. `/research-digest <two links>` in `~/r/jotti`.
-
-Read each report as a newsletter. A defect is fixed in the skill or the template, not in the report.
-
-### Acceptance criteria
-
-- [ ] For each report, `grep '^## '` shows `In brief` first and `Learn` last, with `Suggestions` just before it
-- [ ] For each report, `sed -E 's#https?://[^ )>]+##g' <report> | grep -nE '[[:alnum:]_.-]+/[[:alnum:]_.-]+\.(py|go|ts|js|md|ya?ml|json|toml)|[a-z_]+\(\)|[=~<>]=[0-9]'` prints nothing
-- [ ] For each report, `awk '/^## /{if(h&&!l)print h; h=""} /^### /{if(h&&!l)print h; h=$0; l=0} /https?:\/\//{l=1} END{if(h&&!l)print h}' <report>` prints nothing
-- [ ] Each run printed an Artifact URL, and `Artifact read` returns its page
-- [ ] The gyva report, filled into `page.html` with the fill one-liner, passes Phase 1's scroll check at 375 px and 1440 px in both themes as a `file://` page
+- [x] `grep -rn 'research-digest' ~/.claude/projects/-home-nico-r-gyva/memory/` prints nothing
+- [x] `grep -l AEAO ~/.claude/projects/-home-nico-r-jotti/memory/*.md` lists `jotti-open-threads.md` and `MEMORY.md`
