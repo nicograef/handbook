@@ -38,7 +38,6 @@ A developer laptop: dotfiles linked into `$HOME`, editor, terminal multiplexer.
 | [dotfiles/init.lua](dotfiles/init.lua) | Neovim config: prose defaults, 2-space indent, German keyboard remaps |
 | [templates/ssh_config](templates/ssh_config) | `~/.ssh/config` defaults: agent, keep-alive, hashed known_hosts |
 | [guides/neovim.md](guides/neovim.md) | Neovim for text editing |
-| [reference/tmux.md](reference/tmux.md) | tmux |
 | [scripts/report-repo-status.sh](scripts/report-repo-status.sh) | Repos under `~/r` with unpushed, uncommitted or stashed work; `repo-status` |
 
 ## Project

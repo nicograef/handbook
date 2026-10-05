@@ -63,7 +63,7 @@ Without bat, eza, fd-find or fzf, their aliases in
    sudo apt install -y git jq tmux bat eza fzf fd-find ripgrep git-delta
    ```
 
-   Expected: apt ends without errors. Long work runs in a named session, see [reference/tmux.md](../reference/tmux.md).
+   Expected: apt ends without errors. Long work runs in a named session, `tmux new -A -s <project>`.
 
 ## Link the handbook dotfiles
 
