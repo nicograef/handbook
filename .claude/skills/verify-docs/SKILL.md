@@ -21,7 +21,7 @@ Decide whether each documented claim is true. Nothing is settled without an arti
 
 ## Workflow
 
-1. Baseline: checks, sha, `git ls-files '*.md' '*.mdx' '*.rst'` plus comment-bearing sources in scope, total lines. Read the handoff commit message; a distill run lists FLAGs there. They set priority, not scope. Each is reported by name whatever it resolves to.
+1. Baseline: checks, sha, `git ls-files '*.md' '*.mdx' '*.rst' '*.txt'` plus comment-bearing sources in scope, total lines. Read the handoff commit message; a distill run lists FLAGs there. They set priority, not scope. Each is reported by name whatever it resolves to.
 2. Extract claims, each as `location`, a falsifiable one-liner, a lane, and the exact file, command or URL that settles it. Claims: commands, flags, paths, targets, versions and pins. Names of services, env vars, functions and config keys. Anchors and external URLs. Behaviour statements ("X does Y", "the default is Z"), ordering and prerequisites. Conventions, rationale and tribal knowledge get lane `none`. Fan out extraction past ~10 files to `sonnet` workers grouped by directory.
 
    | Lane | Covers | Settled by |
