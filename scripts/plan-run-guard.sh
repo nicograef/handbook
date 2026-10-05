@@ -19,7 +19,7 @@
 #      A run nobody claimed nudges whoever stops.
 #   6. Never nudges while a top-level subagent, a workflow run, or a /tmp task
 #      is live — the harness re-invokes on completion, so that stop is safe.
-#   7. Opt out per repo: touch "$(git rev-parse --git-dir)/plan-run-guard-off".
+#   7. Opt out per checkout or worktree: touch "$(git rev-parse --git-dir)/plan-run-guard-off".
 
 set -euo pipefail
 
