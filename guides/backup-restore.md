@@ -15,7 +15,7 @@ cd /opt/<project>
 
 ## Daily backup
 
-[scripts/backup-postgres.sh](../scripts/backup-postgres.sh) takes, verifies and prunes the dumps; its header lists each step and setting.
+[backup-postgres.sh](../templates/backup-postgres.sh) takes, verifies and prunes the dumps; its header lists each step and setting.
 
 1. **Create the backup directory**, owned by the deploy user:
 

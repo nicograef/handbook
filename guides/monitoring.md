@@ -23,7 +23,7 @@ Heartbeat URLs are secrets and per-server configuration, so they never enter the
 
 | Heartbeat | Every | Grace | URL lives in | Pinged by |
 | --------- | ----- | ----- | ------------ | --------- |
-| Backup | 1 day | 3 h | `BACKUP_PING_URL` in `/opt/<project>/.env` | [scripts/backup-postgres.sh](../scripts/backup-postgres.sh) |
+| Backup | 1 day | 3 h | `BACKUP_PING_URL` in `/opt/<project>/.env` | [backup-postgres.sh](../templates/backup-postgres.sh) |
 | Health | 1 hour | 30 min | `HEALTH_PING_URL` in `/etc/default/report-health` | [scripts/report-health.sh](../scripts/report-health.sh) |
 | TLS expiry | 1 day | 3 h | the deploy user's crontab | the cron line in [TLS-expiry heartbeat](#tls-expiry-heartbeat) |
 

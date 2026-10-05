@@ -66,7 +66,7 @@ Run every step on the server as `<username>`, logged in with `ssh <username>@<ho
    grep -c '<domain>' reverse-proxy/Caddyfile       # 3 or more
    ```
 
-7. **Deploy the release.** The [prod-init.sh](../scripts/prod-init.sh) header lists every check and step it runs. Expected: the last lines read `Deployed v<X.Y.Z> — https://<domain>`, exit 0.
+7. **Deploy the release.** The [prod-init.sh](../templates/prod-init.sh) header lists every check and step it runs. Expected: the last lines read `Deployed v<X.Y.Z> — https://<domain>`, exit 0.
 
    ```bash
    DOMAIN=<domain> make prod-deploy

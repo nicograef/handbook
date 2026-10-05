@@ -119,7 +119,7 @@ A React repository skips [Copy the production files](#copy-the-production-files)
    cp "$HANDBOOK/templates/docker-compose.prod.yml" .
    mkdir -p reverse-proxy && cp "$HANDBOOK/templates/Caddyfile" reverse-proxy/Caddyfile
    cp "$HANDBOOK/templates/.env.example" .
-   cp "$HANDBOOK"/scripts/{prod-init.sh,backup-postgres.sh} scripts/
+   cp "$HANDBOOK"/templates/{prod-init.sh,backup-postgres.sh} scripts/
    cp "$HANDBOOK/templates/release.yml" .github/workflows/release.yml
    ```
 2. Delete the tiers your row lacks from `docker-compose.prod.yml`, the `release.yml` matrix and the Caddyfile. Expected: `docker compose -f docker-compose.prod.yml config --services` lists only your tiers, `postgres` and `reverse-proxy`.

@@ -85,8 +85,8 @@ Provision, deploy, back up, monitor and maintain a VPS.
 | [reference/system-resources.md](reference/system-resources.md) | Live resource usage: CPU, RAM, disk, I/O, top processes |
 | [reference/netcup.md](reference/netcup.md) | netcup server API: auth, firewall model, endpoints, snapshots, DNS API |
 | [scripts/setup-server.sh](scripts/setup-server.sh) | Provision a fresh Debian/Ubuntu VPS (user, SSH, swap, UFW, fail2ban, Docker) |
-| [scripts/prod-init.sh](scripts/prod-init.sh) | Production deploy and update: pin and downgrade guard, backup, health poll |
-| [scripts/backup-postgres.sh](scripts/backup-postgres.sh) | Verified, retained PostgreSQL backups for a Compose stack (cron) |
+| [templates/prod-init.sh](templates/prod-init.sh) | Production deploy and update: pin and downgrade guard, backup, health poll |
+| [templates/backup-postgres.sh](templates/backup-postgres.sh) | Verified, retained PostgreSQL backups for a Compose stack (cron) |
 | [scripts/host-audit.sh](scripts/host-audit.sh) | Read-only audit of the state `setup-server.sh` leaves: one ok/FAIL/note line per check |
 | [scripts/report-health.sh](scripts/report-health.sh) | Hourly dead-man health ping (reboot-required + unattended-upgrades + OOM check) |
 | [scripts/netcup.sh](scripts/netcup.sh) | netcup server API from the laptop: login, servers, firewall policies, snapshots |
