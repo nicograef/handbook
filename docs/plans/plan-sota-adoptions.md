@@ -66,11 +66,11 @@ On a commit it runs gitleaks against the target repo (`-C <dir>` or the payload 
 
 ### Acceptance criteria
 
-- [ ] `make test-git-guard` passes; fixtures cover `bash -c 'git push --force'`, `sh -c "git push -f"`, `eval git push -f`, `/usr/bin/git push -f`, `git -C x push +main`, `git commit -n`, a quoted `-f` inside a commit message (allowed) and a gitleaks finding (blocked)
-- [ ] `scripts/install-dotfiles.sh --check | grep git-guard.sh` prints the link
-- [ ] `grep -c autoStash scripts/install-dotfiles.sh` prints 0 and `git config --global rebase.autoStash` prints nothing
+- [x] `make test-git-guard` passes; fixtures cover `bash -c 'git push --force'`, `sh -c "git push -f"`, `eval git push -f`, `/usr/bin/git push -f`, `git -C x push +main`, `git commit -n`, a quoted `-f` inside a commit message (allowed) and a gitleaks finding (blocked)
+- [x] `scripts/install-dotfiles.sh --check | grep git-guard.sh` prints the link
+- [x] `grep -c autoStash scripts/install-dotfiles.sh` prints 0 and `git config --global rebase.autoStash` prints nothing
 - [x] `dpkg-query -W -f '${Version}' gitleaks` prints 8.16 or later; the Ubuntu build leaves `gitleaks version` empty
-- [ ] `make check` passes
+- [x] `make check` passes
 
 ## Phase 2: Agent bus on native messaging
 
@@ -95,11 +95,11 @@ In lead.md's verification budget, a diff touching auth, input handling, shell, S
 
 ### Acceptance criteria
 
-- [ ] `make test-agent-bus` passes with the messaging cases removed
-- [ ] `grep -rnE 'agent-bus\.sh (send|inbox|sent)|bus inbox|wake budget' --include='*.md' --include='*.sh' .` prints nothing
-- [ ] `scripts/agent-bus.sh send x y` exits non-zero with the usage text
-- [ ] `grep -c security-review .claude/skills/implement-plan/lead.md` prints at least 1
-- [ ] `make check` passes
+- [x] `make test-agent-bus` passes with the messaging cases removed
+- [x] `grep -rnE 'agent-bus\.sh (send|inbox|sent)|bus inbox|wake budget' --include='*.md' --include='*.sh' .` prints nothing
+- [x] `scripts/agent-bus.sh send x y` exits non-zero with the usage text
+- [x] `grep -c security-review .claude/skills/implement-plan/lead.md` prints at least 1
+- [x] `make check` passes
 
 ## Phase 3: Settings hardening
 
@@ -149,10 +149,10 @@ The plan skill gains a step after the placeholder review. A fresh-context `opus`
 
 ### Acceptance criteria
 
-- [ ] `grep -c 'Bash' .claude/agents/web-researcher.md` prints 0
-- [ ] `echo '{"rate_limits":{"five_hour":{"used_percentage":40,"resets_at":1791200000}}}' | bash claude/statusline.sh` prints the reset time
-- [ ] `grep -cE 'fresh-context|critic' .claude/skills/plan/SKILL.md` prints at least 1
-- [ ] `make check` passes
+- [x] `grep -c 'Bash' .claude/agents/web-researcher.md` prints 0
+- [x] `echo '{"rate_limits":{"five_hour":{"used_percentage":40,"resets_at":1791200000}}}' | bash claude/statusline.sh` prints the reset time
+- [x] `grep -cE 'fresh-context|critic' .claude/skills/plan/SKILL.md` prints at least 1
+- [x] `make check` passes
 
 ## Phase 5: CI and ruleset
 
