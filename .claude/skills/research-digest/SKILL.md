@@ -1,6 +1,6 @@
 ---
 name: research-digest
-description: Deep-dives the project's research topics on arXiv, web search, Hacker News, GitHub and regulators, or expands from links and text the user gives. Reads the best finds in full, judges them against the code and publishes a report page.
+description: Deep-dives the project's research topics on arXiv, AI labs, web search, Hacker News, GitHub and regulators, or expands from links and text the user gives. Reads the best finds in full and publishes a newsletter page with recommendations.
 argument-hint: "[links or text to expand from]"
 disable-model-invocation: true
 ---
@@ -9,7 +9,7 @@ disable-model-invocation: true
 
 Every run is one deep dive with one report. Without input it sweeps the profile's topics for work of the last 30 days. Given links or text, it reads that material in full and expands from it. Each item is read critically and judged against this repo. The run changes no code and commits nothing.
 
-The report opens with one to three reasoned recommendations. Each is a change, or the cheapest experiment when no change is due yet. It shows only items of medium or high relevance, plus every link the user gave. The rest of what was read or skipped sits in a closing HTML comment. The page hides it; the next run reads it as covered.
+The report reads as a newsletter for the project's technical leaders, in plain words without file paths or code names. An in-brief list opens it and the stories follow by theme. Then come one to three reasoned recommendations and the concepts to learn. A recommendation is a change, or the cheapest experiment when no change is due yet. The report shows what the field should know and what bears on the project, plus every link the user gave. The rest of what was read or skipped sits in a closing HTML comment. The page hides it; the next run reads it as covered.
 
 ## Hard rules
 

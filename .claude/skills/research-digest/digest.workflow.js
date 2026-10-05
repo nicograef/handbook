@@ -27,7 +27,7 @@ const seeds = args.seeds || []
 const notes = args.notes || ''
 const seeded = seeds.length > 0 || Boolean(notes)
 
-const READ_CAP = 20
+const READ_CAP = 30
 const BATCH = 4
 
 const ROUTES = 'Read ~/.claude/skills/research-digest/sources.md first: it says how each source family is found and read.'
@@ -66,7 +66,7 @@ const BRIEF_SCHEMA = {
       },
     },
     lanes: { type: 'array', description: 'the bold name of each Topics line, at most four', items: { type: 'string' } },
-    watch_terms: { type: 'array', items: { type: 'string' }, description: 'search terms that would surface work on the open problems' },
+    watch_terms: { type: 'array', items: { type: 'string' }, description: "search terms for the field's newest work on the profile Topics, and for outside work on the open problems" },
   },
   required: ['stack', 'open_problems', 'watch_terms', ...(seeded ? [] : ['lanes'])],
 }
@@ -134,10 +134,13 @@ const READ_SCHEMA = {
             },
           },
           relevance: { type: 'string', enum: ['none', 'low', 'medium', 'high'] },
+          headline: { type: 'string', description: 'the news in one plain sentence a CTO understands, without code names' },
+          take: { type: 'string', description: 'two to four plain sentences for a CTO: what happened, why it matters in the field, how solid it is; no file paths or code names' },
+          newsworthiness: { type: 'string', enum: ['none', 'low', 'medium', 'high'], description: 'how much a technical leader following the field should know it, whatever it means for the project' },
           learn: { type: 'string', description: 'the concept worth understanding from it, empty when none' },
           skip_reason: { type: 'string', description: 'the route that failed; set only when read_as is unreadable' },
         },
-        required: ['id', 'url', 'title', 'read_as', 'summary', 'critique', 'applicability', 'relevance', 'learn'],
+        required: ['id', 'url', 'title', 'read_as', 'summary', 'critique', 'applicability', 'relevance', 'headline', 'take', 'newsworthiness', 'learn'],
       },
     },
   },
@@ -202,7 +205,8 @@ const brief = await agent(
     'profile names, and `git log --oneline -40`. Name the stack as the code has it, with the shape each',
     'served stage actually runs. Name the open problems the tree states (a plan item, backlog entry,',
     'revisit condition or known gap), each with the path and line that states it; label one you infer',
-    'as inference. Then the search terms that would surface outside work on the open problems.',
+    'as inference. Then search terms: first for the newest work in the fields the Topics name, then',
+    'for outside work on the open problems.',
     seeded ? '' : 'Under lanes, list the bold name of each line of the Topics section.',
   ].join('\n'),
   { label: 'brief', model: 'opus', schema: BRIEF_SCHEMA },
@@ -237,7 +241,7 @@ const discoverPrompt = (lane, untried) => [
   RULES,
   `You are the ${lane.key} discovery lane of a research run. ${AGE}`,
   lane.focus,
-  `Terms tied to the open problems; use those within this lane's topic: ${brief.watch_terms.join('; ')}.`,
+  `Search terms; use those within this lane's topic: ${brief.watch_terms.join('; ')}.`,
   "There is no time limit. Try every source the lane names, then search wider within this lane's",
   "topic by the Discovery routes of sources.md; another lane's sources are that lane's. Query arXiv",
   'only when the lane names it: one request at a time with `sleep 3` between requests.',
@@ -251,11 +255,12 @@ const discoverPrompt = (lane, untried) => [
   'One candidate per event: the primary source, with press summaries named in its `why`.',
   'A check you run that finds a stored text, pin or price stale is a candidate too: link the act or',
   'release that makes it stale and name the stale file in its `why`.',
-  'Priority by rule: high for a crash, security or data-loss fix in a dependency the project pins,',
-  'for a stale stored text, and for an item that touches an open problem by its path; medium for',
-  "anything else on the project's stack or rulings; low otherwise. A release at or below the version",
-  'the project pins is no candidate; an advisory against that version is. Skip SEO listicles and',
-  'vendor pages without substance.',
+  "Priority by rule: high for a state-of-the-art result, or a major model, product, market or",
+  "regulatory move in the lane's topics; also for a security or data-loss fix in a dependency the",
+  'project pins, a stale stored text, and an item on an open problem. Medium for other substantive',
+  'papers, articles and news in the topics; low for routine releases and minor posts. A release at',
+  'or below the version the project pins is no candidate; an advisory against that version is. Skip',
+  'SEO listicles and vendor pages without substance.',
   untried
     ? `An earlier attempt left these sources untried: ${untried.join('; ')}. Reach each of them now, and return candidates and route entries for those sources only.`
     : '',
@@ -358,7 +363,11 @@ const readResults = await parallel(
         "- applicability: what it would change in the project, or a ruling's revisit condition it meets,",
         '  each with the repo path it touches, found by reading that code. Judge against the brief and',
         '  the profile Rulings. An item of relevance none carries no claims;',
-        '- relevance per the profile Judging section;',
+        '- relevance per the profile Judging section: what it means for this project;',
+        '- newsworthiness: how much a technical leader following the field should know it, whatever it',
+        '  means for the project. High for a state-of-the-art result or a major model, product, market or',
+        '  regulatory move; low for a routine release;',
+        '- headline and take: the item for a CTO who has not read it, in plain words, without code names;',
         '- learn: the concept worth understanding from it, if any.',
         'An item you cannot read gets read_as "unreadable" and a skip_reason naming the route that failed.',
         '',
@@ -429,8 +438,8 @@ const skeptic = claims.length
   : { checks: [], leads: [] }
 if (!skeptic) log('the skeptic died; every applicability claim stays unverified')
 
-// The report carries only what matters: an item stays when its relevance, the skeptic's where it
-// checked, is medium or high. The user's own links always stay, so each gets a visible verdict.
+// The report carries what matters: an item stays when the field should know it, or when its
+// relevance, the skeptic's where it checked, is medium or high. The user's own links always stay.
 const RANK = { none: 0, low: 1, medium: 2, high: 3 }
 const checksById = {}
 for (const c of skeptic ? skeptic.checks : []) (checksById[c.id] = checksById[c.id] || []).push(c)
@@ -441,7 +450,7 @@ const finalRelevance = (it) => {
 }
 const judged = read.map((it) => ({ ...it, relevance: finalRelevance(it), checks: checksById[it.id] || [] }))
 const relevant = [
-  ...judged.filter((it) => it.seed || RANK[it.relevance] >= RANK.medium),
+  ...judged.filter((it) => it.seed || RANK[it.relevance] >= RANK.medium || RANK[it.newsworthiness] >= RANK.medium),
   ...unreadable.filter((it) => it.seed),
 ]
 const dropped = judged.filter((it) => !relevant.includes(it))
@@ -477,7 +486,7 @@ const REC_SCHEMA = {
         properties: {
           title: { type: 'string', description: 'the change, as an imperative' },
           kind: { type: 'string', enum: ['change', 'experiment'] },
-          what: { type: 'string', description: 'what to change or measure, with the repo paths' },
+          what: { type: 'string', description: 'what to change or measure, in plain words' },
           why: { type: 'string', description: 'the reasoning: which items, verdicts and leads carry it, and what in the code makes it apply' },
           gain: { type: 'string', description: 'the expected effect, and how sure that is' },
           cost: { type: 'string', description: 'effort, spend and risk, including what it could break' },
@@ -505,6 +514,8 @@ const recs = evidence.length || leads.length
         'verify it. It respects every ruling and invariant of the profile. When no item justifies a code',
         'change, recommend the cheapest experiment that would settle the most promising item, as kind',
         '"experiment", and say why no change is due yet. Never recommend what the code already does.',
+        'Write for a CTO: plain words, each part of the system named by what it does, no file paths,',
+        'function names or other code names. The reasoning still rests on the code you read.',
         '',
         BRIEF,
         '',
@@ -534,27 +545,32 @@ const written = await agent(
     `First read the project profile ${profile}. The repository is at ${repo}. Write exactly one file,`,
     `${out} (create its directory if absent), and touch nothing else. Commit nothing.`,
     '',
-    "Write the report in English for the project's developer, who reads it to decide, keep up and learn.",
-    'Short sentences; every claim links its source. Outside "## Learn" the report holds only the items',
-    'below; add none and mention no other source. Structure, in this order:',
+    "Write the report in English as a research newsletter for the project's CTO and CEO: technical",
+    'leaders who read it to keep up with the field, learn and decide. Plain, smooth prose in short',
+    'sentences. Never write a file path, function, class, variable, config key, command or version',
+    'specifier; name a part of the system by what it does, such as "the web page extractor". Every claim',
+    'links its source. Outside "## Learn" the report holds only the items below; add none and mention',
+    'no other source. Structure, in this order:',
     seeded
       ? '1. "# Research: <a short name for the subject of the user\'s material>", then one line on what was read.'
       : `1. "# Research ${today}", then one line on what was swept for work since ${since}.`,
-    '2. "## Recommendations": each recommendation below as "### <n>. <title>" with the paragraphs "What:",',
-    '   "Why:", "Gain:", "Cost and risk:", "Verify:" and "Guardrails:", linking its sources. Mark an',
-    '   experiment as "(experiment)" in its heading. Where a call path, data flow or state change explains',
-    '   a recommendation, draw it after its "What:" paragraph as one ```mermaid block: flowchart LR or',
-    '   sequenceDiagram, at most ten nodes, every label in double quotes, only what the evidence states.',
-    '3. "## Findings": the user\'s material first, then the rest grouped by topic as "### <topic>" (name',
-    '   one where an item has none). Per item "#### <title>", then one plain line with link, date, source',
-    '   and "Relevance: high", "Relevance: medium" or "Relevance: low", or "Relevance: none" for a link',
-    '   of the user\'s (never bold); a one-paragraph summary; "Critique:"; "For the project:" with each',
-    '   claim, its path and the skeptic verdict and evidence (a claim the skeptic did not check reads',
-    '   "unverified").',
-    '4. "## Learn": the `learn` concept of each item, from foundations to frontier, each linked to the',
+    '2. "## In brief": five to eight bullets, most important first, each one plain sentence with its link.',
+    '   Lead with what moves the field, then what moves the project.',
+    '3. One "## <theme>" section per theme the items fall into, such as research, models and tools, or',
+    '   market and law; the user\'s material first. Inside a theme, items by newsworthiness, highest first.',
+    '   Per item "### <its headline>", then one plain line with link, date, source and "Relevance: high",',
+    '   "Relevance: medium", "Relevance: low" or "Relevance: none" for what it means for the project',
+    '   (never bold). Then its take in one paragraph: what happened, why it matters, how solid it is.',
+    '   Then one paragraph starting "For us:": what it confirms, changes or threatens for the project,',
+    '   in plain words, and whether our check against the code held.',
+    '4. "## Recommendations": each recommendation below as "### <n>. <title>" with the paragraphs "What:",',
+    '   "Why:", "Gain:", "Cost and risk:", "Verify:" and "Guardrails:", in plain words, linking its sources.',
+    '   Mark an experiment as "(experiment)" in its heading. Where a flow explains a recommendation, draw',
+    '   it after its "What:" paragraph as one ```mermaid block: flowchart LR or sequenceDiagram, at most',
+    '   ten nodes, every label in plain words in double quotes, only what the evidence states.',
+    '5. "## Learn": the `learn` concept of each item, from foundations to frontier, each linked to the',
     '   item it comes from.',
-    'Write nothing after "## Learn"; a ledger is appended later.',
-    "Keep the readers' fact, inference and guess labels. Return the recommendation titles.",
+    'Write nothing after "## Learn"; a ledger is appended later. Return the recommendation titles.',
     REC_NOTE,
     '',
     seeded ? ["THE USER'S MATERIAL (it names the subject; the ITEMS carry the readings):", ...seeds.map((u) => `- ${u}`), NOTES].join('\n') : '',

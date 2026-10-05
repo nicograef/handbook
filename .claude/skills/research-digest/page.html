@@ -3,8 +3,9 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;1,8..60,400&family=JetBrains+Mono:wght@400;500&display=swap">
 <style>
-/* Layout: masthead with the recommendation overview; a contents rail beside a reading column whose
-   items carry their source line in a right margin on wide screens; one column with a sticky section bar on phones. */
+/* Layout: a newsletter. Masthead, then a contents rail beside a reading column: the in-brief box, themed
+   stories whose source line sits in a right margin on wide screens, recommendation cards, then Learn.
+   One column with a sticky section bar on phones. */
 :root {
   --bg: #f3f5f6;
   --surface: #ffffff;
@@ -48,10 +49,6 @@ header.mast { grid-column: 1 / -1; padding-block: 40px 28px; border-bottom: 1px 
 h1 { font: 700 clamp(28px, 4.5vw, 46px)/1.1 var(--display); margin: 0; text-wrap: balance; }
 .dek { max-width: var(--measure); color: var(--muted); font-size: 18px; }
 .dek p { margin: 0; }
-.overview { list-style: none; margin: 12px 0 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr)); gap: 12px; }
-.overview a { display: grid; gap: 8px; align-content: start; height: 100%; box-sizing: border-box; padding: 14px 16px; background: var(--surface); border: 1px solid var(--rule); border-radius: 10px; color: inherit; text-decoration: none; font: 600 15px/1.4 var(--display); }
-.overview a:hover, .overview a:focus-visible { border-color: var(--accent); }
-.overview .num { font: 500 12px/1 var(--mono); color: var(--muted); }
 
 nav.toc { position: sticky; top: calc(env(safe-area-inset-top, 0px) + 24px); align-self: start; max-height: calc(100vh - 48px); overflow: auto; padding-block: 28px; font: 14px/1.45 var(--display); }
 nav.toc ol { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
@@ -78,6 +75,9 @@ main table { border-collapse: collapse; font: 14px/1.45 var(--display); font-var
 main th, main td { border-bottom: 1px solid var(--rule); padding: 6px 10px; text-align: left; vertical-align: top; }
 main th { font-weight: 600; }
 main strong { font-weight: 600; }
+main ul.brief { list-style: none; padding: 18px 22px; background: var(--surface); border: 1px solid var(--rule); border-left: 4px solid var(--accent); border-radius: 10px; font-size: 18px; }
+main ul.brief li { margin: 0 0 10px; padding-left: 14px; position: relative; }
+main ul.brief li::before { content: ""; position: absolute; left: 0; top: 0.7em; width: 6px; height: 6px; border-radius: 50%; background: var(--accent); }
 
 .rec { margin: 0 0 24px; padding: 20px 22px 8px; background: var(--surface); border: 1px solid var(--rule); border-radius: 12px; }
 .rec > h3 { margin: 0 0 14px; display: flex; flex-direction: column; align-items: flex-start; gap: 8px; }
@@ -87,7 +87,7 @@ main strong { font-weight: 600; }
 .rec-label { font: 600 13px/1.9 var(--display); letter-spacing: .04em; text-transform: uppercase; color: var(--muted); }
 
 .item { padding-block: 22px 8px; border-top: 1px solid var(--rule); display: grid; grid-template-columns: minmax(0, var(--measure)); grid-template-areas: "title" "meta" "body"; column-gap: var(--gap); }
-.item > h4 { grid-area: title; }
+.item > h3, .item > h4 { grid-area: title; margin: 0 0 6px; }
 .item-meta { grid-area: meta; font: 13px/1.55 var(--mono); color: var(--muted); margin: 0 0 12px; }
 .item-meta p { margin: 0; }
 .item-body { grid-area: body; min-width: 0; }
@@ -106,7 +106,8 @@ main strong { font-weight: 600; }
 
 @media (min-width: 1200px) {
   main { grid-template-columns: minmax(0, var(--measure)) var(--margin); }
-  main > h2, main > .rec { grid-column: 1 / -1; }
+  main > h2, main > .rec, main > ul.brief { grid-column: 1 / -1; }
+  main > ul.brief { max-width: calc(var(--measure) + var(--gap) + var(--margin)); box-sizing: border-box; }
   .rec { max-width: calc(var(--measure) + var(--gap) + var(--margin)); box-sizing: border-box; }
   .item { grid-column: 1 / -1; grid-template-columns: minmax(0, var(--measure)) var(--margin); grid-template-areas: "title meta" "body meta"; }
   .item-meta { margin: 4px 0 0; padding-left: 16px; border-left: 2px solid var(--rule); align-self: start; position: sticky; top: 24px; }
@@ -129,7 +130,6 @@ main strong { font-weight: 600; }
     <div class="eyebrow" id="eyebrow">Research</div>
     <h1 id="title">{{TITLE}}</h1>
     <div class="dek" id="dek"></div>
-    <ol class="overview" id="overview" hidden></ol>
   </header>
   <nav class="toc" aria-label="Contents"><ol id="toc"></ol></nav>
   <main id="issue-body"></main>
@@ -171,7 +171,6 @@ main strong { font-weight: 600; }
   // Recommendations become cards: a kind chip on the heading, then one labelled row per paragraph label.
   var LABEL = /^(What|Why|Gain|Cost and risk|Verify|Guardrails):\s*/;
   var recHead = Array.prototype.find.call(main.querySelectorAll('h2'), function (h) { return /^Recommendations/.test(h.textContent); });
-  var recs = [];
   if (recHead) section(recHead, 'h2').filter(function (n) { return n.matches('h3'); }).forEach(function (h) {
     var card = el('article', 'rec'), body = section(h, 'h2, h3'), row = null;
     h.parentNode.insertBefore(card, h);
@@ -192,12 +191,20 @@ main strong { font-weight: 600; }
       } else if (row) row.lastChild.appendChild(n);
       else card.appendChild(n);
     });
-    recs.push(h);
   });
 
-  // Findings items: the title, the source line in the margin, the reading below.
-  Array.prototype.slice.call(main.querySelectorAll('h4')).forEach(function (h) {
-    var item = el('article', 'item'), rest = section(h, 'h2, h3, h4'), meta = el('div', 'item-meta'), body = el('div', 'item-body');
+  var briefHead = Array.prototype.find.call(main.querySelectorAll('h2'), function (h) { return /^In brief/.test(h.textContent); });
+  if (briefHead && briefHead.nextElementSibling && briefHead.nextElementSibling.matches('ul')) briefHead.nextElementSibling.classList.add('brief');
+
+  // Stories: an h3 under a theme section, or an h4 under a topic; the title, the source line in the
+  // margin, the reading below.
+  var stories = [], theme = null;
+  Array.prototype.forEach.call(main.children, function (n) {
+    if (n.matches('h2')) theme = /^(In brief|Recommendations|Learn)/.test(n.textContent) ? null : n;
+    else if (n.matches('h4') || (theme && n.matches('h3') && !(n.nextElementSibling && n.nextElementSibling.matches('h4')))) stories.push(n);
+  });
+  stories.forEach(function (h) {
+    var item = el('article', 'item'), rest = section(h, h.matches('h3') ? 'h2, h3' : 'h2, h3, h4'), meta = el('div', 'item-meta'), body = el('div', 'item-body');
     h.parentNode.insertBefore(item, h);
     item.appendChild(h);
     if (rest[0] && rest[0].matches('p')) meta.appendChild(rest.shift());
@@ -212,7 +219,7 @@ main strong { font-weight: 600; }
   // Diagrams the writer drew: the artifact host renders <pre class="mermaid"> blocks.
   main.querySelectorAll('pre > code.language-mermaid').forEach(function (c) { var p = el('pre', 'mermaid'); p.textContent = c.textContent; c.parentNode.replaceWith(p); });
 
-  // Labels become chips: "Relevance: high" anywhere; "Critique:" and "For the project:" open an item's paragraphs;
+  // Labels become chips: "Relevance: high" anywhere; "For us:" and the like open a story's paragraphs;
   // "Fact:", "Inference:" and "Guess:" open a paragraph or list item.
   var walker = document.createTreeWalker(main, NodeFilter.SHOW_TEXT);
   var hits = [], n;
@@ -225,7 +232,7 @@ main strong { font-weight: 600; }
   });
   main.querySelectorAll('.item-body > p').forEach(function (b) {
     var t = b.firstChild;
-    var m = t && t.nodeType === 3 && t.nodeValue.match(/^(Critique|For the project):\s*/);
+    var m = t && t.nodeType === 3 && t.nodeValue.match(/^(For us|Critique|For the project):\s*/);
     if (!m) return;
     t.nodeValue = t.nodeValue.slice(m[0].length);
     b.insertBefore(chip('lead', m[1]), t);
@@ -247,20 +254,5 @@ main strong { font-weight: 600; }
     var li = el('li', h.tagName.toLowerCase()), a = el('a'); a.href = '#' + id; a.textContent = label; li.appendChild(a); toc.appendChild(li);
   });
 
-  // The overview lists the recommendations in the masthead, linked to their cards.
-  var overview = document.getElementById('overview');
-  recs.forEach(function (h) {
-    var m = headText(h).match(/^(\d+)\.\s*(.*)$/);
-    var li = el('li'), a = el('a'), top = el('span');
-    a.href = '#' + h.id;
-    top.appendChild(chip('num', m ? m[1] : ''));
-    top.appendChild(document.createTextNode(' '));
-    top.appendChild(h.querySelector('.tag').cloneNode(true));
-    a.appendChild(top);
-    a.appendChild(document.createTextNode(m ? m[2] : headText(h)));
-    li.appendChild(a);
-    overview.appendChild(li);
-  });
-  overview.hidden = !recs.length;
 })();
 </script>

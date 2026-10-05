@@ -22,7 +22,7 @@ Before judging, read these to know the project as the code has it:
 
 ## Topics
 
-One line per discovery lane, at most four; the digest sweeps each lane separately. Name the lanes for the project. Each line names its topics and where to look.
+One line per discovery lane, at most four; the digest sweeps each lane separately. Name the lanes for the project. Each line names its topics and where to look. Cover the field's own progress, such as its papers and labs, not only the stack the project runs on.
 
 - **<lane>**: <topics>
   - Sources: <the primary sources and feeds for this lane, routes per `sources.md`>
