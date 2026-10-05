@@ -98,7 +98,14 @@ Placeholders: `<name>` and `<email>` are your git identity; `<title>` names this
     cd ~/r/handbook && ./install.sh
     ```
 
-12. **Signing key** — grant gh the signing-key scope, then upload the same key as a signing key.
+12. **SSH config** — copy the [ssh_config](../templates/ssh_config) template; `-n` keeps an existing config.
+    Host entries go above its defaults. `ssh -G github.com | grep identitiesonly` then prints `identitiesonly yes`:
+
+    ```bash
+    cp -n ~/r/handbook/templates/ssh_config ~/.ssh/config && chmod 600 ~/.ssh/config
+    ```
+
+13. **Signing key** — grant gh the signing-key scope, then upload the same key as a signing key.
     `gh ssh-key list` then shows it twice, typed `authentication` and `signing`:
 
     ```bash
@@ -106,8 +113,8 @@ Placeholders: `<name>` and `<email>` are your git identity; `<title>` names this
     gh ssh-key add ~/.ssh/id_ed25519.pub --type signing --title "<title>"
     ```
 
-13. **Editor** — [neovim.md](neovim.md) installs Neovim; `install.sh` has already linked its config.
-14. **New login** — log out and back in. The session then has the `docker` group and the new `PATH`.
+14. **Editor** — [neovim.md](neovim.md) installs Neovim; `install.sh` has already linked its config.
+15. **New login** — log out and back in. The session then has the `docker` group and the new `PATH`.
 
 ## Verify
 

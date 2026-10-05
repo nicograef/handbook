@@ -1,0 +1,30 @@
+# ~/.ssh/config template
+# Usage: copy to ~/.ssh/config (mode 600); host entries stay local, never in a repo.
+
+# ── Hosts ──
+# ssh takes the first value it finds per option, so host blocks go above the defaults.
+Host github.com
+    User git
+    IdentityFile ~/.ssh/id_ed25519
+
+# Host <alias>
+#     HostName <host>
+#     User <username>
+
+# Enable for a host that parallel sessions reach: one connection, no ufw rate-limit refusals.
+# Host <alias>
+#     ControlMaster auto
+#     ControlPath ~/.ssh/cm-%C
+#     ControlPersist 10m
+
+# ── Defaults ──
+Host *
+    # The first use of a key loads it into the agent, so no manual ssh-add.
+    AddKeysToAgent yes
+    # Offer only configured or default keys; many loaded keys trip MaxAuthTries.
+    IdentitiesOnly yes
+    # known_hosts stops listing the hosts you connect to in clear text.
+    HashKnownHosts yes
+    # A dead link drops after 45 s instead of hanging the terminal.
+    ServerAliveInterval 15
+    ServerAliveCountMax 3
