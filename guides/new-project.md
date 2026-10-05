@@ -56,32 +56,27 @@ A React repository skips [Copy the production files](#copy-the-production-files)
    EOF
    ```
    It requires no status checks, so a direct push to `main` still lands. A private repository needs GitHub Pro, Team or Enterprise for [rulesets](https://docs.github.com/en/repositories/configuring-branches-and-merges-in-your-repository/managing-rulesets/about-rulesets).
-   The [rulesets API](https://docs.github.com/en/rest/repos/rules#create-a-repository-ruleset) lists further rules.
 
 ## Copy the base files
 
 1. Copy the editor, git and make files. Expected: `make help` prints the DEVELOPER and PRODUCTION sections.
    ```bash
    HANDBOOK=<handbook>
-   cp "$HANDBOOK"/templates/{.editorconfig,.gitignore,Makefile} .
-   mkdir -p .vscode scripts && cp "$HANDBOOK/templates/vscode-settings.json" .vscode/settings.json
-   cp "$HANDBOOK/templates/make-help.awk" scripts/make-help.awk
+   cp "$HANDBOOK"/templates/{.editorconfig,.gitignore,Makefile} . && mkdir -p .vscode scripts
+   cp "$HANDBOOK/templates/vscode-settings.json" .vscode/settings.json && cp "$HANDBOOK/templates/make-help.awk" scripts/
    ```
 
 ## Scaffold the stack
 
 1. Copy the local Compose file, devcontainer, CI and Dependabot config; uncomment Postgres and your row's features. Expected: `docker compose config --quiet` exits 0.
    ```bash
-   cp "$HANDBOOK/templates/docker-compose.yml" .
-   mkdir -p .devcontainer && cp "$HANDBOOK/templates/devcontainer.json" .devcontainer/devcontainer.json
-   cp "$HANDBOOK/templates/setup-dev-tools.sh" scripts/setup-dev-tools.sh
-   mkdir -p .github/workflows && cp "$HANDBOOK/templates/ci.yml" .github/workflows/ci.yml
-   cp "$HANDBOOK/templates/dependabot.yml" .github/dependabot.yml
+   cp "$HANDBOOK/templates/docker-compose.yml" . && cp "$HANDBOOK/templates/setup-dev-tools.sh" scripts/
+   mkdir -p .devcontainer .github/workflows && cp "$HANDBOOK/templates/devcontainer.json" .devcontainer/devcontainer.json
+   cp "$HANDBOOK/templates/ci.yml" .github/workflows/ci.yml && cp "$HANDBOOK/templates/dependabot.yml" .github/dependabot.yml
    ```
 2. Scaffold each tier your row names and copy its Dockerfile template. Expected: `backend/Dockerfile` or `frontend/Dockerfile` exists per tier.
    ```bash
-   uv init --package --python <project-python-version> backend                  # Python
-   cp "$HANDBOOK/templates/Dockerfile.python" backend/Dockerfile
+   uv init --package --python <project-python-version> backend && cp "$HANDBOOK/templates/Dockerfile.python" backend/Dockerfile   # Python
    (mkdir -p backend && cd backend && go mod init github.com/<github-owner>/<project-name> && go mod edit -go=<project-go-version>)   # Go
    cp "$HANDBOOK/templates/Dockerfile.go" backend/Dockerfile
    pnpm create vite frontend --template react-ts --no-interactive               # React
@@ -98,8 +93,7 @@ A React repository skips [Copy the production files](#copy-the-production-files)
 
 1. Pin Node and pnpm, then add the frontend gate the [Node/TypeScript](../reference/stack-conventions.md#nodetypescript) conventions name. Expected: `pnpm --dir frontend test` passes.
    ```bash
-   echo <node-major> > frontend/.node-version && cd frontend
-   npm pkg set packageManager="pnpm@$(pnpm --version)"
+   echo <node-major> > frontend/.node-version && cd frontend && npm pkg set packageManager="pnpm@$(pnpm --version)"
    pnpm add -D typescript@~7.0 oxlint-tsgolint prettier vitest     # writes pnpm-lock.yaml
    npm pkg set scripts.format="prettier --write ." "scripts.format:check=prettier --check ." scripts.lint="oxlint --type-aware --deny-warnings" scripts.typecheck="tsc -b" scripts.test="vitest run"
    printf 'pnpm-lock.yaml\n' > .prettierignore     # pnpm owns the lockfile format
@@ -107,8 +101,7 @@ A React repository skips [Copy the production files](#copy-the-production-files)
    ```
 2. Set the uv floor for the Python backend, add its dev tools and a smoke test. Expected: `backend/.python-version` holds `<project-python-version>`, and `backend/uv.lock` names `pytest`.
    ```bash
-   printf '\n[tool.uv]\nrequired-version = ">=<uv-version>"\n' >> backend/pyproject.toml
-   uv add --directory backend --dev pytest ruff ty    # a uv below <uv-version> fails: "Required uv version"
+   printf '\n[tool.uv]\nrequired-version = ">=<uv-version>"\n' >> backend/pyproject.toml && uv add --directory backend --dev pytest ruff ty
    mkdir -p backend/tests && printf 'from backend import main\n\n\ndef test_main_prints(capsys):\n    main()\n    assert capsys.readouterr().out\n' > backend/tests/test_smoke.py
    ```
 
@@ -116,10 +109,8 @@ A React repository skips [Copy the production files](#copy-the-production-files)
 
 1. Copy the Caddy production stack, the env template and the deploy scripts. Expected: `docker-compose.prod.yml` and `reverse-proxy/Caddyfile` exist.
    ```bash
-   cp "$HANDBOOK/templates/docker-compose.prod.yml" .
+   cp "$HANDBOOK"/templates/{docker-compose.prod.yml,.env.example} . && cp "$HANDBOOK"/templates/{prod-init.sh,backup-postgres.sh} scripts/
    mkdir -p reverse-proxy && cp "$HANDBOOK/templates/Caddyfile" reverse-proxy/Caddyfile
-   cp "$HANDBOOK/templates/.env.example" .
-   cp "$HANDBOOK"/templates/{prod-init.sh,backup-postgres.sh} scripts/
    cp "$HANDBOOK/templates/release.yml" .github/workflows/release.yml
    ```
 2. Delete the tiers your row lacks from `docker-compose.prod.yml`, the `release.yml` matrix and the Caddyfile. Expected: `docker compose -f docker-compose.prod.yml config --services` lists only your tiers, `postgres` and `reverse-proxy`.
