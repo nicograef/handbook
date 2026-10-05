@@ -7,6 +7,7 @@ How each platform is searched and how a found item is read. Open it before disco
 - Query names, not topic words: product, project, model, statute and procedure names find news; topic words find tutorials and SEO.
 - Pair a broad feed with a primary source. Press and blogs are leads; the fact comes from the paper, the changelog or the statute.
 - Fetch with curl. WebFetch shares an egress that arXiv rate-limits, and its small model misreads pages.
+- On HTTP 429, wait a minute and retry once before you call the route failed.
 
 ## Discovery: research and engineering
 
@@ -17,7 +18,7 @@ How each platform is searched and how a found item is read. Open it before disco
 | Hugging Face papers | `https://huggingface.co/api/daily_papers?date=<YYYY-MM-DD>`, one call per day. | Low for retrieval; upvotes rank attention. |
 | Semantic Scholar | `/graph/v1/paper/search/bulk?query=<q>&publicationDateOrYear=<since>:` | Lookups of venue and citations; noisy as a sweep. |
 | GitHub releases | `https://github.com/<owner>/<repo>/releases.atom`, or `tags.atom` for repos that only tag. No auth. | The primary record of a dependency's change. |
-| GitHub advisories | `https://api.github.com/advisories?ecosystem=<eco>&affects=<pkg>` | A security fix outranks a release. |
+| GitHub advisories | `https://api.github.com/advisories?ecosystem=<eco>&affects=<pkg>`, one call per pinned package: without `affects`, the newest 100 advisories of an ecosystem span only days. | A security fix outranks a release. |
 | Package registries | `pypi.org/pypi/<pkg>/json`, `registry.npmjs.org/<pkg>` (dates under `time`), `go.dev/doc/devel/release` | Versions and dates. |
 | Provider changelogs | The model and API changelogs of every provider the project calls. Most have no RSS; curl the page. | The primary record of a model's launch, change or retirement. |
 | Vendor engineering blogs | RSS of the vendors in the stack and their direct rivals; keep those that publish measurements. | Measured posts beat news. |

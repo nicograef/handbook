@@ -45,7 +45,7 @@ main h3 { font: 600 19px/1.35 var(--display); margin: 32px 0 6px; text-wrap: bal
 main h4 { font: 600 17px/1.35 var(--display); margin: 24px 0 6px; text-wrap: balance; }
 main h4 + p { font: 13px/1.5 var(--mono); color: var(--muted); }
 main p, main li { margin: 0 0 12px; }
-main a { color: var(--accent); text-underline-offset: 2px; }
+main a { color: var(--accent); text-underline-offset: 2px; overflow-wrap: anywhere; }
 main code { font: 0.86em var(--mono); background: var(--surface); border: 1px solid var(--rule); border-radius: 4px; padding: 0 4px; overflow-wrap: anywhere; }
 main pre { background: var(--surface); border: 1px solid var(--rule); border-radius: 6px; padding: 12px; overflow-x: auto; }
 main pre code { border: 0; padding: 0; }
@@ -84,24 +84,26 @@ html { scroll-behavior: smooth; }
 <script>
 (function () {
   // The report arrives as a JSON string; its closing ledger comment is the next run's, not the reader's.
-  var md = JSON.parse(document.getElementById('report').textContent).replace(/\n*<!--[\s\S]*?-->\s*$/, '\n');
+  var raw = JSON.parse(document.getElementById('report').textContent);
+  var cut = raw.lastIndexOf('<!--');
+  var md = cut > -1 && /-->\s*$/.test(raw) ? raw.slice(0, cut).replace(/\n*$/, '\n') : raw;
   var lines = md.split('\n');
   // The issue's own H1 moves into the masthead.
   if (/^# /.test(lines[0])) { document.getElementById('title').textContent = lines.shift().slice(2).trim(); }
   var main = document.getElementById('issue-body');
   var esc = function (t) { return t.replace(/[&<]/g, function (c) { return c === '&' ? '&amp;' : '&lt;'; }); };
   // Fetched titles and quotes reach the page, so rendered HTML is sanitised; without both libraries the text shows plain.
-  main.innerHTML = window.marked && window.DOMPurify ? DOMPurify.sanitize(marked.parse(lines.join('\n'))) : '<pre>' + esc(lines.join('\n')) + '</pre>';
+  main.innerHTML = window.marked && window.DOMPurify ? DOMPurify.sanitize(marked.parse(lines.join('\n'))) : '<pre style="white-space: pre-wrap">' + esc(lines.join('\n')) + '</pre>';
   main.querySelectorAll('table').forEach(function (t) { var d = document.createElement('div'); d.className = 'table'; t.parentNode.insertBefore(d, t); d.appendChild(t); });
   main.querySelectorAll('a[href^="http"]').forEach(function (a) { a.target = '_blank'; a.rel = 'noopener'; });
-  // Relevance labels become chips: "Relevance: high", "Relevance: medium".
+  // Relevance labels become chips: "Relevance: high", "Relevance: none".
   var walker = document.createTreeWalker(main, NodeFilter.SHOW_TEXT);
   var hits = [], n;
-  while ((n = walker.nextNode())) { if (n.parentNode.closest('a, code, pre')) continue; if (/(Relevance)[:\s*]*(high|medium|low)/.test(n.nodeValue)) hits.push(n); }
+  while ((n = walker.nextNode())) { if (n.parentNode.closest('a, code, pre')) continue; if (/(Relevance)[:\s*]*(high|medium|low|none)/.test(n.nodeValue)) hits.push(n); }
   hits.forEach(function (node) {
     var span = document.createElement('span');
-    span.innerHTML = node.nodeValue.replace(/[&<]/g, function (c) { return c === '&' ? '&amp;' : '&lt;'; })
-      .replace(/(Relevance)([:\s*]*)(high|medium|low)/g, function (_, w, sep, lvl) { return w + sep + '<span class="rel rel-' + lvl + '">' + lvl + '</span>'; });
+    span.innerHTML = esc(node.nodeValue)
+      .replace(/(Relevance)([:\s*]*)(high|medium|low|none)/g, function (_, w, sep, lvl) { return w + sep + '<span class="rel rel-' + lvl + '">' + lvl + '</span>'; });
     node.parentNode.replaceChild(span, node);
   });
   var toc = document.getElementById('toc'), used = {};

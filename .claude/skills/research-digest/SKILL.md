@@ -9,13 +9,12 @@ disable-model-invocation: true
 
 Every run is one deep dive with one report. Without input it sweeps the profile's topics for work of the last 30 days. Given links or text, it reads that material in full and expands from it. Each item is read critically and judged against this repo. The run changes no code and commits nothing.
 
-The report opens with one to three reasoned recommendations. Each is a change, or the cheapest experiment when no change is due yet. It shows only items of medium or high relevance. The rest of what was read or skipped sits in a closing HTML comment. The page hides it; the next run reads it as covered.
+The report opens with one to three reasoned recommendations. Each is a change, or the cheapest experiment when no change is due yet. It shows only items of medium or high relevance, plus every link the user gave. The rest of what was read or skipped sits in a closing HTML comment. The page hides it; the next run reads it as covered.
 
 ## Hard rules
 
 - The project profile holds the project context: topics, rulings, brief sources, report directory. Without it, the report judges nothing.
 - Discovery uses the platforms of [sources.md](sources.md), never a hand-kept link list. The user's links feed one run; nothing stores them as a source.
-- WebFetch is triage only. The reading of record is the raw page, the arXiv HTML or the PDF.
 - Never log in, submit a form or post anything. A walled source is skipped with its reason.
 
 ## 1. The project profile
@@ -28,7 +27,7 @@ The workflow reads the profile by path, so a new profile works without a session
 
 A sweep searches for work published in the 30 days before today; `since` is that start. No candidate is dropped for its age: an older paper or statute that still bears on the project is read. Runs never depend on each other's dates.
 
-Every report closes with a ledger comment. Its URLs under `deferred:` are carried: candidates an earlier run deferred over its reading cap, with their priority. Every other URL the reports name is covered and is not read again unless the user names it.
+Every report closes with a ledger comment. Its URLs under `deferred:` are carried, each with its priority. An earlier run deferred them over its reading cap or after a reader died. Every other URL the reports name is covered and is not read again unless the user names it. A URL one report names outside `deferred:` is covered, even where another report deferred it.
 
 The report path is `<report dir>/<today>.md`; when that exists, `<today>-2.md`, and so on.
 
@@ -44,7 +43,7 @@ args = {today, since, repo: <absolute checkout path>, profile: <absolute profile
 
 `seeds` and `notes` are present only when the user gave material; pasted text without a link goes into `notes`.
 
-The workflow returns `{path, headlines, ledger, failedRoutes, relevant, read, deferred}`. Append `ledger` verbatim to the report file. On `{aborted}`, run it again; an aborted writer still returns its ledger.
+The workflow returns `{headlines, ledger, failedRoutes}`. Append `ledger` verbatim to the report file. On `{aborted}`, relaunch it with its run id as `resumeFromRunId`, so the finished agents replay from the journal.
 
 ## 4. Publish the page
 
