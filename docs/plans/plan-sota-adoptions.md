@@ -219,3 +219,15 @@ Move the hardware table, battery, PAM, Wi-Fi and firmware lines into `~/.claude/
 - [x] `ssh-keygen -y -P '' -f ~/.ssh/id_ed25519` fails
 - [x] `ssh -T git@github.com` authenticates and `git commit -S --allow-empty -m probe` in a scratch repo signs without a prompt
 - [x] `grep -cE 'SSID|Battery|fprintd' ~/.claude/rules/machine.md` prints 0
+
+## Run state
+
+| Field | Value |
+| --- | --- |
+| `Base` | `main 69b387b027c5439f3da8b76e23dfff12e6d90cbb` |
+| `Run branch` | `plan/sota-adoptions` |
+| `Worktrees` | `~/r/handbook-wt/plan-sota-adoptions -> plan/sota-adoptions -> landing` |
+| `Next criterion` | `phase 3 criterion 2` (after landing) |
+| `Verify` | `make check && make test-agent-bus && make test-plan-run-guard && make test-git-guard` |
+| `Workflow` | `scriptPath=~/.claude/projects/-home-nico-r-handbook/9fc50dd0-eba6-467b-9858-81b5f14a4050/workflows/scripts/sota-wave-b-wf_7cad3577-773.js` and `runId=wf_7cad3577-773` (done) |
+| `Failure` | `error: Your local changes to the following files would be overwritten by merge: claude/settings.json` |
