@@ -29,6 +29,8 @@ alias puli='pnpm update --latest --interactive'
 alias pci='rm -rf node_modules/ && rm -rf pnpm-lock.yaml && rm -rf $(pnpm store path) && pnpm update --latest --ignore-scripts && pnpm audit'
 alias diffi='diff --side-by-side --suppress-common-lines --color=always'
 
+alias update='sudo apt update && sudo apt full-upgrade -y && sudo apt autoremove -y'
+
 # Modern CLI tools – only activate when the tool is actually installed,
 # so this stays safe on minimal machines.
 # bat as a colorized cat (apt binary: batcat, cargo binary: bat)
