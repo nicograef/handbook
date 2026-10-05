@@ -116,6 +116,7 @@ Global Claude Code config, skills, agents and the scripts they call.
 | [templates/project-researcher.md](templates/project-researcher.md) | Project researcher agent for the research-digest skill: topics, rulings, issue directory |
 | [scripts/agent-bus.sh](scripts/agent-bus.sh) | Coordination bus for concurrent Claude Code sessions in one repo |
 | [scripts/check-agents.sh](scripts/check-agents.sh) | Last activity of background agents, read off their task transcripts |
+| [scripts/git-guard.sh](scripts/git-guard.sh) | PreToolUse hook that blocks force pushes, skipped hooks and commits gitleaks flags |
 | [scripts/plan-run-guard.sh](scripts/plan-run-guard.sh) | Stop hook that keeps a live plan run from yielding the turn |
 
 ## Handbook upkeep
@@ -129,6 +130,7 @@ Rules and checks for maintaining this repo.
 | [scripts/check-repo.sh](scripts/check-repo.sh) | Repo self-check; `make check` |
 | [scripts/test-agent-bus.sh](scripts/test-agent-bus.sh) | Fixture test for `agent-bus.sh`; `make test-agent-bus` |
 | [scripts/test-plan-run-guard.sh](scripts/test-plan-run-guard.sh) | Fixture test for `plan-run-guard.sh`; `make test-plan-run-guard` |
+| [scripts/test-git-guard.sh](scripts/test-git-guard.sh) | Fixture test for `git-guard.sh`; `make test-git-guard` |
 | [scripts/test-dockerfiles.sh](scripts/test-dockerfiles.sh) | Builds the Dockerfile templates against stub apps until healthy; `make test-dockerfiles` |
 
 ## License

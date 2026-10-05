@@ -79,10 +79,11 @@ Placeholders: `<name>` and `<email>` are your git identity; `<title>` names this
    ```
 
 9. **CLI tools** — tmux, the modern tools the shell aliases expect, and `make` and `shellcheck` for the handbook's `make check`.
-   Without bat, eza, fd-find or fzf, their aliases in [dotfiles/.bash_aliases](../dotfiles/.bash_aliases) stay inactive. `rg --version` then prints a version:
+   gitleaks lets the git guard hook scan each agent commit for secrets. Without bat, eza, fd-find or fzf, their aliases stay inactive.
+   [dotfiles/.bash_aliases](../dotfiles/.bash_aliases) holds those aliases. `rg --version` then prints a version:
 
    ```bash
-   sudo apt install -y tmux bat eza fzf fd-find ripgrep git-delta make shellcheck
+   sudo apt install -y tmux bat eza fzf fd-find ripgrep git-delta make shellcheck gitleaks
    ```
 
 10. **Clone the handbook** — over SSH, with the key gh uploaded. `~/r/handbook` then holds the clone:
