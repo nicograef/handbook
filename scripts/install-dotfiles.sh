@@ -14,8 +14,8 @@
 #      init.lua and repo-status into $HOME;
 #      a real file or directory in the way is moved to <name>.bak
 #   3. Symlinks Claude Code config (global CLAUDE.md, settings, agents, skills,
-#      agent-bus.sh, plan-run-guard.sh and check-agents.sh — the global hooks in
-#      settings.json and the skills call them by those paths)
+#      agent-bus.sh, plan-run-guard.sh, git-guard.sh and check-agents.sh — the
+#      global hooks in settings.json and the skills call them by those paths)
 #   4. Sets git config defaults (pull.rebase, fetch.prune, etc.)
 #   5. Sets up SSH commit signing when ~/.ssh/id_ed25519.pub exists
 #   6. Points to the gh install docs if gh is missing
@@ -54,6 +54,7 @@ LINKS=(
   "claude/statusline.sh .claude/statusline.sh"
   "scripts/agent-bus.sh .claude/agent-bus.sh"
   "scripts/plan-run-guard.sh .claude/plan-run-guard.sh"
+  "scripts/git-guard.sh .claude/git-guard.sh"
   "scripts/check-agents.sh .claude/check-agents.sh"
   ".claude/agents .claude/agents"
   ".claude/skills .claude/skills"
