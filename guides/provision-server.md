@@ -100,10 +100,23 @@ Without bat, eza, fd-find or fzf, their aliases in
 1. **Install them:**
 
    ```bash
-   sudo apt install -y tmux bat eza fzf fd-find ripgrep git-delta
+   sudo apt install -y git jq tmux bat eza fzf fd-find ripgrep git-delta
    ```
 
    Expected: apt ends without errors. Long work runs in a named session, see [reference/tmux.md](../reference/tmux.md).
+
+## Link the handbook dotfiles
+
+A read-only https clone supplies the aliases, prompt and tmux config; the [install-dotfiles.sh](../scripts/install-dotfiles.sh) header lists the rest.
+
+1. **Clone the handbook and run install.sh:**
+
+   ```bash
+   mkdir -p ~/r && git clone https://github.com/nicograef/handbook.git ~/r/handbook
+   ~/r/handbook/install.sh
+   ```
+
+   Expected: it ends with `Done – restart your shell`. A later `git -C ~/r/handbook pull` updates every linked file.
 
 ## Verify
 
@@ -115,6 +128,7 @@ Keep the output: each [maintenance pass](maintenance.md#verify) compares against
 ssh <username>@<host>
 curl -fsSL https://raw.githubusercontent.com/nicograef/handbook/main/scripts/host-audit.sh -o host-audit.sh
 sudo bash host-audit.sh | tee "audit-$(hostname)-$(date +%F).txt"
+readlink ~/.bash_aliases
 docker run --rm hello-world
 exit
 # from the laptop
@@ -126,6 +140,7 @@ scripts/netcup.sh firewall-get <server>
 | Check | Expected |
 | --- | --- |
 | `host-audit.sh` | Ends with `no FAIL`. Each `FAIL` names the expected and the read value; read every `note` and raw list once |
+| `readlink` | `<home>/r/handbook/dotfiles/.bash_aliases` |
 | `hello-world` | Prints the Docker confirmation message |
 | `ssh root@<host>` | `Permission denied (publickey)` |
 | netcup `firewall-get` | The netcup default policies, then the user policy; `"consistent": true` |
