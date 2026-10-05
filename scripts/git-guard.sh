@@ -7,6 +7,7 @@
 # What it does:
 #   1. Allows at once when the payload cannot hold a git call.
 #   2. Unwraps sh/bash/zsh -c payloads and eval arguments, then folds each quoted string into one word.
+#      A command substitution inside double quotes is checked like a top-level command.
 #   3. Finds git behind a path, env, command or -C/-c options, per command segment.
 #   4. Blocks pushes with force, +refspec, --mirror, --no-verify or a core.hooksPath override.
 #   5. Blocks commits with -n, --no-verify or a core.hooksPath override.
@@ -24,6 +25,8 @@ payload="$(cat)"
 # Prints the payload cwd, then one command segment per line. A payload that is not JSON is
 # taken as the command itself. A quoted string becomes one word: separators, blanks and %
 # inside it are %XX-encoded, and an empty one is %E.
+# Each $(...) or backtick body inside double quotes adds its own segments after the command.
+# A cat heredoc with a quoted delimiter there is inert data, so its body is dropped.
 read -r -d '' JQ_PROG <<'JQ' || true
 def quoted: "\\$'(?<a>(?:\\\\.|[^'\\\\])*)'|'(?<s>[^']*)'|\"(?<d>(?:\\\\.|[^\"\\\\])*)\"";
 def quoted_bare: "\\$'(?:\\\\.|[^'\\\\])*'|'[^']*'|\"(?:\\\\.|[^\"\\\\])*\"";
@@ -43,14 +46,37 @@ def hex: [(. / 16 | floor), (. % 16)] | map("0123456789ABCDEF"[.:. + 1]) | add;
 def enc:
   if . == "" then "%E"
   else gsub("(?<c>[%\\s;&|()`])"; "%" + (.c | explode[0] | hex)) end;
+def words:
+  gsub(quoted + "|\\\\(?<e>[\\s\\S])";
+    if .e == "\n" then " " elif .e then .e | enc else unq | enc end)
+  | gsub("(?<=\\S)%E|%E(?=\\S)"; "")
+  | gsub("[;&|()`\\n]"; "\n");
+# The $(...) and backtick bodies of a double-quoted string; an unclosed one runs to the end.
+def subs:
+  reduce scan("\\\\[\\s\\S]|\\$\\(|[\\s\\S]") as $t ({m: 0, n: 0, q: false, b: "", o: []};
+    if .m == 0 then
+      if $t == "$(" then .m = 1 | .n = 1 | .b = ""
+      elif $t == "`" then .m = 2 | .b = ""
+      else . end
+    elif .m == 2 then
+      if $t == "`" then .o += [.b] | .m = 0 else .b += $t end
+    elif .q then .q = ($t != "'") | .b += $t
+    elif $t == ")" and .n == 1 then .o += [.b] | .m = 0
+    else .n += (if $t == ")" then -1 elif $t == "(" or $t == "$(" then 1 else 0 end)
+      | .q = ($t == "'") | .b += $t end)
+  | .o + (if .m == 0 then [] else [.b] end) | .[];
+def bodies:
+  gsub("(?<p>^|[\\s;&|(])cat\\s+<<-?\\s*'(?<w>[^'\\s]+)'[ \\t]*\\n(?:[\\s\\S]*?\\n)?[ \\t]*\\k<w>[ \\t]*(?=\\n|$)";
+    "\(.p)cat ")
+  | subs;
+def segs:
+  fix
+  | words,
+    (match(quoted + "|\\\\[\\s\\S]"; "g").captures[] | select(.name == "d") | .string // empty
+     | bodies | segs);
 . as $raw | (try fromjson catch null) as $j
 | ($j.cwd // ""),
-  ((if $j == null then $raw else ($j.tool_input.command // "") end)
-   | fix
-   | gsub(quoted + "|\\\\(?<e>[\\s\\S])";
-       if .e == "\n" then " " elif .e then .e | enc else unq | enc end)
-   | gsub("(?<=\\S)%E|%E(?=\\S)"; "")
-   | gsub("[;&|()`\\n]"; "\n"))
+  ((if $j == null then $raw else ($j.tool_input.command // "") end) | segs)
 JQ
 mapfile -t lines < <(printf '%s' "$payload" | jq -Rrs "$JQ_PROG" 2>/dev/null) || exit 0
 

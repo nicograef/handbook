@@ -102,6 +102,9 @@ expect 2 "quoted -f flag" 'git push "-f"'
 expect 2 "line continuation" $'git push \\\n  -f'
 expect 2 "commit with core.hooksPath" 'git -c core.hooksPath=/dev/null commit -m x'
 expect 2 "push with core.hooksPath" 'git -c core.hookspath= push'
+expect 2 "\$(...) inside double quotes" "echo \"\$(git push -f)\""
+expect 2 "backticks inside double quotes" "echo \"\`git push --force\`\""
+expect 2 "cat heredoc piped to a shell" $'echo "$(cat <<\'EOF\' | bash\ngit push -f\nEOF\n)"'
 
 # 2. Calls the guard lets through.
 expect 0 "quoted -f in a commit message" 'git commit -m "drop the -f flag"'
@@ -110,6 +113,8 @@ expect 0 "plain push" 'git push origin main'
 expect 0 "git push -f only inside echo" 'echo "git push -f"'
 expect 0 "commit --amend --no-edit" 'git commit --amend --no-edit'
 expect 0 "core.hooksPath in a commit message" 'git commit -m "set core.hooksPath"'
+expect 0 "single-quoted \$(...) in a commit message" "git commit -m 'x \$(git push -f)'"
+expect 0 "quoted cat heredoc as a commit message" $'git commit -m "$(cat <<\'EOF\'\nblock git push -f\nEOF\n)"'
 
 # 3. A command without git never reaches jq or gitleaks.
 expect 0 "no git" 'ls -la'
