@@ -60,4 +60,4 @@ Report the page URL, the report path and the recommendation titles, plus one lin
 
 ## Spend
 
-A run costs model tokens only and buys nothing from a provider. Where the project keeps a spend ledger, its profile says whether a run is recorded there.
+A run costs model tokens only and buys nothing from a provider. Run one digest at a time in a session: its agents share the session's web-search budget. Where the project keeps a spend ledger, its profile says whether a run is recorded there.

@@ -36,7 +36,7 @@ How each platform is searched and how a found item is read. Open it before disco
 
 | Platform | How | Signal |
 | --- | --- | --- |
-| Web search | WebSearch with names and the lookback's months, in each language the project works in. | Default entry; topic words bring SEO pages. |
+| Web search | WebSearch with names and the lookback's months, in each language the project works in. A session has 200 calls, shared by every agent in it: take the curl routes first and spend a few calls per lane where no route reaches. | Topic words bring SEO pages. |
 | Google News | `https://news.google.com/rss/search?q=<q>%20when%3A30d&hl=<lang>&gl=<CC>&ceid=<CC>:<lang>`; `after:<date>` also works. Exclude noise words with `-<word>`. | High recall for press, regulators and vendors. Test each query for ambiguous terms. |
 | EU Have Your Say | `https://ec.europa.eu/info/law/better-regulation/brpapi/searchInitiatives?text=<q>&language=EN&size=30` | The pipeline of delegated and implementing acts, with consultation dates. |
 | EU Publications Office | SPARQL at `publications.europa.eu/webapi/rdf/sparql`, filtered on `cdm:work_date_document` and a title pattern. | Adopted acts and national transpositions. |
