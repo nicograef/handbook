@@ -123,9 +123,9 @@ Replace each "not yet provided" clause in `autoMode.environment` with a pointer 
 ### Acceptance criteria
 
 - [x] `jq -r '.hooks.PreToolUse[0].hooks[0].command' claude/settings.json` names `git-guard.sh`
-- [ ] A Bash call `bash -c 'git push --force'` in a fresh session is blocked by the hook
+- [x] A Bash call `bash -c 'git push --force'` in a fresh session is blocked by the hook
 - [ ] A new auto-mode denial lands in `~/.claude/denials.log` with a non-null `reason`
-- [ ] A Read of `~/.ssh/id_ed25519` in a fresh session is denied
+- [x] A Read of `~/.ssh/id_ed25519` in a fresh session is denied
 - [x] `grep -c 'not yet provided' claude/settings.json` prints 0
 - [x] `make check` passes
 
