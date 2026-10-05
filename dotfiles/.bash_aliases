@@ -45,8 +45,6 @@ if declare -F _comp_load >/dev/null && _comp_load make; then
 fi
 alias puli='pnpm update --latest --interactive'
 # Trial upgrade of every dependency to its latest version; git restores the lockfile.
-# A shell sourced before pci became a function still holds it as an alias.
-unalias pci 2>/dev/null
 pci() {
   [ -f package.json ] || { echo 'pci: no package.json here' >&2; return 1; }
   find . -name node_modules -type d -prune -exec rm -rf {} + &&
