@@ -90,7 +90,7 @@ Why that matters: [maintenance.md](maintenance.md#after-an-oom-kill).
    sudo loginctl enable-linger "$USER"
    ```
 
-   Expected: no output; the Verify row below confirms it.
+   Expected: no output; the audit's `linger` line in [Verify](#verify) confirms it.
 
 ## Install tmux and the CLI tools
 
@@ -107,46 +107,29 @@ Without bat, eza, fd-find or fzf, their aliases in
 
 ## Verify
 
-[linux-services.md](../reference/linux-services.md) explains each command.
+[`scripts/host-audit.sh`](../scripts/host-audit.sh) reads every setting the steps above apply, and changes nothing.
+Prefix `bash` with any Configuration value the setup ran with other than its default, such as `EXTRA_UFW_PORTS=`.
+Keep the output: each [maintenance pass](maintenance.md#verify) compares against it.
 
 ```bash
 ssh <username>@<host>
-sudo ufw status verbose
-# listening sockets: only 22, 80 and 443 may be public
-sudo ss -tlnp
-sudo sshd -T | grep -E '^(passwordauthentication|permitrootlogin|kbdinteractiveauthentication) '
-sudo passwd -S root
-sudo systemctl is-active fail2ban
-sudo fail2ban-client get sshd journalmatch
+curl -fsSL https://raw.githubusercontent.com/nicograef/handbook/main/scripts/host-audit.sh -o host-audit.sh
+sudo bash host-audit.sh | tee "audit-$(hostname)-$(date +%F).txt"
 docker run --rm hello-world
-cat /etc/docker/daemon.json
-# the dry run applies no changes; LC_ALL=C keeps the grep locale-proof
-sudo env LC_ALL=C unattended-upgrade --dry-run --debug 2>&1 | grep -i 'allowed origins'
-systemctl list-timers 'apt-daily*' --no-pager
-swapon --show
-cat /etc/cron.d/report-health
-systemctl is-active cron
-loginctl show-user "$USER" -p Linger
+exit
+# from the laptop
+ssh root@<host> true
+# netcup only, from a handbook clone
+scripts/netcup.sh firewall-get <server>
 ```
 
 | Check | Expected |
 | --- | --- |
-| SSH login | Succeeds as `<username>`, fails as `root` |
-| `ufw status verbose` | `Status: active` with `22/tcp (LIMIT)` |
-| `ss -tlnp` | Only 22, 80 and 443 on `0.0.0.0`/`[::]`; everything else on loopback |
-| netcup: `scripts/netcup.sh firewall-get <server>`, on the laptop | The netcup default policies, then the user policy; `"consistent": true` |
-| `sshd -T` | `no` three times: password, root login, keyboard-interactive |
-| `passwd -S root` | `root L`: locked. `NP` means an empty password, which lets any local session `su` to root: run `sudo passwd -l root` |
-| `fail2ban` | Reports `active` |
-| `fail2ban-client get sshd journalmatch` | Includes `_COMM=sshd-session` |
+| `host-audit.sh` | Ends with `no FAIL`. Each `FAIL` names the expected and the read value; read every `note` and raw list once |
 | `hello-world` | Prints the Docker confirmation message |
-| `daemon.json` | Contains `"max-size": "10m"`, plus the IPv6 keys on IPv6-only hosts |
-| `unattended-upgrade` dry run | Lists the stock `Allowed origins`, one containing `-security` |
-| `systemctl list-timers` | `apt-daily.timer` and `apt-daily-upgrade.timer` appear |
-| `swapon --show` | One swap row, so the kernel can reclaim memory before the OOM killer runs |
-| `/etc/cron.d/report-health` | Prints the `0 * * * * root /usr/local/bin/report-health` line |
-| `systemctl is-active cron` | `active` |
-| `loginctl show-user` | `Linger=yes` |
+| `ssh root@<host>` | `Permission denied (publickey)` |
+| netcup `firewall-get` | The netcup default policies, then the user policy; `"consistent": true` |
 
+[linux-services.md](../reference/linux-services.md) explains the commands the audit runs.
 The script adds no upgrade origins; the stock `50unattended-upgrades` ones apply.
 On Debian they include the `label=Debian` stable point releases.

@@ -59,10 +59,11 @@ curl -sI https://<domain> | head -1
 # netcup only, from a handbook clone
 scripts/netcup.sh firewall-get <server> | jq '{policies: [(.copiedPolicies + .userPolicies)[].name], ingressImplicitRule, egressImplicitRule, consistent}'
 df -h /
-swapon --show
-findmnt -no FSTYPE /tmp
-sudo fail2ban-client status sshd
-sudo ufw status verbose
+# in your home, beside the last audit; fetched fresh, its checks follow the handbook
+cd ~
+curl -fsSL https://raw.githubusercontent.com/nicograef/handbook/main/scripts/host-audit.sh -o host-audit.sh
+sudo bash host-audit.sh | tee "audit-$(hostname)-$(date +%F).txt"
+diff <last-audit-file> "audit-$(hostname)-$(date +%F).txt"
 ```
 
 | Check | Passes when | Otherwise |
@@ -73,13 +74,13 @@ sudo ufw status verbose
 | HTTPS | `HTTP/2 200`, or the deliberate `301`/`308` of a redirecting root | `docker compose logs reverse-proxy`; a hang means the proxy is down |
 | netcup firewall | The netcup default policies, then `web-server`; `DROP_ALL` ingress, `ACCEPT_ALL` egress; `consistent` `true` | Re-run `firewall-attach` as [provision-server.md](provision-server.md#provision-over-ssh) does |
 | `df -h /` | `Use%` under 80 % | Run `docker image prune -af`, or grow the volume the same day |
-| `swapon --show` | One swap row | Create a swapfile as the swap block of [`setup-server.sh`](../scripts/setup-server.sh) does |
-| `findmnt /tmp` | `tmpfs` (the Debian 13 default) or nothing (a directory on disk) | On a box running builds or agents, a tmpfs `/tmp` eats RAM: `sudo systemctl mask tmp.mount`, then reboot |
-| fail2ban | A `Status for the jail: sshd` block; a non-zero `Total banned` is normal | `sudo systemctl restart fail2ban` |
-| `ufw status verbose` | `Status: active`, `Default: deny (incoming)`, `22/tcp LIMIT`, `80/tcp` and `443/tcp` `ALLOW IN` | Re-add the UFW rules from [`setup-server.sh`](../scripts/setup-server.sh) |
+| `host-audit.sh` | Ends with `no FAIL` | Restore the setting the `FAIL` line names with the step of [`setup-server.sh`](../scripts/setup-server.sh) that applies it |
+| `diff` | Only the timestamp line and readings you changed on purpose | Read the changed lines: a new key, login user or public port nobody added is an incident |
 
 Run the netcup read at least every four weeks: its refresh token dies after 30 days unused, then needs `scripts/netcup.sh login`.
 A full disk stops Postgres writes and breaks certificate renewal.
+
+The audit's `/tmp` note matters on a box running builds or agents: `sudo systemctl mask tmp.mount`, then reboot.
 The swap and tmpfs comments in [`setup-server.sh`](../scripts/setup-server.sh) explain why both matter.
 
 ## Troubleshooting
