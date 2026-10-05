@@ -69,7 +69,7 @@ On a commit it runs gitleaks against the target repo (`-C <dir>` or the payload 
 - [ ] `make test-git-guard` passes; fixtures cover `bash -c 'git push --force'`, `sh -c "git push -f"`, `eval git push -f`, `/usr/bin/git push -f`, `git -C x push +main`, `git commit -n`, a quoted `-f` inside a commit message (allowed) and a gitleaks finding (blocked)
 - [ ] `scripts/install-dotfiles.sh --check | grep git-guard.sh` prints the link
 - [ ] `grep -c autoStash scripts/install-dotfiles.sh` prints 0 and `git config --global rebase.autoStash` prints nothing
-- [ ] `gitleaks version` prints 8.16 or later
+- [x] `dpkg-query -W -f '${Version}' gitleaks` prints 8.16 or later; the Ubuntu build leaves `gitleaks version` empty
 - [ ] `make check` passes
 
 ## Phase 2: Agent bus on native messaging
@@ -211,10 +211,10 @@ Nothing here is committed: these files live outside the repo.
 
 ### What to build
 
-The user runs `! ssh-keygen -p -f ~/.ssh/id_ed25519` and stores the passphrase in the GNOME keyring at first unlock. Move the hardware table, battery, PAM, Wi-Fi and firmware lines into `~/.claude/machine-reference.md`. Leave one pointer line in machine.md. Record the passphrase and gitleaks in machine.md's toolchain and SSH lines.
+Move the hardware table, battery, PAM, Wi-Fi and firmware lines into `~/.claude/machine-reference.md`. Leave one pointer line in machine.md. Record the passphrase and gitleaks in machine.md's toolchain and SSH lines.
 
 ### Acceptance criteria
 
-- [ ] `ssh-keygen -y -P '' -f ~/.ssh/id_ed25519` fails
-- [ ] `ssh -T git@github.com` authenticates and `git commit -S --allow-empty -m probe` in a scratch repo signs without a prompt
+- [x] `ssh-keygen -y -P '' -f ~/.ssh/id_ed25519` fails
+- [x] `ssh -T git@github.com` authenticates and `git commit -S --allow-empty -m probe` in a scratch repo signs without a prompt
 - [ ] `grep -cE 'SSID|Battery|fprintd' ~/.claude/rules/machine.md` prints 0
