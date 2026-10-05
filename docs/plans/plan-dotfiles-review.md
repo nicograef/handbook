@@ -25,7 +25,7 @@ Fix the bugs found in `dotfiles/.bash_aliases`, track the dotfiles the laptop ha
 - **Laptop `.bashrc`**: the hand-added PATH line goes; `~/.claude/rules/machine.md` follows.
 - **Servers**: provision-server.md gains a step: https clone of the handbook, `install.sh`. It applies to every server, gyva-backup included.
 - **gyva-backup base**: apt installs git and the provision-server CLI list, then clone and `install.sh`.
-- **Out of scope**: gyva-backup's admin-host role (GitHub key, Claude Code, netcup monitoring app); the user drives it. Plaintext secrets in `~` (user handles them).
+- **Out of scope**: any server's role beyond the base setup.
 
 ## Files
 
