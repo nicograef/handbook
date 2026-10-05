@@ -43,6 +43,7 @@ Keep the parts that lead the field: plan-run-guard, radar and announce.
 - Read deny rules do not stop `cat ~/.ssh/id_ed25519` through Bash. Only the auto-mode classifier stands there.
 - Every `claude plugin eval` run counts against the Max plan usage.
 - `make check` has never run on a GitHub runner. Phase 5's first run may surface missing tools.
+- Eval runs confine Bash in a bwrap sandbox. Ubuntu's `bwrap-userns-restrict` AppArmor profile denies it, so `testing` cases need `kernel.apparmor_restrict_unprivileged_userns=0` for the run.
 - Native cross-session messaging lists every session on the machine. Peer discovery stays repo-scoped through the registry.
 
 ## Phase 1: Git guard and secret scan
@@ -121,12 +122,12 @@ Replace each "not yet provided" clause in `autoMode.environment` with a pointer 
 
 ### Acceptance criteria
 
-- [ ] `jq -r '.hooks.PreToolUse[0].hooks[0].command' claude/settings.json` names `git-guard.sh`
+- [x] `jq -r '.hooks.PreToolUse[0].hooks[0].command' claude/settings.json` names `git-guard.sh`
 - [ ] A Bash call `bash -c 'git push --force'` in a fresh session is blocked by the hook
 - [ ] A new auto-mode denial lands in `~/.claude/denials.log` with a non-null `reason`
 - [ ] A Read of `~/.ssh/id_ed25519` in a fresh session is denied
-- [ ] `grep -c 'not yet provided' claude/settings.json` prints 0
-- [ ] `make check` passes
+- [x] `grep -c 'not yet provided' claude/settings.json` prints 0
+- [x] `make check` passes
 
 ## Phase 4: Small edits
 
@@ -174,10 +175,10 @@ Apply the ruleset to `nicograef/handbook` through `gh api`. `guides/new-project.
 
 ### Acceptance criteria
 
-- [ ] `gh run list --workflow check.yml --limit 1 --json conclusion -q '.[0].conclusion'` prints `success`
+- [x] `gh run list --workflow check.yml --limit 1 --json conclusion -q '.[0].conclusion'` prints `success`
 - [x] `gh api repos/nicograef/handbook/rules/branches/main -q '[.[].type] | sort | join(",")'` prints `deletion,non_fast_forward`
-- [ ] `actionlint templates/ci.yml .github/workflows/check.yml` passes
-- [ ] `make check` passes
+- [x] `actionlint templates/ci.yml .github/workflows/check.yml` passes
+- [x] `make check` passes
 
 ## Phase 6: Skill evals
 
@@ -190,13 +191,13 @@ Apply the ruleset to `nicograef/handbook` through `gh api`. `guides/new-project.
 
 ### What to build
 
-`.claude/evals/run.sh` assembles a temporary plugin with symlinks to the three skills. It runs `claude plugin eval` on it with `--max-cost-usd`. Cases live in `.claude/evals/`, three per skill, with judge-free graders where one fits. `testing` writes a failing test first. `decide` calls AskUserQuestion. `plan` writes a file matching the plan template. A `make eval` target runs it; `make check` does not.
+`.claude/evals/run.sh` assembles a temporary plugin with symlinks to the three skills. It runs `claude plugin eval` on it with `--max-cost-usd`. Cases live in `.claude/evals/`, three per skill, with judge-free graders where one fits. `testing` writes a failing test first. `decide` attempts AskUserQuestion: a call, or a ToolSearch for it, because the eval harness does not offer the tool. `plan` writes a file matching the plan template. A `make eval` target runs it; `make check` does not.
 
 ### Acceptance criteria
 
 - [ ] `make eval` completes and reports a pass rate per skill against the no-plugin baseline
-- [ ] `grep -c eval Makefile` prints at least 2 and `make check` does not call it
-- [ ] `make check` passes
+- [x] `grep -c eval Makefile` prints at least 2 and `make check` does not call it
+- [x] `make check` passes
 
 ## Phase 7: Machine-local hardening
 
