@@ -1,8 +1,7 @@
 #!/usr/bin/env bash
 # netcup.sh – netcup's server API (SCP REST) from the laptop: login, servers, firewall, snapshots
 #
-# Untested against a live account until the owner's first run. Paths and fields follow the
-# public OpenAPI spec, version 2026.0923.125530; see reference/netcup.md.
+# Paths and fields follow the public OpenAPI spec, version 2026.0923.125530; see reference/netcup.md.
 #
 # Usage (on the laptop, never on a server: the token controls every server on the account):
 #   scripts/netcup.sh login                              # device flow, stores the refresh token
