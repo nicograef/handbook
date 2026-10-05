@@ -1,138 +1,76 @@
 <title>{{TITLE}}</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;1,8..60,400&family=JetBrains+Mono:wght@400;500&display=swap">
 <style>
-/* Layout: a newsletter. Masthead, then a contents rail beside a reading column: the in-brief box, themed
-   stories whose source line sits in a right margin on wide screens, recommendation cards, then Learn.
-   One column with a sticky section bar on phones. */
+/* A newsletter: a sticky contents rail beside one reading column. The report's h1 and first paragraph form the masthead;
+   the paragraph right after a story headline is its source line. */
 :root {
-  --bg: #f3f5f6;
-  --surface: #ffffff;
-  --code-bg: #e8edf0;
-  --fg: #1b2328;
-  --muted: #5b6870;
-  --rule: #d5dde1;
-  --accent: #1f5f8b;
-  --hi: #b4361f; --hi-bg: #fbe7e2;
-  --med: #8a5a00; --med-bg: #fbefd4;
-  --low: #3d5a6c; --low-bg: #e3ecf1;
-  --none: #6c7378; --none-bg: #eceeef;
-  --fact: #1e6b46; --fact-bg: #dff1e7;
-  --infer: #2c5596; --infer-bg: #e1e9f8;
-  --guess: #8a4b00; --guess-bg: #fae8d2;
+  --bg: #f4f2ee; --surface: #fffdf9; --code-bg: #e9e5dd; --fg: #1d2226; --muted: #5d6870; --rule: #d9d3c8;
+  --accent: #1f5f8b; --callout: #e6eef4;
   --display: "Bricolage Grotesque", "Segoe UI", system-ui, sans-serif;
   --body: "Source Serif 4", Georgia, "Times New Roman", serif;
   --mono: "JetBrains Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
-  --measure: 41rem;
-  --margin: 18rem;
-  --gap: 3rem;
+  color-scheme: light;
 }
 @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
-  --bg: #12181c; --surface: #182128; --code-bg: #212c34; --fg: #e3e9ec; --muted: #98a6ae; --rule: #2a363e; --accent: #7cb8e3;
-  --hi: #f19a86; --hi-bg: #3b221d; --med: #e7bf6a; --med-bg: #362b14; --low: #a9c4d4; --low-bg: #1f2e38; --none: #9aa2a7; --none-bg: #242b30;
-  --fact: #8fd6ae; --fact-bg: #18301f; --infer: #9dbcf0; --infer-bg: #1c2840; --guess: #f0bf7a; --guess-bg: #36260f;
-  color-scheme: dark;
+  --bg: #13181c; --surface: #1a2127; --code-bg: #232c33; --fg: #e4e8ea; --muted: #9aa6ad; --rule: #2c363d;
+  --accent: #7cb8e3; --callout: #1a2a35; color-scheme: dark;
 } }
 :root[data-theme="dark"] {
-  --bg: #12181c; --surface: #182128; --code-bg: #212c34; --fg: #e3e9ec; --muted: #98a6ae; --rule: #2a363e; --accent: #7cb8e3;
-  --hi: #f19a86; --hi-bg: #3b221d; --med: #e7bf6a; --med-bg: #362b14; --low: #a9c4d4; --low-bg: #1f2e38; --none: #9aa2a7; --none-bg: #242b30;
-  --fact: #8fd6ae; --fact-bg: #18301f; --infer: #9dbcf0; --infer-bg: #1c2840; --guess: #f0bf7a; --guess-bg: #36260f;
-  color-scheme: dark;
+  --bg: #13181c; --surface: #1a2127; --code-bg: #232c33; --fg: #e4e8ea; --muted: #9aa6ad; --rule: #2c363d;
+  --accent: #7cb8e3; --callout: #1a2a35; color-scheme: dark;
 }
-html { scroll-behavior: smooth; scroll-padding-top: 72px; }
-body { background: var(--bg); color: var(--fg); font: 17px/1.65 var(--body); padding-inline: 16px; padding-block: 0 64px; }
-.wrap { max-width: 1480px; margin: 0 auto; display: grid; grid-template-columns: 220px minmax(0, 1fr); column-gap: 48px; }
-
-header.mast { grid-column: 1 / -1; padding-block: 40px 28px; border-bottom: 1px solid var(--rule); display: grid; gap: 10px; }
-.eyebrow { font: 500 12px/1.4 var(--mono); letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
-h1 { font: 700 clamp(28px, 4.5vw, 46px)/1.1 var(--display); margin: 0; text-wrap: balance; }
-.dek { max-width: var(--measure); color: var(--muted); font-size: 18px; }
-.dek p { margin: 0; }
-
-nav.toc { position: sticky; top: calc(env(safe-area-inset-top, 0px) + 24px); align-self: start; max-height: calc(100vh - 48px); overflow: auto; padding-block: 28px; font: 14px/1.45 var(--display); }
-nav.toc ol { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
-nav.toc li.h3 { padding-left: 12px; font-size: 13px; color: var(--muted); }
-nav.toc a { color: inherit; text-decoration: none; }
-nav.toc a:hover, nav.toc a:focus-visible { color: var(--accent); text-decoration: underline; }
-
-main { min-width: 0; padding-block: 12px; display: grid; grid-template-columns: minmax(0, var(--measure)); column-gap: var(--gap); align-content: start; }
-main > * { grid-column: 1; }
-main h2 { font: 700 26px/1.25 var(--display); margin: 48px 0 16px; padding-top: 14px; border-top: 2px solid var(--fg); text-wrap: balance; }
-main h3 { font: 600 20px/1.35 var(--display); margin: 36px 0 8px; text-wrap: balance; }
-main h4 { font: 600 18px/1.35 var(--display); margin: 0 0 6px; text-wrap: balance; }
+html { scroll-behavior: smooth; scroll-padding-top: 24px; }
+body { margin: 0; background: var(--bg); color: var(--fg); font: 18px/1.65 var(--body); padding: 0 16px 64px; }
+.wrap { max-width: 1180px; margin: 0 auto; display: grid; grid-template-columns: 230px minmax(0, 1fr); column-gap: 56px; }
+nav { position: sticky; top: 0; align-self: start; max-height: 100vh; box-sizing: border-box; overflow: auto; padding-block: 48px 24px; font: 14px/1.45 var(--display); }
+nav::before { content: "Contents"; display: block; margin-bottom: 12px; font: 500 12px/1 var(--mono); letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+nav ol { list-style: none; margin: 0; padding: 0; display: grid; gap: 7px; }
+nav li.h2 { font-weight: 500; margin-top: 8px; }
+nav li.h3 { padding-left: 14px; font-size: 13px; color: var(--muted); }
+nav a { color: inherit; text-decoration: none; }
+nav a:hover, nav a:focus-visible { color: var(--accent); text-decoration: underline; }
+main { min-width: 0; max-width: 46rem; padding-top: 40px; }
+main > h1:first-child { font: 700 clamp(30px, 5vw, 50px)/1.08 var(--display); margin: 0 0 14px; text-wrap: balance; }
+main > h1:first-child + p { font-size: 20px; color: var(--muted); margin: 0; }
+main h2 { font: 700 27px/1.25 var(--display); margin: 52px 0 18px; padding-top: 14px; border-top: 3px solid var(--fg); text-wrap: balance; }
+main h3 { font: 700 21px/1.3 var(--display); margin: 40px 0 6px; text-wrap: balance; }
+main h2 + h3 { margin-top: 20px; }
+main h3 + p { font: 13px/1.6 var(--mono); color: var(--muted); margin-bottom: 12px; }
 main p, main li { margin: 0 0 14px; }
-main ul, main ol { padding-left: 1.2em; }
+main ul, main ol { padding-left: 1.3em; }
+main li::marker { color: var(--accent); }
 main a { color: var(--accent); text-underline-offset: 2px; overflow-wrap: anywhere; }
-main code { font: 0.84em var(--mono); background: var(--code-bg); border-radius: 4px; padding: 0.05em 0.3em; overflow-wrap: anywhere; }
-main code.nb { white-space: nowrap; }
-main pre { background: var(--surface); border: 1px solid var(--rule); border-radius: 8px; padding: 12px; overflow-x: auto; }
-main pre code { background: none; padding: 0; }
-main pre.mermaid { display: flex; justify-content: center; background: var(--surface); font: 13px/1.4 var(--mono); }
-main blockquote { margin: 0 0 14px; padding-left: 16px; border-left: 3px solid var(--rule); color: var(--muted); }
-.table { overflow-x: auto; margin: 0 0 16px; }
-main table { border-collapse: collapse; font: 14px/1.45 var(--display); font-variant-numeric: tabular-nums; }
-main th, main td { border-bottom: 1px solid var(--rule); padding: 6px 10px; text-align: left; vertical-align: top; }
-main th { font-weight: 600; }
+main > p:has(> strong:first-child) { background: var(--callout); border-left: 3px solid var(--accent); border-radius: 0 8px 8px 0; padding: 10px 14px; }
+main > p > strong:first-child { font: 700 13px/1 var(--display); letter-spacing: .05em; text-transform: uppercase; color: var(--accent); margin-right: 4px; }
 main strong { font-weight: 600; }
-main ul.brief { list-style: none; padding: 18px 22px; background: var(--surface); border: 1px solid var(--rule); border-left: 4px solid var(--accent); border-radius: 10px; font-size: 18px; }
-main ul.brief li { margin: 0 0 10px; padding-left: 14px; position: relative; }
-main ul.brief li::before { content: ""; position: absolute; left: 0; top: 0.7em; width: 6px; height: 6px; border-radius: 50%; background: var(--accent); }
-
-.rec { margin: 0 0 24px; padding: 20px 22px 8px; background: var(--surface); border: 1px solid var(--rule); border-radius: 12px; }
-.rec > h3 { margin: 0 0 14px; display: flex; flex-direction: column; align-items: flex-start; gap: 8px; }
-.rec > h3 .tag { order: -1; }
-.rec-row { display: grid; grid-template-columns: 9rem minmax(0, 1fr); column-gap: 20px; padding-top: 12px; border-top: 1px solid var(--rule); }
-.rec > h3 + .rec-row { border-top: 0; padding-top: 0; }
-.rec-label { font: 600 13px/1.9 var(--display); letter-spacing: .04em; text-transform: uppercase; color: var(--muted); }
-
-.item { padding-block: 22px 8px; border-top: 1px solid var(--rule); display: grid; grid-template-columns: minmax(0, var(--measure)); grid-template-areas: "title" "meta" "body"; column-gap: var(--gap); }
-.item > h3, .item > h4 { grid-area: title; margin: 0 0 6px; }
-.item-meta { grid-area: meta; font: 13px/1.55 var(--mono); color: var(--muted); margin: 0 0 12px; }
-.item-meta p { margin: 0; }
-.item-body { grid-area: body; min-width: 0; }
-
-.tag, .rel { display: inline-block; font: 500 11px/1.7 var(--mono); letter-spacing: .06em; text-transform: uppercase; padding: 0 8px; border-radius: 999px; white-space: nowrap; vertical-align: 0.1em; }
-.rel-high { color: var(--hi); background: var(--hi-bg); }
-.rel-medium { color: var(--med); background: var(--med-bg); }
-.rel-low { color: var(--low); background: var(--low-bg); }
-.rel-none { color: var(--none); background: var(--none-bg); }
-.tag-change { color: var(--accent); background: var(--low-bg); }
-.tag-experiment { color: var(--guess); background: var(--guess-bg); }
-.tag-fact { color: var(--fact); background: var(--fact-bg); }
-.tag-inference { color: var(--infer); background: var(--infer-bg); }
-.tag-guess { color: var(--guess); background: var(--guess-bg); }
-.lead { font: 600 13px/1 var(--display); letter-spacing: .04em; text-transform: uppercase; color: var(--muted); margin-right: 6px; }
-
-@media (min-width: 1200px) {
-  main { grid-template-columns: minmax(0, var(--measure)) var(--margin); }
-  main > h2, main > .rec, main > ul.brief { grid-column: 1 / -1; }
-  main > ul.brief { max-width: calc(var(--measure) + var(--gap) + var(--margin)); box-sizing: border-box; }
-  .rec { max-width: calc(var(--measure) + var(--gap) + var(--margin)); box-sizing: border-box; }
-  .item { grid-column: 1 / -1; grid-template-columns: minmax(0, var(--measure)) var(--margin); grid-template-areas: "title meta" "body meta"; }
-  .item-meta { margin: 4px 0 0; padding-left: 16px; border-left: 2px solid var(--rule); align-self: start; position: sticky; top: 24px; }
-}
-@media (max-width: 860px) {
+main blockquote { margin: 0 0 14px; padding-left: 16px; border-left: 3px solid var(--rule); color: var(--muted); font-style: italic; }
+main code { font: .84em var(--mono); background: var(--code-bg); border-radius: 4px; padding: .05em .3em; overflow-wrap: anywhere; }
+main pre { background: var(--surface); border: 1px solid var(--rule); border-radius: 8px; padding: 12px; white-space: pre-wrap; overflow-wrap: anywhere; }
+main pre code { background: none; padding: 0; }
+main img { max-width: 100%; }
+main hr { border: 0; border-top: 1px solid var(--rule); margin: 32px 0; }
+@media (max-width: 760px) {
+  html { scroll-padding-top: 64px; }
+  body { font-size: 17px; }
   .wrap { grid-template-columns: minmax(0, 1fr); }
-  nav.toc { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 2; max-height: none; margin-inline: -16px; padding: 0 16px; background: var(--bg); border-bottom: 1px solid var(--rule); overflow-x: auto; }
-  nav.toc ol { display: flex; gap: 4px; }
-  nav.toc li.h3 { display: none; }
-  nav.toc a { display: flex; align-items: center; min-height: 44px; padding-inline: 10px; white-space: nowrap; }
-  .rec { padding: 16px 16px 4px; }
-  .rec-row { grid-template-columns: minmax(0, 1fr); }
-  .rec-label { line-height: 1.6; margin-bottom: 4px; }
+  nav { z-index: 2; max-height: none; margin-inline: -16px; padding: 0 16px; background: var(--bg); border-bottom: 1px solid var(--rule); overflow-x: auto; }
+  nav::before, nav li.h3 { display: none; }
+  nav ol { display: flex; gap: 2px; }
+  nav li.h2 { margin: 0; }
+  nav a { display: flex; align-items: center; min-height: 44px; padding-inline: 10px; white-space: nowrap; }
+  main { padding-top: 28px; }
+  main h2 { font-size: 23px; }
+  main h3 { font-size: 19px; }
 }
 @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
 </style>
 
 <div class="wrap">
-  <header class="mast">
-    <div class="eyebrow" id="eyebrow">Research</div>
-    <h1 id="title">{{TITLE}}</h1>
-    <div class="dek" id="dek"></div>
-  </header>
-  <nav class="toc" aria-label="Contents"><ol id="toc"></ol></nav>
-  <main id="issue-body"></main>
+  <nav aria-label="Contents"><ol id="toc"></ol></nav>
+  <main id="report-body"></main>
 </div>
 
 <script type="application/json" id="report">{{REPORT}}</script>
@@ -140,119 +78,30 @@ main ul.brief li::before { content: ""; position: absolute; left: 0; top: 0.7em;
 <script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.4.16/purify.min.js"></script>
 <script>
 (function () {
-  // The report arrives as a JSON string; its closing ledger comment is the next run's, not the reader's.
-  var raw = JSON.parse(document.getElementById('report').textContent);
-  var cut = raw.lastIndexOf('<!--');
-  var md = cut > -1 && /-->\s*$/.test(raw) ? raw.slice(0, cut).replace(/\n*$/, '\n') : raw;
-  var lines = md.split('\n');
-  var esc = function (t) { return t.replace(/[&<]/g, function (c) { return c === '&' ? '&amp;' : '&lt;'; }); };
-  var rich = window.marked && window.DOMPurify;
-  // Fetched titles and quotes reach the page, so rendered HTML is sanitised; without both libraries the text shows plain.
-  var render = function (text) { return rich ? DOMPurify.sanitize(marked.parse(text)) : '<pre style="white-space: pre-wrap">' + esc(text) + '</pre>'; };
-  var project = document.title.split(' ')[0];
-  if (project) document.getElementById('eyebrow').textContent = project + ' · Research';
-
-  // The H1 and the lines before the first section move into the masthead.
-  if (/^# /.test(lines[0])) document.getElementById('title').textContent = lines.shift().slice(2).trim();
-  var first = lines.findIndex(function (l) { return /^## /.test(l); });
-  var dek = (first > -1 ? lines.splice(0, first) : []).join('\n').trim();
-  if (dek) document.getElementById('dek').innerHTML = render(dek);
-
-  var main = document.getElementById('issue-body');
-  main.innerHTML = render(lines.join('\n'));
-  if (!rich) return;
-
-  var el = function (tag, cls) { var e = document.createElement(tag); if (cls) e.className = cls; return e; };
-  var chip = function (cls, text) { var s = el('span', cls); s.textContent = text; return s; };
-  // The siblings after a heading, up to the next element the stop selector matches.
-  var section = function (h, stop) { var out = [], n = h.nextElementSibling; while (n && !n.matches(stop)) { out.push(n); n = n.nextElementSibling; } return out; };
-  var headText = function (h) { var c = h.cloneNode(true); c.querySelectorAll('.tag').forEach(function (t) { t.remove(); }); return c.textContent.trim(); };
-
-  // Recommendations become cards: a kind chip on the heading, then one labelled row per paragraph label.
-  var LABEL = /^(What|Why|Gain|Cost and risk|Verify|Guardrails):\s*/;
-  var recHead = Array.prototype.find.call(main.querySelectorAll('h2'), function (h) { return /^Recommendations/.test(h.textContent); });
-  if (recHead) section(recHead, 'h2').filter(function (n) { return n.matches('h3'); }).forEach(function (h) {
-    var card = el('article', 'rec'), body = section(h, 'h2, h3'), row = null;
-    h.parentNode.insertBefore(card, h);
-    var experiment = /\(experiment\)/i.test(h.textContent);
-    h.innerHTML = h.innerHTML.replace(/\s*\(experiment\)/i, '');
-    h.appendChild(chip('tag tag-' + (experiment ? 'experiment' : 'change'), experiment ? 'experiment' : 'change'));
-    card.appendChild(h);
-    body.forEach(function (n) {
-      var m = n.matches('p') && n.firstChild && n.firstChild.nodeType === 3 && n.firstChild.nodeValue.match(LABEL);
-      if (m) {
-        row = el('div', 'rec-row');
-        row.appendChild(chip('rec-label', m[1]));
-        var content = el('div');
-        n.firstChild.nodeValue = n.firstChild.nodeValue.replace(LABEL, '');
-        if (n.textContent.trim()) content.appendChild(n); else n.remove();
-        row.appendChild(content);
-        card.appendChild(row);
-      } else if (row) row.lastChild.appendChild(n);
-      else card.appendChild(n);
-    });
-  });
-
-  var briefHead = Array.prototype.find.call(main.querySelectorAll('h2'), function (h) { return /^In brief/.test(h.textContent); });
-  if (briefHead && briefHead.nextElementSibling && briefHead.nextElementSibling.matches('ul')) briefHead.nextElementSibling.classList.add('brief');
-
-  // Stories: an h3 under a theme section, or an h4 under a topic; the title, the source line in the
-  // margin, the reading below.
-  var stories = [], theme = null;
-  Array.prototype.forEach.call(main.children, function (n) {
-    if (n.matches('h2')) theme = /^(In brief|Recommendations|Learn)/.test(n.textContent) ? null : n;
-    else if (n.matches('h4') || (theme && n.matches('h3') && !(n.nextElementSibling && n.nextElementSibling.matches('h4')))) stories.push(n);
-  });
-  stories.forEach(function (h) {
-    var item = el('article', 'item'), rest = section(h, h.matches('h3') ? 'h2, h3' : 'h2, h3, h4'), meta = el('div', 'item-meta'), body = el('div', 'item-body');
-    h.parentNode.insertBefore(item, h);
-    item.appendChild(h);
-    if (rest[0] && rest[0].matches('p')) meta.appendChild(rest.shift());
-    rest.forEach(function (n) { body.appendChild(n); });
-    item.appendChild(meta);
-    item.appendChild(body);
-  });
-
-  main.querySelectorAll('table').forEach(function (t) { var d = el('div', 'table'); t.parentNode.insertBefore(d, t); d.appendChild(t); });
-  main.querySelectorAll('a[href^="http"]').forEach(function (a) { a.target = '_blank'; a.rel = 'noopener'; });
-  main.querySelectorAll('code').forEach(function (c) { if (!c.closest('pre') && c.textContent.length <= 32) c.classList.add('nb'); });
-  // Diagrams the writer drew: the artifact host renders <pre class="mermaid"> blocks.
-  main.querySelectorAll('pre > code.language-mermaid').forEach(function (c) { var p = el('pre', 'mermaid'); p.textContent = c.textContent; c.parentNode.replaceWith(p); });
-
-  // Labels become chips: "Relevance: high" anywhere; "For us:" and the like open a story's paragraphs;
-  // "Fact:", "Inference:" and "Guess:" open a paragraph or list item.
-  var walker = document.createTreeWalker(main, NodeFilter.SHOW_TEXT);
-  var hits = [], n;
-  while ((n = walker.nextNode())) { if (n.parentNode.closest('a, code, pre')) continue; if (/(Relevance)[:\s*]*(high|medium|low|none)/.test(n.nodeValue)) hits.push(n); }
-  hits.forEach(function (node) {
-    var span = el('span');
-    span.innerHTML = esc(node.nodeValue)
-      .replace(/(Relevance)([:\s*]*)(high|medium|low|none)/g, function (_, w, sep, lvl) { return w + sep + '<span class="rel rel-' + lvl + '">' + lvl + '</span>'; });
-    node.parentNode.replaceChild(span, node);
-  });
-  main.querySelectorAll('.item-body > p').forEach(function (b) {
-    var t = b.firstChild;
-    var m = t && t.nodeType === 3 && t.nodeValue.match(/^(For us|Critique|For the project):\s*/);
-    if (!m) return;
-    t.nodeValue = t.nodeValue.slice(m[0].length);
-    b.insertBefore(chip('lead', m[1]), t);
-  });
-  main.querySelectorAll('p, li').forEach(function (b) {
-    var t = b.firstChild;
-    var m = t && t.nodeType === 3 && t.nodeValue.match(/^\s*(Fact|Inference|Guess)( \([^)]*\))?:\s*/);
-    if (!m) return;
-    t.nodeValue = (m[2] ? m[2].trim() + ' ' : '') + t.nodeValue.slice(m[0].length);
-    b.insertBefore(document.createTextNode(' '), t);
-    b.insertBefore(chip('tag tag-' + m[1].toLowerCase(), m[1]), b.firstChild);
-  });
-
+  var md = JSON.parse(document.getElementById('report').textContent);
+  var main = document.getElementById('report-body');
+  if (!(window.marked && window.DOMPurify)) {
+    var pre = document.createElement('pre');
+    pre.textContent = md;
+    main.appendChild(pre);
+    return;
+  }
+  // Fetched titles and quotes reach the page, so the rendered HTML is sanitised.
+  main.innerHTML = DOMPurify.sanitize(marked.parse(md));
   var toc = document.getElementById('toc'), used = {};
   main.querySelectorAll('h2, h3').forEach(function (h) {
-    var label = headText(h);
-    var base = (label || 'section').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '').slice(0, 48) || 'section';
-    var id = 's-' + base, i = 2; while (used[id]) id = 's-' + base + '-' + i++; used[id] = 1; h.id = id;
-    var li = el('li', h.tagName.toLowerCase()), a = el('a'); a.href = '#' + id; a.textContent = label; li.appendChild(a); toc.appendChild(li);
+    var label = h.textContent.trim();
+    var base = label.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '').slice(0, 48) || 'section';
+    var id = base, i = 2;
+    while (used[id] || document.getElementById(id)) id = base + '-' + i++;
+    used[id] = 1;
+    h.id = id;
+    var li = document.createElement('li'), a = document.createElement('a');
+    li.className = h.tagName.toLowerCase();
+    a.href = '#' + id;
+    a.textContent = label;
+    li.appendChild(a);
+    toc.appendChild(li);
   });
-
 })();
 </script>
