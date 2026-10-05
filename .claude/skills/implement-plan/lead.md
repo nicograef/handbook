@@ -62,6 +62,7 @@ Budget verification by blast radius. Set a tier per phase or lane before dispatc
 - The gate runs once, where the change is, and again only after a fold, a rebase or an unseen edit.
 - The rules for irreversible work, reviews and model switches bind every session: [global CLAUDE.md](../../../claude/CLAUDE.md#models-and-subagents).
 - Review a finished phase or lane once, over its whole diff, on `opus`.
+- A diff touching auth, input handling, shell, SQL or dependency manifests adds a `/security-review` pass.
 - Review workflows: finders on `opus`, one per lens, few.
 - Verifying a finding is a fully specified check (claim, evidence, command) and runs on `sonnet`.
 - One verifier per critical or major finding. Minor and cleanup findings go unverified to the fixer.
