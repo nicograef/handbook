@@ -47,7 +47,7 @@
       "direction": "INGRESS",
       "protocol": "UDP",
       "action": "DROP",
-      "description": "Every other inbound UDP; DNS from netcup's resolvers passes netcup's fixed rules first"
+      "description": "Every other inbound UDP; DNS from the resolvers of netcup passes their fixed rules first"
     }
   ]
 }

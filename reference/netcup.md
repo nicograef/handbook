@@ -66,7 +66,7 @@ Paths sit under `/scp-core/api/v1`. A mutation answers `202` with a TaskInfo; po
 
 | Area | Method and path | Notes |
 | --- | --- | --- |
-| Policies | `GET`, `POST /users/{userId}/firewall-policies` | Body `FirewallPolicySave`: `name` (required), `description`, `rules` |
+| Policies | `GET`, `POST /users/{userId}/firewall-policies` | Body `FirewallPolicySave`: `name` (required), `description`, `rules`; a description holding an apostrophe answers 422 "Unsafe HTML content" (2026-10-05) |
 | Policies | `GET`, `PUT`, `DELETE /users/{userId}/firewall-policies/{id}` | `PUT` answers the policy plus a task for attached servers |
 | Server firewall | `GET`, `PUT /servers/{serverId}/interfaces/{mac}/firewall` | Body `copiedPolicies` and `userPolicies` as `[{id}]`, `active`; `GET ?consistencyCheck=true` fills `consistent` |
 | Server firewall | `POST …/firewall:reapply` | After an update timed out behind a long storage write |
