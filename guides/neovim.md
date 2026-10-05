@@ -80,7 +80,6 @@ Sources: [`:help 'langmap'`](https://neovim.io/doc/user/options.html#'langmap'),
 | Change                     | Command                                                                              | Trade-off                                          |
 | -------------------------- | ------------------------------------------------------------------------------------ | -------------------------------------------------- |
 | Caps Lock as Esc           | `gsettings set org.gnome.desktop.input-sources xkb-options "['caps:escape']"`        | System-wide                                        |
-| Commit messages in Neovim  | `git config --global core.editor nvim`                                               | Daily practice; `install.sh` resets it to `nano`   |
 
 ## Plugins
 
