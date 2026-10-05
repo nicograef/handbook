@@ -85,7 +85,6 @@ Provision, deploy, back up, monitor and maintain a VPS.
 | [reference/linux-services.md](reference/linux-services.md) | Linux services: systemd, journalctl, Compose, ports and firewall, cron |
 | [reference/system-resources.md](reference/system-resources.md) | System info and resource usage |
 | [reference/netcup.md](reference/netcup.md) | netcup server API: auth, firewall model, endpoints, snapshots, DNS API |
-| [templates/cloud-init.yml](templates/cloud-init.yml) | cloud-init user-data that fetches & runs `setup-server.sh` |
 | [scripts/setup-server.sh](scripts/setup-server.sh) | Provision a fresh Debian/Ubuntu VPS (user, SSH, swap, UFW, fail2ban, Docker) |
 | [scripts/prod-init.sh](scripts/prod-init.sh) | Production deploy and update: pin and downgrade guard, backup, health poll |
 | [scripts/backup-postgres.sh](scripts/backup-postgres.sh) | Verified, retained PostgreSQL backups for a Compose stack (cron) |

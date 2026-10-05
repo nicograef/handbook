@@ -12,51 +12,11 @@ also use placeholders not in that block:
 
 - `<host>` — server IP or hostname (SSH target)
 - `<username>` — the `USERNAME` the script creates
-- Hetzner cloud-init path only: `<name>`, `<type>`, `<key-name>` — server name, server
-  type, and the name of the SSH key to inject
 - netcup path only: `<server>` — the server's id or name in the SCP, for [`scripts/netcup.sh`](../scripts/netcup.sh)
-
-## Provision with cloud-init
-
-The preferred path, on Hetzner Cloud: the server provisions itself on first boot.
-
-1. **Hash the user password.** `mkpasswd` ships in the `whois` package:
-
-   ```bash
-   mkpasswd -m yescrypt
-   ```
-
-   Expected: a prompt for the password, then one `$y$…` line, the `<user-password-hash>`.
-
-2. **Fill the template.** Copy [`templates/cloud-init.yml`](../templates/cloud-init.yml)
-   to `cloud-init.yml` and replace every `<angle-bracket>` placeholder. Adjust
-   `EXTRA_UFW_PORTS` if the app needs more than 80 and 443.
-
-   Expected: `grep -n '<' cloud-init.yml` prints only commented lines.
-
-3. **Create the server,** here with `hcloud`; the console's **Cloud config** field takes the same file:
-
-   ```bash
-   hcloud server create \
-     --name <name> --type <type> --image debian-13 \
-     --ssh-key <key-name> \
-     --user-data-from-file cloud-init.yml
-   ```
-
-   Expected: `hcloud` prints the server's IPv4 and IPv6 addresses.
-
-4. **Wait for cloud-init to finish:**
-
-   ```bash
-   ssh <username>@<host> "cloud-init status --wait"
-   ssh -t <username>@<host> "sudo tail -n 40 /var/log/cloud-init-output.log"
-   ```
-
-   Expected: `status: done`, and the log shows the script's `Setup complete` summary.
 
 ## Provision over SSH
 
-The fallback for a provider with no user-data field, such as netcup. Netcup supports only SSH-key injection at image install.
+Netcup supports only SSH-key injection at image install, so the script runs as root over SSH.
 
 1. **Install the image with root key access.** In the netcup image dialog, pick your SSH key.
    Leave **Create additional user** off, so the key goes to root.

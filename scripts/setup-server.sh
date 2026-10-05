@@ -5,7 +5,6 @@
 #   HASH="$(mkpasswd -m yescrypt)"   # prompts for the password; mkpasswd ships in the whois package
 #   ssh root@host "SSH_PUBLIC_KEY='ssh-ed25519 AAAA...' USERNAME=nico USER_PASSWORD_HASH='$HASH' bash -s" < setup-server.sh
 #   ssh root@host "SSH_PUBLIC_KEY='ssh-ed25519 AAAA...' bash -s -- --dry-run" < setup-server.sh   # preview only
-#   Hands-off alternative: templates/cloud-init.yml fetches and runs this script at first boot.
 #
 # What it does:
 #   1. System update & base packages
