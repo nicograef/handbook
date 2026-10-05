@@ -13,6 +13,6 @@
 | [audiobook](audiobook/) | Research, write and render an explanatory audiobook |
 | [prog](prog/) | Sync state files to the verified status quo, then a status table; with `compact`, a compaction handoff |
 | [decide](decide/) | Put every open question of the session to the user, with context and trade-offs |
-| [research-digest](research-digest/) | Deep-dive research on the project's topics or given links; a report with recommendations, published as a page |
+| [research-digest](research-digest/) | Newsletter on the project's field, or on given links or a topic, published as a page |
 
 Conventions: [.claude/rules/skills.md](../rules/skills.md).
