@@ -1,5 +1,11 @@
 #!/usr/bin/env bash
 # scaffold.sh – seeds a Python module whose parse_duration drops all but the last unit.
+#
+# Usage:
+#   claude plugin eval --scaffold runs it in the case's workspace
+#
+# What it does:
+#   1. Seeds duration.py with the bug and test_duration.py with a passing test
 set -euo pipefail
 
 cat > duration.py <<'PY'

@@ -1,8 +1,9 @@
 ---
-description: "Conventions for bash scripts in scripts/ and in skill directories."
+description: "Conventions for bash scripts in scripts/, skill directories and skill evals."
 paths:
   - "scripts/**"
   - ".claude/skills/**/*.sh"
+  - ".claude/evals/**/*.sh"
 ---
 
 # Script conventions

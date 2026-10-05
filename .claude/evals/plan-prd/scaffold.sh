@@ -1,5 +1,11 @@
 #!/usr/bin/env bash
 # scaffold.sh – seeds a short bookmarks PRD for the plan skill to break down.
+#
+# Usage:
+#   claude plugin eval --scaffold runs it in the case's workspace
+#
+# What it does:
+#   1. Writes docs/prds/prd-bookmarks.md into the run's workspace
 set -euo pipefail
 
 mkdir -p docs/prds

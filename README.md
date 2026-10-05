@@ -132,6 +132,7 @@ Rules and checks for maintaining this repo.
 | [scripts/test-plan-run-guard.sh](scripts/test-plan-run-guard.sh) | Fixture test for `plan-run-guard.sh`; `make test-plan-run-guard` |
 | [scripts/test-git-guard.sh](scripts/test-git-guard.sh) | Fixture test for `git-guard.sh`; `make test-git-guard` |
 | [scripts/test-dockerfiles.sh](scripts/test-dockerfiles.sh) | Builds the Dockerfile templates against stub apps until healthy; `make test-dockerfiles` |
+| [.claude/evals/run.sh](.claude/evals/run.sh) | Skill evals for `testing`, `decide` and `plan` against a no-plugin baseline; `make eval` |
 
 ## License
 
