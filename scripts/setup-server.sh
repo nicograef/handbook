@@ -165,6 +165,8 @@ else
   run adduser --disabled-password --gecos "" "$USERNAME"
 fi
 run usermod -aG sudo "$USERNAME"
+# The provider's image ships a root password; locked, root has no login of any kind.
+run passwd -l root
 
 if [[ "$PASSWORDLESS_SUDO" == "true" ]]; then
   # Convenience: sudo never prompts. The account stays passwordless.

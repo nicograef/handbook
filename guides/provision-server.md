@@ -115,6 +115,7 @@ sudo ufw status verbose
 # listening sockets: only 22, 80 and 443 may be public
 sudo ss -tlnp
 sudo sshd -T | grep -E '^(passwordauthentication|permitrootlogin|kbdinteractiveauthentication) '
+sudo passwd -S root
 sudo systemctl is-active fail2ban
 sudo fail2ban-client get sshd journalmatch
 docker run --rm hello-world
@@ -135,6 +136,7 @@ loginctl show-user "$USER" -p Linger
 | `ss -tlnp` | Only 22, 80 and 443 on `0.0.0.0`/`[::]`; everything else on loopback |
 | netcup: `scripts/netcup.sh firewall-get <server>`, on the laptop | The netcup default policies, then the user policy; `"consistent": true` |
 | `sshd -T` | `no` three times: password, root login, keyboard-interactive |
+| `passwd -S root` | `root L`: locked. `NP` means an empty password, which lets any local session `su` to root: run `sudo passwd -l root` |
 | `fail2ban` | Reports `active` |
 | `fail2ban-client get sshd journalmatch` | Includes `_COMM=sshd-session` |
 | `hello-world` | Prints the Docker confirmation message |
