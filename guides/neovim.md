@@ -63,40 +63,9 @@ The mechanism is the German-keyboard comment in [dotfiles/init.lua](../dotfiles/
 | `Ctrl-6`    | `Ctrl-^`            | previous file                                             |
 | `K` in help | `Ctrl-]`            | follows the help tag under the cursor                     |
 
-Alternative — switch the layout to **German (US)**: the US layout with umlauts on AltGr+u/o/a
-and eszett on AltGr+s. Every Vim key then sits in its US position, dead keys included.
-
-```bash
-gsettings set org.gnome.desktop.input-sources sources "[('xkb','de+us'),('xkb','de')]"   # Super+Space toggles
-gsettings set org.gnome.desktop.input-sources sources "[('xkb','de')]"                    # revert
-```
-
 Sources: [`:help 'langmap'`](https://neovim.io/doc/user/options.html#'langmap'),
 [`:help CTRL-^`](https://neovim.io/doc/user/editing.html#CTRL-%5E),
 [Vim Tips Wiki: map extra keys on non-US keyboards](https://web.archive.org/web/2023/https://vim.fandom.com/wiki/Map_extra_keys_on_non_US_keyboards).
-
-## Optional
-
-Caps Lock as Esc, system-wide:
-
-```bash
-gsettings set org.gnome.desktop.input-sources xkb-options "['caps:escape']"
-```
-
-## Plugins
-
-Later, one `git clone` each into Neovim's package path — no plugin manager
-([`:help packages`](https://neovim.io/doc/user/repeat.html#packages)).
-The config calls `setup()` for each one it finds.
-
-```bash
-P=~/.local/share/nvim/site/pack/plugins/start
-git clone https://github.com/tris203/precognition.nvim "$P/precognition.nvim"   # motion hints
-git clone https://github.com/MunifTanjim/nui.nvim      "$P/nui.nvim"            # hardtime dependency
-git clone https://github.com/m4xshen/hardtime.nvim     "$P/hardtime.nvim"       # blocks key repeats
-
-for d in "$P"/*/; do git -C "$d" pull; done                                     # update all
-```
 
 ## Verify
 

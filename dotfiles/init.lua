@@ -55,11 +55,3 @@ for lhs, rhs in pairs(de) do
   vim.keymap.set({ 'n', 'x', 'o' }, lhs, rhs, { remap = true })
 end
 vim.o.langmap = from .. ';' .. to
-
--- ── Plugins ──────────────────────────────────────────────────────────────────
--- Loaded when cloned into ~/.local/share/nvim/site/pack/plugins/start/
--- (guides/neovim.md → Plugins); absent plugins are skipped.
-for _, name in ipairs({ 'precognition', 'hardtime' }) do
-  local ok, plugin = pcall(require, name)
-  if ok then plugin.setup() end
-end
