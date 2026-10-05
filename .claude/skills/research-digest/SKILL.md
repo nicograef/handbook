@@ -65,7 +65,7 @@ Return three to six story drafts, best first, each with:
 
 Write for the owner: technical-literate, plain words. No file paths, function names,
 version specifiers or code verdicts. Every claim links its source.
-Return the drafts only; write no files.
+Return the drafts only; write files only to a temp directory.
 ```
 
 ## 3. Report
