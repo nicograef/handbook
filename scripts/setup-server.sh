@@ -23,7 +23,7 @@ set -euo pipefail
 # ── Configuration ────────────────────────────────────────────────────────────
 USERNAME="${USERNAME:-nico}"
 SSH_PUBLIC_KEY="${SSH_PUBLIC_KEY:-}"              # paste your pubkey here or export before running
-EXTRA_UFW_PORTS="${EXTRA_UFW_PORTS:-80/tcp 443/tcp}"  # space-separated
+EXTRA_UFW_PORTS="${EXTRA_UFW_PORTS-80/tcp 443/tcp}"   # space-separated; empty opens only SSH
 PASSWORDLESS_SUDO="${PASSWORDLESS_SUDO:-false}"  # "true" grants NOPASSWD sudo (convenience over prompts)
 USER_PASSWORD_HASH="${USER_PASSWORD_HASH:-}"     # `mkpasswd -m yescrypt` output; required unless PASSWORDLESS_SUDO=true
 HEALTH_PING_URL="${HEALTH_PING_URL:-}"           # optional: hourly dead-man health-ping URL (e.g. a Better Stack heartbeat)
