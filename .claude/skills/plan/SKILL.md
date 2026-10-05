@@ -10,9 +10,9 @@ Arguments: `$ARGUMENTS`. Output is a file, never code. `/plan <task or PRD path>
 
 ## Rules the templates depend on
 
-- Every phase carries a `**Depends on**` line. Only phases without one are candidates for implement-plan's concurrency test.
+- Every phase carries a `**Depends on**` line. implement-plan's concurrency test reads it pairwise.
 - Reference code as `path — symbol()`, not line numbers; lines drift while phases land.
-- Durable decisions (routes, schema shapes, model names, auth approach, third-party boundaries) go in the header. Volatile details (file names, function names) stay out of phase text.
+- Durable decisions (routes, schema shapes, model names, auth approach, third-party boundaries) go in the header. Paths go in each phase's Context and What to build, where the concurrency test reads them.
 - Phase text holds what to build and how to verify it. No background, no restated PRD, no rationale the header already settled.
 - Decide the granularity yourself. The finished file is the review surface; the user merges or splits phases there.
 
