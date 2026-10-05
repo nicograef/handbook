@@ -47,6 +47,15 @@ A React repository skips [Copy the production files](#copy-the-production-files)
    ```bash
    gh api -X PUT /repos/{owner}/{repo}/actions/permissions -F enabled=true -F sha_pinning_required=true
    ```
+3. Block force pushes and deletion of the default branch with a ruleset. Expected: the call prints `default-branch`.
+   ```bash
+   gh api -X POST /repos/{owner}/{repo}/rulesets -q .name --input - <<'EOF'
+   {"name": "default-branch", "target": "branch", "enforcement": "active",
+    "conditions": {"ref_name": {"include": ["~DEFAULT_BRANCH"], "exclude": []}},
+    "rules": [{"type": "non_fast_forward"}, {"type": "deletion"}]}
+   EOF
+   ```
+   It requires no status checks, so a direct push to `main` still lands. The [rulesets API](https://docs.github.com/en/rest/repos/rules#create-a-repository-ruleset) lists further rules.
 
 ## Copy the base files
 
