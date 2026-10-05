@@ -117,7 +117,6 @@ git config --global pull.rebase true
 git config --global push.autoSetupRemote true
 git config --global rerere.enabled true
 git config --global fetch.prune true
-git config --global rebase.autoStash true
 git config --global merge.conflictStyle zdiff3
 # delta as pager if installed, else fall back (safe on machines without delta)
 git config --global core.pager 'delta || less'
