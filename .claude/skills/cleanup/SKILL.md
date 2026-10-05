@@ -1,6 +1,6 @@
 ---
 name: cleanup
-description: Reviews a diff or area for readability, AI slop, principle violations, architecture boundaries and cross-layer consistency, or a frontend for mobile UX. Reports anchored findings, applies only picked ones. Triggers: cleanup, deslop, ux review.
+description: Reviews a diff or area for readability, AI slop, principles, architecture and cross-layer consistency, tags each test Keep/Refactor/Delete/Merge, and checks mobile UX. Applies only picked findings. Triggers: cleanup, deslop, test review, ux review.
 argument-hint: "[paths | staged | last-commit | repo | ux]"
 ---
 
@@ -41,7 +41,6 @@ Test files get the readability pass and one tag per test. The first matching row
 | Otherwise | Keep, unreported |
 
 A Merge finding names its target. A Delete that removes a behaviour's only coverage says so.
-Apply per file: Merge, then Refactor, then Delete. Then run the full suite; a failure restores the test.
 
 ## Report
 
@@ -59,4 +58,4 @@ Close with up to five most impactful changes across all files, then ask which to
 
 ## Apply
 
-Make the minimal change described per finding. Compile or lint the touched files once, after the last finding. Flag a large refactor for the user to schedule instead of doing it. Add no comments, abstractions or error handling; the goal is less noise. Leave patterns that look like slop but are the project's own idiom.
+Make the minimal change described per finding. Compile or lint the touched files once, after the last finding. Test findings apply per file: Merge, then Refactor, then Delete. Then the full suite runs; a failure restores the test. Flag a large refactor for the user to schedule instead of doing it. Add no comments, abstractions or error handling; the goal is less noise. Leave patterns that look like slop but are the project's own idiom.
