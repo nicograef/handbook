@@ -78,7 +78,7 @@ A web app on a fresh server chains Fresh server, Deploy, Monitoring, then Backup
 | [templates/prod-init.sh](templates/prod-init.sh) | Production deploy and update: pin and downgrade guard, backup, health poll |
 | [templates/backup-postgres.sh](templates/backup-postgres.sh) | Verified, retained PostgreSQL backups for a Compose stack (cron) |
 | [scripts/host-audit.sh](scripts/host-audit.sh) | Read-only audit of the state `setup-server.sh` leaves: one ok/FAIL/note line per check |
-| [scripts/report-health.sh](scripts/report-health.sh) | Hourly dead-man health ping (reboot-required + unattended-upgrades + OOM check) |
+| [scripts/report-health.sh](scripts/report-health.sh) | Hourly dead-man health ping: built-in and drop-in checks, `--check-only` prints one line per check |
 | [scripts/netcup.sh](scripts/netcup.sh) | netcup server API from the laptop: login, servers, firewall policies, snapshots |
 | [templates/netcup-firewall-web.json](templates/netcup-firewall-web.json) | netcup firewall policy for a web server: inbound SSH, HTTP, HTTPS, HTTP/3, NTP replies |
 | [templates/netcup-firewall-ssh.json](templates/netcup-firewall-ssh.json) | netcup firewall policy for an SSH-only host: inbound SSH and NTP replies |
@@ -111,6 +111,7 @@ A web app on a fresh server chains Fresh server, Deploy, Monitoring, then Backup
 | [scripts/test-agent-bus.sh](scripts/test-agent-bus.sh) | Fixture test for `agent-bus.sh`; `make test-agent-bus` |
 | [scripts/test-plan-run-guard.sh](scripts/test-plan-run-guard.sh) | Fixture test for `plan-run-guard.sh`; `make test-plan-run-guard` |
 | [scripts/test-git-guard.sh](scripts/test-git-guard.sh) | Fixture test for `git-guard.sh`; `make test-git-guard` |
+| [scripts/test-report-health.sh](scripts/test-report-health.sh) | Fixture test for `report-health.sh`; `make test-report-health` |
 | [scripts/test-dockerfiles.sh](scripts/test-dockerfiles.sh) | Builds the Dockerfile templates against stub apps until healthy; `make test-dockerfiles` |
 
 ## License
