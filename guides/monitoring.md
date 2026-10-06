@@ -7,7 +7,7 @@ One HTTPS uptime monitor watches the site; cron heartbeats watch backup, server 
 
 - The stack passes [deploy.md#verify](deploy.md#verify), with its clone and `.env` under `/opt/<project>`.
 - The daily backup cron installed per [backup-restore.md#daily-backup](backup-restore.md#daily-backup).
-- SSH access as the deploy user, with `sudo` for `/etc/default/report-health`.
+- SSH access as the deploy user, with `sudo` for `/etc/default/report-health` and `/etc/report-health.d/`.
 - A Better Stack account on the free plan, with email alerts and optionally Slack configured once.
 - Free plan room: the stack uses 1 monitor and 3 heartbeats, of 10 each.
 
@@ -63,6 +63,36 @@ That heartbeat then exists already; reuse it instead of creating a second one.
 
    Expected: `sudo cat /etc/default/report-health` prints the line.
 
+## Add a health check
+
+report-health runs the built-in checks `reboot`, `upgrades` and `oom`.
+Each drop-in in `/etc/report-health.d/` adds one check, named after its file.
+
+- A drop-in is an executable regular file named to match `^[a-z0-9-]+$`; other files are skipped.
+- The drop-ins run in name order, each under a 30-second timeout.
+- Exit 0 passes; a non-zero exit or a timeout fails the check and withholds the ping.
+- The first stdout line is the reason; the hourly run logs a failure as `UNHEALTHY: <name>: <reason>`.
+
+`report-health --check-only` prints one tab-separated `<name>`, `ok` or `fail`, `<reason>` line per check.
+It exits 1 when any check fails, reads no defaults file and pings nothing.
+
+1. Write the drop-in, owned by root and executable:
+
+   ```bash
+   sudo install -d -m 755 /etc/report-health.d
+   printf '#!/usr/bin/env bash\n<command>\n' | sudo tee /etc/report-health.d/<name> >/dev/null
+   sudo chmod 755 /etc/report-health.d/<name>
+   ```
+
+   Expected: `sudo ls -l /etc/report-health.d` lists `<name>` as `-rwxr-xr-x`.
+2. Run every check once, without a ping:
+
+   ```bash
+   sudo report-health --check-only
+   ```
+
+   Expected: one `ok` line per check, `<name>` among them, and exit status 0.
+
 ## Uptime monitor
 
 1. In Better Stack, create a monitor on `https://<domain>` with a 3-minute check frequency.
@@ -92,13 +122,16 @@ Fire every heartbeat once by hand, as the deploy user:
 cd /opt/<project>
 # backup: sends the stored URL a plain GET
 curl -fsS -m 10 "$(grep -E '^BACKUP_PING_URL=' .env | tail -n 1 | cut -d= -f2-)" >/dev/null && echo "backup ping sent"
+# health checks: one line per check, no ping
+sudo report-health --check-only && echo "health checks pass"
 # health: runs the hourly check, see the report-health.sh header
 sudo grep -q '^HEALTH_PING_URL=.' /etc/default/report-health && sudo report-health && echo "health ping sent"
 # TLS expiry: runs the crontab command as cron would
 crontab -l | grep -- '-checkend' | cut -d' ' -f6- | sh && echo "tls ping sent"
 ```
 
-Expected: each command prints its `... ping sent` line.
+Expected: the check run prints one `ok` line per check and `health checks pass`.
+Every other command prints its `... ping sent` line.
 The Better Stack dashboard then shows all four monitors **Up**: Uptime, Backup, Health and TLS expiry.
 
 To prove alerting end to end, withhold the health ping for one cycle, then restore it:
