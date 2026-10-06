@@ -30,7 +30,7 @@ INDEX_DIRS=(guides reference templates dotfiles scripts claude)
 # Tracked top-level folders the README does not index, as "<dir>|<reason>".
 INDEX_EXCLUDE=(
   ".claude|the skills stage indexes skills; rules and agents are harness config"
-  "docs|PRDs and plans are work files; the glossary serves the plan skill"
+  "docs|PRDs and plans are work files"
   ".github|the handbook's own CI workflow, not a file a project copies"
 )
 
