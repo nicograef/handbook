@@ -20,6 +20,8 @@ set -u
 USERNAME="${USERNAME:-nico}"
 EXTRA_UFW_PORTS="${EXTRA_UFW_PORTS-80/tcp 443/tcp}"  # space-separated; empty expects only SSH
 SWAP_SIZE_GB="${SWAP_SIZE_GB:-auto}"                # "0" expects no swap
+SYSTEM_LOCALE="${SYSTEM_LOCALE:-en_US.UTF-8}"       # the system's LANG
+EXTRA_LOCALES="${EXTRA_LOCALES:-en_GB.UTF-8}"       # space-separated; each expected generated
 # ─────────────────────────────────────────────────────────────────────────────
 
 fails=0
@@ -60,7 +62,7 @@ elide_keys() {
 section "host"
 echo "$(hostname) $(date -u +%FT%TZ) $(awk -F= '$1 == "PRETTY_NAME" { gsub(/"/, "", $2); print $2 }' /etc/os-release)"
 is_root && echo "running as root" || echo "running as $(id -un), not root: root-only checks print notes"
-echo "expected: USERNAME=$USERNAME EXTRA_UFW_PORTS='$EXTRA_UFW_PORTS' SWAP_SIZE_GB=$SWAP_SIZE_GB"
+echo "expected: USERNAME=$USERNAME EXTRA_UFW_PORTS='$EXTRA_UFW_PORTS' SWAP_SIZE_GB=$SWAP_SIZE_GB SYSTEM_LOCALE=$SYSTEM_LOCALE EXTRA_LOCALES='$EXTRA_LOCALES'"
 
 section "sshd effective config"
 if needs_root "sshd -T"; then
@@ -287,6 +289,16 @@ fi
 if [[ "$(findmnt -no FSTYPE /tmp 2>/dev/null)" == tmpfs ]]; then
   verdict note "/tmp" "tmpfs: everything written there is RAM; for build or agent workloads mask tmp.mount"
 fi
+
+section "locales"
+lang="$(awk -F= '$1 == "LANG" { gsub(/"/, "", $2); print $2 }' /etc/default/locale 2>/dev/null)"
+[[ "$lang" == "$SYSTEM_LOCALE" ]] && v=ok || v=FAIL
+verdict "$v" "system LANG" "expected $SYSTEM_LOCALE in /etc/default/locale, read ${lang:-none}"
+generated="$(locale -a 2>/dev/null)"
+for loc in $SYSTEM_LOCALE $EXTRA_LOCALES; do
+  grep -qxF "${loc%%.*}.utf8" <<<"$generated" && v=ok || v=FAIL
+  verdict "$v" "locale $loc" "expected generated, $([[ $v == ok ]] && echo found || echo 'read none: perl tools warn when a client forwards it')"
+done
 
 section "health ping"
 [[ -x /usr/local/bin/report-health ]] && v=ok || v=FAIL

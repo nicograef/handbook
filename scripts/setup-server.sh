@@ -9,7 +9,7 @@
 # What it does:
 #   1. System update & base packages
 #   1b. Swapfile (auto-sized from RAM, capped at 8G); appends it to /etc/fstab
-#   1c. Locales the operator's SSH client forwards
+#   1c. Locales: the system's LANG and those the operator's SSH client forwards
 #   2. Create non-root user with sudo
 #   3. SSH hardening (pubkey only, no root login) via a drop-in
 #   4. UFW firewall
@@ -27,7 +27,8 @@ PASSWORDLESS_SUDO="${PASSWORDLESS_SUDO:-false}"  # "true" grants NOPASSWD sudo (
 USER_PASSWORD_HASH="${USER_PASSWORD_HASH:-}"     # `mkpasswd -m yescrypt` output; required unless PASSWORDLESS_SUDO=true
 HEALTH_PING_URL="${HEALTH_PING_URL:-}"           # optional: hourly dead-man health-ping URL (e.g. a Better Stack heartbeat)
 SWAP_SIZE_GB="${SWAP_SIZE_GB:-auto}"             # swapfile size in GB; "auto" = RAM capped at 8; "0" skips swap
-EXTRA_LOCALES="${EXTRA_LOCALES:-en_GB.UTF-8}"     # space-separated; the LANG/LC_* your SSH client sends
+SYSTEM_LOCALE="${SYSTEM_LOCALE:-en_US.UTF-8}"     # the system's LANG, for cron, services and sessions that send none
+EXTRA_LOCALES="${EXTRA_LOCALES:-en_GB.UTF-8}"     # space-separated; the other LANG/LC_* your SSH client sends
 DRY_RUN="${DRY_RUN:-false}"                      # set to "true" or pass --dry-run
 # ─────────────────────────────────────────────────────────────────────────────
 
@@ -139,11 +140,13 @@ fi
 # sshd's stock AcceptEnv takes the client's LANG and LC_*. A forwarded locale the
 # image lacks makes perl, and every tool built on it, warn on each call.
 log "Generating locales"
-for loc in $EXTRA_LOCALES; do
+for loc in $SYSTEM_LOCALE $EXTRA_LOCALES; do
   grep -qx "$loc ${loc#*.}" /etc/locale.gen 2>/dev/null \
     || run bash -c "echo '$loc ${loc#*.}' >> /etc/locale.gen"
 done
 run locale-gen
+# A stock image sets LANG=C.UTF-8 in /etc/default/locale.
+run update-locale "LANG=$SYSTEM_LOCALE"
 
 # ── 2. Create non-root user ─────────────────────────────────────────────────
 log "Creating user '$USERNAME'"
