@@ -69,6 +69,7 @@ report-health runs the built-in checks `reboot`, `upgrades` and `oom`.
 Each drop-in in `/etc/report-health.d/` adds one check, named after its file.
 
 - A drop-in is an executable regular file named to match `^[a-z0-9-]+$`; other files are skipped.
+- A symlink, or a drop-in or directory not owned by root or writable by group or other, is skipped.
 - The drop-ins run in name order, each under a 30-second timeout.
 - Exit 0 passes; a non-zero exit or a timeout fails the check and withholds the ping.
 - The first stdout line is the reason; the hourly run logs a failure as `UNHEALTHY: <name>: <reason>`.

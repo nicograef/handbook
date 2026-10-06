@@ -14,6 +14,8 @@
 #   3. Runs the drop-ins in /etc/report-health.d/: each executable regular file
 #      named ^[a-z0-9-]+$, in name order, under `timeout 30`. A non-zero exit or
 #      a timeout fails it; its first stdout line is the reason. No directory, no drop-ins.
+#      A symlink, or a file or directory not owned by the running user or writable
+#      by group or other, is skipped.
 #   4. All pass → ping the URL once (curl). A failure → log
 #      "UNHEALTHY: <name>: <reason>", ping nothing, exit 1. URL unset → run the
 #      checks, skip the ping.
@@ -121,24 +123,41 @@ for name in reboot upgrades oom; do
   if "check_$name"; then report "$name" ok "$reason"; else report "$name" fail "$reason"; fi
 done
 
-# Name order is byte order, whatever the caller's locale.
+# Drop-ins run as the caller, root under sudo, so whoever else can write one would gain root.
+owned_alone() { # owned_alone <path>: owned by the effective uid, writable by neither group nor other
+  local mode
+  [[ -O "$1" ]] && mode="$(stat -c %a "$1")" && (( (8#$mode & 8#022) == 0 ))
+}
+
+# Name order and the name pattern are byte-wise, whatever the caller's locale.
 list_dropins() {
-  local LC_ALL=C
+  local LC_ALL=C file
   dropins=()
-  if [[ -d "$CHECKS_DIR" ]]; then dropins=("$CHECKS_DIR"/*); fi
+  if [[ ! -d "$CHECKS_DIR" ]] || ! owned_alone "$CHECKS_DIR"; then return 0; fi
+  for file in "$CHECKS_DIR"/*; do
+    if [[ ! -L "$file" && -f "$file" && -x "$file" && "${file##*/}" =~ ^[a-z0-9-]+$ ]] && owned_alone "$file"; then
+      dropins+=("$file")
+    fi
+  done
 }
 list_dropins
 
+out_file="$(mktemp)"
+trap 'rm -f "$out_file"' EXIT
+
 for file in "${dropins[@]}"; do
   name="${file##*/}"
-  [[ -f "$file" && -x "$file" && "$name" =~ ^[a-z0-9-]+$ ]] || continue
+  # KILL follows 5 s after TERM; timeout then exits 137. uutils timeout KILLs only its child,
+  # so the group kill reaps what ignored TERM, and a file, unlike a pipe, waits for no survivor.
+  timeout -k 5 "$CHECK_TIMEOUT" "$file" </dev/null >"$out_file" &
+  pid=$!
   rc=0
-  # KILL follows 5 s after TERM, so a drop-in that ignores TERM cannot stall the run.
-  out="$(timeout -k 5 "$CHECK_TIMEOUT" "$file" </dev/null)" || rc=$?
-  first="${out%%$'\n'*}"
+  wait "$pid" || rc=$?
+  kill -KILL -- "-$pid" 2>/dev/null || true
+  first="$(head -n 1 "$out_file")"
   if [[ "$rc" -eq 0 ]]; then
     report "$name" ok "$first"
-  elif [[ "$rc" -eq 124 ]]; then
+  elif [[ "$rc" -eq 124 || "$rc" -eq 137 ]]; then
     report "$name" fail "timed out after ${CHECK_TIMEOUT}s"
   else
     report "$name" fail "${first:-exit $rc}"

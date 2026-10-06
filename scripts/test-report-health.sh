@@ -84,10 +84,12 @@ expect_log() { # expect_log <label> <text>
   if grep -qF "$2" "$OUT"; then log "$1 -> logs '$2'"; else fail "$1: no '$2' in: $(cat "$OUT")"; fi
 }
 
-dropin() { # dropin <name> <body>; an executable drop-in
+# Explicit modes: report-health skips a drop-in or directory that group or other can write.
+dropin() { # dropin <name> <body>; an executable drop-in, mode 755
   mkdir -p "$CHECKS_DIR"
+  chmod 755 "$CHECKS_DIR"
   printf '#!/usr/bin/env bash\n%s\n' "$2" > "$CHECKS_DIR/$1"
-  chmod +x "$CHECKS_DIR/$1"
+  chmod 755 "$CHECKS_DIR/$1"
 }
 
 # 1. Without the drop-in directory, the hourly form behaves as before drop-ins existed.
@@ -129,17 +131,52 @@ expect_no_ping 1 "failing drop-in"
 expect_log "failing drop-in" "UNHEALTHY: queue-depth: queue at 900"
 if grep -qF "second line" "$OUT"; then fail "failing drop-in: reason holds more than the first line"; fi
 
-# 4. A non-executable file and a name outside ^[a-z0-9-]+$ are skipped.
+# 4. A non-executable file, a name outside ^[a-z0-9-]+$, a symlink and a
+#    group- or world-writable file are skipped; a writable directory runs no drop-in.
+rm "$CHECKS_DIR/queue-depth"
 printf '#!/usr/bin/env bash\nexit 1\n' > "$CHECKS_DIR/not-executable"
+chmod 644 "$CHECKS_DIR/not-executable"
 dropin check.sh 'exit 1'
 dropin Upper 'exit 1'
 mkdir -p "$CHECKS_DIR/subdir"
-rm "$CHECKS_DIR/queue-depth"
 run
-expect_ping "skipped files"
+expect_ping "non-executable, bad names, subdirectory"
+
+utf8="$(locale -a 2>/dev/null | grep -ixE 'en_GB\.utf-?8' | head -n 1 || true)"
+utf8="${utf8:-C.UTF-8}"
+dropin café 'exit 1'
+LANG="$utf8" LC_ALL="$utf8" run
+expect_ping "non-ASCII name under $utf8"
+rm "$CHECKS_DIR/café"
+
+printf '#!/usr/bin/env bash\nexit 1\n' > "$FIX/link-target"
+chmod 755 "$FIX/link-target"
+ln -s "$FIX/link-target" "$CHECKS_DIR/linked"
+run
+expect_ping "symlinked drop-in"
+rm "$CHECKS_DIR/linked"
+
+for mode in 775 757; do
+  dropin writable 'exit 1'
+  chmod "$mode" "$CHECKS_DIR/writable"
+  run
+  expect_ping "drop-in with mode $mode"
+  rm "$CHECKS_DIR/writable"
+done
+
+dropin queue-depth 'echo "queue at 900"; exit 1'
+for mode in 775 757; do
+  chmod "$mode" "$CHECKS_DIR"
+  run --check-only
+  if [[ "$rc" -eq 0 && "$(cut -f1 "$OUT" | tr '\n' ' ')" == "reboot upgrades oom " ]]; then
+    log "directory with mode $mode -> no drop-in runs"
+  else
+    fail "directory with mode $mode: rc $rc: $(cat "$OUT")"
+  fi
+done
+chmod 755 "$CHECKS_DIR"
 
 # 5. --check-only prints one line per check in name order, calls no curl, prints no URL.
-dropin queue-depth 'echo "queue at 900"; exit 1'
 dropin a-first 'exit 0'
 export HEALTH_PING_URL="$URL"
 run --check-only
@@ -184,6 +221,24 @@ run
 expect_no_ping 1 "hung drop-in, hourly"
 expect_log "hung drop-in, hourly" "UNHEALTHY: hung: timed out after 1s"
 rm "$CHECKS_DIR/hung"
+
+# The odd sleep length marks the drop-in's child, so a survivor of the KILL shows in pgrep.
+dropin stubborn 'echo "partial"; trap "" TERM; sleep 47.5'
+start=$SECONDS
+run --check-only
+elapsed=$((SECONDS - start))
+if [[ "$rc" -eq 1 && "$elapsed" -lt 15 ]] && grep -qx $'stubborn\tfail\ttimed out after 1s' "$OUT"; then
+  log "drop-in ignoring TERM -> KILLed, fails at the timeout"
+else
+  fail "drop-in ignoring TERM: rc $rc after ${elapsed}s: $(cat "$OUT")"
+fi
+if pgrep -f '^sleep 47\.5$' >/dev/null; then
+  fail "drop-in ignoring TERM: its child survived"
+  pkill -f '^sleep 47\.5$' || true
+else
+  log "drop-in ignoring TERM -> no process left behind"
+fi
+rm "$CHECKS_DIR/stubborn"
 
 # 7. Any other argument exits 2.
 for args in "--bogus" "--check-only extra"; do
