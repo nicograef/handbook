@@ -42,7 +42,19 @@ The health-ping heartbeat alerts while `/var/run/reboot-required` exists; the re
    Expected: four rows with a `RECLAIMABLE` column. A large figure is the cue to run `docker image prune -af`, as [Update](deploy.md#update) does.
    The `postgres-data` volume is **not** reclaimable and stays.
 
-4. **Quarterly: run the [restore drill](backup-restore.md#restore-drill)** into a throwaway database.
+4. **Read the month's disk fill and memory** from the record of [host-history.md](host-history.md), the oldest kept day against today:
+
+   ```bash
+   oldest="$(ls -tr /var/log/sysstat/sa[0-9][0-9] | head -n 1)"
+   LC_ALL=C sar -F MOUNT -f "$oldest" | grep -E 'fsused|^Summary'; LC_ALL=C sar -F MOUNT | grep -E 'fsused|^Summary'
+   LC_ALL=C sar -r -f "$oldest" | grep -E 'kbavail|^Average'; LC_ALL=C sar -r | grep -E 'kbavail|^Average'
+   ```
+
+   Expected: a `%ufsused` per mount and a `kbavail`, then and now.
+   A mount that will pass 80 % before next month, or a `kbavail` that keeps falling, needs action now.
+   The thresholds and fixes: [linux-services.md](../reference/linux-services.md#resource-usage).
+
+5. **Quarterly: run the [restore drill](backup-restore.md#restore-drill)** into a throwaway database.
 
    Expected: the throwaway database's row counts match the live one. An actual disaster uses [Restore](backup-restore.md#restore) instead.
 

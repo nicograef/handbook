@@ -65,9 +65,20 @@ Paths sit under `/scp-core/api/v1`. A mutation answers `202` with a TaskInfo; po
 | Servers | `GET /servers`, `GET /servers/{serverId}` | Detail: state, IPs, `snapshotCount`, `rescueSystemActive`, `serverLiveInfo.interfaces[].mac` |
 | Snapshots | `GET`, `POST /servers/{serverId}/snapshots`; `POST …/snapshots:dryrun` | The dry run answers an empty list when a snapshot is possible |
 | Image install | `POST /servers/{serverId}/image` | Erases the disk; `imageFlavourId`, `sshKeyIds`, `hostname`, `customScript` |
+| Metrics | `GET /servers/{serverId}/metrics/{kind}?hours=<n>` | `kind` is `cpu`, `disk`, `network` or `network/packet`; `hours` at most 1440 |
 | Tasks | `GET /tasks`, `GET /tasks/{uuid}`, `PUT /tasks/{uuid}:cancel` | States `PENDING`, `RUNNING`, `FINISHED`, `ERROR`, `WAITING_FOR_CANCEL`, `CANCELED`, `ROLLBACK` |
 
 Whether `customScript` runs as root at first boot is unverified.
+
+## Metrics
+
+| Item | Value |
+| --- | --- |
+| Shape | A map from an ISO-8601 timestamp to the values per CPU, disk or interface |
+| Covers | CPU, disk and network series |
+| Not covered | Memory, swap, filesystem fill and processes: the spec has no endpoint for them |
+| Inside view | sysstat on the host records them every minute: [host-history.md](../guides/host-history.md) |
+| Read | OpenAPI spec version 2026.1005.110946 on 2026-10-06 |
 
 ## Snapshots are not backups
 

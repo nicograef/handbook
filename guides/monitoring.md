@@ -2,6 +2,7 @@
 
 Stand up external monitoring for a single-VPS stack on [Better Stack](https://betterstack.com/)'s free plan.
 One HTTPS uptime monitor watches the site; cron heartbeats watch backup, server health and TLS expiry.
+On-host history and a read-only report: [host-history.md](host-history.md), [host-report.md](host-report.md).
 
 ## Prerequisites
 
@@ -77,22 +78,25 @@ Each drop-in in `/etc/report-health.d/` adds one check, named after its file.
 `report-health --check-only` prints one tab-separated `<name>`, `ok` or `fail`, `<reason>` line per check.
 It exits 1 when any check fails, reads no defaults file and pings nothing.
 
-1. Write the drop-in, owned by root and executable:
+1. Write a drop-in, owned by root and executable. This one, `disk`, fails once a local filesystem is 80 % full:
 
    ```bash
    sudo install -d -m 755 /etc/report-health.d
-   printf '#!/usr/bin/env bash\n<command>\n' | sudo tee /etc/report-health.d/<name> >/dev/null
-   sudo chmod 755 /etc/report-health.d/<name>
+   sudo tee /etc/report-health.d/disk >/dev/null <<'EOF'
+   #!/usr/bin/env bash
+   full="$(df -Pl -x tmpfs -x devtmpfs -x efivarfs -x overlay -x squashfs | awk 'NR > 1 && $5 + 0 >= 80 { printf " %s %s", $6, $5 }')"
+   [[ -z "$full" ]] || { echo "80 % full or more:$full"; exit 1; }
+   echo "every local filesystem under 80 %"
+   EOF
+   sudo chmod 755 /etc/report-health.d/disk
    ```
 
-   Expected: `sudo ls -l /etc/report-health.d` lists `<name>` as `-rwxr-xr-x`.
-2. Run every check once, without a ping:
+   Expected: `sudo report-health --check-only` prints one `ok` line per check, `disk` among them, and exits 0.
 
-   ```bash
-   sudo report-health --check-only
-   ```
+The same shape fits the other host checks worth a page:
 
-   Expected: one `ok` line per check, `<name>` among them, and exit status 0.
+- Failed units: `systemctl --failed --plain --no-legend` prints one line per failed unit.
+- Memory pressure: `/proc/pressure/memory` reports [PSI](https://docs.kernel.org/accounting/psi.html), the share of time tasks stalled on memory.
 
 ## Uptime monitor
 

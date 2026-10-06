@@ -70,6 +70,8 @@ A web app on a fresh server chains Fresh server, Deploy, Monitoring, then Backup
 | [guides/backup-restore.md](guides/backup-restore.md) | PostgreSQL backup, restore and the quarterly restore drill |
 | [guides/postgres-upgrade.md](guides/postgres-upgrade.md) | PostgreSQL major upgrade onto a fresh volume |
 | [guides/monitoring.md](guides/monitoring.md) | External monitoring (Better Stack) |
+| [guides/host-history.md](guides/host-history.md) | On-host history with sysstat: every minute, 28 days, read with `sar` and `sadf` |
+| [guides/host-report.md](guides/host-report.md) | Read-only host report over SSH: a forced-command key and one exact sudo rule |
 | [guides/maintenance.md](guides/maintenance.md) | Server maintenance: monthly checklist, OOM diagnosis |
 | [reference/postgresql.md](reference/postgresql.md) | PostgreSQL: queries, indexes, golang-migrate migrations |
 | [reference/linux-services.md](reference/linux-services.md) | Linux services: command sharp edges and resource-usage thresholds |

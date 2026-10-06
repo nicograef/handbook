@@ -34,7 +34,7 @@ Docker-published ports bypass UFW, so only the reverse proxy publishes ports ([D
 Monthly thresholds and fixes: [maintenance.md](../guides/maintenance.md#verify).
 
 ```bash
-sudo apt install btop ncdu sysstat   # add-ons for the live view, ncdu and iostat; the rest ships with Ubuntu
+sudo apt install btop ncdu sysstat   # add-ons for the live view, ncdu, iostat and sar; the rest ships with Ubuntu
 ```
 
 | Resource          | Command                        | Read                        | Act when                          |
@@ -47,4 +47,15 @@ sudo apt install btop ncdu sysstat   # add-ons for the live view, ncdu and iosta
 | Top processes     | `ps aux --sort=-%cpu \| head`  | `%CPU`, `RSS`               | one process pins a core for hours |
 | Everything live   | `btop`                         | one panel per resource      |                                   |
 
-Sources: [systemctl](https://www.freedesktop.org/software/systemd/man/latest/systemctl.html), [journalctl](https://www.freedesktop.org/software/systemd/man/latest/journalctl.html), [docker compose](https://docs.docker.com/reference/cli/docker/compose/).
+History, once [host-history.md](../guides/host-history.md) records it; `-f /var/log/sysstat/saDD` reads day `DD`:
+
+| Resource | Command | Read | Act when |
+| --- | --- | --- | --- |
+| CPU | `sar -u` | `%iowait`, `%steal` | `%steal` stays high for hours: other guests take the host's CPU |
+| RAM | `sar -r` | `kbavail` | falls day over day |
+| Load | `sar -q` | `ldavg-15` | above `nproc` for hours |
+| Disk space | `sar -F MOUNT` | `%ufsused`, which counts the root reserve as used | ≥ 80 % |
+| Memory pressure | `cat /proc/pressure/memory` | `some` and `full` `avg60`: the share of time one or all tasks stalled on memory | `full` above 0 for minutes on end |
+| Any of them as JSON | `sadf -j -- -u -r -q -F` | one object per sample | |
+
+Sources: [systemctl](https://www.freedesktop.org/software/systemd/man/latest/systemctl.html), [journalctl](https://www.freedesktop.org/software/systemd/man/latest/journalctl.html), [docker compose](https://docs.docker.com/reference/cli/docker/compose/), [sar](https://manpages.debian.org/trixie/sysstat/sar.sysstat.1.en.html), [PSI](https://docs.kernel.org/accounting/psi.html).
