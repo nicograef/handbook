@@ -56,7 +56,7 @@ Budget verification by blast radius. Set a tier per phase or lane before dispatc
 | --- | --- | --- |
 | Gate | redoable work | the gate plus one batched review |
 | Probe | work whose rerun is paid or slow | one probe before the full run |
-| Read | irreversible work: spend, overwrite, publish, production migration | probes plus the owner's read |
+| Read | irreversible work: spend, overwrite, publish, production migration | probes plus the owner's read; spend skips the read where the project's AGENTS.md approves it |
 
 - The gate runs once, where the change is, and again only after a fold, a rebase or an unseen edit.
 - The rules for irreversible work, reviews and model switches bind every session: [global CLAUDE.md](../../../claude/CLAUDE.md#models-and-subagents).

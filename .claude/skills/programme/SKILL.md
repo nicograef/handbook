@@ -30,7 +30,7 @@ One file, `docs/plans/programme.md`, with these sections and nothing about a pha
 | Landing a group | the lanes' landing order; the protocol is [lead.md](../implement-plan/lead.md#landing) |
 | Stores and lanes | how a lane's worktree, store and data are made |
 | Migrations | number, phase, lane, what, status; reserved in landing order |
-| Spend | leg, projection, who buys after the owner's yes, status |
+| Spend | leg, projection, who buys, status |
 | Status | one row per phase: lane, wave, status, landed sha |
 
 Cut waves by file ownership: a phase waits only for phases it depends on. Lanes of one wave land smallest surface first so the largest rebase happens once.
@@ -44,7 +44,7 @@ Cut waves by file ownership: a phase waits only for phases it depends on. Lanes 
 5. Arm the [lead jobs](../implement-plan/lead.md#lead-upkeep). Spawn one `general-purpose` agent per lane on `opus` in one message. The whole prompt is: read common.md, read the brief, do the work, return the report. Announce the lanes on the bus with paths and ports.
 6. When a lane reports, review it as [lead.md](../implement-plan/lead.md#verification-budget) says. Confirmed findings go back to the lane's own agent, as [lead.md](../implement-plan/lead.md#dispatch) says.
 7. Land in the wave's order as [lead.md](../implement-plan/lead.md#landing) says. The gate runs detached, against the lane's own store, under the host-wide lock. A rebase that brings a lower migration number re-initialises the lane's store. Flip the lane's status rows with the landed sha and the migration numbers taken, and stop its store. A lane that waits for another is created from the new base at that landing, with its own brief.
-8. A spend leg is projected at list price in a commit body and put to the user. It is bought only on yes. A diff the owner must read stays in its own commit until read.
+8. A spend leg follows the [global spend rule](../../../claude/CLAUDE.md#models-and-subagents). It waits for the owner's read unless the project's AGENTS.md approves spend. A diff the owner must read stays in its own commit until read.
 9. After the wave: every lane's worktree, branch and store gone. Delete both jobs after the last wave. Run `prog compact` before the next wave so the next session starts from a resume file.
 
 ## Lane briefs
@@ -56,7 +56,7 @@ Two files per wave under `../<repo>-wt/w<wave>/`: `common.md` for every lane and
 | Section | Says |
 | --- | --- |
 | Where you work | the worktree path and branch; every command runs there; a command run without the lane's ports and env reaches the main checkout's store; the data directory's symlinks and real directories; the repo's own rules bind, plus staging by path |
-| Spend | nothing reaches a paid provider unless the brief names the row and the owner's yes; the paid targets by name; the free instruments that prove a criterion instead; a needed paid run goes under "for the owner" with its list-price projection |
+| Spend | nothing reaches a paid provider unless the brief names the row; the paid targets by name; the free instruments that prove a criterion instead; a needed paid run goes under "for the owner" with its list-price projection |
 | Long work | every job over a few minutes runs as a `systemd-run --user` unit with its log under the wave directory; the gate runs under the host-wide `flock` with capped workers; one gate per lane at a time |
 | Commits | one per phase or coherent step; every figure the plan wants goes in the body verbatim; tick the plan's boxes in the commit that meets them; lint and targeted tests before each commit, the full gate once at the end |
 | Migrations | the reserved numbers by phase; every registry the repo keeps beside the migration files; a number nobody reserved is taken as the next free one and reported |
