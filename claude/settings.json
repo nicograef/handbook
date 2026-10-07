@@ -1,7 +1,6 @@
 {
   "$schema": "https://json.schemastore.org/claude-code-settings.json",
   "cleanupPeriodDays": 90,
-  "disableClaudeAiConnectors": true,
   "syncClaudeAiSkills": false,
   "syncClaudeAiPlugins": false,
   "attribution": {
@@ -155,6 +154,7 @@
     "claude-sonnet-5"
   ],
   "enforceAvailableModels": true,
+  "disableClaudeAiConnectors": true,
   "hooks": {
     "PreToolUse": [
       {
