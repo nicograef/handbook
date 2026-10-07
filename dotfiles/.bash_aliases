@@ -52,7 +52,7 @@ pci() {
     pnpm audit
 }
 
-alias update='sudo apt update && sudo apt full-upgrade -y && sudo apt autoremove -y'
+alias update='sudo apt update && sudo apt full-upgrade -y && sudo apt autoremove -y && sudo apt autoclean -y'
 
 # bat as a colorized cat (apt binary: batcat, cargo binary: bat)
 if command -v batcat >/dev/null; then
