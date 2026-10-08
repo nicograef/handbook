@@ -92,7 +92,7 @@ A web app on a fresh server chains Fresh server, Deploy, Monitoring, then Backup
 | File | Description |
 | --- | --- |
 | [guides/unattended-agents.md](guides/unattended-agents.md) | Unattended agent runs |
-| [claude/CLAUDE.md](claude/CLAUDE.md) | Global Claude instructions |
+| [claude/global.md](claude/global.md) | Global Claude instructions, linked as `~/.claude/CLAUDE.md` |
 | [claude/settings.json](claude/settings.json) | Claude settings + hooks |
 | [claude/statusline.sh](claude/statusline.sh) | Status line script |
 | [.claude/skills/README.md](.claude/skills/README.md) | Skills index |
@@ -114,6 +114,7 @@ A web app on a fresh server chains Fresh server, Deploy, Monitoring, then Backup
 | [scripts/test-git-guard.sh](scripts/test-git-guard.sh) | Fixture test for `git-guard.sh`; `make test-git-guard` |
 | [scripts/test-report-health.sh](scripts/test-report-health.sh) | Fixture test for `report-health.sh`; `make test-report-health` |
 | [scripts/test-dockerfiles.sh](scripts/test-dockerfiles.sh) | Builds the Dockerfile templates against stub apps until healthy; `make test-dockerfiles` |
+| [scripts/lib/test-harness.sh](scripts/lib/test-harness.sh) | Shared setup and verdict the fixture tests source; `make test` runs them |
 
 ## License
 

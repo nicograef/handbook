@@ -56,10 +56,10 @@ Budget verification by blast radius. Set a tier per phase or lane before dispatc
 | --- | --- | --- |
 | Gate | redoable work | the gate plus one batched review |
 | Probe | work whose rerun is paid or slow | one probe before the full run |
-| Read | irreversible work | the [global irreversible-work rule](../../../claude/CLAUDE.md#models-and-subagents) |
+| Read | irreversible work | the [global irreversible-work rule](../../../claude/global.md#models-and-subagents) |
 
 - The gate runs once, where the change is, and again only after a fold, a rebase or an unseen edit.
-- The model per work kind and the rules for reviews and model switches are [global](../../../claude/CLAUDE.md#models-and-subagents). Gate agents run at low effort.
+- The model per work kind and the rules for reviews and model switches are [global](../../../claude/global.md#models-and-subagents). Gate agents run at low effort.
 - Review a finished phase or lane once, over its whole diff.
 - A diff touching auth, input handling, shell, SQL or dependency manifests adds a `/security-review` pass.
 - Review workflows: finders one per lens, few.

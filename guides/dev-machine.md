@@ -126,7 +126,7 @@ for c in 'git --version' 'gh --version' 'node --version' 'pnpm --version' 'uv --
   'rg --version' 'delta --version' 'jq --version' 'make --version' 'shellcheck --version' 'nvim --version'; do
   $c >/dev/null 2>&1 && echo "ok   $c" || echo "FAIL $c"
 done                                               # → 20 lines, each starting with ok
-readlink -f ~/.claude/CLAUDE.md ~/.bash_aliases    # → <home>/r/handbook/claude/CLAUDE.md, <home>/r/handbook/dotfiles/.bash_aliases
+readlink -f ~/.claude/CLAUDE.md ~/.bash_aliases    # → <home>/r/handbook/claude/global.md, <home>/r/handbook/dotfiles/.bash_aliases
 git config --global commit.gpgsign                 # → true
 apt-config dump | grep -F 'origin=gh'              # → Unattended-Upgrade::Origins-Pattern:: "origin=gh,codename=stable";
 docker run --rm hello-world | grep Hello           # → Hello from Docker!

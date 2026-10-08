@@ -137,7 +137,7 @@ A React repository skips [Copy the production files](#copy-the-production-files)
    ```bash
    printf '@AGENTS.md\n' > CLAUDE.md
    ```
-2. Write `AGENTS.md` with what the global [claude/CLAUDE.md](../claude/CLAUDE.md) cannot know: the project, its `make` targets, project-only rules. `/init` drafts it.
+2. Write `AGENTS.md` with what the global [claude/global.md](../claude/global.md) cannot know: the project, its `make` targets, project-only rules. `/init` drafts it.
 3. Create `docs/README.md`, one row per page with the question it answers, and `docs/decisions.md`, one line per decision from `D01`. A replaced line gets `replaced by DNN`.
 
 ## Verify

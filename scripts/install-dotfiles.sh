@@ -41,7 +41,7 @@ LINKS=(
   "dotfiles/gitignore-global .config/git/ignore"
   "dotfiles/init.lua .config/nvim/init.lua"
   "scripts/report-repo-status.sh .local/bin/repo-status"
-  "claude/CLAUDE.md .claude/CLAUDE.md"
+  "claude/global.md .claude/CLAUDE.md"
   "claude/settings.json .claude/settings.json"
   "claude/statusline.sh .claude/statusline.sh"
   "scripts/agent-bus.sh .claude/agent-bus.sh"
