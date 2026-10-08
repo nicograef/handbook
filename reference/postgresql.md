@@ -73,8 +73,9 @@ migrate up                 # apply all pending
 **Published-port form.** If `postgres` publishes `5432` to the host, install `migrate` and use `@localhost:5432` in `DB_URL` instead of the `docker run` wrapper.
 
 ```bash
-curl -fsSL "https://github.com/golang-migrate/migrate/releases/download/v4.20.1/migrate.linux-amd64.tar.gz" \
-  | sudo tar -xz -C /usr/local/bin migrate
+curl -fsSLo migrate.tar.gz "https://github.com/golang-migrate/migrate/releases/download/v4.20.1/migrate.linux-amd64.tar.gz"
+echo "b1e13121d4178b7804a9fb29dca62d57b732390f7e5ae33f2cd65e9b192e1bd4  migrate.tar.gz" | sha256sum -c -   # the release's sha256sum.txt entry
+sudo tar -xzf migrate.tar.gz -C /usr/local/bin migrate
 ```
 
 ### Recover a dirty database

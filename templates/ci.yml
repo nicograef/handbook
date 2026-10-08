@@ -1,4 +1,4 @@
-# Each stack's jobs and steps sit between a `# >>> stack: NAME` and a `# <<< stack: NAME` line
+# Each stack's env, jobs and steps sit between a `# >>> stack: NAME` and a `# <<< stack: NAME` line
 # (go, python, frontend, database). Validate locally before pushing: actionlint .github/workflows/ci.yml
 #
 # Toolchain versions come from the project's own pins, so CI and a dev machine agree:
@@ -36,6 +36,13 @@ permissions:
 concurrency:
   group: ci-${{ github.event_name }}-${{ github.ref }}
   cancel-in-progress: true
+
+# >>> stack: database
+env:
+  # The digest is the release's sha256sum.txt entry; update it together with the version.
+  MIGRATE_VERSION: v4.20.1
+  MIGRATE_SHA256: b1e13121d4178b7804a9fb29dca62d57b732390f7e5ae33f2cd65e9b192e1bd4
+# <<< stack: database
 
 jobs:
   # ── Change Detection ───────────────────────────────────────────────────────
@@ -385,12 +392,11 @@ jobs:
         run: uv sync --locked
       # <<< stack: python
 
-      # The digest is the release's sha256sum.txt entry; update it together with the version.
       - name: Install golang-migrate
         working-directory: ${{ runner.temp }}
         run: |
-          curl -fsSLo migrate.tar.gz "https://github.com/golang-migrate/migrate/releases/download/v4.20.1/migrate.linux-amd64.tar.gz"
-          echo "b1e13121d4178b7804a9fb29dca62d57b732390f7e5ae33f2cd65e9b192e1bd4  migrate.tar.gz" | sha256sum -c -
+          curl -fsSLo migrate.tar.gz "https://github.com/golang-migrate/migrate/releases/download/${MIGRATE_VERSION}/migrate.linux-amd64.tar.gz"
+          echo "${MIGRATE_SHA256}  migrate.tar.gz" | sha256sum -c -
           sudo tar -xzf migrate.tar.gz -C /usr/local/bin migrate
 
       - name: Run database migrations up
@@ -446,8 +452,8 @@ jobs:
       - name: Install golang-migrate
         working-directory: ${{ runner.temp }}
         run: |
-          curl -fsSLo migrate.tar.gz "https://github.com/golang-migrate/migrate/releases/download/v4.20.1/migrate.linux-amd64.tar.gz"
-          echo "b1e13121d4178b7804a9fb29dca62d57b732390f7e5ae33f2cd65e9b192e1bd4  migrate.tar.gz" | sha256sum -c -
+          curl -fsSLo migrate.tar.gz "https://github.com/golang-migrate/migrate/releases/download/${MIGRATE_VERSION}/migrate.linux-amd64.tar.gz"
+          echo "${MIGRATE_SHA256}  migrate.tar.gz" | sha256sum -c -
           sudo tar -xzf migrate.tar.gz -C /usr/local/bin migrate
 
       # HEAD^ skips the tag on a release commit itself. No tag yet: nothing to upgrade from.
