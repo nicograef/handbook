@@ -1,17 +1,26 @@
 ---
-description: "Conventions for guides in guides/."
-paths: "guides/**"
+description: "Conventions for guides in guides/ and reference pages in reference/."
+paths:
+  - "guides/**"
+  - "reference/**"
 ---
 
-# Guide conventions
+# Guide and reference conventions
 
-- Runbooks only; reference material lives in `reference/`.
+- Guides are runbooks; reference material lives in `reference/`. A reference page links the guide that holds its steps.
+- One topic per file, named `<topic>.md`: lowercase, hyphens, no numbering.
+- Cite the source URL when a page is based on an external resource.
+
+## Guides
+
 - One task per runbook, 50 to 150 lines.
 - **Prerequisites** before the first step, numbered steps, every command in a fenced `bash` block, `diff` blocks for config changes. A **Verify** section (command plus expected output) follows the steps; **Troubleshooting**, if any, comes after it.
 - Each step is one action plus its expected result.
-- A list holds parallel items only; reasoning is a short paragraph.
 - Headings name tasks, never numbers. Links target headings, never another file's step number.
 - Placeholders are `<angle-brackets>` everywhere, Verify blocks included.
 - Agent vocabulary (gate, lane, fold, lead) stays out of runbooks.
-- Cite the source URL when a guide is based on an external resource.
-- File name `<topic>.md`, lowercase, hyphens, no numbering.
+
+## Reference pages
+
+- Command pages: tables or commented code blocks under `##` headings, copy-paste-ready. A short paragraph appears only where a command needs context.
+- Rule pages (`stack-conventions.md`): short rule paragraphs under one `##` heading per stack, each rule with its reason.
