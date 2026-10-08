@@ -73,8 +73,6 @@
       "Bash(rg:*)",
       "Bash(sed -n:*)",
       "Bash(df:*)",
-      "Bash(php -l:*)",
-      "Bash(php -S localhost:*)",
       "Bash(gh pr checks:*)",
       "Bash(gh workflow list:*)",
       "Bash(gh api:*)",
