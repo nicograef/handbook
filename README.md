@@ -95,7 +95,7 @@ A web app on a fresh server chains Fresh server, Deploy, Monitoring, then Backup
 | [claude/global.md](claude/global.md) | Global Claude instructions, linked as `~/.claude/CLAUDE.md` |
 | [claude/settings.json](claude/settings.json) | Claude settings + hooks |
 | [claude/statusline.sh](claude/statusline.sh) | Status line script |
-| [.claude/skills/README.md](.claude/skills/README.md) | Skills index |
+| [.claude/skills/](.claude/skills/) | Shared skills, one folder each, described by its frontmatter |
 | [.claude/agents/web-researcher.md](.claude/agents/web-researcher.md) | Web research agent |
 | [scripts/agent-bus.sh](scripts/agent-bus.sh) | Coordination bus for concurrent Claude Code sessions in one repo |
 | [scripts/check-agents.sh](scripts/check-agents.sh) | Last activity of background agents, read off their task transcripts |

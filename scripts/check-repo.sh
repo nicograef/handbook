@@ -31,7 +31,7 @@ INDEX_DIRS=(guides reference templates dotfiles scripts claude)
 
 # Tracked top-level folders the README does not index, as "<dir>|<reason>".
 INDEX_EXCLUDE=(
-  ".claude|the skills stage indexes skills; rules and agents are harness config"
+  ".claude|skills, rules and agents are harness config; each skill describes itself in its frontmatter"
   "docs|PRDs and plans are work files"
   ".github|the handbook's own CI workflow, not a file a project copies"
 )
@@ -317,30 +317,16 @@ check_language() {
   done < <(tracked_md)
 }
 
-## skills: verify .claude/skills/README.md indexes every SKILL.md directory and vice-versa
+## skills: verify every skill but audiobook stays model-invocable and its description within the cap
 check_skills() {
-  local readme=".claude/skills/README.md" target skill dir
-  local -a links=() skills=()
-  local -A linked=()
-  # Skill directories the index links (form `](name/)`, trailing slash stripped).
-  while IFS= read -r target; do
-    [[ "$target" =~ ^[a-z0-9-]+/$ ]] || continue
-    links+=("${target%/}")
-    linked[${target%/}]=1
-  done < <(md_links "$readme")
+  local -a skills=()
+  local skill
   mapfile -t skills < <(tracked '.claude/skills/*/SKILL.md')
 
-  # Every directory with a SKILL.md must appear in the skills index.
   for skill in "${skills[@]}"; do
-    dir="${skill%/SKILL.md}"
-    dir="${dir##*/}"
-    [[ -v "linked[$dir]" ]] || log "skill not indexed in .claude/skills/README.md: $dir"
-  done
-
-  # Every skill the index links must have a SKILL.md on disk.
-  for dir in "${links[@]}"; do
-    if [[ ! -f ".claude/skills/$dir/SKILL.md" ]]; then
-      log ".claude/skills/README.md indexes a missing skill: $dir"
+    [[ "$skill" == .claude/skills/audiobook/SKILL.md ]] && continue
+    if grep -q '^disable-model-invocation:' "$skill"; then
+      log "skill blocks model invocation: $skill"
     fi
   done
 
