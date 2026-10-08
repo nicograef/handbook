@@ -52,6 +52,7 @@ export REBOOT_REQUIRED_FILE="$FIX/reboot-required"
 export UNATTENDED_UPGRADES_LOG="$FIX/unattended-upgrades.log"
 export CHECKS_DIR="$FIX/checks"
 export CHECK_TIMEOUT=1
+export CHECK_KILL_AFTER=1
 
 echo "HEALTH_PING_URL=\"$URL\"" > "$DEFAULTS_FILE"
 cat > "$UNATTENDED_UPGRADES_LOG" <<'EOF'

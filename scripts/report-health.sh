@@ -33,6 +33,7 @@ UNATTENDED_UPGRADES_LOG="${UNATTENDED_UPGRADES_LOG:-/var/log/unattended-upgrades
 OOM_WINDOW="${OOM_WINDOW:-65 minutes ago}"  # slightly over the hourly cron interval, so no kill falls between runs
 CHECKS_DIR="${CHECKS_DIR:-/etc/report-health.d}"
 CHECK_TIMEOUT="${CHECK_TIMEOUT:-30}"  # seconds per drop-in
+CHECK_KILL_AFTER="${CHECK_KILL_AFTER:-5}"  # seconds from a timed-out drop-in's TERM to its KILL
 # ─────────────────────────────────────────────────────────────────────────────
 
 log() { printf '\n\033[1;34m▸ %s\033[0m\n' "$1"; }
@@ -147,9 +148,9 @@ trap 'rm -f "$out_file"' EXIT
 
 for file in "${dropins[@]}"; do
   name="${file##*/}"
-  # KILL follows 5 s after TERM; timeout then exits 137. uutils timeout KILLs only its child,
-  # so the group kill reaps what ignored TERM, and a file, unlike a pipe, waits for no survivor.
-  timeout -k 5 "$CHECK_TIMEOUT" "$file" </dev/null >"$out_file" &
+  # A KILL after TERM makes timeout exit 137. uutils timeout KILLs only its child, so the group
+  # kill reaps what ignored TERM, and a file, unlike a pipe, waits for no survivor.
+  timeout -k "$CHECK_KILL_AFTER" "$CHECK_TIMEOUT" "$file" </dev/null >"$out_file" &
   pid=$!
   rc=0
   wait "$pid" || rc=$?
