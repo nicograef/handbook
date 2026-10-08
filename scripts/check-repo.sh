@@ -58,8 +58,27 @@ PROSE_MAX_PARA_LINES=3
 # Skill description cap enforced by check_skills; stated in .claude/rules/skills.md.
 SKILL_MAX_DESC=250
 
+# Every tracked path, listed once: TRACKED_LIST keeps git's order, TRACKED is the membership set.
+TRACKED_LIST=()
+declare -A TRACKED=()
+while IFS= read -r -d '' path; do
+  TRACKED_LIST+=("$path")
+  TRACKED[$path]=1
+done < <(git ls-files -z)
+
+# tracked prints every tracked path matching one of the globs $@, where * also matches /.
+tracked() {
+  local path glob
+  for path in "${TRACKED_LIST[@]}"; do
+    for glob; do
+      # shellcheck disable=SC2053 # the right side is a glob on purpose
+      if [[ "$path" == $glob ]]; then printf '%s\n' "$path"; break; fi
+    done
+  done
+}
+
 tracked_md() {
-  git ls-files '*.md'
+  tracked '*.md'
 }
 
 # prose_md lists the Markdown files subject to the prose caps: tracked_md minus the
@@ -76,6 +95,11 @@ strip_code() {
     fence { print ""; next }
     { gsub(/`[^`]*`/, ""); print }
   '
+}
+
+# md_links prints the target of every inline Markdown link in file $1, code skipped.
+md_links() {
+  strip_code < "$1" | grep -oE '\]\([^)]+\)' | sed -E 's/^\]\(//; s/\)$//' || true
 }
 
 # heading_slugs prints the GitHub heading slug of every ATX heading in a Markdown file,
@@ -102,8 +126,8 @@ heading_slugs() {
 }
 
 check_links() {
-  local file dir target path anchor resolved
-  local -A slugs=()
+  local file dir target path anchor resolved slug
+  local -A slugged=() anchors=()
   while IFS= read -r file; do
     dir="$(dirname "$file")"
     while IFS= read -r target; do
@@ -126,11 +150,14 @@ check_links() {
         continue
       fi
       [[ -z "$anchor" || "$resolved" != *.md || ! -f "$resolved" ]] && continue
-      [[ -v "slugs[$resolved]" ]] || slugs[$resolved]="$(heading_slugs "$resolved")"
-      if ! grep -qxF -- "$anchor" <<<"${slugs[$resolved]}"; then
+      if [[ ! -v "slugged[$resolved]" ]]; then
+        slugged[$resolved]=1
+        while IFS= read -r slug; do anchors["$resolved#$slug"]=1; done < <(heading_slugs "$resolved")
+      fi
+      if [[ ! -v "anchors[$resolved#$anchor]" ]]; then
         log "dead anchor in $file -> $target: no heading with slug #$anchor"
       fi
-    done < <(strip_code < "$file" | grep -oE '\]\([^)]+\)' | sed -E 's/^\]\(//; s/\)$//')
+    done < <(md_links "$file")
   done < <(tracked_md)
 }
 
@@ -142,8 +169,8 @@ check_shell() {
   local script out scripts=()
   while IFS= read -r script; do
     [[ -e "$script" ]] && scripts+=("$script")
-  done < <(git ls-files 'scripts/*.sh' 'install.sh' 'claude/*.sh' 'templates/*.sh' \
-                        'dotfiles/.bash_aliases' '.claude/skills/*/*.sh')
+  done < <(tracked 'scripts/*.sh' 'install.sh' 'claude/*.sh' 'templates/*.sh' \
+                    'dotfiles/.bash_aliases' '.claude/skills/*/*.sh')
   # One file per process, so each report reaches the pipe in one write.
   if ! out="$(printf '%s\0' "${scripts[@]}" | xargs -0 -n1 -P"$(nproc)" shellcheck 2>&1)"; then
     log "shellcheck failed"
@@ -152,45 +179,42 @@ check_shell() {
 }
 
 check_readme() {
-  local readme="README.md" links file target path
+  local readme="README.md" target file folder entry covered d
+  local -a links=()
+  local -A linked=()
   # All relative links the README points at (anchors stripped).
-  links="$(strip_code < "$readme" \
-    | grep -oE '\]\([^)]+\)' \
-    | sed -E 's/^\]\(//; s/\)$//; s/#.*$//')"
+  while IFS= read -r target; do
+    target="${target%%#*}"
+    [[ -n "$target" ]] || continue
+    links+=("$target")
+    linked[$target]=1
+  done < <(md_links "$readme")
 
   # Every tracked file in an index dir must appear in the README.
   local index_globs=()
   for d in "${INDEX_DIRS[@]}"; do index_globs+=("$d/*"); done
   while IFS= read -r file; do
-    if ! grep -qxF "$file" <<<"$links"; then
-      log "not indexed in README.md: $file"
-    fi
-  done < <(git ls-files "${index_globs[@]}")
+    [[ -v "linked[$file]" ]] || log "not indexed in README.md: $file"
+  done < <(tracked "${index_globs[@]}")
 
   # Every tracked top-level folder is indexed or excluded with a reason.
-  local folder entry covered
+  local -A folders=()
+  for file in "${TRACKED_LIST[@]}"; do
+    [[ "$file" == */* ]] && folders[${file%%/*}]=1
+  done
   while IFS= read -r folder; do
     covered=false
     for d in "${INDEX_DIRS[@]}"; do [[ "$folder" == "$d" ]] && covered=true; done
     for entry in "${INDEX_EXCLUDE[@]}"; do [[ "$entry" == "$folder|"* ]] && covered=true; done
     [[ "$covered" == true ]] || log "top-level folder neither indexed nor excluded: $folder/"
-  done < <(git ls-files | grep / | cut -d/ -f1 | sort -u)
+  done < <(printf '%s\n' "${!folders[@]}" | sort)
 
-  # Every README link into an index dir must point at an existing tracked file.
-  while IFS= read -r target; do
-    [[ -z "$target" ]] && continue
-    case "$target" in
-      http://*|https://*|mailto:*|\#*) continue ;;
-    esac
-    path="${target%%#*}"
-    for d in "${INDEX_DIRS[@]}"; do
-      if [[ "$path" == "$d/"* ]]; then
-        if ! git ls-files --error-unmatch "$path" >/dev/null 2>&1; then
-          log "README.md indexes a missing file: $path"
-        fi
-      fi
-    done
-  done <<< "$links"
+  # A README link to a file on disk must name a tracked file; check_links reports dead ones.
+  for target in "${links[@]}"; do
+    if [[ -f "$target" && ! -v "TRACKED[$target]" ]]; then
+      log "README.md indexes an untracked file: $target"
+    fi
+  done
 }
 
 # Handbook raw URLs, host and repo written with escaped dots so this file never matches itself.
@@ -226,7 +250,7 @@ check_contracts() {
     path="${path#refs/tags/}"
     path="${path#*/}"
     path="${path%%[.,;:]}"
-    if ! git ls-files --error-unmatch -- "$path" >/dev/null 2>&1; then
+    if [[ -z "$path" || ! -v "TRACKED[$path]" ]]; then
       log "raw URL in $file names an untracked path: $path"
     fi
   done < <(git grep -IoE -e "$RAW_URL_RE" || true)
@@ -287,31 +311,34 @@ check_language() {
 }
 
 check_skills() {
-  local readme=".claude/skills/README.md" links skill dir
+  local readme=".claude/skills/README.md" target skill dir
+  local -a links=() skills=()
+  local -A linked=()
   # Skill directories the index links (form `](name/)`, trailing slash stripped).
-  links="$(strip_code < "$readme" \
-    | grep -oE '\]\([a-z0-9-]+/\)' \
-    | sed -E 's#^\]\(##; s#/\)$##')"
+  while IFS= read -r target; do
+    [[ "$target" =~ ^[a-z0-9-]+/$ ]] || continue
+    links+=("${target%/}")
+    linked[${target%/}]=1
+  done < <(md_links "$readme")
+  mapfile -t skills < <(tracked '.claude/skills/*/SKILL.md')
 
   # Every directory with a SKILL.md must appear in the skills index.
-  while IFS= read -r skill; do
-    dir="$(basename "$(dirname "$skill")")"
-    if ! grep -qxF "$dir" <<<"$links"; then
-      log "skill not indexed in .claude/skills/README.md: $dir"
-    fi
-  done < <(git ls-files '.claude/skills/*/SKILL.md')
+  for skill in "${skills[@]}"; do
+    dir="${skill%/SKILL.md}"
+    dir="${dir##*/}"
+    [[ -v "linked[$dir]" ]] || log "skill not indexed in .claude/skills/README.md: $dir"
+  done
 
   # Every skill the index links must have a SKILL.md on disk.
-  while IFS= read -r dir; do
-    [[ -z "$dir" ]] && continue
+  for dir in "${links[@]}"; do
     if [[ ! -f ".claude/skills/$dir/SKILL.md" ]]; then
       log ".claude/skills/README.md indexes a missing skill: $dir"
     fi
-  done <<< "$links"
+  done
 
   # Every description stays within the cap in .claude/rules/skills.md.
   local desc len
-  while IFS= read -r skill; do
+  for skill in "${skills[@]}"; do
     desc="$(awk 'NR == 1 && /^---/ { fm = 1; next } fm && /^---/ { exit }
       fm && sub(/^description:[ \t]*/, "") { print; exit }' "$skill")"
     desc="${desc#[\"\']}"
@@ -324,7 +351,7 @@ check_skills() {
     if (( len > SKILL_MAX_DESC )); then
       log "skill description of $len characters (cap $SKILL_MAX_DESC): $skill"
     fi
-  done < <(git ls-files '.claude/skills/*/SKILL.md')
+  done
 }
 
 check_compose() {
@@ -339,7 +366,7 @@ check_compose() {
       log "compose config failed for $file"
       docker compose -f "$file" --env-file templates/.env.example config -q >&2 || true
     fi
-  done < <(git ls-files 'templates/docker-compose*.yml')
+  done < <(tracked 'templates/docker-compose*.yml')
 }
 
 check_history() {
