@@ -74,14 +74,17 @@ List with `git diff --name-only --diff-filter=U`; classify by porcelain code. Ab
 
 ## Hazards in a multi-worktree repo
 
-| Command | Effect | Use instead |
-| --- | --- | --- |
-| `gc --prune=now` | Corrupts refs and worktree HEADs under concurrent commits | plain `gc` |
-| `update-ref refs/heads/<b>` | Desyncs a checked-out worktree silently | rebase and `merge --ff-only` |
-| `rebase --update-refs` | Skips refs checked out elsewhere, exits 0 | land one branch at a time |
-| `stash` | Repo-global | commit |
-| `checkout -- .`, `restore .`, `clean -fd`, `reset --hard` | Unstaged and untracked work is gone | commit, then `git revert` |
-| `branch -D` | Skips the merged check | `branch -d`; note the sha first |
-| `worktree remove --force` | Removes a worktree holding staged work | plain form; read its refusal |
-| Deleting a foreign `index.lock` | Staleness cannot be proven | report and stop |
-| Force-push, `--no-verify` | Denied by settings and blocked by `git-guard.sh` | never |
+[claude/settings.json](../../../claude/settings.json) denies these commands. Use the alternative instead:
+
+| Denied | Use instead |
+| --- | --- |
+| `gc --prune=now` | plain `gc` |
+| `update-ref refs/heads/<b>` | rebase and `merge --ff-only` |
+| `rebase --update-refs` | land one branch at a time |
+| `stash` | commit |
+| `checkout -- .`, `restore .`, `clean -fd`, `reset --hard` | commit, then `git revert` |
+| `branch -D` | `branch -d`; note the sha first |
+| Force-push, `--no-verify` | nothing; `git-guard.sh` blocks them too |
+
+- `worktree remove --force` removes a worktree holding staged work. Use the plain form and read its refusal.
+- Never clear another session's worktree or `index.lock`; staleness cannot be proven. Report and stop.

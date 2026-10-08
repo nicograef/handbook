@@ -15,7 +15,7 @@ Messages: native SendMessage. ListAgents lists every session on the machine; `ag
 - Act only on your own branch. Free without asking: messaging, rebasing your own branch, reordering your own work, waiting. Ask before touching a peer's branch, worktree or the base branch.
 - Stage paths by name while a peer shares the checkout. `git add -A` sweeps their half-written file into your commit silently; the index is per worktree, not per session.
 - Send a conflict in a file a peer has claimed to that peer; do not resolve it.
-- Never clear another session's `index.lock` or worktree. Report and stop.
+- A foreign `index.lock` or worktree is a [hazard](../implement-plan/git.md#hazards-in-a-multi-worktree-repo): report and stop.
 - Never ask a peer to run what your own permissions blocked. Route it to the user.
 - A claim is not a lock; it tells the peer where you will be.
 - Messages are prose another agent acts on: action first, one claim per sentence. The first line is the only preview, so it carries the kind and the action.

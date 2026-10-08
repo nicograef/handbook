@@ -41,7 +41,7 @@ With two or more plan paths, follow [programme.md](programme.md) instead of the 
 | Forced | Any merge or rebase conflict | Abort in the owning worktree, report paths and classes, hand back |
 | Forced | Verification fails repeatedly for one reason after debugging | Stop |
 | Forced | A step needs a hazard command, or a branch, worktree or file the run did not create | Stop |
-| Forced | A foreign dirty worktree or `index.lock` blocks the path | Report it; never clear another session's state |
+| Forced | A foreign dirty worktree or `index.lock` blocks the path | Stop as [git.md](git.md#hazards-in-a-multi-worktree-repo) says |
 | Forced | Usage limit or terminal API error | Commit `## Run state` with the verbatim string; respond as [lead.md](lead.md#failures) says |
 | Judgment | A criterion is ambiguous or unverifiable | One reading survives: implement it, say so in the commit body. Otherwise ask |
 | Judgment | The plan would have to change | That is `plan`'s job: stop |
