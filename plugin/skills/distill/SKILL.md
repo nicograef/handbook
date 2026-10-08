@@ -1,6 +1,6 @@
 ---
 name: distill
-description: Shrinks a repo's prose (Markdown, comments) by re-deriving it from a blank slate and splitting survivors; applies after approval. "verify" fact-checks docs against code, commands and upstream. Triggers: distill, too much documentation, verify docs.
+description: "Shrinks a repo's prose (Markdown, comments) by re-deriving it from a blank slate and splitting survivors; applies after approval. \"verify\" fact-checks docs against code, commands and upstream. Triggers: distill, too much documentation, verify docs."
 argument-hint: "[verify] [path ...] [plan-only | since <ref> | report-only]"
 ---
 

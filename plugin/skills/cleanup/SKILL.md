@@ -1,6 +1,6 @@
 ---
 name: cleanup
-description: Reviews a diff or area for architecture and cross-layer consistency, tags each test Keep/Refactor/Delete/Merge, and checks mobile UX. Applies only picked findings. Triggers: cleanup, test review, architecture review, ux review.
+description: "Reviews a diff or area for architecture and cross-layer consistency, tags each test Keep/Refactor/Delete/Merge, and checks mobile UX. Applies only picked findings. Triggers: cleanup, test review, architecture review, ux review."
 argument-hint: "[paths | staged | last-commit | repo | ux]"
 ---
 

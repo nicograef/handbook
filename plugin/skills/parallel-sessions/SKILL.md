@@ -1,6 +1,6 @@
 ---
 name: parallel-sessions
-description: Coordinates concurrent Claude Code sessions in one repo: finds peers, announces claims, predicts conflicts via the agent bus, messages the owner with SendMessage. Use when another session shares the repo, and before a rebase, fold or landing.
+description: "Coordinates concurrent Claude Code sessions in one repo: finds peers, announces claims, predicts conflicts via the agent bus, messages the owner with SendMessage. Use when another session shares the repo, and before a rebase, fold or landing."
 allowed-tools: Bash(git *), Bash(~/.claude/agent-bus.sh *), SendMessage, ListAgents, Read, Grep, Glob
 ---
 
