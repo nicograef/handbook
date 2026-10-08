@@ -1,11 +1,6 @@
----
-name: verify-docs
-description: Fact-checks committed docs against code, read-only command output and official upstream sources, and against itself. Fixes what it can prove wrong, deletes what is false beyond repair, reports the rest. Run in a fresh session after /distill.
-argument-hint: "[path ...] [since <ref>] [report-only]"
-disable-model-invocation: true
----
+# Verify
 
-# Verify Docs
+The final phase of distill, run as `/distill verify [path ...] [since <ref>] [report-only]`. Back to [SKILL.md](SKILL.md).
 
 Decide whether each documented claim is true. Nothing is settled without an artifact produced this session. That is a file excerpt with `path:line`, the stdout of a command run here, or a fetched URL with its date. Training data is not a source; the failure this prevents is confidently correcting a right line.
 
@@ -16,7 +11,7 @@ Decide whether each documented claim is true. Nothing is settled without an arti
 - The dev machine is not the target host. A local version says nothing about a Debian server or a CI image. Record where output came from; downgrade to UNREACHED for hosts you cannot read.
 - A claim about a template is checked against the template, not the repo's own instance of it.
 - A pinned older version is a decision, not staleness. Check the lockfile or CI config before treating an upstream release as evidence.
-- The distillation's decisions stay closed: no re-arguing kept files, no cutting for wordiness. Only truth is on the table. Generated docs are fixed at the generator.
+- The distill decisions stay closed: no re-arguing kept files, no cutting for wordiness. Only truth is on the table. Generated docs are fixed at the generator.
 - Default scope is the whole corpus; `since <ref>` is an opt-in narrowing. A surviving paragraph can be wrong today because its surroundings changed.
 
 ## Workflow

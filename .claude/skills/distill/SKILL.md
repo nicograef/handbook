@@ -1,13 +1,15 @@
 ---
 name: distill
-description: Radically shrinks a repo's prose (Markdown, READMEs, code and config comments) by re-deriving it from a blank slate, then splits survivors into small files. Plans first, applies only after approval. Triggers: distill, too much documentation.
-argument-hint: "[path ...] [plan-only]"
+description: Shrinks a repo's prose (Markdown, comments) by re-deriving it from a blank slate and splitting survivors; applies after approval. "verify" fact-checks docs against code, commands and upstream. Triggers: distill, too much documentation, verify docs.
+argument-hint: "[verify] [path ...] [plan-only | since <ref> | report-only]"
 disable-model-invocation: true
 ---
 
 # Distill
 
 Keep only what a reader cannot get anywhere else. Ask of every line: *if this repo had no docs, would I write this line today?* Keep is the exception that needs an argument.
+
+With `verify` as the first argument, follow [verify.md](verify.md) instead of the workflow below. It fact-checks committed docs against code, read-only commands and upstream sources. It is the final phase after a distill and also runs alone.
 
 ## Hard rules
 
@@ -40,7 +42,7 @@ Keep only what a reader cannot get anywhere else. Ask of every line: *if this re
 6. Present the budget (`3,180 → 1,240 lines (-61%)`, files deleted, split, merged) and the roughly ten major changes. Major: whole-file deletes, splits, merges, anything touching an entry point. Then every conflict and every FLAG. Ask for approval as a multi-select grouped by disposition; approving nothing is valid.
 7. Apply in order: TRIM and GUT, `git rm` for DELETE, MERGE then SPLIT, indexes and inbound links last. Fan out stages 1–3 over a disjoint file partition. The lead owns indexes, entry points and any file receiving merged content.
 8. Verify: `grep -r` every deleted or renamed name and fix each hit. Re-read every index against disk, run the repo's checks (`make check`), re-read the largest survivor end to end. A file that is only a list of links means the split went too far; merge back. Report real before/after counts from `wc -l`.
-9. Commit as `docs: distill <scope>` with every FLAG in the body as `file:line`; the commit message is what the next session inherits. Name `/verify-docs` in a fresh session as the next step. This skill decided what to keep, not whether it is true, and a session cannot audit its own output.
+9. Commit as `docs: distill <scope>` with every FLAG in the body as `file:line`; the commit message is what the next session inherits. Name `/distill verify` in a fresh session as the final phase. This run decided what to keep, not whether it is true, and a session cannot audit its own output.
 
 ## What dies
 

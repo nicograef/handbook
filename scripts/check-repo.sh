@@ -53,7 +53,7 @@ HISTORY_RE='\b(previously|formerly|deprecated|no longer|(?<!is )(?<!are )(?<!be 
 HISTORY_ALLOW=(
   "claude/CLAUDE.md|previously|the current-state rule names the banned word"
   ".claude/skills/distill/SKILL.md|previously|the skill names the word as residue to cut"
-  ".claude/skills/verify-docs/SKILL.md|deprecated|upstream deprecations are a claim class to check"
+  ".claude/skills/distill/verify.md|deprecated|upstream deprecations are a claim class to check"
 )
 
 # Prose caps enforced by check_prose; stated in AGENTS.md and claude/CLAUDE.md.
