@@ -158,6 +158,10 @@
     "command": "bash \"$HOME/.claude/statusline.sh\"",
     "refreshInterval": 30
   },
+  "enabledPlugins": {
+    "playwright@claude-plugins-official": true,
+    "handbook@handbook": true
+  },
   "extraKnownMarketplaces": {
     "handbook": {
       "source": {
@@ -165,10 +169,6 @@
         "path": "/home/nico/r/handbook/plugin"
       }
     }
-  },
-  "enabledPlugins": {
-    "playwright@claude-plugins-official": true,
-    "handbook@handbook": true
   },
   "outputStyle": "Proactive",
   "feedbackDrafts": "off",
