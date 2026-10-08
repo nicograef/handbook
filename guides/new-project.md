@@ -91,11 +91,10 @@ A React repository skips [Copy the production files](#copy-the-production-files)
 
 ## Set up the toolchain
 
-1. Pin Node and pnpm, then add the frontend checks the [Node/TypeScript](../reference/stack-conventions.md#nodetypescript) conventions name. Expected: `pnpm --dir frontend test` passes.
+1. Pin Node and pnpm, then add the frontend checks: run the [Package scripts](../reference/stack-conventions.md#package-scripts) block where the comment marks it. Expected: `pnpm --dir frontend test` passes.
    ```bash
    echo <node-major> > frontend/.node-version && cd frontend && npm pkg set packageManager="pnpm@$(pnpm --version)"
-   pnpm add -D typescript@~7.0 oxlint-tsgolint prettier vitest     # writes pnpm-lock.yaml
-   npm pkg set scripts.format="prettier --write ." "scripts.format:check=prettier --check ." scripts.lint="oxlint --type-aware --deny-warnings" scripts.typecheck="tsc -b" scripts.test="vitest run"
+   # run the Package scripts block from stack-conventions.md here
    printf 'pnpm-lock.yaml\n' > .prettierignore     # pnpm owns the lockfile format
    printf "import { expect, test } from 'vitest'\nimport App from './App'\n\ntest('App is a component', () => {\n  expect(typeof App).toBe('function')\n})\n" > src/App.test.tsx && pnpm run format && cd ..
    ```

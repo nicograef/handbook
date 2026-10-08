@@ -51,16 +51,15 @@ fails instead of re-resolving.
 
 Test with Vitest: it runs TypeScript without a build step.
 
-Every package carries these scripts; the Makefile and CI call them by name:
+### Package scripts
 
-| Script | Command |
-| ------ | ------- |
-| `format` | `prettier --write .` |
-| `format:check` | `prettier --check .` |
-| `lint` | `oxlint --type-aware --deny-warnings` |
-| `typecheck` | `tsc -b` |
-| `test` | `vitest run`: plain `vitest` watches and never exits |
-| `build` | `tsc -b && vite build`, as create-vite writes it |
+Every package carries these dev tools and scripts; the Makefile and CI call the scripts by name.
+`test` runs `vitest run`: plain `vitest` watches and never exits. `build` stays `tsc -b && vite build`, as create-vite writes it.
+
+```bash
+pnpm add -D typescript@~7.0 oxlint-tsgolint prettier vitest     # writes pnpm-lock.yaml
+npm pkg set scripts.format="prettier --write ." "scripts.format:check=prettier --check ." scripts.lint="oxlint --type-aware --deny-warnings" scripts.typecheck="tsc -b" scripts.test="vitest run"
+```
 
 ## React
 
