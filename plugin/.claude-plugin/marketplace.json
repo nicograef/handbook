@@ -1,5 +1,6 @@
 {
   "name": "handbook",
+  "description": "Local marketplace that serves the handbook plugin from this clone",
   "owner": {
     "name": "nicograef"
   },
