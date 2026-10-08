@@ -18,7 +18,7 @@ With `verify` as the first argument, follow [verify.md](verify.md) instead of th
 - Deleting what you failed to understand is how this skill causes damage. A claim you cannot verify this session is FLAG, not DELETE.
 - Agent instruction surfaces (`AGENTS.md`, `CLAUDE.md`, `.claude/rules/*`, `.claude/agents/*`) read as restating the obvious because that is their job. Delete from them only with per-file confirmation.
 - Legal and compliance text stays. Generated docs are fixed at the generator. Code stays; only comments and docstrings are in scope.
-- Code quality is `/simplify`; agent state is `/prog`.
+- Code quality is `/simplify`; agent state is `/handbook:prog`.
 
 ## Workflow
 
@@ -41,7 +41,7 @@ With `verify` as the first argument, follow [verify.md](verify.md) instead of th
 6. Present the budget (`3,180 → 1,240 lines (-61%)`, files deleted, split, merged) and the roughly ten major changes. Major: whole-file deletes, splits, merges, anything touching an entry point. Then every conflict and every FLAG. Ask for approval as a multi-select grouped by disposition; approving nothing is valid.
 7. Apply in order: TRIM and GUT, `git rm` for DELETE, MERGE then SPLIT, indexes and inbound links last. Fan out stages 1–3 over a disjoint file partition. The lead owns indexes, entry points and any file receiving merged content.
 8. Verify: `grep -r` every deleted or renamed name and fix each hit. Re-read every index against disk, run the repo's checks (`make check`), re-read the largest survivor end to end. A file that is only a list of links means the split went too far; merge back. Report real before/after counts from `wc -l`.
-9. Commit as `docs: distill <scope>` with every FLAG in the body as `file:line`; the commit message is what the next session inherits. Name `/distill verify` in a fresh session as the final phase. This run decided what to keep, not whether it is true, and a session cannot audit its own output.
+9. Commit as `docs: distill <scope>` with every FLAG in the body as `file:line`; the commit message is what the next session inherits. Name `/handbook:distill verify` in a fresh session as the final phase. This run decided what to keep, not whether it is true, and a session cannot audit its own output.
 
 ## What dies
 

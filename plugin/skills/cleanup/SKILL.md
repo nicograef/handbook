@@ -6,7 +6,7 @@ argument-hint: "[paths | staged | last-commit | repo | ux]"
 
 # Cleanup
 
-Arguments: `$ARGUMENTS`. Report first, change nothing until the user picks. Behaviour stays identical before and after every applied fix. Readability and code slop belong to `/simplify`, prose and doc residue to `/distill`.
+Arguments: `$ARGUMENTS`. Report first, change nothing until the user picks. Behaviour stays identical before and after every applied fix. Readability and code slop belong to `/simplify`, prose and doc residue to `/handbook:distill`.
 
 ## Scope
 

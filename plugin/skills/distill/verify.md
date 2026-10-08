@@ -1,6 +1,6 @@
 # Verify
 
-The final phase of distill, run as `/distill verify [path ...] [since <ref>] [report-only]`. Back to [SKILL.md](SKILL.md).
+The final phase of distill, run as `/handbook:distill verify [path ...] [since <ref>] [report-only]`. Back to [SKILL.md](SKILL.md).
 
 Decide whether each documented claim is true. Nothing is settled without an artifact produced this session. That is a file excerpt with `path:line`, the stdout of a command run here, or a fetched URL with its date. Training data is not a source; the failure this prevents is confidently correcting a right line.
 
