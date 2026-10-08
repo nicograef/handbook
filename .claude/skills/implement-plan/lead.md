@@ -1,6 +1,6 @@
 # Lead mechanics
 
-This file serves an implement-plan run and a programme alike. The run's status file is the plan file of an implement-plan run, or `docs/plans/programme.md` of a programme. Git command sequences live in [git.md](git.md).
+This file serves a single-plan run and a [programme](programme.md) alike. The run's status file is the plan file of a single-plan run, or `docs/plans/programme.md` of a programme. Git command sequences live in [git.md](git.md).
 
 ## Lead upkeep
 

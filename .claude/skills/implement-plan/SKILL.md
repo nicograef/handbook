@@ -1,7 +1,7 @@
 ---
 name: implement-plan
-description: Executes a docs/plans plan end to end with no human turn between phases: run worktree, commit per acceptance criterion, verified ticks, fold, land. Also resumes a stopped run. Use when the user wants a whole plan implemented or picked back up.
-argument-hint: "<path to plan file>"
+description: Executes a docs/plans plan end to end with no human turn between phases: run worktree, commit per criterion, verified ticks, fold, land. Two or more plans run as a programme of parallel lanes. Use to implement or resume whole plans.
+argument-hint: "<plan path> [<plan path> ...]"
 ---
 
 # Implement Plan
@@ -9,6 +9,8 @@ argument-hint: "<path to plan file>"
 Progress is durable only once committed and ticked. The run owns the turn: no human turn between phases, folds and landing. Claim the run for the Stop hook with `~/.claude/plan-run-guard.sh claim <slug>` once the run branch exists, and again on every pickup. An unclaimed run nudges every session in the repo.
 
 Open [lead.md](lead.md) before the first dispatch, on a stop and before landing.
+
+With two or more plan paths, follow [programme.md](programme.md) instead of the workflow below. It intersects the plans into waves and lanes, one agent and worktree per lane.
 
 ## Gotchas
 
