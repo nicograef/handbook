@@ -40,11 +40,6 @@ LANG_ALLOW=(
   "guides/neovim.md"
 )
 
-# Files exempt from the paragraph cap only — the sentence cap still applies to them.
-PARA_ALLOW=(
-  ".claude/skills/audiobook/writing.md"
-)
-
 # History words check_history flags in prose; the rule is "current state only" in claude/CLAUDE.md.
 # A passive "is used to" describes a purpose, not a past, so the lookbehinds skip it.
 HISTORY_RE='\b(previously|formerly|deprecated|no longer|(?<!is )(?<!are )(?<!be )(?<!been )(?<!being )used to)\b'
@@ -512,15 +507,10 @@ prose_scan() {
 }
 
 check_prose() {
-  local file allow violation para_exempt
+  local file violation
   while IFS= read -r file; do
-    para_exempt=false
-    for allow in "${PARA_ALLOW[@]}"; do
-      [[ "$file" == "$allow" ]] && para_exempt=true
-    done
     while IFS= read -r violation; do
       [[ -z "$violation" ]] && continue
-      [[ "$para_exempt" == true && "$violation" == *"paragraph of"* ]] && continue
       log "prose: $violation"
     done < <(prose_scan "$file")
   done < <(prose_md)
