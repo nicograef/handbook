@@ -32,9 +32,10 @@ Docker-published ports bypass UFW, so only the reverse proxy publishes ports ([D
 ## Resource usage
 
 Monthly thresholds and fixes: [maintenance.md](../guides/maintenance.md#verify).
+`iostat` and `sar` come with sysstat, installed per [host-history.md](../guides/host-history.md#record-every-minute).
 
 ```bash
-sudo apt install btop ncdu sysstat   # add-ons for the live view, ncdu, iostat and sar; the rest ships with Ubuntu
+sudo apt install btop ncdu   # add-ons for the live view and ncdu; the rest ships with Ubuntu
 ```
 
 | Resource          | Command                        | Read                        | Act when                          |
