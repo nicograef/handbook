@@ -142,8 +142,6 @@ Committed work survives every stop; the session does not. The messages are liste
 | Symptom | Recovery |
 | --- | --- |
 | `You've hit your session limit` or `weekly limit`, session still open | [Wait out the limit](#let-an-open-session-wait-out-a-usage-limit) |
-| A limit stopped a `--bg` or `-p` run, or the reset is over 24 hours away | At the reset, [resume from the last commit](../.claude/skills/implement-plan/git.md#pickup). An open interactive session that armed its [hourly recovery job](../.claude/skills/implement-plan/lead.md#lead-upkeep) resumes on its own |
 | `Repeated 529 Overloaded errors` or `Request rejected (429)` ended the run | Restart it with `CLAUDE_CODE_RETRY_WATCHDOG=1`, then [resume from the last commit](../.claude/skills/implement-plan/git.md#pickup) |
-| `Agent terminated early due to an API error` | [Respond per error kind](../.claude/skills/implement-plan/lead.md#failures): the work restarts from its branch's last commit |
-| `API Error: 500` mid-response | The output may be partial; [respond per error kind](../.claude/skills/implement-plan/lead.md#failures) |
 | The run stalled on a denial | Read `~/.claude/denials.log`; add an allow rule or an `autoMode.environment` entry |
+| Any other limit or API error stopped the run | [Respond per error kind](../.claude/skills/implement-plan/lead.md#failures), then [resume from the last commit](../.claude/skills/implement-plan/git.md#pickup) |
