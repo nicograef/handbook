@@ -56,16 +56,15 @@ Budget verification by blast radius. Set a tier per phase or lane before dispatc
 | --- | --- | --- |
 | Gate | redoable work | the gate plus one batched review |
 | Probe | work whose rerun is paid or slow | one probe before the full run |
-| Read | irreversible work: spend, overwrite, publish, production migration | probes plus the owner's read; spend skips the read where the project's AGENTS.md approves it |
+| Read | irreversible work | the [global irreversible-work rule](../../../claude/CLAUDE.md#models-and-subagents) |
 
 - The gate runs once, where the change is, and again only after a fold, a rebase or an unseen edit.
-- The rules for irreversible work, reviews and model switches bind every session: [global CLAUDE.md](../../../claude/CLAUDE.md#models-and-subagents).
-- Review a finished phase or lane once, over its whole diff, on `opus`.
+- The model per work kind and the rules for reviews and model switches are [global](../../../claude/CLAUDE.md#models-and-subagents). Gate agents run at low effort.
+- Review a finished phase or lane once, over its whole diff.
 - A diff touching auth, input handling, shell, SQL or dependency manifests adds a `/security-review` pass.
-- Review workflows: finders on `opus`, one per lens, few.
-- Verifying a finding is a fully specified check (claim, evidence, command) and runs on `sonnet`.
-- One verifier per critical or major finding. Minor and cleanup findings go unverified to the fixer.
-- The fixer holds each finding against the code before applying it. It runs on `opus`, the gate on `sonnet` at low effort.
+- Review workflows: finders one per lens, few.
+- One verifier per critical or major finding, each a fully specified check: claim, evidence, command. Minor and cleanup findings go unverified to the fixer.
+- The fixer holds each finding against the code before applying it.
 - Verify agents never exceed three times the finders. Beyond that, verify by severity and batch the rest ten per agent.
 - More votes per finding only on the owner's instruction for that run.
 

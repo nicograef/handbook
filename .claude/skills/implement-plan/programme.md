@@ -38,7 +38,7 @@ Cut waves by file ownership: a phase waits only for phases it depends on. Lanes 
 5. Arm the [lead jobs](lead.md#lead-upkeep). Spawn one `general-purpose` agent per lane on `opus` in one message. The whole prompt is: read common.md, read the brief, do the work, return the report. Announce the lanes on the bus with paths and ports.
 6. When a lane reports, review it as [lead.md](lead.md#verification-budget) says. Confirmed findings go back to the lane's own agent, as [lead.md](lead.md#dispatch) says.
 7. Land in the wave's order as [lead.md](lead.md#landing) says. The gate runs detached, against the lane's own store, under the host-wide lock. A rebase that brings a lower migration number re-initialises the lane's store. Flip the lane's status rows with the landed sha and the migration numbers taken, and stop its store. A lane that waits for another is created from the new base at that landing, with its own brief.
-8. A spend leg follows the [global spend rule](../../../claude/CLAUDE.md#models-and-subagents). It waits for the owner's read unless the project's AGENTS.md approves spend. A diff the owner must read stays in its own commit until read.
+8. A spend leg follows the [global irreversible-work rule](../../../claude/CLAUDE.md#models-and-subagents). A diff the owner must read stays in its own commit until read.
 9. After the wave: every lane's worktree, branch and store gone. Delete both jobs after the last wave. Run `prog compact` before the next wave so the next session starts from a resume file.
 
 ## Lane briefs

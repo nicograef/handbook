@@ -34,17 +34,16 @@ Lead with the answer or the problem. Sentences ≤ 20 words, one claim each. Par
 - Debugging: name the root cause before the fix, and change one thing at a time. After two failed fixes, question the design instead of trying a third patch.
 - Review feedback: verify each item against the code before implementing it. Push back with the specific reason when a suggestion is wrong. Reply to inline PR comments in their thread.
 - A finished branch: run the tests, then offer merge, PR, keep or discard. Delete a branch only after merge or discard.
-- Isolated work lives in `../<repo>-wt/<branch>`, via the project's worktree target where it has one (gyva: `make worktree`), else `git worktree add`. A sibling directory keeps linters that walk `.` out of the lanes.
+- Isolated work lives in `../<repo>-wt/<branch>`, via the project's worktree target where it has one, else `git worktree add`. A sibling directory keeps linters that walk `.` out of the lanes.
 - Other sessions may share the repo. `~/.claude/agent-bus.sh peers` lists them; with a peer present, follow the parallel-sessions skill.
-- Message another session with native SendMessage, addressed by the name ListAgents shows.
 - No autonomous outbound actions: no emails, posts or external submissions; drafts stay drafts. Committing and pushing are exempt.
 - Add an integration test only where a unit test cannot cover the boundary, and keep it fast.
 
 ## Models and subagents
 
 - Subagents: `sonnet` for mechanical, fully specified work (search, rename, format, doc sweep, checking a named finding). `opus` for implementation, review, debugging and synthesis. Set `model` explicitly, reviewers included.
-- A session with background agents, a workflow or lanes is a lead. It arms the check-in and recovery jobs before dispatching and reads [lead.md](../.claude/skills/implement-plan/lead.md).
+- A session with background agents, a workflow or lanes is a lead and reads [lead.md](../.claude/skills/implement-plan/lead.md).
 - Irreversible work (spend, overwrite, publish, production migration) gets probes and my read. Spend needs no read where the project's `AGENTS.md` approves it. A review finds and synthesises, never re-checking a stated finding. No session switches its own model.
 - A subagent prompt is self-contained: scope, pasted errors and paths, the rules that apply, the return format. File ownership is explicit, so no two agents write one file. Act on each result as it lands.
-- External facts about companies, tools or markets go through the web-researcher agent. Every such claim carries a source and a date.
+- External facts about companies, tools or markets go through the web-researcher agent.
 - Memory holds current state: an event is rewritten as its residue, in present tense.
