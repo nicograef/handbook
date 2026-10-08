@@ -13,20 +13,10 @@
 
 set -euo pipefail
 
-REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+# shellcheck source=scripts/lib/test-harness.sh
+. "$(dirname "${BASH_SOURCE[0]}")/lib/test-harness.sh"
+
 GUARD="$REPO_ROOT/scripts/git-guard.sh"
-
-GREEN='\033[0;32m'
-RED='\033[0;31m'
-NC='\033[0m'
-
-log() { echo -e "${GREEN}[INFO]${NC}  $*"; }
-
-FAILED=0
-fail() { echo -e "${RED}[FAIL]${NC}  $*" >&2; FAILED=1; }
-
-FIX="$(mktemp -d)"
-trap 'rm -rf "$FIX"' EXIT
 
 WORK="$FIX/work"
 mkdir -p "$WORK/sub" "$FIX/other" "$FIX/my repo" "$FIX/bin"
@@ -201,9 +191,4 @@ rc=0
 printf 'git push -f' | bash "$GUARD" 2> /dev/null || rc=$?
 if [[ "$rc" -eq 2 ]]; then log "raw payload -> block"; else fail "raw payload: expected exit 2, got $rc"; fi
 
-if [[ "$FAILED" -eq 0 ]]; then
-  log "all git-guard checks passed"
-else
-  echo -e "${RED}[FAIL]${NC}  git-guard test failed" >&2
-  exit 1
-fi
+finish

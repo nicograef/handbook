@@ -19,20 +19,16 @@ set -euo pipefail
 # The calling session's id would make every hook case act as that session.
 unset CLAUDE_CODE_SESSION_ID AGENT_BUS_SESSION_ID
 
-BUS_SCRIPT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/agent-bus.sh"
-TMP="$(mktemp -d)"
+# shellcheck source=scripts/lib/test-harness.sh
+. "$(dirname "${BASH_SOURCE[0]}")/lib/test-harness.sh"
+
+BUS_SCRIPT="$REPO_ROOT/scripts/agent-bus.sh"
 FAKE_PID=""
 cleanup() {
-  [[ -n "$FAKE_PID" ]] && kill "$FAKE_PID" 2>/dev/null
-  rm -rf "$TMP"
+  [[ -z "$FAKE_PID" ]] || kill "$FAKE_PID" 2>/dev/null || true
 }
-trap cleanup EXIT
 
 PASS=0
-FAILED=0
-
-log() { printf '\033[1;34m▸ %s\033[0m\n' "$*"; }
-fail() { printf '\033[1;31mFAIL: %s\033[0m\n' "$*" >&2; FAILED=1; }
 
 # ok asserts that output $2 contains substring $3. $1 names the case.
 ok() {
@@ -64,15 +60,15 @@ quiet() {
 # ── Fixture ─────────────────────────────────────────────────────────────────
 
 # A process agent-bus.sh will accept as a live session.
-mkdir -p "$TMP/bin"
-printf '#!/usr/bin/env bash\nsleep 600\n' > "$TMP/bin/claude"
-chmod +x "$TMP/bin/claude"
+mkdir -p "$FIX/bin"
+printf '#!/usr/bin/env bash\nsleep 600\n' > "$FIX/bin/claude"
+chmod +x "$FIX/bin/claude"
 # Detach its stdio: a background child holding the pipe open makes any caller
 # that pipes this script's output block until the child exits.
-"$TMP/bin/claude" >/dev/null 2>&1 &
+"$FIX/bin/claude" >/dev/null 2>&1 &
 FAKE_PID=$!
 
-REPO="$TMP/repo"
+REPO="$FIX/repo"
 mkdir -p "$REPO"
 cd "$REPO"
 git init -q -b main .
@@ -148,7 +144,7 @@ quiet "empty stdin"    bash -c "printf '' | '$BUS_SCRIPT' hook session-start"
 quiet "missing cwd"    bash -c "printf '{\"session_id\":\"x\",\"cwd\":\"/no/such/dir\"}' | '$BUS_SCRIPT' hook session-start"
 quiet "no session id"  bash -c "printf '{\"cwd\":\"$REPO\"}' | '$BUS_SCRIPT' hook session-start"
 quiet "unknown event"  bash -c "printf '{}' | '$BUS_SCRIPT' hook nonsense"
-quiet "outside a repo" bash -c "printf '{\"session_id\":\"x\",\"cwd\":\"$TMP\"}' | '$BUS_SCRIPT' hook session-start"
+quiet "outside a repo" bash -c "printf '{\"session_id\":\"x\",\"cwd\":\"$FIX\"}' | '$BUS_SCRIPT' hook session-start"
 
 log "events without a body stay silent for a live peer"
 quiet "stop event"               bash -c "printf '%s' '$(hookjson "$B")' | '$BUS_SCRIPT' hook stop"
@@ -166,8 +162,5 @@ if [[ -f "$BUS/peers/$A.json" ]]; then PASS=$((PASS + 1)); else fail "live entry
 
 # ── Result ──────────────────────────────────────────────────────────────────
 
-if [[ "$FAILED" -ne 0 ]]; then
-  printf '\033[1;31mtest-agent-bus: FAILED (%d assertions passed)\033[0m\n' "$PASS" >&2
-  exit 1
-fi
-printf '\033[1;32mtest-agent-bus: %d assertions passed\033[0m\n' "$PASS"
+log "$PASS assertions passed"
+finish

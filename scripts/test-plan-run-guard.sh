@@ -12,20 +12,10 @@
 
 set -euo pipefail
 
-REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+# shellcheck source=scripts/lib/test-harness.sh
+. "$(dirname "${BASH_SOURCE[0]}")/lib/test-harness.sh"
+
 GUARD="$REPO_ROOT/scripts/plan-run-guard.sh"
-
-GREEN='\033[0;32m'
-RED='\033[0;31m'
-NC='\033[0m'
-
-log() { echo -e "${GREEN}[INFO]${NC}  $*"; }
-
-FAILED=0
-fail() { echo -e "${RED}[FAIL]${NC}  $*" >&2; FAILED=1; }
-
-FIX="$(mktemp -d)"
-trap 'rm -rf "$FIX"' EXIT
 # An empty config dir, so the guard never reads the real session transcripts.
 export CLAUDE_CONFIG_DIR="$FIX/config"
 
@@ -220,9 +210,4 @@ else
   log "claim without a slug -> refused"
 fi
 
-if [[ "$FAILED" -eq 0 ]]; then
-  log "all plan-run-guard checks passed"
-else
-  echo -e "${RED}[FAIL]${NC}  plan-run-guard test failed" >&2
-  exit 1
-fi
+finish

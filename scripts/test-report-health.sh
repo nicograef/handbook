@@ -13,20 +13,10 @@
 
 set -euo pipefail
 
-REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+# shellcheck source=scripts/lib/test-harness.sh
+. "$(dirname "${BASH_SOURCE[0]}")/lib/test-harness.sh"
+
 SCRIPT="$REPO_ROOT/scripts/report-health.sh"
-
-GREEN='\033[0;32m'
-RED='\033[0;31m'
-NC='\033[0m'
-
-log() { echo -e "${GREEN}[INFO]${NC}  $*"; }
-
-FAILED=0
-fail() { echo -e "${RED}[FAIL]${NC}  $*" >&2; FAILED=1; }
-
-FIX="$(mktemp -d)"
-trap 'rm -rf "$FIX"' EXIT
 mkdir -p "$FIX/bin"
 
 CALLS="$FIX/curl-calls"
@@ -248,9 +238,4 @@ for args in "--bogus" "--check-only extra"; do
   expect_no_ping 2 "argument '$args'"
 done
 
-if [[ "$FAILED" -eq 0 ]]; then
-  log "all report-health checks passed"
-else
-  echo -e "${RED}[FAIL]${NC}  report-health test failed" >&2
-  exit 1
-fi
+finish

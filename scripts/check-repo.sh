@@ -175,8 +175,8 @@ check_lint() {
     [[ -e "$script" ]] && scripts+=("$script")
   done < <(tracked 'scripts/*.sh' 'install.sh' 'claude/*.sh' 'templates/*.sh' \
                     'dotfiles/.bash_aliases' '.claude/skills/*/*.sh')
-  # One file per process, so each report reaches the pipe in one write.
-  if ! out="$(printf '%s\0' "${scripts[@]}" | xargs -0 -n1 -P"$(nproc)" shellcheck 2>&1)"; then
+  # One file per process, so each report reaches the pipe in one write; -x follows scripts/lib.
+  if ! out="$(printf '%s\0' "${scripts[@]}" | xargs -0 -n1 -P"$(nproc)" shellcheck -x 2>&1)"; then
     log "shellcheck failed"
     printf '%s\n' "$out" >&2
   fi
