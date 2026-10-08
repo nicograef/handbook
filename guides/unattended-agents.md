@@ -73,7 +73,8 @@ Expected: `devcontainer up --workspace-folder .` builds the container without er
 
 - The volume keeps the login and the bypass acceptance across rebuilds; `CLAUDE_CONFIG_DIR` puts `.claude.json` in it too.
 - The settings and the plugin stay read-only in the container; `--settings` loads the settings on every start.
-- The plugin mounts at its host path, the marketplace path the settings name. Its hooks run the git guard.
+- The plugin mounts at its host path, the marketplace path the settings name.
+- The plugin's PreToolUse hook blocks every Bash command while its git guard is missing or failing.
 
 ## Start the run in the container
 

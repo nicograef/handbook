@@ -10,6 +10,7 @@
 #      the paths git diff shows there.
 #   2. Feeds synthetic PreToolUse payloads and asserts block (exit 2) vs allow.
 #   3. Asserts which repo and which diff each commit scan covers.
+#   4. Runs the plugin hook command against a missing and a crashing guard; both block.
 
 set -euo pipefail
 
@@ -190,5 +191,22 @@ fi
 rc=0
 printf 'git push -f' | bash "$GUARD" 2> /dev/null || rc=$?
 if [[ "$rc" -eq 2 ]]; then log "raw payload -> block"; else fail "raw payload: expected exit 2, got $rc"; fi
+
+# 11. The plugin hook wrapper fails closed: a missing or crashing guard blocks.
+HOOK="$(jq -r '.hooks.PreToolUse[0].hooks[0].command' "$REPO_ROOT/plugin/hooks/hooks.json")"
+mkdir -p "$FIX/root-empty" "$FIX/root-crash/scripts"
+printf '#!/usr/bin/env bash\nexit 1\n' > "$FIX/root-crash/scripts/git-guard.sh"
+chmod +x "$FIX/root-crash/scripts/git-guard.sh"
+wrap() { # wrap <expected rc> <label> <plugin root> <command>
+  rc=0
+  jq -n --arg c "$4" --arg d "$WORK" '{tool_input: {command: $c}, cwd: $d}' |
+    CLAUDE_PLUGIN_ROOT="$3" bash -c "$HOOK" 2> "$ERR" || rc=$?
+  if [[ "$rc" -eq "$1" ]]; then log "$2 -> exit $1"; else fail "$2: expected exit $1, got $rc: $(cat "$ERR")"; fi
+}
+wrap 0 "hook wrapper, harmless command" "$REPO_ROOT/plugin" 'ls'
+wrap 2 "hook wrapper, force push" "$REPO_ROOT/plugin" 'git push -f'
+wrap 2 "hook wrapper, guard missing" "$FIX/root-empty" 'ls'
+grep -q 'is missing' "$ERR" || fail "guard missing: no reason on stderr: $(cat "$ERR")"
+wrap 2 "hook wrapper, guard crashes" "$FIX/root-crash" 'ls'
 
 finish

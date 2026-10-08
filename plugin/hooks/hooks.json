@@ -1,4 +1,5 @@
 {
+  "description": "Fail closed: a missing or failing git guard blocks the Bash call (exit 2). SessionStart and Stop hooks warn instead (exit 1), since exit 2 on Stop would trap the session.",
   "hooks": {
     "PreToolUse": [
       {
@@ -6,7 +7,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "[ -x \"${CLAUDE_PLUGIN_ROOT}/scripts/git-guard.sh\" ] || exit 0; exec \"${CLAUDE_PLUGIN_ROOT}/scripts/git-guard.sh\""
+            "command": "g=\"${CLAUDE_PLUGIN_ROOT}/scripts/git-guard.sh\"; [ -x \"$g\" ] || { echo \"git-guard: $g is missing or not executable; Bash is blocked until it is back\" >&2; exit 2; }; \"$g\" || exit 2"
           }
         ]
       }
@@ -27,7 +28,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "[ -x \"$HOME/.claude/agent-bus.sh\" ] || exit 0; \"$HOME/.claude/agent-bus.sh\" hook session-start || exit 0"
+            "command": "b=\"$HOME/.claude/agent-bus.sh\"; [ -x \"$b\" ] || { echo \"agent-bus: $b is missing; peers are not listed\" >&2; exit 1; }; exec \"$b\" hook session-start"
           }
         ]
       }
@@ -37,7 +38,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "[ -x \"${CLAUDE_PLUGIN_ROOT}/scripts/plan-run-guard.sh\" ] || exit 0; \"${CLAUDE_PLUGIN_ROOT}/scripts/plan-run-guard.sh\" || exit 0"
+            "command": "g=\"${CLAUDE_PLUGIN_ROOT}/scripts/plan-run-guard.sh\"; [ -x \"$g\" ] || { echo \"plan-run-guard: $g is missing; plan runs are unguarded\" >&2; exit 1; }; exec \"$g\""
           }
         ]
       }
