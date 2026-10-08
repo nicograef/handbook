@@ -7,7 +7,7 @@
 # What it does:
 #   1. Runs the named stage, or every stage for `all` (the default). A stage is a
 #      check_<stage> function; the "## <stage>:" line above it feeds `make help`.
-#   2. Logs each violation and exits non-zero if any stage found one
+#   2. Logs each violation to stderr and exits 1 if any stage found one
 #
 # Idempotent: reads only, never writes.
 
@@ -566,7 +566,4 @@ else
   exit 2
 fi
 
-if [[ "$FAILED" -ne 0 ]]; then
-  exit 2
-fi
-exit 0
+exit "$FAILED"
