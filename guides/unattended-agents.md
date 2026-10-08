@@ -111,17 +111,6 @@ Leave the terminal open. Expected: the bottom line reads `Usage limit reached ·
 - It does not start for `--bg` or `-p` runs, teammate sessions, or a reset more than 24 hours away.
 - The continued turn still asks for permissions as usual.
 
-## Disarm the plan-run guard in a repo
-
-[plugin/scripts/plan-run-guard.sh](../plugin/scripts/plan-run-guard.sh) is a Stop hook. It blocks the stop of the session that claimed `plan/<slug>` while that plan has an unticked criterion.
-To let sessions in one checkout or worktree stop freely, run there:
-
-```bash
-touch "$(git rev-parse --git-dir)/plan-run-guard-off"
-```
-
-Expected: the next stop in that checkout ends the turn without a nudge. Source: [Hooks](https://code.claude.com/docs/en/hooks#stop).
-
 ## Verify
 
 ```bash

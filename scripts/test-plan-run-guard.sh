@@ -9,6 +9,7 @@
 #   2. Gives the run branch and the base branch different copies of the plan,
 #      so a guard reading the wrong one fails the assertion.
 #   3. Feeds synthetic Stop payloads and asserts block vs allow.
+#   4. Runs the implement-plan skill's hook command with and without the guard.
 
 set -euo pipefail
 
@@ -98,13 +99,7 @@ fi
 out="$(run true sessB)"
 if [[ -n "$out" ]]; then fail "stop_hook_active: expected allow, got: $out"; else log "stop_hook_active -> allow"; fi
 
-# 7. The opt-out file disarms the guard.
-touch "$REPO/.git/plan-run-guard-off"
-out="$(run false sessC)"
-if [[ -n "$out" ]]; then fail "opt-out: expected allow, got: $out"; else log "opt-out file -> allow"; fi
-rm "$REPO/.git/plan-run-guard-off"
-
-# 8. Every criterion ticked on the branch means the run is done.
+# 7. Every criterion ticked on the branch means the run is done.
 git -C "$REPO" checkout -q plan/live
 cat > "$REPO/docs/plans/plan-live.md" <<'EOF'
 # Plan: live
@@ -116,7 +111,7 @@ git -C "$REPO" checkout -q main
 out="$(run false sessD)"
 if [[ -n "$out" ]]; then fail "all ticked: expected allow, got: $out"; else log "all criteria ticked -> allow"; fi
 
-# 9. Live background work makes the stop safe — the harness re-invokes on it.
+# 8. Live background work makes the stop safe — the harness re-invokes on it.
 git -C "$REPO" checkout -q plan/live
 cat > "$REPO/docs/plans/plan-live.md" <<'EOF'
 # Plan: live
@@ -141,7 +136,7 @@ else
   log "agent silent past the window -> block"
 fi
 
-# 10. A branch carrying no plan file must not block.
+# 9. A branch carrying no plan file must not block.
 git -C "$REPO" checkout -q plan/live
 cat > "$REPO/docs/plans/plan-live.md" <<'EOF'
 # Plan: live
@@ -154,60 +149,31 @@ git -C "$REPO" branch plan/orphan
 out="$(run false sessE)"
 if [[ -n "$out" ]]; then fail "orphan branch: expected allow, got: $out"; else log "branch without a plan file -> allow"; fi
 
-# 11. A claimed run nudges the session that claimed it and no bystander.
-git -C "$REPO" checkout -q -b plan/owned main
-cat > "$REPO/docs/plans/plan-owned.md" <<'EOF'
-# Plan: owned
-- [ ] Owned criterion
-EOF
-git -C "$REPO" add -A && git -C "$REPO" commit -q -m "owned run"
-git -C "$REPO" checkout -q main
-claim() { # claim <session_id> <slug>
-  (cd "$REPO" && CLAUDE_CODE_SESSION_ID="$1" bash "$GUARD" claim "$2")
+# 10. The skill's hook command warns without blocking when the guard is missing.
+HOOK="$(awk 'NR == 1 && /^---/ { fm = 1; next } fm && /^---/ { exit }
+  fm && sub(/^[ \t]*command:[ \t]*/, "") { print }' "$REPO_ROOT/plugin/skills/implement-plan/SKILL.md" \
+  | sed -E "s/^'(.*)'$/\1/; s/''/'/g")"
+hook() { # hook <plugin root>; sets rc and out
+  rc=0
+  out="$(printf '{"cwd":"%s","stop_hook_active":false,"session_id":"sessHook"}' "$REPO" |
+    CLAUDE_PLUGIN_ROOT="$1" bash -c "$HOOK" 2> "$FIX/stderr")" || rc=$?
 }
-claim sessOwner owned
-out="$(run false sessBystander)"
-if [[ -n "$out" ]]; then fail "bystander of a claimed run: expected allow, got: $out"; else log "claimed run, bystander -> allow"; fi
-out="$(run false sessOwner)"
-if [[ "$(jq -r '.decision' <<< "$out" 2>/dev/null)" != "block" ]]; then
-  fail "owner of a claimed run: expected block, got: $out"
+mkdir -p "$FIX/root-empty"
+hook "$FIX/root-empty"
+if [[ "$rc" -eq 1 && -z "$out" ]] && grep -q 'is missing' "$FIX/stderr"; then
+  log "hook command, guard missing -> warning, no block"
 else
-  log "claimed run, owner -> block"
+  fail "hook command, guard missing: rc $rc, out '$out', stderr: $(cat "$FIX/stderr")"
 fi
-
-# 12. A session that picks the run up claims it, and the nudge moves with the claim.
-claim sessResumer owned
-git -C "$REPO" checkout -q plan/owned
-echo progress >> "$REPO/docs/plans/plan-owned.md"
-git -C "$REPO" add -A && git -C "$REPO" commit -q -m "owned run progress"
+git -C "$REPO" checkout -q -b plan/hooked main
+printf '# Plan: hooked\n- [ ] Hooked criterion\n' > "$REPO/docs/plans/plan-hooked.md"
+git -C "$REPO" add -A && git -C "$REPO" commit -q -m "hooked run"
 git -C "$REPO" checkout -q main
-out="$(run false sessOwner)"
-if [[ -n "$out" ]]; then fail "former owner: expected allow, got: $out"; else log "re-claimed run, former owner -> allow"; fi
-out="$(run false sessResumer)"
-if [[ "$(jq -r '.decision' <<< "$out" 2>/dev/null)" != "block" ]]; then
-  fail "new owner: expected block, got: $out"
+hook "$REPO_ROOT/plugin"
+if [[ "$rc" -eq 0 && "$(jq -r '.decision' <<< "$out" 2>/dev/null)" == "block" ]]; then
+  log "hook command, guard present -> runs it, block"
 else
-  log "re-claimed run, new owner -> block"
-fi
-
-# 13. A claim outlives the day-old marker sweep, and goes when its branch goes.
-touch -d '3 days ago' "$REPO/.git/plan-run-guard/owner-owned"
-out="$(run false sessBystander)"
-if [[ -n "$out" ]]; then fail "old claim: expected allow for a bystander, got: $out"; else log "claim older than the sweep -> still holds"; fi
-git -C "$REPO" branch -q -D plan/owned
-run false sessBystander > /dev/null
-if [[ -e "$REPO/.git/plan-run-guard/owner-owned" ]]; then fail "claim of a deleted branch was kept"; else log "branch gone -> claim gone"; fi
-
-# 14. A claim that names no session or no run is refused.
-if (cd "$REPO" && env -u CLAUDE_CODE_SESSION_ID bash "$GUARD" claim owned) 2>/dev/null; then
-  fail "claim without a session id: expected a refusal"
-else
-  log "claim without a session id -> refused"
-fi
-if (cd "$REPO" && CLAUDE_CODE_SESSION_ID=sessOwner bash "$GUARD" claim) 2>/dev/null; then
-  fail "claim without a slug: expected a refusal"
-else
-  log "claim without a slug -> refused"
+  fail "hook command, guard present: rc $rc, out '$out'"
 fi
 
 finish

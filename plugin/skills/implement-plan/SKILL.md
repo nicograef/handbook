@@ -1,12 +1,17 @@
 ---
 name: implement-plan
-description: Executes a docs/plans plan end to end with no human turn between phases: run worktree, commit per criterion, verified ticks, fold, land. Two or more plans run as a programme of parallel lanes. Use to implement or resume whole plans.
+description: "Executes a docs/plans plan end to end with no human turn between phases: run worktree, commit per criterion, verified ticks, fold, land. Two or more plans run as a programme of parallel lanes. Use to implement or resume whole plans."
 argument-hint: "<plan path> [<plan path> ...]"
+hooks:
+  Stop:
+    - hooks:
+        - type: command
+          command: 'g="${CLAUDE_PLUGIN_ROOT:-/home/nico/r/handbook/plugin}/scripts/plan-run-guard.sh"; [ -x "$g" ] || { echo "plan-run-guard: $g is missing; this plan run is unguarded" >&2; exit 1; }; exec "$g"'
 ---
 
 # Implement Plan
 
-Progress is durable only once committed and ticked. The run owns the turn: no human turn between phases, folds and landing. Claim the run for the Stop hook with `${CLAUDE_PLUGIN_ROOT}/scripts/plan-run-guard.sh claim <slug>` once the run branch exists, and again on every pickup. An unclaimed run nudges every session in the repo.
+Progress is durable only once committed and ticked. The run owns the turn: no human turn between phases, folds and landing. Invoking this skill arms a session-long Stop hook. It blocks a stop once per commit while `plan/<slug>` holds an unticked criterion.
 
 Open [lead.md](lead.md) before the first dispatch, on a stop and before landing.
 

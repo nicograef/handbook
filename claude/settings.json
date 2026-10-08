@@ -81,7 +81,6 @@
       "Bash(git commit:*)",
       "Bash(~/.claude/agent-bus.sh:*)",
       "Bash(~/.claude/check-agents.sh:*)",
-      "Bash(/home/nico/r/handbook/plugin/scripts/plan-run-guard.sh:*)",
       "Bash(/home/nico/r/handbook/plugin/skills/audiobook/md-to-epub.sh:*)",
       "Bash(/home/nico/r/handbook/plugin/skills/audiobook/check-terms.sh:*)",
       "Bash(uv sync:*)",

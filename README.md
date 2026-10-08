@@ -97,11 +97,11 @@ A web app on a fresh server chains Fresh server, Deploy, Monitoring, then Backup
 | [claude/statusline.sh](claude/statusline.sh) | Status line script |
 | [plugin/.claude-plugin/plugin.json](plugin/.claude-plugin/plugin.json) | Manifest of the `handbook` plugin: skills, agent and hooks |
 | [plugin/.claude-plugin/marketplace.json](plugin/.claude-plugin/marketplace.json) | Local marketplace listing the plugin, loaded in place |
-| [plugin/hooks/hooks.json](plugin/hooks/hooks.json) | Plugin hooks: git guard, denial log, peer list at session start, plan-run guard |
+| [plugin/hooks/hooks.json](plugin/hooks/hooks.json) | Plugin hooks: git guard, denial log, peer list at session start |
 | [plugin/skills/](plugin/skills/) | Shared skills, one folder each, described by its frontmatter |
 | [plugin/agents/web-researcher.md](plugin/agents/web-researcher.md) | Web research agent, `handbook:web-researcher` |
 | [plugin/scripts/git-guard.sh](plugin/scripts/git-guard.sh) | PreToolUse hook that blocks force pushes, skipped hooks and commits gitleaks flags |
-| [plugin/scripts/plan-run-guard.sh](plugin/scripts/plan-run-guard.sh) | Stop hook that keeps a live plan run from yielding the turn |
+| [plugin/scripts/plan-run-guard.sh](plugin/scripts/plan-run-guard.sh) | Stop hook the implement-plan skill registers; keeps a live plan run from yielding the turn |
 | [scripts/agent-bus.sh](scripts/agent-bus.sh) | Coordination bus for concurrent Claude Code sessions in one repo |
 | [scripts/check-agents.sh](scripts/check-agents.sh) | Last activity of background agents, read off their task transcripts |
 
