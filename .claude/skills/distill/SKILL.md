@@ -17,7 +17,7 @@ Keep only what a reader cannot get anywhere else. Ask of every line: *if this re
 - Deleting what you failed to understand is how this skill causes damage. A claim you cannot verify this session is FLAG, not DELETE.
 - Agent instruction surfaces (`AGENTS.md`, `CLAUDE.md`, `.claude/rules/*`, `.claude/agents/*`) read as restating the obvious because that is their job. Delete from them only with per-file confirmation.
 - Legal and compliance text stays. Generated docs are fixed at the generator. Code stays; only comments and docstrings are in scope.
-- Sentence-level quality inside a diff is `/cleanup`; agent state is `/prune`.
+- Sentence-level quality inside a diff is `/cleanup`; agent state is `/prog`.
 
 ## Workflow
 
