@@ -10,6 +10,7 @@ Collect a value for every variable in the Configuration block at the top of
 [`scripts/setup-server.sh`](../scripts/setup-server.sh) before running. The steps
 also use placeholders not in that block:
 
+- A handbook clone on your laptop, at a commit pushed to GitHub
 - `<host>` — server IP or hostname (SSH target)
 - `<username>` — the `USERNAME` the script creates
 - netcup path only: `<server>` — the server's id or name in the SCP, for [`scripts/netcup.sh`](../scripts/netcup.sh)
@@ -23,8 +24,9 @@ Netcup supports only SSH-key injection at image install, so the script runs as r
 
    Expected: `ssh root@<host> true` succeeds without a password prompt.
 
-2. **Pipe the script to root over SSH.** The invocation is in the header comment of
+2. **Pipe the script to root over SSH from the clone.** The invocation is in the header comment of
    [`scripts/setup-server.sh`](../scripts/setup-server.sh). The script creates `<username>` and disables root login.
+   It installs `report-health.sh` from the clone's commit, `HANDBOOK_REF`, after a sha256 check.
 
    Expected: the run prints the `Setup complete` summary.
 

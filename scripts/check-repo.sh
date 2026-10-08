@@ -243,9 +243,9 @@ resolve_home_claude() {
   done
 }
 
-## contracts: verify handbook raw URLs name tracked paths, install-dotfiles.sh --check passes, and settings script paths exist
+## contracts: verify handbook raw URLs name tracked paths, setup-server.sh pins report-health.sh's digest, install-dotfiles.sh --check passes, and settings script paths exist
 check_contracts() {
-  local hit file path table line settings candidate rest resolved
+  local hit file path table line settings candidate rest resolved pinned actual
 
   # 1. Every handbook raw URL names a tracked path.
   while IFS= read -r hit; do
@@ -261,7 +261,14 @@ check_contracts() {
     fi
   done < <(git grep -IoE -e "$RAW_URL_RE" || true)
 
-  # 2. The install table's pre-flight passes.
+  # 2. setup-server.sh installs report-health.sh only if it matches this digest.
+  pinned="$(sed -n 's/^REPORT_HEALTH_SHA256="\([0-9a-f]*\)"$/\1/p' scripts/setup-server.sh)"
+  actual="$(sha256sum scripts/report-health.sh | cut -d' ' -f1)"
+  if [[ "$pinned" != "$actual" ]]; then
+    log "REPORT_HEALTH_SHA256 in scripts/setup-server.sh is '$pinned'; scripts/report-health.sh hashes to $actual"
+  fi
+
+  # 3. The install table's pre-flight passes.
   if ! table="$(scripts/install-dotfiles.sh --check 2>/dev/null)"; then
     table=""
     log "install-dotfiles.sh --check failed; ~/.claude script paths not resolved"
@@ -270,7 +277,7 @@ check_contracts() {
     done < <(scripts/install-dotfiles.sh --check 2>&1 >/dev/null)
   fi
 
-  # 3. Every script path in the settings files exists.
+  # 4. Every script path in the settings files exists.
   for settings in "${SETTINGS_FILES[@]}"; do
     while IFS= read -r candidate; do
       [[ -z "$candidate" ]] && continue

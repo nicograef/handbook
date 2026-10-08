@@ -1,15 +1,17 @@
 #!/usr/bin/env bash
 # setup-server.sh – provision a fresh Debian / Ubuntu VPS
 #
-# Usage (run as root on the new server, passing config inline over SSH):
+# Usage (run as root on the new server, passing config inline over SSH, from a handbook clone):
+#   git pull --ff-only && REF="$(git rev-parse HEAD)"   # a pushed commit; report-health.sh comes from it
 #   HASH="$(mkpasswd -m yescrypt)"   # prompts for the password; mkpasswd ships in the whois package
-#   ssh root@host "SSH_PUBLIC_KEY='ssh-ed25519 AAAA...' USERNAME=nico USER_PASSWORD_HASH='$HASH' bash -s" < setup-server.sh
-#   ssh root@host "SSH_PUBLIC_KEY='ssh-ed25519 AAAA...' bash -s -- --dry-run" < setup-server.sh   # preview only
+#   ssh root@host "HANDBOOK_REF=$REF SSH_PUBLIC_KEY='ssh-ed25519 AAAA...' USERNAME=nico USER_PASSWORD_HASH='$HASH' bash -s" < scripts/setup-server.sh
+#   ssh root@host "HANDBOOK_REF=$REF SSH_PUBLIC_KEY='ssh-ed25519 AAAA...' bash -s -- --dry-run" < scripts/setup-server.sh   # preview only
 #
 # What it does:
 #   1. System update & base packages
 #   1b. Swapfile (auto-sized from RAM, capped at 8G); appends it to /etc/fstab
 #   1c. Locales: the system's LANG and those the operator's SSH client forwards
+#   1d. Fetch report-health.sh at HANDBOOK_REF; abort unless its sha256 matches REPORT_HEALTH_SHA256
 #   2. Create non-root user with sudo
 #   3. SSH hardening (pubkey only, no root login) via a drop-in
 #   4. UFW firewall
@@ -29,8 +31,12 @@ HEALTH_PING_URL="${HEALTH_PING_URL:-}"           # optional: hourly dead-man hea
 SWAP_SIZE_GB="${SWAP_SIZE_GB:-auto}"             # swapfile size in GB; "auto" = RAM capped at 8; "0" skips swap
 SYSTEM_LOCALE="${SYSTEM_LOCALE:-en_US.UTF-8}"     # the system's LANG, for cron, services and sessions that send none
 EXTRA_LOCALES="${EXTRA_LOCALES:-en_GB.UTF-8}"     # space-separated; the other LANG/LC_* your SSH client sends
+HANDBOOK_REF="${HANDBOOK_REF:-}"                 # required: the 40-hex handbook commit this script came from
 DRY_RUN="${DRY_RUN:-false}"                      # set to "true" or pass --dry-run
 # ─────────────────────────────────────────────────────────────────────────────
+
+# sha256 of scripts/report-health.sh in the same commit; check-repo's contracts stage keeps it in sync.
+REPORT_HEALTH_SHA256="c30cabb5055830d10cf87d08a50655778c9ad28d12da7ce58e341a51f843b51d"
 
 log() { printf '\n\033[1;34m▸ %s\033[0m\n' "$1"; }
 
@@ -74,6 +80,12 @@ fi
 
 if [[ -z "$SSH_PUBLIC_KEY" ]]; then
   echo "ERROR: SSH_PUBLIC_KEY is not set. Export it or edit the script." >&2
+  exit 1
+fi
+
+# A commit URL never changes, so the fetched file is the one this script's digest names.
+if [[ ! "$HANDBOOK_REF" =~ ^[0-9a-f]{40}$ ]]; then
+  echo "ERROR: HANDBOOK_REF must be a full commit sha. Set it to: git rev-parse HEAD (in a pushed handbook clone)" >&2
   exit 1
 fi
 
@@ -147,6 +159,25 @@ done
 run locale-gen
 # A stock image sets LANG=C.UTF-8 in /etc/default/locale.
 run update-locale "LANG=$SYSTEM_LOCALE"
+
+# ── 1d. Fetch report-health ─────────────────────────────────────────────────
+# Fetched and verified before any account, SSH or firewall change, so a bad ref aborts a clean host.
+log "Fetching report-health.sh at $HANDBOOK_REF"
+REPORT_HEALTH_URL="https://raw.githubusercontent.com/nicograef/handbook/${HANDBOOK_REF}/scripts/report-health.sh"
+if [[ "$DRY_RUN" == "true" ]]; then
+  printf '  \033[0;33m[DRY-RUN]\033[0m fetch %s and verify sha256 %s\n' "$REPORT_HEALTH_URL" "$REPORT_HEALTH_SHA256"
+else
+  REPORT_HEALTH_TMP="$(mktemp)"
+  trap 'rm -f "$REPORT_HEALTH_TMP"' EXIT
+  if ! curl -fsSL "$REPORT_HEALTH_URL" -o "$REPORT_HEALTH_TMP"; then
+    echo "ERROR: cannot fetch $REPORT_HEALTH_URL. Is HANDBOOK_REF pushed?" >&2
+    exit 1
+  fi
+  if ! sha256sum --quiet -c <<< "$REPORT_HEALTH_SHA256  $REPORT_HEALTH_TMP"; then
+    echo "ERROR: report-health.sh at $HANDBOOK_REF does not match this script. Run the setup-server.sh of that commit." >&2
+    exit 1
+  fi
+fi
 
 # ── 2. Create non-root user ─────────────────────────────────────────────────
 log "Creating user '$USERNAME'"
@@ -321,11 +352,9 @@ EOF
 
 log "Installing hourly health ping"
 if [[ "$DRY_RUN" == "true" ]]; then
-  printf '  \033[0;33m[DRY-RUN]\033[0m fetch report-health.sh and write /usr/local/bin/report-health (executable)\n'
+  printf '  \033[0;33m[DRY-RUN]\033[0m install the verified report-health.sh as /usr/local/bin/report-health (executable)\n'
 else
-  curl -fsSL "https://raw.githubusercontent.com/nicograef/handbook/main/scripts/report-health.sh" \
-    -o /usr/local/bin/report-health
-  chmod +x /usr/local/bin/report-health
+  install -m 0755 "$REPORT_HEALTH_TMP" /usr/local/bin/report-health
 fi
 
 # The URL is a secret: anyone holding it can fake a healthy ping.
