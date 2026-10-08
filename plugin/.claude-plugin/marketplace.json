@@ -1,0 +1,13 @@
+{
+  "name": "handbook",
+  "owner": {
+    "name": "nicograef"
+  },
+  "plugins": [
+    {
+      "name": "handbook",
+      "source": "./",
+      "description": "Nico's shared skills, the web-researcher agent and the git and plan-run guard hooks"
+    }
+  ]
+}

@@ -2,7 +2,7 @@
 # check-terms.sh – verify no audiobook term is used before it is explained
 #
 # Usage:
-#   ~/.claude/skills/audiobook/check-terms.sh <chapter-dir>
+#   plugin/skills/audiobook/check-terms.sh <chapter-dir>
 #
 # What it does:
 #   1. Reads <chapter-dir>/terms.yml — one `term: chapter-file.md` per line.
@@ -12,7 +12,7 @@
 #
 # Matching is whole-word and case-insensitive: "API" matches "api", not
 # "Kapitel" or "APIs".
-# See .claude/skills/audiobook/writing.md.
+# See plugin/skills/audiobook/writing.md.
 
 set -euo pipefail
 

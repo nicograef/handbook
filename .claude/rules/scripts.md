@@ -1,9 +1,9 @@
 ---
-description: "Conventions for bash scripts and config templates in scripts/, templates/ and skill directories."
+description: "Conventions for bash scripts and config templates in scripts/, templates/ and the plugin."
 paths:
   - "scripts/**"
   - "templates/**"
-  - ".claude/skills/**/*.sh"
+  - "plugin/**/*.sh"
 ---
 
 # Script and template conventions

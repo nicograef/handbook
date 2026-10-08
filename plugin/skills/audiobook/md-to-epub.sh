@@ -2,8 +2,8 @@
 # md-to-epub.sh – render listenable Markdown chapters into an ElevenReader EPUB
 #
 # Usage:
-#   ~/.claude/skills/audiobook/md-to-epub.sh [--strict] <chapter-dir> [output.epub]
-#   WPM=140 ~/.claude/skills/audiobook/md-to-epub.sh --strict audiobook/ indexes.epub
+#   plugin/skills/audiobook/md-to-epub.sh [--strict] <chapter-dir> [output.epub]
+#   WPM=140 plugin/skills/audiobook/md-to-epub.sh --strict audiobook/ indexes.epub
 #
 # --strict (or STRICT=1) aborts on any finding.
 #
@@ -17,7 +17,7 @@
 #   3. Splits one EPUB chapter per H1 and builds a depth-1 table of contents.
 #   4. Reports words and estimated listening time, per chapter and total.
 #
-# See .claude/skills/audiobook/pipeline.md.
+# See plugin/skills/audiobook/pipeline.md.
 
 set -euo pipefail
 

@@ -1,12 +1,12 @@
 # Unattended Agent Runs
 
 Set up Claude Code so a long session never stops on an unanswered prompt, and resumes after a limit.
-Applies to an [implement-plan](../.claude/skills/implement-plan/SKILL.md) run, a distill or a migration.
+Applies to an [implement-plan](../plugin/skills/implement-plan/SKILL.md) run, a distill or a migration.
 
 ## Prerequisites
 
 - Claude Code v2.1.234 or later (`claude --version`).
-- `~/.claude/settings.json` is this repo's [claude/settings.json](../claude/settings.json).
+- `~/.claude/settings.json` is this repo's [claude/settings.json](../claude/settings.json), which enables the `handbook` plugin.
 - Docker, for the container posture.
 - The Dev Containers CLI, from [devcontainers/cli](https://github.com/devcontainers/cli): `npm install -g @devcontainers/cli`.
 - The repo holds `.devcontainer/devcontainer.json` from [templates/devcontainer.json](../templates/devcontainer.json).
@@ -28,7 +28,7 @@ Source: [Permission modes](https://code.claude.com/docs/en/permission-modes).
 
 ## Confirm the denial log
 
-The `PermissionDenied` hook in [claude/settings.json](../claude/settings.json) appends each auto-mode denial to a log.
+The `PermissionDenied` hook in [plugin/hooks/hooks.json](../plugin/hooks/hooks.json) appends each auto-mode denial to a log.
 It fires in `auto` mode only. Source: [Hooks](https://code.claude.com/docs/en/hooks#permissiondenied).
 
 ```bash
@@ -51,7 +51,7 @@ Expected: `claude auto-mode config` lists your entries, as Verify checks.
 ## Add Claude Code to the dev container
 
 The template's base image has no Claude Code, no settings and no login.
-Add the Claude Code feature, a config volume, and a read-only mount of this repo's settings.
+Add the Claude Code feature, a config volume, and read-only mounts of this repo's settings and plugin.
 Source: [Development containers](https://code.claude.com/docs/en/devcontainer).
 
 ```diff
@@ -63,7 +63,7 @@ Source: [Development containers](https://code.claude.com/docs/en/devcontainer).
 +  "mounts": [
 +    "source=claude-code-config-${devcontainerId},target=/home/vscode/.claude,type=volume",
 +    "source=<handbook>/claude/settings.json,target=/etc/handbook/settings.json,type=bind,readonly",
-+    "source=<handbook>/scripts/git-guard.sh,target=/home/vscode/.claude/git-guard.sh,type=bind,readonly"
++    "source=<handbook>/plugin,target=<handbook>/plugin,type=bind,readonly"
 +  ],
 +  "containerEnv": { "CLAUDE_CONFIG_DIR": "/home/vscode/.claude" },
 ```
@@ -72,8 +72,8 @@ Source: [Development containers](https://code.claude.com/docs/en/devcontainer).
 Expected: `devcontainer up --workspace-folder .` builds the container without errors.
 
 - The volume keeps the login and the bypass acceptance across rebuilds; `CLAUDE_CONFIG_DIR` puts `.claude.json` in it too.
-- The settings and the guard stay read-only in the container; `--settings` loads the settings on every start.
-- The settings' PreToolUse hook allows every command when `~/.claude/git-guard.sh` is missing, so keep the guard mount.
+- The settings and the plugin stay read-only in the container; `--settings` loads the settings on every start.
+- The plugin mounts at its host path, the marketplace path the settings name. Its hooks run the git guard.
 
 ## Start the run in the container
 
@@ -87,6 +87,7 @@ devcontainer exec --workspace-folder . env CLAUDE_CODE_RETRY_WATCHDOG=1 \
 ```
 
 On the first start, sign in and accept the responsibility dialog. The volume keeps both.
+That session registers the plugin's marketplace in the background, so restart Claude Code once.
 Expected: Claude Code starts as `vscode` in bypass-permissions mode, with this repo's `ask` and `deny` rules.
 
 - `bypassPermissions` refuses to start as root or under `sudo`. Source: [Permission modes](https://code.claude.com/docs/en/permission-modes#skip-all-checks-with-bypasspermissions-mode).
@@ -111,7 +112,7 @@ Leave the terminal open. Expected: the bottom line reads `Usage limit reached ·
 
 ## Disarm the plan-run guard in a repo
 
-[scripts/plan-run-guard.sh](../scripts/plan-run-guard.sh) is a Stop hook. It blocks the stop of the session that claimed `plan/<slug>` while that plan has an unticked criterion.
+[plugin/scripts/plan-run-guard.sh](../plugin/scripts/plan-run-guard.sh) is a Stop hook. It blocks the stop of the session that claimed `plan/<slug>` while that plan has an unticked criterion.
 To let sessions in one checkout or worktree stop freely, run there:
 
 ```bash
@@ -124,13 +125,14 @@ Expected: the next stop in that checkout ends the turn without a nudge. Source: 
 
 ```bash
 claude auto-mode config | jq -e '.environment | any(startswith("Source control"))'
-jq -e '.hooks.PermissionDenied and (.autoMode.environment | index("$defaults") == 0)' ~/.claude/settings.json
+jq -e '.autoMode.environment | index("$defaults") == 0' ~/.claude/settings.json
+claude plugin list --json | jq -e 'any(.id == "handbook@handbook" and .enabled)'
 ```
 
 Expected: `true` from each command.
 
 ```bash
-devcontainer exec --workspace-folder <repo> bash -c 'echo "git push -f" | ~/.claude/git-guard.sh; echo "exit $?"'
+devcontainer exec --workspace-folder <repo> bash -c 'echo "git push -f" | <handbook>/plugin/scripts/git-guard.sh; echo "exit $?"'
 ```
 
 Expected: a `Blocked:` line, then `exit 2`.
@@ -142,6 +144,6 @@ Committed work survives every stop; the session does not. The messages are liste
 | Symptom | Recovery |
 | --- | --- |
 | `You've hit your session limit` or `weekly limit`, session still open | [Wait out the limit](#let-an-open-session-wait-out-a-usage-limit) |
-| `Repeated 529 Overloaded errors` or `Request rejected (429)` ended the run | Restart it with `CLAUDE_CODE_RETRY_WATCHDOG=1`, then [resume from the last commit](../.claude/skills/implement-plan/git.md#pickup) |
+| `Repeated 529 Overloaded errors` or `Request rejected (429)` ended the run | Restart it with `CLAUDE_CODE_RETRY_WATCHDOG=1`, then [resume from the last commit](../plugin/skills/implement-plan/git.md#pickup) |
 | The run stalled on a denial | Read `~/.claude/denials.log`; add an allow rule or an `autoMode.environment` entry |
-| Any other limit or API error stopped the run | [Respond per error kind](../.claude/skills/implement-plan/lead.md#failures), then [resume from the last commit](../.claude/skills/implement-plan/git.md#pickup) |
+| Any other limit or API error stopped the run | [Respond per error kind](../plugin/skills/implement-plan/lead.md#failures), then [resume from the last commit](../plugin/skills/implement-plan/git.md#pickup) |

@@ -26,18 +26,20 @@ log() {
   FAILED=1
 }
 
-# Content directories the README indexes as its file index.
-INDEX_DIRS=(guides reference templates dotfiles scripts claude)
+# Content directories the README indexes as its file index. Plugin skills describe themselves
+# in their frontmatter, so the README links only their folder.
+INDEX_DIRS=(guides reference templates dotfiles scripts claude
+  plugin/.claude-plugin plugin/hooks plugin/agents plugin/scripts)
 
 # Tracked top-level folders the README does not index, as "<dir>|<reason>".
 INDEX_EXCLUDE=(
-  ".claude|skills, rules and agents are harness config; each skill describes itself in its frontmatter"
+  ".claude|the repo's own rules and Stop hook are harness config"
   "docs|PRDs and plans are work files"
   ".github|the handbook's own CI workflow, not a file a project copies"
 )
 
 LANG_ALLOW=(
-  ".claude/skills/audiobook/writing.md"
+  "plugin/skills/audiobook/writing.md"
   "claude/global.md"
   "guides/neovim.md"
 )
@@ -49,8 +51,8 @@ HISTORY_RE='\b(previously|formerly|deprecated|no longer|(?<!is )(?<!are )(?<!be 
 # Accepted history-word hits, as "<file>|<word>|<reason>". Every entry names its reason.
 HISTORY_ALLOW=(
   "claude/global.md|previously|the current-state rule names the banned word"
-  ".claude/skills/distill/SKILL.md|previously|the skill names the word as residue to cut"
-  ".claude/skills/distill/verify.md|deprecated|upstream deprecations are a claim class to check"
+  "plugin/skills/distill/SKILL.md|previously|the skill names the word as residue to cut"
+  "plugin/skills/distill/verify.md|deprecated|upstream deprecations are a claim class to check"
 )
 
 # Prose caps enforced by check_prose; stated in AGENTS.md and claude/global.md.
@@ -174,7 +176,7 @@ check_lint() {
   while IFS= read -r script; do
     [[ -e "$script" ]] && scripts+=("$script")
   done < <(tracked 'scripts/*.sh' 'install.sh' 'claude/*.sh' 'templates/*.sh' \
-                    'dotfiles/.bash_aliases' '.claude/skills/*/*.sh')
+                    'dotfiles/.bash_aliases' 'plugin/scripts/*.sh' 'plugin/skills/*/*.sh')
   # One file per process, so each report reaches the pipe in one write; -x follows scripts/lib.
   if ! out="$(printf '%s\0' "${scripts[@]}" | xargs -0 -n1 -P"$(nproc)" shellcheck -x 2>&1)"; then
     log "shellcheck failed"
@@ -209,7 +211,7 @@ check_readme() {
   done
   while IFS= read -r folder; do
     covered=false
-    for d in "${INDEX_DIRS[@]}"; do [[ "$folder" == "$d" ]] && covered=true; done
+    for d in "${INDEX_DIRS[@]}"; do [[ "$d" == "$folder" || "$d" == "$folder/"* ]] && covered=true; done
     for entry in "${INDEX_EXCLUDE[@]}"; do [[ "$entry" == "$folder|"* ]] && covered=true; done
     [[ "$covered" == true ]] || log "top-level folder neither indexed nor excluded: $folder/"
   done < <(printf '%s\n' "${!folders[@]}" | sort)
@@ -225,7 +227,11 @@ check_readme() {
 # Handbook raw URLs, host and repo written with escaped dots so this file never matches itself.
 RAW_URL_RE='raw\.githubusercontent\.com/nicograef/handbook/[^/[:space:]]+/[^[:space:]"'\''`)<>|]+'
 
-SETTINGS_FILES=(claude/settings.json .claude/settings.json)
+# Files whose hook commands and Bash allow rules name scripts; plugin skills add their frontmatter hooks.
+HOOK_FILES=(claude/settings.json .claude/settings.json plugin/hooks/hooks.json)
+
+PLUGIN_MANIFEST=plugin/.claude-plugin/plugin.json
+PLUGIN_MARKETPLACE=plugin/.claude-plugin/marketplace.json
 
 # resolve_home_claude maps a ~/.claude/<rest> path to its repo origin through the install
 # table on stdin ("<origin> <dest>" lines): the exact dest, else a directory dest above it.
@@ -243,9 +249,12 @@ resolve_home_claude() {
   done
 }
 
-## contracts: verify handbook raw URLs name tracked paths, setup-server.sh pins report-health.sh's digest, install-dotfiles.sh --check passes, and settings script paths exist
+## contracts: verify handbook raw URLs name tracked paths, setup-server.sh pins report-health.sh's digest, install-dotfiles.sh --check passes, the settings enable the plugin, and every hook script path exists
 check_contracts() {
-  local hit file path table line settings candidate rest resolved pinned actual
+  local hit file path table line pinned actual name market entry mpath default
+  local candidate resolved
+  local -a files=("${HOOK_FILES[@]}")
+  mapfile -t -O "${#files[@]}" files < <(tracked 'plugin/skills/*/SKILL.md')
 
   # 1. Every handbook raw URL names a tracked path.
   while IFS= read -r hit; do
@@ -277,36 +286,67 @@ check_contracts() {
     done < <(scripts/install-dotfiles.sh --check 2>&1 >/dev/null)
   fi
 
-  # 4. Every script path in the settings files exists.
-  for settings in "${SETTINGS_FILES[@]}"; do
+  # 4. The marketplace lists the plugin at its own root, and the global settings register
+  #    that marketplace by directory and enable the plugin from it.
+  name="$(jq -r '.name // ""' "$PLUGIN_MANIFEST")"
+  market="$(jq -r '.name // ""' "$PLUGIN_MARKETPLACE")"
+  entry="$(jq -c --arg n "$name" '[.plugins[]? | select(.name == $n)] | length' "$PLUGIN_MARKETPLACE")"
+  [[ "$entry" == 1 ]] || log "$PLUGIN_MARKETPLACE lists plugin '$name' $entry times; want once"
+  if ! jq -e --arg n "$name" '.plugins[] | select(.name == $n) | .source | IN("./", ".")' \
+       "$PLUGIN_MARKETPLACE" >/dev/null; then
+    log "$PLUGIN_MARKETPLACE: plugin '$name' must have the marketplace root as source"
+  fi
+  if ! jq -e --arg id "$name@$market" '.enabledPlugins[$id] == true' claude/settings.json >/dev/null; then
+    log "claude/settings.json does not enable $name@$market"
+  fi
+  mpath="$(jq -r --arg m "$market" \
+    '.extraKnownMarketplaces[$m].source | select(.source == "directory") | .path // ""' claude/settings.json)"
+  [[ "$mpath" == /*/plugin ]] \
+    || log "claude/settings.json: marketplace '$market' needs a directory source whose path ends in /plugin, got '$mpath'"
+
+  # 5. A CLAUDE_PLUGIN_ROOT default names the marketplace path.
+  while IFS= read -r hit; do
+    default="${hit#*:-}"
+    [[ "$default" == "$mpath" ]] || log "CLAUDE_PLUGIN_ROOT default in ${hit%%:*} is $default; the marketplace path is $mpath"
+  done < <(git grep -oE 'CLAUDE_PLUGIN_ROOT:-[^}]*' -- plugin claude || true)
+
+  # 6. Every script a hook command or a Bash allow rule names exists.
+  for file in "${files[@]}"; do
     while IFS= read -r candidate; do
       [[ -z "$candidate" ]] && continue
       case "$candidate" in
         \~/.claude/*|\$HOME/.claude/*)
           [[ -n "$table" ]] || continue
-          rest=".claude/${candidate#*/.claude/}"
-          resolved="$(resolve_home_claude "$rest" <<<"$table")"
+          resolved="$(resolve_home_claude ".claude/${candidate#*/.claude/}" <<<"$table")"
           if [[ -z "$resolved" ]]; then
-            log "script path in $settings is not in the install table: $candidate"
-          elif [[ ! -e "$resolved" ]]; then
-            log "script path in $settings resolves to a missing file: $candidate -> $resolved"
+            log "script path in $file is not in the install table: $candidate"
+            continue
           fi
           ;;
-        \$CLAUDE_PROJECT_DIR/*)
-          resolved="${candidate#*/}"
-          [[ -e "$resolved" ]] || log "script path in $settings names a missing file: $candidate"
-          ;;
+        \$CLAUDE_PROJECT_DIR/*) resolved="${candidate#*/}" ;;
+        \$CLAUDE_PLUGIN_ROOT/*) resolved="plugin/${candidate#*/}" ;;
+        "$mpath"/*) resolved="plugin/${candidate#"$mpath"/}" ;;
+        *) continue ;;
       esac
-    done < <(settings_candidates "$settings")
+      [[ -e "$resolved" ]] || log "script path in $file names a missing file: $candidate -> $resolved"
+    done < <(script_candidates "$file")
   done
 }
 
-# settings_candidates prints the script-path candidates of one settings file: every
-# token ending in .sh in a hook or statusLine command, quotes stripped, plus the path
-# of every Bash(<path>:*) allow entry.
-settings_candidates() {
-  jq -r '[.hooks[]?[]?.hooks[]?.command, .statusLine.command?] | .[] | select(. != null)' "$1" \
-    | sed -E 's/\$\{(HOME|CLAUDE_PROJECT_DIR)\}/$\1/g' | tr -d "\"'" | tr ';|&()' '     ' | tr -s '[:space:]' '\n' | grep -E '\.sh$' || true
+# script_candidates prints the script paths one file names: every token ending in .sh in a
+# hook or statusLine command, quotes and variable assignments stripped, plus the path of every
+# Bash(<path>:*) allow entry. A SKILL.md contributes its frontmatter hook commands.
+script_candidates() {
+  {
+    if [[ "$1" == *.md ]]; then
+      awk 'NR == 1 && /^---/ { fm = 1; next } fm && /^---/ { exit }
+        fm && sub(/^[ \t]*command:[ \t]*/, "") { print }' "$1" | sed -E "s/^'(.*)'$/\1/; s/''/'/g"
+    else
+      jq -r '[.hooks[]?[]?.hooks[]?.command, .statusLine.command?] | .[] | select(. != null)' "$1"
+    fi
+  } | sed -E 's/\$\{([A-Z_]+)(:-[^}]*)?\}/$\1/g' | tr -d "\"'" | tr ';|&(){}' '       ' \
+    | tr -s '[:space:]' '\n' | sed -E 's/^[A-Za-z_][A-Za-z0-9_]*=//' | grep -E '\.sh$' || true
+  [[ "$1" == *.json ]] || return 0
   jq -r '.permissions.allow[]?' "$1" | sed -E 's/\$\{(HOME|CLAUDE_PROJECT_DIR)\}/$\1/g' \
     | sed -nE 's/^Bash\((.*):\*\)$/\1/p'
 }
@@ -328,10 +368,10 @@ check_language() {
 check_skills() {
   local -a skills=()
   local skill
-  mapfile -t skills < <(tracked '.claude/skills/*/SKILL.md')
+  mapfile -t skills < <(tracked 'plugin/skills/*/SKILL.md')
 
   for skill in "${skills[@]}"; do
-    [[ "$skill" == .claude/skills/audiobook/SKILL.md ]] && continue
+    [[ "$skill" == plugin/skills/audiobook/SKILL.md ]] && continue
     if grep -q '^disable-model-invocation:' "$skill"; then
       log "skill blocks model invocation: $skill"
     fi

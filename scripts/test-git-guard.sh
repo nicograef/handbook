@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# test-git-guard.sh – fixture test for scripts/git-guard.sh.
+# test-git-guard.sh – fixture test for plugin/scripts/git-guard.sh.
 #
 # Usage:
 #   scripts/test-git-guard.sh    # or: make test-git-guard
@@ -16,7 +16,7 @@ set -euo pipefail
 # shellcheck source=scripts/lib/test-harness.sh
 . "$(dirname "${BASH_SOURCE[0]}")/lib/test-harness.sh"
 
-GUARD="$REPO_ROOT/scripts/git-guard.sh"
+GUARD="$REPO_ROOT/plugin/scripts/git-guard.sh"
 
 WORK="$FIX/work"
 mkdir -p "$WORK/sub" "$FIX/other" "$FIX/my repo" "$FIX/bin"

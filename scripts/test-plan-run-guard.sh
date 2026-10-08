@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# test-plan-run-guard.sh – fixture test for scripts/plan-run-guard.sh.
+# test-plan-run-guard.sh – fixture test for plugin/scripts/plan-run-guard.sh.
 #
 # Usage:
 #   scripts/test-plan-run-guard.sh    # or: make test-plan-run-guard
@@ -15,7 +15,7 @@ set -euo pipefail
 # shellcheck source=scripts/lib/test-harness.sh
 . "$(dirname "${BASH_SOURCE[0]}")/lib/test-harness.sh"
 
-GUARD="$REPO_ROOT/scripts/plan-run-guard.sh"
+GUARD="$REPO_ROOT/plugin/scripts/plan-run-guard.sh"
 # An empty config dir, so the guard never reads the real session transcripts.
 export CLAUDE_CONFIG_DIR="$FIX/config"
 

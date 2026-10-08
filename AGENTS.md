@@ -16,5 +16,6 @@ Rules for maintaining this repo. Setting up a machine, project or server starts 
 ## Layout
 
 - One document kind per folder.
-- `claude/` is the global Claude Code config. `.claude/` holds the repo rules and Stop hook, and the shared skills and agents.
+- `claude/` is the global Claude Code config. `.claude/` holds the repo rules and Stop hook.
+- `plugin/` is the `handbook` Claude Code plugin: shared skills, the web-researcher agent, hooks and their scripts.
 - `scripts/install-dotfiles.sh --check` lists every link `install.sh` creates in `$HOME`.

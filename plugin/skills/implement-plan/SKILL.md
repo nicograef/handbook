@@ -6,7 +6,7 @@ argument-hint: "<plan path> [<plan path> ...]"
 
 # Implement Plan
 
-Progress is durable only once committed and ticked. The run owns the turn: no human turn between phases, folds and landing. Claim the run for the Stop hook with `~/.claude/plan-run-guard.sh claim <slug>` once the run branch exists, and again on every pickup. An unclaimed run nudges every session in the repo.
+Progress is durable only once committed and ticked. The run owns the turn: no human turn between phases, folds and landing. Claim the run for the Stop hook with `${CLAUDE_PLUGIN_ROOT}/scripts/plan-run-guard.sh claim <slug>` once the run branch exists, and again on every pickup. An unclaimed run nudges every session in the repo.
 
 Open [lead.md](lead.md) before the first dispatch, on a stop and before landing.
 

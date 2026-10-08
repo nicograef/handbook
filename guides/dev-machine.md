@@ -90,12 +90,15 @@ Placeholders: `<name>` and `<email>` are your git identity; `<title>` names this
     mkdir -p ~/r && git clone git@github.com:nicograef/handbook.git ~/r/handbook
     ```
 
-11. **Run install.sh** — it links the dotfiles, the Claude config and the skills, and sets up commit signing.
+11. **Run install.sh** — it links the dotfiles and the Claude config, and sets up commit signing.
     The header of [scripts/install-dotfiles.sh](../scripts/install-dotfiles.sh) lists what it does. It ends with `Done – restart your shell`; the line above reads `gh already installed`:
 
     ```bash
     cd ~/r/handbook && ./install.sh
     ```
+
+    The Claude config enables the `handbook` plugin from `/home/nico/r/handbook/plugin`; another clone path edits `extraKnownMarketplaces`.
+    The first Claude Code session registers the plugin in the background; the next session loads it.
 
 12. **SSH config** — copy the [ssh_config](../templates/ssh_config) template; `--update=none` keeps an existing config.
     Host entries go above its defaults. `ssh -G github.com | grep identitiesonly` then prints `identitiesonly yes`:
@@ -127,6 +130,7 @@ for c in 'git --version' 'gh --version' 'node --version' 'pnpm --version' 'uv --
   $c >/dev/null 2>&1 && echo "ok   $c" || echo "FAIL $c"
 done                                               # → 20 lines, each starting with ok
 readlink -f ~/.claude/CLAUDE.md ~/.bash_aliases    # → <home>/r/handbook/claude/global.md, <home>/r/handbook/dotfiles/.bash_aliases
+claude plugin list --json | jq -e 'any(.id == "handbook@handbook" and .enabled)'   # → true
 git config --global commit.gpgsign                 # → true
 apt-config dump | grep -F 'origin=gh'              # → Unattended-Upgrade::Origins-Pattern:: "origin=gh,codename=stable";
 docker run --rm hello-world | grep Hello           # → Hello from Docker!

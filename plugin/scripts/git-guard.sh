@@ -2,7 +2,7 @@
 # git-guard.sh – PreToolUse Bash hook that blocks unsafe git calls and secret commits.
 #
 # Usage:
-#   scripts/git-guard.sh < payload.json   # a PreToolUse Bash hook; exit 2 blocks with a reason on stderr
+#   plugin/scripts/git-guard.sh < payload.json   # a PreToolUse Bash hook; exit 2 blocks with a reason on stderr
 #
 # What it does:
 #   1. Allows at once when the payload cannot hold a git call.

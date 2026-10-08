@@ -81,9 +81,9 @@
       "Bash(git commit:*)",
       "Bash(~/.claude/agent-bus.sh:*)",
       "Bash(~/.claude/check-agents.sh:*)",
-      "Bash(~/.claude/plan-run-guard.sh:*)",
-      "Bash(~/.claude/skills/audiobook/md-to-epub.sh:*)",
-      "Bash(~/.claude/skills/audiobook/check-terms.sh:*)",
+      "Bash(/home/nico/r/handbook/plugin/scripts/plan-run-guard.sh:*)",
+      "Bash(/home/nico/r/handbook/plugin/skills/audiobook/md-to-epub.sh:*)",
+      "Bash(/home/nico/r/handbook/plugin/skills/audiobook/check-terms.sh:*)",
       "Bash(uv sync:*)",
       "Bash(uv lock:*)",
       "Bash(uv audit:*)",
@@ -153,58 +153,23 @@
   ],
   "enforceAvailableModels": true,
   "disableClaudeAiConnectors": true,
-  "hooks": {
-    "PreToolUse": [
-      {
-        "matcher": "Bash",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "[ -x \"$HOME/.claude/git-guard.sh\" ] || exit 0; exec \"$HOME/.claude/git-guard.sh\""
-          }
-        ]
-      }
-    ],
-    "PermissionDenied": [
-      {
-        "matcher": ".*",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "jq -c '{t:(now|todate),cwd,tool:.tool_name,cmd:(.tool_input.command // .tool_input.file_path // \"\"),reason}' >> \"$HOME/.claude/denials.log\" 2>/dev/null; exit 0"
-          }
-        ]
-      }
-    ],
-    "SessionStart": [
-      {
-        "hooks": [
-          {
-            "type": "command",
-            "command": "[ -x \"$HOME/.claude/agent-bus.sh\" ] || exit 0; \"$HOME/.claude/agent-bus.sh\" hook session-start || exit 0"
-          }
-        ]
-      }
-    ],
-    "Stop": [
-      {
-        "hooks": [
-          {
-            "type": "command",
-            "command": "[ -x \"$HOME/.claude/plan-run-guard.sh\" ] || exit 0; \"$HOME/.claude/plan-run-guard.sh\" || exit 0"
-          }
-        ]
-      }
-    ]
-  },
   "enableWorkflows": true,
   "statusLine": {
     "type": "command",
     "command": "bash \"$HOME/.claude/statusline.sh\"",
     "refreshInterval": 30
   },
+  "extraKnownMarketplaces": {
+    "handbook": {
+      "source": {
+        "source": "directory",
+        "path": "/home/nico/r/handbook/plugin"
+      }
+    }
+  },
   "enabledPlugins": {
-    "playwright@claude-plugins-official": true
+    "playwright@claude-plugins-official": true,
+    "handbook@handbook": true
   },
   "outputStyle": "Proactive",
   "feedbackDrafts": "off",

@@ -1,0 +1,11 @@
+{
+  "name": "handbook",
+  "version": "1.0.0",
+  "description": "Nico's shared skills, the web-researcher agent and the git and plan-run guard hooks",
+  "author": {
+    "name": "nicograef",
+    "url": "https://github.com/nicograef"
+  },
+  "repository": "https://github.com/nicograef/handbook",
+  "license": "MIT"
+}

@@ -8,7 +8,8 @@
 # What it does:
 #   1. Pre-flight: jq present, every link origin exists; any failure exits 1 before a change
 #   2. Symlinks every LINKS entry below into $HOME: shell dotfiles, Neovim, repo-status and the
-#      Claude Code config; a real file or directory in the way is moved to <name>.bak
+#      Claude Code config; a real file or directory in the way is moved to <name>.bak.
+#      Skills, agent and hooks come from the plugin that claude/settings.json enables.
 #   3. Sets git config defaults (pull.rebase, fetch.prune, etc.)
 #   4. Sets up SSH commit signing when ~/.ssh/id_ed25519.pub exists
 #   5. Points to the gh install docs if gh is missing
@@ -33,7 +34,7 @@ log() { printf '\033[1;34m▸ %s\033[0m\n' "$1"; }
 
 # The one link table, as "<origin> <dest>": origin relative to the repo, dest to $HOME.
 # settings.local.json stays machine-local and is intentionally NOT linked.
-# Copilot CLI reads ~/.agents/skills, not ~/.claude/skills.
+# Copilot CLI reads ~/.agents/skills; Claude Code reads the plugin's skills.
 LINKS=(
   "dotfiles/.bash_aliases .bash_aliases"
   "dotfiles/.tmux.conf .tmux.conf"
@@ -45,12 +46,8 @@ LINKS=(
   "claude/settings.json .claude/settings.json"
   "claude/statusline.sh .claude/statusline.sh"
   "scripts/agent-bus.sh .claude/agent-bus.sh"
-  "scripts/plan-run-guard.sh .claude/plan-run-guard.sh"
-  "scripts/git-guard.sh .claude/git-guard.sh"
   "scripts/check-agents.sh .claude/check-agents.sh"
-  ".claude/agents .claude/agents"
-  ".claude/skills .claude/skills"
-  ".claude/skills .agents/skills"
+  "plugin/skills .agents/skills"
 )
 
 preflight() {

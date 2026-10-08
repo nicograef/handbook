@@ -2,9 +2,9 @@
 # plan-run-guard.sh – Stop-hook guard that keeps a live implement-plan run going.
 #
 # Usage:
-#   Wired as a Stop hook in claude/settings.json; reads the hook payload on stdin.
-#   scripts/plan-run-guard.sh < payload.json
-#   scripts/plan-run-guard.sh claim <slug>   # this session owns plan/<slug>
+#   Wired as a Stop hook in plugin/hooks/hooks.json; reads the hook payload on stdin.
+#   plugin/scripts/plan-run-guard.sh < payload.json
+#   plugin/scripts/plan-run-guard.sh claim <slug>   # this session owns plan/<slug>
 #
 # What it does:
 #   1. Allows the stop unless a plan run is live in the payload's cwd.

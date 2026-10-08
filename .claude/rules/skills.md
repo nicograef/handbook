@@ -1,6 +1,6 @@
 ---
-description: "Conventions for skills in .claude/skills/."
-paths: ".claude/skills/**"
+description: "Conventions for skills in plugin/skills/."
+paths: "plugin/skills/**"
 ---
 
 # Skill conventions

@@ -57,7 +57,7 @@ Pick a **multilingual** voice. A German-only voice mangles the English terms.
 ```bash
 # 1. Nothing unspeakable survived: no code, no table markup, no URLs.
 pandoc audiobook/[0-9][0-9]-*.md --from gfm --to plain \
-  --lua-filter ~/.claude/skills/audiobook/strip-visuals.lua | less
+  --lua-filter <skill-dir>/strip-visuals.lua | less
 
 # 2. The split worked: one xhtml file per chapter.
 unzip -l book.epub | grep -c 'text/ch'
