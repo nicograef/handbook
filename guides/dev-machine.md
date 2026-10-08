@@ -97,7 +97,7 @@ Placeholders: `<name>` and `<email>` are your git identity; `<title>` names this
     cd ~/r/handbook && ./install.sh
     ```
 
-    The Claude config enables the `handbook` plugin from `/home/nico/r/handbook/plugin`; another clone path edits `extraKnownMarketplaces`.
+    The Claude config enables the `nico` plugin from `/home/nico/r/handbook/plugin`; another clone path edits `extraKnownMarketplaces`.
     The first Claude Code session registers the plugin in the background; the next session loads it.
 
 12. **SSH config** — copy the [ssh_config](../templates/ssh_config) template; `--update=none` keeps an existing config.
@@ -130,7 +130,7 @@ for c in 'git --version' 'gh --version' 'node --version' 'pnpm --version' 'uv --
   $c >/dev/null 2>&1 && echo "ok   $c" || echo "FAIL $c"
 done                                               # → 20 lines, each starting with ok
 readlink -f ~/.claude/CLAUDE.md ~/.bash_aliases    # → <home>/r/handbook/claude/global.md, <home>/r/handbook/dotfiles/.bash_aliases
-claude plugin list --json | jq -e 'any(.id == "handbook@handbook" and .enabled)'   # → true
+claude plugin list --json | jq -e 'any(.id == "nico@handbook" and .enabled)'   # → true
 git config --global commit.gpgsign                 # → true
 apt-config dump | grep -F 'origin=gh'              # → Unattended-Upgrade::Origins-Pattern:: "origin=gh,codename=stable";
 docker run --rm hello-world | grep Hello           # → Hello from Docker!

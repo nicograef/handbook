@@ -6,7 +6,7 @@ Applies to an [implement-plan](../plugin/skills/implement-plan/SKILL.md) run, a 
 ## Prerequisites
 
 - Claude Code v2.1.234 or later (`claude --version`).
-- `~/.claude/settings.json` is this repo's [claude/settings.json](../claude/settings.json), which enables the `handbook` plugin.
+- `~/.claude/settings.json` is this repo's [claude/settings.json](../claude/settings.json), which enables the `nico` plugin.
 - Docker, for the container posture.
 - The Dev Containers CLI, from [devcontainers/cli](https://github.com/devcontainers/cli): `npm install -g @devcontainers/cli`.
 - The repo holds `.devcontainer/devcontainer.json` from [templates/devcontainer.json](../templates/devcontainer.json).
@@ -116,7 +116,7 @@ Leave the terminal open. Expected: the bottom line reads `Usage limit reached ·
 ```bash
 claude auto-mode config | jq -e '.environment | any(startswith("Source control"))'
 jq -e '.autoMode.environment | index("$defaults") == 0' ~/.claude/settings.json
-claude plugin list --json | jq -e 'any(.id == "handbook@handbook" and .enabled)'
+claude plugin list --json | jq -e 'any(.id == "nico@handbook" and .enabled)'
 ```
 
 Expected: `true` from each command.

@@ -1,6 +1,6 @@
 # Verify
 
-The final phase of distill, run as `/handbook:distill verify [path ...] [since <ref>] [report-only]`. Back to [SKILL.md](SKILL.md).
+The final phase of distill, run as `/nico:distill verify [path ...] [since <ref>] [report-only]`. Back to [SKILL.md](SKILL.md).
 
 Decide whether each documented claim is true. Nothing is settled without an artifact produced this session. That is a file excerpt with `path:line`, the stdout of a command run here, or a fetched URL with its date. Training data is not a source; the failure this prevents is confidently correcting a right line.
 
@@ -23,7 +23,7 @@ Decide whether each documented claim is true. Nothing is settled without an arti
    | --- | --- | --- |
    | repo | Paths, targets, script flags, env vars, config keys, function names, relative links | Reading the definition; a grep hit on a heading proves only that the word appears |
    | command | Installed versions, existing flags, real defaults | Read-only output, with the machine named |
-   | upstream | Third-party behaviour, deprecated flags, current versions, security guidance | Vendor docs, project repo or RFC via `handbook:web-researcher` or WebFetch, with URL and date |
+   | upstream | Third-party behaviour, deprecated flags, current versions, security guidance | Vendor docs, project repo or RFC via `nico:web-researcher` or WebFetch, with URL and date |
    | none | Preferences, rationale, tribal knowledge | Nothing; count them in one line, check only that they do not contradict each other |
 
    Precedence: about this repo, repo > command > upstream; about a third-party tool, upstream > command > repo; a doc never verifies a doc.

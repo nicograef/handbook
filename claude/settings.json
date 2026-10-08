@@ -160,7 +160,7 @@
   },
   "enabledPlugins": {
     "playwright@claude-plugins-official": true,
-    "handbook@handbook": true
+    "nico@handbook": true
   },
   "extraKnownMarketplaces": {
     "handbook": {

@@ -1,13 +1,13 @@
 ---
 name: prog
-description: Critically re-verifies every item, status, blocker and verdict of the session, rewrites all state files to match, prunes stale state, reports, then runs /handbook:decide. "close" adds the close sweep and verdict; "compact" a resume prompt.
+description: Critically re-verifies every item, status, blocker and verdict of the session, rewrites all state files to match, prunes stale state, reports, then runs /nico:decide. "close" adds the close sweep and verdict; "compact" a resume prompt.
 argument-hint: "[close] [compact] [all] [dry-run]"
 allowed-tools: Bash(git *), Bash(gh pr *), Bash(repo-status), Bash(~/.claude/agent-bus.sh *), Read, Grep, Glob, Edit, Write
 ---
 
 # Prog
 
-Arguments: `$ARGUMENTS`. Every finding is applied without asking; open questions go to `/handbook:decide` at the end. Output is tables and lists, no prose.
+Arguments: `$ARGUMENTS`. Every finding is applied without asking; open questions go to `/nico:decide` at the end. Output is tables and lists, no prose.
 
 - Never delete uncommitted work, unpushed commits, stashes or a dirty worktree. Git's own refusals are the guard; never force them.
 - Skip every branch and worktree that this session or a live peer holds. `~/.claude/agent-bus.sh peers` lists the peers.
@@ -97,4 +97,4 @@ Only with `compact`. Write the verified state, the plan file path, worktree path
 
 ## Decide
 
-Then invoke the [decide](../decide/SKILL.md) skill on every decision or question the work needs from the user. The report lists none of them; `/handbook:decide` asks and records them.
+Then invoke the [decide](../decide/SKILL.md) skill on every decision or question the work needs from the user. The report lists none of them; `/nico:decide` asks and records them.

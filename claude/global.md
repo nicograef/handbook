@@ -43,7 +43,7 @@ Lead with the answer or the problem. Sentences ≤ 20 words, one claim each. Par
 
 - Subagents: `sonnet` for mechanical, fully specified work (search, rename, format, doc sweep, checking a named finding). `opus` for implementation, review, debugging and synthesis. Set `model` explicitly, reviewers included.
 - A session with background agents, a workflow or lanes is a lead and reads [lead.md](../plugin/skills/implement-plan/lead.md).
-- Irreversible work (spend, overwrite, publish, production migration) gets probes and my read. Spend needs no read where the project's `AGENTS.md` approves it. A review finds and synthesises, never re-checking a stated finding. No session switches its own model.
+- Irreversible work (spend, overwrite, publish, production migration) gets probes and my read. Spend needs no read where the project's `AGENTS.md` approves it. A reviewer never re-checks a finding it was given; a separate `sonnet` agent checks a named finding. No session switches its own model.
 - A subagent prompt is self-contained: scope, pasted errors and paths, the rules that apply, the return format. File ownership is explicit, so no two agents write one file. Act on each result as it lands.
-- External facts about companies, tools or markets go through the `handbook:web-researcher` agent.
+- External facts about companies, tools or markets go through the `nico:web-researcher` agent.
 - Memory holds current state: an event is rewritten as its residue, in present tense.
