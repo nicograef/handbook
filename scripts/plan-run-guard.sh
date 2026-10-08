@@ -47,49 +47,58 @@ if ! command -v jq >/dev/null 2>&1; then
   allow
 fi
 
-# A stop this hook already continued is never blocked again.
-if [[ "$(printf '%s' "$payload" | jq -r '.stop_hook_active // false')" == "true" ]]; then
+# One field per line, so an empty cwd keeps its place.
+fields=()
+mapfile -t fields < <(printf '%s' "$payload" \
+  | jq -r '(.stop_hook_active // false), (.cwd // ""), (.session_id // "nosession")' 2>/dev/null)
+[[ "${#fields[@]}" -eq 3 ]] || allow
+active="${fields[0]}" cwd="${fields[1]}" session="${fields[2]}"
+
+# A stop this hook already continued is never blocked again; a payload without a
+# usable cwd names no repo.
+if [[ "$active" == "true" || -z "$cwd" || ! -d "$cwd" ]]; then
   allow
 fi
 
-cwd="$(printf '%s' "$payload" | jq -r '.cwd // empty')"
-if [[ -z "$cwd" || ! -d "$cwd" ]]; then
-  allow
-fi
-
-session="$(printf '%s' "$payload" | jq -r '.session_id // "nosession"')"
-
-# A transcript touched inside the window is work still running.
-CONFIG_DIR="${CLAUDE_CONFIG_DIR:-$HOME/.claude}"
-IDLE_MIN="${PLAN_RUN_GUARD_IDLE_MIN:-10}"
-if [[ -n "$(find "$CONFIG_DIR/projects" -path "*/$session/subagents/agent-*.jsonl" \
-             -newermt "-$IDLE_MIN minutes" -print -quit 2>/dev/null)" ]]; then
-  allow
-fi
-if [[ -n "$(find "$CONFIG_DIR/projects" -path "*/$session/subagents/workflows/*/agent-*.jsonl" \
-             -newermt "-$IDLE_MIN minutes" -print -quit 2>/dev/null)" ]]; then
-  allow
-fi
-if [[ -n "$(find /tmp -maxdepth 5 -path "*/$session/tasks/*.output" \
-             -newermt "-$IDLE_MIN minutes" -print -quit 2>/dev/null)" ]]; then
-  allow
-fi
-
-gitdir=""
-gitdir="$(git -C "$cwd" rev-parse --path-format=absolute --git-dir 2>/dev/null)" || allow
+dirs=()
+mapfile -t dirs < <(git -C "$cwd" rev-parse --path-format=absolute --git-dir --git-common-dir 2>/dev/null)
+[[ "${#dirs[@]}" -eq 2 ]] || allow
+gitdir="${dirs[0]}"
+# Worktrees share the common dir, so a lead on the base branch and a worker in
+# the run worktree see the same nudge markers.
+common="${dirs[1]}"
 if [[ -e "$gitdir/plan-run-guard-off" ]]; then
   allow
 fi
 
-# Worktrees share the common dir, so a lead on the base branch and a worker in
-# the run worktree see the same nudge markers.
-common=""
-common="$(git -C "$cwd" rev-parse --path-format=absolute --git-common-dir 2>/dev/null)" || allow
 state="$common/plan-run-guard"
+branches="$(git -C "$cwd" for-each-ref --format='%(refname:short)' 'refs/heads/plan/*' 2>/dev/null || true)"
+# A claim goes with its branch. A landed run deletes the branch and nothing else
+# knows the claim existed, so this hook sweeps it.
+if [[ -z "$branches" ]]; then
+  rm -f "$state"/owner-*
+  allow
+fi
+
+# A transcript touched inside the window is work still running.
+CONFIG_DIR="${CLAUDE_CONFIG_DIR:-$HOME/.claude}"
+IDLE_MIN="${PLAN_RUN_GUARD_IDLE_MIN:-10}"
+shopt -s nullglob
+recent=(
+  "$CONFIG_DIR"/projects/*/"$session"/subagents/agent-*.jsonl
+  "$CONFIG_DIR"/projects/*/"$session"/subagents/workflows/*/agent-*.jsonl
+  /tmp/"$session"/tasks/*.output
+  /tmp/*/"$session"/tasks/*.output
+  /tmp/*/*/"$session"/tasks/*.output
+)
+shopt -u nullglob
+if [[ "${#recent[@]}" -gt 0 && -n "$(find "${recent[@]}" -maxdepth 0 \
+       -newermt "-$IDLE_MIN minutes" -print -quit 2>/dev/null)" ]]; then
+  allow
+fi
+
 mkdir -p "$state"
 find "$state" -type f ! -name 'owner-*' -mtime +1 -delete 2>/dev/null || true
-
-branches="$(git -C "$cwd" for-each-ref --format='%(refname:short)' 'refs/heads/plan/*' 2>/dev/null || true)"
 
 while IFS= read -r branch; do
   [[ -n "$branch" ]] || continue
@@ -120,8 +129,7 @@ while IFS= read -r branch; do
   exit 0
 done <<< "$branches"
 
-# A claim goes with its branch; it is swept here because a landed run deletes the
-# branch and nothing else knows the claim existed.
+# Sweep the claims whose branch is gone.
 for claim in "$state"/owner-*; do
   [[ -e "$claim" ]] || continue
   slug="$(basename "$claim")"; slug="${slug#owner-}"; slug="${slug//__//}"
