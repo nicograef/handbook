@@ -2,14 +2,16 @@
 # check-repo.sh – repo self-check for the handbook knowledge base.
 #
 # Usage:
-#   scripts/check-repo.sh [all|links|lint|readme|language|skills|compose|prose|history|contracts]
+#   scripts/check-repo.sh [all|<stage>]    # `make help` lists the stages
 #
 # What it does:
-#   1. Runs the named stage, or every stage for `all` (the default)
+#   1. Runs the named stage, or every stage for `all` (the default). A stage is a
+#      check_<stage> function; the "## <stage>:" line above it feeds `make help`.
 #   2. Logs each violation and exits non-zero if any stage found one
 #
 # Idempotent: reads only, never writes.
 
+# shellcheck disable=SC2329 # stages run by name as check_$STAGE, so no call site names them
 set -euo pipefail
 
 STAGE="${1:-all}"
@@ -125,6 +127,7 @@ heading_slugs() {
   ' "$1"
 }
 
+## links: verify every relative Markdown link resolves on disk, #anchors included (GitHub heading slugs)
 check_links() {
   local file dir target path anchor resolved slug
   local -A slugged=() anchors=()
@@ -161,7 +164,8 @@ check_links() {
   done < <(tracked_md)
 }
 
-check_shell() {
+## lint: run shellcheck on every tracked shell script
+check_lint() {
   if ! command -v shellcheck >/dev/null 2>&1; then
     log "shellcheck not installed"
     return
@@ -178,6 +182,7 @@ check_shell() {
   fi
 }
 
+## readme: verify README.md indexes every content file and vice-versa, and every top-level folder is indexed or excluded
 check_readme() {
   local readme="README.md" target file folder entry covered d
   local -a links=()
@@ -238,6 +243,7 @@ resolve_home_claude() {
   done
 }
 
+## contracts: verify handbook raw URLs name tracked paths, install-dotfiles.sh --check passes, and settings script paths exist
 check_contracts() {
   local hit file path table line settings candidate rest resolved
 
@@ -298,6 +304,7 @@ settings_candidates() {
     | sed -nE 's/^Bash\((.*):\*\)$/\1/p'
 }
 
+## language: verify no German prose outside the allow-listed files
 check_language() {
   local file allow
   while IFS= read -r file; do
@@ -310,6 +317,7 @@ check_language() {
   done < <(tracked_md)
 }
 
+## skills: verify .claude/skills/README.md indexes every SKILL.md directory and vice-versa
 check_skills() {
   local readme=".claude/skills/README.md" target skill dir
   local -a links=() skills=()
@@ -354,6 +362,7 @@ check_skills() {
   done
 }
 
+## compose: verify every templates/docker-compose*.yml passes `docker compose config -q`
 check_compose() {
   if ! command -v docker >/dev/null 2>&1; then
     log "docker not installed"
@@ -369,6 +378,7 @@ check_compose() {
   done < <(tracked 'templates/docker-compose*.yml')
 }
 
+## history: verify Markdown prose holds no history words (previously, formerly, deprecated, no longer, used to)
 check_history() {
   local file hit lineno word entry allowed
   while IFS= read -r file; do
@@ -534,6 +544,7 @@ prose_scan() {
   ' "$1"
 }
 
+## prose: verify Markdown meets the prose caps (sentence ≤ 20 words, paragraph ≤ 3 lines)
 check_prose() {
   local file violation
   while IFS= read -r file; do
@@ -544,19 +555,16 @@ check_prose() {
   done < <(prose_md)
 }
 
-case "$STAGE" in
-  links)    check_links ;;
-  lint)     check_shell ;;
-  readme)   check_readme ;;
-  language) check_language ;;
-  skills)   check_skills ;;
-  compose)  check_compose ;;
-  prose)    check_prose ;;
-  history)  check_history ;;
-  contracts) check_contracts ;;
-  all)      check_links; check_shell; check_readme; check_language; check_skills; check_compose; check_prose; check_history; check_contracts ;;
-  *)        printf 'usage: %s [links|lint|readme|language|skills|compose|prose|history|contracts|all]\n' "$0" >&2; exit 2 ;;
-esac
+mapfile -t STAGES < <(declare -F | sed -n 's/^declare -f check_//p')
+
+if [[ "$STAGE" == all ]]; then
+  for stage in "${STAGES[@]}"; do "check_$stage"; done
+elif [[ " ${STAGES[*]} " == *" $STAGE "* ]]; then
+  "check_$STAGE"
+else
+  printf 'usage: %s [all|%s]\n' "$0" "$(IFS='|'; printf '%s' "${STAGES[*]}")" >&2
+  exit 2
+fi
 
 if [[ "$FAILED" -ne 0 ]]; then
   exit 2
