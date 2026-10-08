@@ -9,10 +9,11 @@
 #   1. Pre-flight: jq present, every link origin exists; any failure exits 1 before a change
 #   2. Symlinks every LINKS entry below into $HOME: shell dotfiles, Neovim, repo-status and the
 #      Claude Code config; a real file or directory in the way is moved to <name>.bak.
-#      Skills, agent and hooks come from the plugin that claude/settings.json enables.
-#   3. Sets git config defaults (pull.rebase, fetch.prune, etc.)
-#   4. Sets up SSH commit signing when ~/.ssh/id_ed25519.pub exists
-#   5. Points to the gh install docs if gh is missing
+#      Removes links in ~/.claude and ~/.agents that point into this repo at a file that is gone.
+#   3. Installs the nico@handbook plugin (skills, agent, hooks) when claude is on PATH
+#   4. Sets git config defaults (pull.rebase, fetch.prune, etc.)
+#   5. Sets up SSH commit signing when ~/.ssh/id_ed25519.pub exists
+#   6. Points to the gh install docs if gh is missing
 #
 # .bashrc is left alone: the Ubuntu default sources ~/.bash_aliases.
 set -euo pipefail
@@ -88,6 +89,25 @@ fi
 for entry in "${LINKS[@]}"; do
   link "${entry%% *}" "${entry#* }"
 done
+
+# A link into this repo whose target is gone names a moved or deleted file.
+for dest in "$HOME"/.claude/* "$HOME"/.agents/*; do
+  if [[ -L "$dest" && ! -e "$dest" && "$(readlink "$dest")" == "$DOTFILES_DIR"/* ]]; then
+    rm "$dest"
+    log "Removed stale link $dest"
+  fi
+done
+
+# claude/settings.json enables the plugin; registering its local marketplace makes it load.
+if ! command -v claude >/dev/null 2>&1; then
+  log "SKIP: claude not installed; rerun install.sh after installing Claude Code"
+elif claude plugin list --json | jq -e 'any(.id == "nico@handbook")' >/dev/null; then
+  log "Plugin nico@handbook already installed"
+else
+  claude plugin marketplace add "$DOTFILES_DIR/plugin"
+  claude plugin install nico@handbook
+  log "Installed plugin nico@handbook"
+fi
 
 # ~/.claude.json holds machine state (auth, project list), so it is merged, not linked.
 # It carries the /config choices that have no settings.json key.

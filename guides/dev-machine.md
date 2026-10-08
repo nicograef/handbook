@@ -98,7 +98,7 @@ Placeholders: `<name>` and `<email>` are your git identity; `<title>` names this
     ```
 
     The Claude config enables the `nico` plugin from `/home/nico/r/handbook/plugin`; another clone path edits `extraKnownMarketplaces`.
-    The first Claude Code session registers the plugin in the background; the next session loads it.
+    `install.sh` installs the plugin when `claude` is on PATH; otherwise rerun it after installing Claude Code.
 
 12. **SSH config** — copy the [ssh_config](../templates/ssh_config) template; `--update=none` keeps an existing config.
     Host entries go above its defaults. `ssh -G github.com | grep identitiesonly` then prints `identitiesonly yes`:
