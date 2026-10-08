@@ -26,6 +26,8 @@ fail() { echo -e "${RED}[FAIL]${NC}  $*" >&2; FAILED=1; }
 
 FIX="$(mktemp -d)"
 trap 'rm -rf "$FIX"' EXIT
+# An empty config dir, so the guard never reads the real session transcripts.
+export CLAUDE_CONFIG_DIR="$FIX/config"
 
 REPO="$FIX/repo"
 mkdir -p "$REPO/docs/plans"
@@ -137,12 +139,12 @@ git -C "$REPO" checkout -q main
 AGENTS="$FIX/config/projects/proj/sessLIVE/subagents"
 mkdir -p "$AGENTS"
 echo '{}' > "$AGENTS/agent-running.jsonl"
-out="$(CLAUDE_CONFIG_DIR="$FIX/config" run false sessLIVE)"
+out="$(run false sessLIVE)"
 if [[ -n "$out" ]]; then fail "live agent: expected allow, got: $out"; else log "live background agent -> allow"; fi
 
 # A silent agent is a stuck one, so the nudge comes back.
 touch -d '2 hours ago' "$AGENTS/agent-running.jsonl"
-out="$(CLAUDE_CONFIG_DIR="$FIX/config" run false sessLIVE)"
+out="$(run false sessLIVE)"
 if [[ "$(jq -r '.decision' <<< "$out" 2>/dev/null)" != "block" ]]; then
   fail "stale agent: expected block, got: $out"
 else
