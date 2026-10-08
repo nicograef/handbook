@@ -18,4 +18,3 @@ Rules for maintaining this repo. Setting up a machine, project or server starts 
 - One document kind per folder.
 - `claude/` is the global Claude Code config. `.claude/` holds the repo rules and Stop hook, and the shared skills and agents.
 - `scripts/install-dotfiles.sh --check` lists every link `install.sh` creates in `$HOME`.
-- Frozen paths: `scripts/setup-server.sh`, `scripts/report-health.sh` and `scripts/host-audit.sh`. Servers fetch them by raw URL, so they never move.
