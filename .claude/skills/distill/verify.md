@@ -29,7 +29,7 @@ Decide whether each documented claim is true. Nothing is settled without an arti
    Precedence: about this repo, repo > command > upstream; about a third-party tool, upstream > command > repo; a doc never verifies a doc.
 
 3. Verify on `opus`, one verdict per claim. TRUE; FALSE, recording the correct value if the lane gives one; STALE, recording what superseded it; UNREACHED, recording why. Code broken while the doc is right, or two lanes disagreeing, are repo findings, not doc fixes.
-4. Cross-doc pass yourself after all verifiers return: contradictions, drifted duplicates, dead anchors and 404 URLs. Note structural issues only in passing; they belong to distill and cleanup.
+4. Cross-doc pass yourself after all verifiers return: contradictions, drifted duplicates, dead anchors and 404 URLs. Note structural issues only in passing; they belong to distill.
 5. Triage:
 
    | Finding | Action |

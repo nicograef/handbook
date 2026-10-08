@@ -18,7 +18,7 @@ With `verify` as the first argument, follow [verify.md](verify.md) instead of th
 - Deleting what you failed to understand is how this skill causes damage. A claim you cannot verify this session is FLAG, not DELETE.
 - Agent instruction surfaces (`AGENTS.md`, `CLAUDE.md`, `.claude/rules/*`, `.claude/agents/*`) read as restating the obvious because that is their job. Delete from them only with per-file confirmation.
 - Legal and compliance text stays. Generated docs are fixed at the generator. Code stays; only comments and docstrings are in scope.
-- Sentence-level quality inside a diff is `/cleanup`; agent state is `/prog`.
+- Code quality is `/simplify`; agent state is `/prog`.
 
 ## Workflow
 
@@ -47,12 +47,12 @@ With `verify` as the first argument, follow [verify.md](verify.md) instead of th
 
 | Category | Examples |
 | --- | --- |
-| Historic residue | "previously", completed migration guides, dated status tables, rationale nobody will revisit. Keep only a note that is still operative: a compatibility constraint or a documented reason an obvious change is forbidden |
+| Historic residue | "previously", session records (summary, report, walkthrough), completed migration guides, dated status tables, rationale nobody will revisit. Keep only a note that is still operative: a compatibility constraint or a documented reason an obvious change is forbidden |
 | Derivable | Directory listings, command inventories mirroring a Makefile or `--help`, config-option lists, API tables regenerable from signatures. Delete and link to the source |
 | Common knowledge for the audience | What Docker or git is, `npm install`, essays on why tests matter |
 | Aspirational | Roadmaps, docs for unbuilt features, placeholder sections |
 | Ceremonial | Table of contents on a one-screen file, Introduction/Overview/Summary sections, a first sentence restating the heading, badge walls, boilerplate CONTRIBUTING text |
-| Padding | Paragraphs introducing a code block, "as you can see", motivational framing, recaps of the previous section |
+| Padding | Paragraphs introducing a code block, "as you can see", motivational framing, recaps of the previous section. Machine-written tells: puffery, trailing "ensuring that…", synonym cycling, "as requested" |
 | Comments | Banner blocks and file preambles repeating the module docs; `@param userId The user ID` on a typed parameter. Keep contracts the type cannot express: units, ownership, nullability, side effects. When a comment and a doc explain one mechanism, the 2-sentence cap wins and the comment links the doc |
 
 ## What survives
