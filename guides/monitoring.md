@@ -67,16 +67,7 @@ That heartbeat then exists already; reuse it instead of creating a second one.
 ## Add a health check
 
 report-health runs the built-in checks `reboot`, `upgrades` and `oom`.
-Each drop-in in `/etc/report-health.d/` adds one check, named after its file.
-
-- A drop-in is an executable regular file named to match `^[a-z0-9-]+$`; other files are skipped.
-- A symlink, or a drop-in or directory not owned by root or writable by group or other, is skipped.
-- The drop-ins run in name order, each under a 30-second timeout.
-- Exit 0 passes; a non-zero exit or a timeout fails the check and withholds the ping.
-- The first stdout line is the reason; the hourly run logs a failure as `UNHEALTHY: <name>: <reason>`.
-
-`report-health --check-only` prints one tab-separated `<name>`, `ok` or `fail`, `<reason>` line per check.
-It exits 1 when any check fails, reads no defaults file and pings nothing.
+Each drop-in in `/etc/report-health.d/` adds one check; the header of [report-health.sh](../scripts/report-health.sh) holds the drop-in contract.
 
 1. Write a drop-in, owned by root and executable. This one, `disk`, fails once a local filesystem is 80 % full:
 
