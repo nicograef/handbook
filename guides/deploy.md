@@ -16,11 +16,10 @@ Take a provisioned server to a running app with TLS, update it, and roll it back
 
 Run every step on the server as `<username>`, logged in with `ssh <username>@<host>`. Sharp edges: [linux-services.md](../reference/linux-services.md).
 
-1. **Create the project and backup directories**, owned by you. Expected: `ls -ld` on both shows `<username> <username>`.
+1. **Create the project directory**, owned by you. Expected: `ls -ld /opt/<project>` shows `<username> <username>`.
 
    ```bash
    sudo install -d -o "$USER" -g "$USER" -m 0750 /opt/<project>
-   sudo install -d -o "$USER" -g "$USER" -m 0700 /opt/backups/postgres
    ```
 
 2. **Add a read-only deploy key**: paste the printed line under the repo's Settings → Deploy keys, **Allow write access** off. Expected: the key is listed as read-only ([GitHub deploy keys](https://docs.github.com/en/authentication/connecting-to-github-with-ssh/managing-deploy-keys)).
