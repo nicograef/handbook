@@ -22,14 +22,5 @@ jobs:
         with:
           persist-credentials: false
 
-      - name: Repo self-check
-        run: make check
-
-      - name: Agent bus fixture test
-        run: make test-agent-bus
-
-      - name: Plan-run guard fixture test
-        run: make test-plan-run-guard
-
-      - name: Git guard fixture test
-        run: make test-git-guard
+      - name: Repo self-check and fixture tests
+        run: make check test
