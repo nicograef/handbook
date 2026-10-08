@@ -14,7 +14,6 @@ With two or more plan paths, follow [programme.md](programme.md) instead of the 
 
 ## Gotchas
 
-- `rerere.enabled` is on in `~/.gitconfig`. A repeat conflict comes back fully resolved with no markers while `git status` still shows `UU`. Run every merge and rebase with `-c rerere.enabled=false`.
 - The plan copy on the base branch is stale during the run by design. Read it in the run worktree.
 - Under `rebase`, `--ours` is the base side; under `merge` it is your branch. Read the conflict, do not assume.
 - Pass the plan file to a Workflow agent as a path. Pasted phase text goes stale on the first tick and defeats resume.

@@ -52,8 +52,8 @@ Phases i and j may run concurrently only if all hold:
 
 ```bash
 git -C "$MAIN" merge-tree --write-tree --messages "$TRUNK_TIP" "$BR"                   # dry run
-git -C "$WT" -c rerere.enabled=false rebase --onto "$TRUNK_TIP" "$(git merge-base "$TRUNK_TIP" "$BR")" "$BR"
-git -C "$RUN_WT" -c rerere.enabled=false merge --ff-only "$BR"
+git -C "$WT" rebase --onto "$TRUNK_TIP" "$(git merge-base "$TRUNK_TIP" "$BR")" "$BR"
+git -C "$RUN_WT" merge --ff-only "$BR"
 ```
 
 ## Land on the base branch
@@ -61,8 +61,8 @@ git -C "$RUN_WT" -c rerere.enabled=false merge --ff-only "$BR"
 ```bash
 BEFORE=$(git -C "$MAIN" rev-parse refs/heads/<base>)
 git -C "$MAIN" merge-tree --write-tree --messages "$BEFORE" plan/<slug>
-git -C "$WT" -c rerere.enabled=false rebase --onto "$BEFORE" "$(git merge-base "$BEFORE" plan/<slug>)" plan/<slug>
-git -C "$MAIN" -c rerere.enabled=false merge --ff-only plan/<slug>
+git -C "$WT" rebase --onto "$BEFORE" "$(git merge-base "$BEFORE" plan/<slug>)" plan/<slug>
+git -C "$MAIN" merge --ff-only plan/<slug>
 git -C "$MAIN" push origin <base>                                  # after the re-verify
 ```
 

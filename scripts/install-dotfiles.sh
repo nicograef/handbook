@@ -104,7 +104,6 @@ log "Setting git config defaults…"
 git config --global init.defaultBranch main
 git config --global pull.rebase true
 git config --global push.autoSetupRemote true
-git config --global rerere.enabled true
 git config --global fetch.prune true
 git config --global merge.conflictStyle zdiff3
 # delta as pager if installed, else fall back (safe on machines without delta)
