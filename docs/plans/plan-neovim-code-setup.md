@@ -72,11 +72,11 @@ Delete `~/.config/nvim.bak`, `~/.local/share/nvim/{lazy,mason,snacks}`, `~/.loca
 
 ### Acceptance criteria
 
-- [ ] `readlink -f ~/.config/nvim` prints `<clone>/dotfiles/nvim`.
-- [ ] `nvim --headless -c 'lua print(vim.g.colors_name, #vim.pack.get())' -c q` prints `tokyonight-moon 4`.
-- [ ] `nvim --headless -c 'lua print(vim.fn.maparg("<Space><Space>", "n") ~= "")' -c q` prints `true`.
-- [ ] `ls -d ~/.config/nvim.bak ~/.local/share/nvim/{lazy,mason,snacks} ~/.local/share/nvim/site/parser ~/.local/state/nvim/lazy 2>&1 | grep -c 'No such file'` prints `6`.
-- [ ] `make check` passes.
+- [x] `readlink -f ~/.config/nvim` prints `<clone>/dotfiles/nvim`.
+- [x] `nvim --headless -c 'lua print(vim.g.colors_name, #vim.pack.get())' -c q` prints `tokyonight-moon 4`.
+- [x] `nvim --headless -c 'lua print(vim.fn.maparg("<Space><Space>", "n") ~= "")' -c q` prints `true`.
+- [x] `ls -d ~/.config/nvim.bak ~/.local/share/nvim/{lazy,mason,snacks} ~/.local/share/nvim/site/parser ~/.local/state/nvim/lazy 2>&1 | grep -c 'No such file'` prints `6`.
+- [x] `make check` passes.
 
 ## Phase 2: LSP, treesitter, completion and format on save
 
