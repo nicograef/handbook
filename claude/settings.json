@@ -183,7 +183,7 @@
   "autoUpdatesChannel": "latest",
   "tui": "fullscreen",
   "skipWorkflowUsageWarning": true,
-  "theme": "auto",
+  "theme": "dark-ansi",
   "preferredNotifChannel": "auto",
   "fileCheckpointingEnabled": false,
   "showTurnDuration": true,

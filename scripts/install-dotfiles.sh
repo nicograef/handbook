@@ -122,12 +122,11 @@ else
 fi
 
 # ~/.claude.json holds machine state (auth, project list), so it is merged, not linked.
-# It carries the /config choices that have no settings.json key. The dark-ansi theme draws
-# with the terminal's ANSI colours, so Claude Code follows the Ptyxis palette.
+# It carries the /config choices that have no settings.json key.
 CLAUDE_JSON="$HOME/.claude.json"
 [[ -f "$CLAUDE_JSON" ]] || echo '{}' > "$CLAUDE_JSON"
 tmp="$(mktemp)"
-jq '. + {leftArrowOpensAgents: false, theme: "dark-ansi"}' "$CLAUDE_JSON" > "$tmp" && mv "$tmp" "$CLAUDE_JSON"
+jq '. + {leftArrowOpensAgents: false}' "$CLAUDE_JSON" > "$tmp" && mv "$tmp" "$CLAUDE_JSON"
 log "Merged /config prefs into $CLAUDE_JSON"
 
 log "Setting git config defaults…"
