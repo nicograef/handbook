@@ -56,10 +56,11 @@ Placeholders: `<name>` and `<email>` are your git identity; `<title>` names this
    pipx ensurepath
    ```
 
-6. **Go** — the classic snap tracks the latest release. `go install` builds into `~/go/bin`, which `.bash_aliases` puts on `PATH`:
+6. **Go** — the classic snap tracks the latest release. `go install` builds into `~/go/bin`, which `.bash_aliases` puts on `PATH`.
+   Without `gcc`, Go disables cgo and `go test -race` fails. `go env CGO_ENABLED` then prints `1`:
 
    ```bash
-   sudo snap install go --classic
+   sudo snap install go --classic && sudo apt install -y gcc
    ```
 
 7. **pnpm** — install it globally with npm, prefixed to `~/.local`, so no global install needs sudo. `pnpm --version` prints a version:
