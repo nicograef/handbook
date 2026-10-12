@@ -11,7 +11,7 @@
 #
 # Idempotent: reads only, never writes.
 
-# shellcheck disable=SC2329 # stages run by name as check_$STAGE, so no call site names them
+# shellcheck disable=SC2317,SC2329 # stages run by name as check_$STAGE; shellcheck before 0.11 reports that as SC2317
 set -euo pipefail
 
 STAGE="${1:-all}"
