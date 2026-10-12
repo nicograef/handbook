@@ -75,15 +75,15 @@ Every phase serves learning Vim properly: no shortcut hides a built-in.
 
 ### Acceptance criteria
 
-- [ ] `nvim --headless +'lua print(vim.o.timeoutlen, vim.o.laststatus, vim.o.jumpoptions, vim.o.spelllang)' +q` → `300 3 view en,de`
-- [ ] `nvim --headless +'lua local e = {} for _, a in ipairs(vim.api.nvim_get_autocmds({ group = "config" })) do e[a.event] = true end print(vim.iter(vim.tbl_keys(e)):join(" "))' +q` lists BufReadPost, BufWritePre, FileType, FocusGained, TermClose, TermLeave, TextYankPost
-- [ ] `d=$(mktemp -d) && nvim --headless +"w $d/a/b/c.txt" +q && test -f $d/a/b/c.txt` succeeds
-- [ ] `nvim --headless +'lua print(Snacks.config.indent.enabled, Snacks.config.words.enabled, Snacks.config.notifier.enabled)' +q` → `true true true`
-- [ ] `nvim --headless x.py +'lua print(vim.bo.indentexpr, vim.wo.foldmethod, vim.wo.foldlevel)' +q` → `v:lua.require'nvim-treesitter'.indentexpr() expr 99`
-- [ ] `nvim --headless +'lua for _, k in ipairs({"]e","[w","<Space>uf","<Space>uh","<Space>n"}) do print(k, vim.fn.maparg(k, "n") ~= "") end' +q` → all `true`
-- [ ] `nvim --headless +'lua for _, k in ipairs({"H","L","<C-H>","<M-j>","<Esc>"}) do print(k, vim.fn.maparg(k, "n") == "") end' +q` → all `true`
-- [ ] `d=$(mktemp -d) && printf '[project]\nname="t"\nversion="0"\n' > $d/pyproject.toml && printf 'x=1\n' > $d/f.py && nvim --headless $d/f.py +'sleep 2' +'let b:autoformat = v:false' +w +q && cat $d/f.py` → `x=1`; without the `let` → `x = 1`
-- [ ] `make check` passes
+- [x] `nvim --headless +'lua print(vim.o.timeoutlen, vim.o.laststatus, vim.o.jumpoptions, vim.o.spelllang)' +q` → `300 3 view en,de`
+- [x] `nvim --headless +'lua local e = {} for _, a in ipairs(vim.api.nvim_get_autocmds({ group = "config" })) do e[a.event] = true end print(vim.iter(vim.tbl_keys(e)):join(" "))' +q` lists BufReadPost, BufWritePre, FileType, FocusGained, TermClose, TermLeave, TextYankPost
+- [x] `d=$(mktemp -d) && nvim --headless +"w $d/a/b/c.txt" +q && test -f $d/a/b/c.txt` succeeds
+- [x] `nvim --headless +'lua print(Snacks.config.indent.enabled, Snacks.config.words.enabled, Snacks.config.notifier.enabled)' +q` → `true true true`
+- [x] `nvim --headless x.py +'lua print(vim.bo.indentexpr, vim.wo.foldmethod, vim.wo.foldlevel)' +q` → `v:lua.require'nvim-treesitter'.indentexpr() expr 99`
+- [x] `nvim --headless +'lua for _, k in ipairs({"]e","[w","<Space>uf","<Space>uh","<Space>n"}) do print(k, vim.fn.maparg(k, "n") ~= "") end' +q` → all `true`
+- [x] `nvim --headless +'lua for _, k in ipairs({"H","L","<C-H>","<M-j>","<Esc>"}) do print(k, vim.fn.maparg(k, "n") == "") end' +q` → all `true`
+- [x] `d=$(mktemp -d) && printf '[project]\nname="t"\nversion="0"\n' > $d/pyproject.toml && printf 'x=1\n' > $d/f.py && nvim --headless $d/f.py +'sleep 2' +'let b:autoformat = v:false' +w +q && cat $d/f.py` → `x=1`; without the `let` → `x = 1`
+- [x] `make check` passes
 
 ## Phase 2: Learning aids
 
