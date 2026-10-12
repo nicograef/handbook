@@ -67,6 +67,7 @@ case "$name" in
   apt-get)
     if [[ "$1 $2" == "install -y" && "$3" == gh ]]; then touch "$S/gh"; appear gh
     elif [[ "$1 $2" == "remove -y" ]]; then rm -f "$S/$3"
+    elif [[ "$1 $2" == "-s remove" ]]; then echo "Remv $3 [1]"; cat "$S/rdeps" 2>/dev/null
     elif [[ "$1" == install ]]; then touch "$S/apt"; fi ;;
   snap)
     # A broken snapd: the probe the script once died on without a word.
@@ -176,25 +177,34 @@ jq -n --arg n "nvim-linux-$NVIM_ARCH.tar.gz" --arg d "sha256:$(sha256sum "$FIX/n
   '{tag_name: "v0.99.0", assets: [{name: $n, digest: $d}]}' > "$FIX/nvim.json"
 export GNUPGHOME="$FIX/gnupg"
 mkdir -m 700 "$GNUPGHOME"
-gpg --batch --quiet --passphrase '' --quick-gen-key 'Fixture Releaser <releaser@example.com>' ed25519 sign never 2>/dev/null
-NODE_KEY="$(gpg --batch --with-colons --list-keys 2>/dev/null | awk -F: '$1 == "fpr" {print $10; exit}')"
+# Two releaser keys: the pinned one and one in the keyring that NODE_KEYS leaves out.
+for who in Releaser Stranger; do
+  gpg --batch --quiet --passphrase '' --quick-gen-key "Fixture $who <$who@example.com>" ed25519 sign never 2>/dev/null
+done
+mapfile -t keys < <(gpg --batch --with-colons --list-keys 2>/dev/null | awk -F: '$1 == "pub" {p = 1} $1 == "fpr" && p {print $10; p = 0}')
+NODE_KEY="${keys[0]}" STRANGER_KEY="${keys[1]}"
 gpg --batch --export 2>/dev/null > "$FIX/node-keys.gpg"
-# node_tarball <version> [extra file] — a Node tarball: node prints the version, npm is the stub.
+# node_tarball <version> [extra file|-include] — a Node tarball: node prints the version, npm is the stub;
+# -include leaves out include/, so extracting the named members fails halfway.
 node_tarball() {
   local top="node-$1-linux-$NODE_ARCH" d="$FIX/nodetar"
   rm -rf "$d" && mkdir -p "$d/$top/bin" "$d/$top/lib/node_modules/npm" "$d/$top/include/node" "$d/$top/share/doc/node"
   printf '#!/bin/sh\necho %s\n' "$1" > "$d/$top/bin/node" && chmod +x "$d/$top/bin/node"
   cp "$FIX/stub" "$d/$top/bin/npm"
   touch "$d/$top/lib/node_modules/npm/package.json" "$d/$top/include/node/node.h" "$d/$top/share/doc/node/notes" "$d/$top/README.md"
-  if [[ -n "${2:-}" ]]; then touch "$d/$top/$2"; fi
+  case "${2:-}" in
+    -include) rm -r "$d/$top/include" ;;
+    ?*) touch "$d/$top/$2" ;;
+  esac
   tar -C "$d" -cJf "$FIX/$top.tar.xz" "$top"
 }
-# node_release <version> [sha256] — index.json names it newest of 26; SHASUMS256.txt carries its digest or the given one.
+# node_release <version> [sha256] [signer] — index.json names it newest of 26; SHASUMS256.txt carries its
+# digest or the given one, signed by the pinned key or the given one.
 node_release() {
   local file="node-$1-linux-$NODE_ARCH.tar.xz"
   jq -n --arg v "$1" --arg f "linux-$NODE_ARCH" '[{version: $v, files: [$f]}, {version: "v25.9.0", files: [$f]}]' > "$FIX/node-index.json"
   printf '%s  %s\n' "${2:-$(sha256sum "$FIX/$file" | cut -d' ' -f1)}" "$file" \
-    | gpg --batch --quiet --clearsign 2>/dev/null > "$FIX/node-shasums.asc"
+    | gpg --batch --quiet --local-user "${3:-$NODE_KEY}" --clearsign 2>/dev/null > "$FIX/node-shasums.asc"
 }
 node_tarball v26.99.0 bin/npx
 node_tarball v26.99.1
@@ -380,7 +390,8 @@ else fail "wrong digests: rc $rc: $(cat "$OUT")"; fi
 mv "$FIX/go.json.good" "$FIX/go.json"
 mv "$FIX/nvim.json.good" "$FIX/nvim.json"
 
-# 10. A newer Node whose signature is broken, then one whose digest is wrong: the fix fails, v26.99.0 stays.
+# 10. A newer Node whose signature is broken, signed by an unpinned key, whose digest is wrong, or whose
+#     extraction fails halfway: the fix fails, v26.99.0 stays whole.
 node_release v26.99.1
 sed -i 's/^\([0-9a-f]\{63\}\)[0-9a-f]  /\1x  /' "$FIX/node-shasums.asc"
 run '' --yes
@@ -392,13 +403,72 @@ run '' --yes
 if [[ "$rc" -eq 1 ]] && grep -qF 'Fix for Node failed' "$OUT" && grep -qF 'FAILED' "$OUT" && node_kept; then
   log "wrong digest -> node fix fails, old install kept"
 else fail "wrong digest: rc $rc: $(cat "$OUT")"; fi
-
-# A valid newer release replaces the old one and drops the files it no longer ships.
+node_release v26.99.1 "" "$STRANGER_KEY"
+run '' --yes
+if [[ "$rc" -eq 1 ]] && grep -qF 'no valid signature of a pinned releaser key' "$OUT" && node_kept; then
+  log "unpinned signer -> node fix fails, old install kept"
+else fail "unpinned signer: rc $rc: $(cat "$OUT")"; fi
+node_tarball v26.99.1 -include
 node_release v26.99.1
 run '' --yes
-if [[ "$rc" -eq 0 && "$("$FIX/usr-local/bin/node")" == v26.99.1 && ! -e "$FIX/usr-local/bin/npx" ]]; then
-  log "node upgrade -> v26.99.1, stale npx gone"
+if [[ "$rc" -eq 1 ]] && grep -qF 'Fix for Node failed' "$OUT" && node_kept \
+  && [[ -s "$FIX/usr-local/lib/node-tarball.files" ]] && ! compgen -G "$FIX/usr-local/.node-stage.*" >/dev/null; then
+  log "extraction fails halfway -> live install and manifest untouched, stage removed"
+else fail "extraction fails halfway: rc $rc: $(cat "$OUT")"; fi
+node_tarball v26.99.1
+
+# An install with a file gone or no manifest is unfinished: WRONG, and the fix puts it back.
+rm -r "$FIX/usr-local/lib/node_modules/npm"
+node_release v26.99.0
+run '' --check
+if [[ "$rc" -eq 1 ]] && grep -qE '^WRONG +Node +gone: lib/node_modules/npm' "$OUT"; then log "file gone -> WRONG"
+else fail "file gone: rc $rc: $(cat "$OUT")"; fi
+rm "$FIX/usr-local/lib/node-tarball.files"
+run '' --check
+if [[ "$rc" -eq 1 ]] && grep -qE '^WRONG +Node +no .*node-tarball.files: the last install did not finish' "$OUT"; then
+  log "no manifest -> WRONG"
+else fail "no manifest: rc $rc: $(cat "$OUT")"; fi
+run '' --yes
+if [[ "$rc" -eq 0 ]] && node_kept; then log "unfinished install -> reinstalled"; else fail "reinstall: rc $rc: $(cat "$OUT")"; fi
+
+# A corrupt manifest: its bad lines are reported and never deleted.
+mkdir -p "$FIX/etc/keep" && touch "$FIX/usr-local/lib/keep" "$FIX/etc/keep/file"
+printf '\nlib\n../etc\nbin/../../etc\nbin/node\n' >> "$FIX/usr-local/lib/node-tarball.files"
+run '' --check
+if [[ "$rc" -eq 1 ]] && grep -qF "manifest lines outside bin, include, lib and share: '' 'lib' '../etc' 'bin/../../etc'" "$OUT"; then
+  log "corrupt manifest -> WRONG, lines named"
+else fail "corrupt manifest --check: rc $rc: $(cat "$OUT")"; fi
+
+# A valid newer release replaces the old one, drops the files it no longer ships, and skips bad lines.
+node_release v26.99.1
+run '' --yes
+if [[ "$rc" -eq 0 && "$("$FIX/usr-local/bin/node")" == v26.99.1 && ! -e "$FIX/usr-local/bin/npx" ]] \
+  && [[ -f "$FIX/usr-local/lib/keep" && -f "$FIX/etc/keep/file" ]] && grep -qF 'Skipping manifest line' "$OUT"; then
+  log "node upgrade -> v26.99.1, stale npx gone, bad manifest lines left alone"
 else fail "node upgrade: rc $rc: $(cat "$OUT")"; fi
+
+# An index naming an older signed release: no downgrade, from the check or the fix.
+node_release v26.99.0
+run '' --check
+if [[ "$rc" -eq 0 ]] && grep -qE '^ok +Node +nodejs.org names the older v26.99.0; kept v26.99.1' "$OUT"; then
+  log "older index -> ok, kept"
+else fail "older index --check: rc $rc: $(cat "$OUT")"; fi
+rm "$FIX/usr-local/lib/node-tarball.files"
+run '' --yes
+if [[ "$rc" -eq 1 && "$("$FIX/usr-local/bin/node")" == v26.99.1 ]] && grep -qF 'no downgrade' "$OUT"; then
+  log "older index -> the fix refuses to downgrade"
+else fail "older index --yes: rc $rc: $(cat "$OUT")"; fi
+node_release v26.99.1
+run '' --yes
+if [[ "$rc" -eq 0 ]]; then log "same release -> manifest rewritten"; else fail "same release: rc $rc: $(cat "$OUT")"; fi
+
+# Without nodejs.org the check says so instead of a silent ok.
+mv "$FIX/node-index.json" "$FIX/node-index.json.off"
+run '' --check
+if [[ "$rc" -eq 0 ]] && grep -qE '^ok +Node +nodejs.org did not answer; version not compared' "$OUT"; then
+  log "nodejs.org offline -> ok with a note"
+else fail "nodejs.org offline: rc $rc: $(cat "$OUT")"; fi
+mv "$FIX/node-index.json.off" "$FIX/node-index.json"
 
 # 11. A host with Docker's own packages, as setup-server.sh installs them: kept, and a newer docker-ce
 #     is no reason to touch it.
@@ -423,7 +493,7 @@ mkdir -p "$FIX/etc/apt/sources.list.d" "$FIX/etc/apt/preferences.d" "$FIX/etc/ap
 touch "$FIX/etc/apt/sources.list.d/nodesource.sources" "$FIX/etc/apt/preferences.d/nodejs" "$FIX/etc/apt/preferences.d/nsolid" \
   "$FIX/etc/apt/apt.conf.d/52unattended-upgrades-nodesource" "$FIX/usr/share/keyrings/nodesource.gpg" "$STATE/nodejs"
 check_run "nodesource"
-if grep -qE '^WRONG +no apt nodejs +apt nodejs 26\.1\.0-1nodesource1 sources\.list\.d/nodesource\.sources keyrings/nodesource\.gpg.*replaces them once installed' "$OUT"; then
+if grep -qE '^WRONG +no apt nodejs +apt nodejs 26\.1\.0-1nodesource1 \(removes: nodejs\) sources\.list\.d/nodesource\.sources keyrings/nodesource\.gpg.*replaces them once installed' "$OUT"; then
   log "nodesource --check -> WRONG with what it left"
 else fail "nodesource --check: $(cat "$OUT")"; fi
 run 'y\nFixture User\nfixture@example.com\n\n' --yes
@@ -432,11 +502,18 @@ if [[ "$rc" -eq 1 && -f "$STATE/nodejs" && -f "$FIX/etc/apt/sources.list.d/nodes
   log "nodesource, tarball fails -> apt Node kept"
 else fail "nodesource, tarball fails: rc $rc: $(grep '^apt-get' "$CALLS")"; fi
 node_release v26.99.0
+printf 'Remv node-acorn [8]\n' > "$STATE/rdeps"
+run 'y\n' --yes
+in_order "curl -fsSL https://nodejs.org/dist/v26.99.0/node-v26.99.0-linux-$NODE_ARCH.tar.xz"
+if [[ "$rc" -eq 1 && -f "$STATE/nodejs" ]] && ! grep -q '^apt-get remove' "$CALLS" && node_kept \
+  && grep -qF 'would also remove node-acorn' "$OUT" && grep -qF '(removes: nodejs node-acorn)' "$OUT"; then
+  log "tarball in, removal takes another package -> refused, apt Node kept"
+else fail "extra removal: rc $rc: $(cat "$OUT")"; fi
+rm "$STATE/rdeps"
 run 'y\n' --yes
 leftover="$(find "$FIX/etc" "$FIX/usr" -name '*nodesource*' -o -name nodejs -o -name nsolid)"
-in_order "curl -fsSL https://nodejs.org/dist/v26.99.0/node-v26.99.0-linux-$NODE_ARCH.tar.xz" "apt-get remove -y nodejs"
 if [[ "$rc" -eq 0 && -z "$leftover" && ! -f "$STATE/nodejs" ]] && node_kept; then
-  log "nodesource --yes -> tarball installed, then apt Node removed after the prompt"
+  log "nodesource --yes -> apt Node and NodeSource removed after the prompt"
 else fail "nodesource --yes: rc $rc, left: $leftover: $(cat "$OUT")"; fi
 
 # 13. A --yes without a terminal: no git identity or GitHub key from an empty pipe.

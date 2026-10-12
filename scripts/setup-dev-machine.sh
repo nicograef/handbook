@@ -267,47 +267,93 @@ fix_snaps() {
   done
 }
 
+# node_removals — every package apt-get would remove along with nodejs, nodejs included.
+node_removals() { LC_ALL=C apt-get -s remove nodejs 2>/dev/null | awk '$1 == "Remv" {print $2}' | tr '\n' ' ' || true; }
 check_aptnode() {
-  local f found=()
-  if installed nodejs; then found+=("apt nodejs $(dpkg-query -W -f='${Version}' nodejs 2>/dev/null || true)"); fi
+  local f found=() removals
+  if installed nodejs; then
+    removals="$(node_removals)"
+    found+=("apt nodejs $(dpkg-query -W -f='${Version}' nodejs 2>/dev/null || true) (removes: ${removals% })")
+  fi
   for f in "${NODESOURCE_FILES[@]}"; do
     if [[ -e "$f" ]]; then found+=("${f%/*}"); found[-1]="${found[-1]##*/}/${f##*/}"; fi
   done
   if ((${#found[@]})); then flag WRONG "${found[*]}; the nodejs.org tarball replaces them once installed"; fi
 }
 fix_aptnode() {
-  [[ -x "$NODE_PREFIX/bin/node" ]] || { printf 'The nodejs.org tarball is not installed; the apt Node stays.\n'; return 1; }
+  local p extra=()
+  STATUS=ok DETAIL=""
+  check_node
+  if [[ "$STATUS" != ok ]]; then printf 'The nodejs.org Node is not in place (%s); the apt Node stays.\n' "$DETAIL"; return 1; fi
+  if installed nodejs; then
+    for p in $(node_removals); do
+      case "$p" in nodejs|npm|libnode*) ;; *) extra+=("$p") ;; esac
+    done
+    if ((${#extra[@]})); then printf 'Removing nodejs would also remove %s; remove them yourself first.\n' "${extra[*]}"; return 1; fi
+  fi
   rm -f "${NODESOURCE_FILES[@]}"
   if installed nodejs; then apt-get remove -y nodejs; fi
   apt-get update -qq
 }
 
+# valid_unit <path> — a manifest line names one path under bin, include, lib or share, never their root
+# or a way out; anything else is never deleted.
+valid_unit() { [[ "$1" =~ ^(bin|include|lib|share)/[^/] && "/$1/" != *"/../"* && "$1" != */ ]]; }
+
 # node_units <top> — the tarball's paths under bin, include, lib and share, cut to what one rm removes:
 # a package in lib/node_modules, include/node, share/doc/node, otherwise the file.
 node_units() {
-  sed -n "s|^$1/||p" | { grep -E '^(bin|include|lib|share)/.' || true; } | awk -F/ '
+  local unit
+  sed -n "s|^$1/||p" | awk -F/ '
     $1 == "lib" && $2 == "node_modules" {print $1 "/" $2 "/" $3; next}
     $1 == "include" {print $1 "/" $2; next}
     $1 == "share" && $2 == "doc" {print $1 "/" $2 "/" $3; next}
-    {print}' | { grep -v '/$' || true; } | sort -u
+    {print}' | sort -u | while IFS= read -r unit; do if valid_unit "$unit"; then printf '%s\n' "$unit"; fi; done
 }
 
+# node_version — the tarball Node's version, empty when it does not run.
+node_version() { as_user "$NODE_PREFIX/bin/node" --version 2>/dev/null || true; }
+# version_lt <a> <b> — a sorts before b.
+version_lt() { [[ "$1" != "$2" && "$(printf '%s\n%s\n' "$1" "$2" | sort -V | head -1)" == "$1" ]]; }
+
 check_node() {
-  local current
+  local current unit invalid=() gone=()
   if [[ ! -x "$NODE_PREFIX/bin/node" ]]; then flag MISSING "$NODE_PREFIX/bin/node"; return; fi
-  current="$(as_user "$NODE_PREFIX/bin/node" --version)"
-  if [[ "$current" != "v$NODE_MAJOR".* ]]; then flag WRONG "node $current, not $NODE_MAJOR.x"
-  elif [[ -n "$NODE_LATEST" && "$current" != "$NODE_LATEST" ]]; then flag OUTDATED "node $current → $NODE_LATEST"; fi
+  # The manifest is written last, so its absence or a file it lists gone means an interrupted install.
+  if [[ ! -s "$NODE_MANIFEST" ]]; then
+    flag WRONG "no $NODE_MANIFEST: the last install did not finish"
+  else
+    while IFS= read -r unit; do
+      if ! valid_unit "$unit"; then invalid+=("'$unit'")
+      elif [[ ! -e "$NODE_PREFIX/$unit" && ! -L "$NODE_PREFIX/$unit" ]]; then gone+=("$unit"); fi
+    done < "$NODE_MANIFEST"
+    if ((${#invalid[@]})); then flag WRONG "manifest lines outside bin, include, lib and share: ${invalid[*]}"; fi
+    if ((${#gone[@]})); then flag WRONG "gone: ${gone[*]}"; fi
+  fi
+  current="$(node_version)"
+  if [[ "$current" != "v$NODE_MAJOR".* ]]; then flag WRONG "node '$current', not $NODE_MAJOR.x"
+  elif [[ -z "$NODE_LATEST" ]]; then DETAIL+="${DETAIL:+; }nodejs.org did not answer; version not compared"
+  elif version_lt "$current" "$NODE_LATEST"; then flag OUTDATED "node $current → $NODE_LATEST"
+  elif version_lt "$NODE_LATEST" "$current"; then DETAIL+="${DETAIL:+; }nodejs.org names the older $NODE_LATEST; kept $current"
+  fi
 }
-# The download fixes run in a subshell; TMP_DIR is global so their EXIT trap still sees it.
+# The download fixes run in a subshell; TMP_DIR and STAGE_DIR are global, so their EXIT trap sees them.
 
 # Verified as the official Docker image does: a pinned releaser's signature over SHASUMS256.txt, then the
 # tarball's sha256. Source: https://github.com/nodejs/node#verifying-binaries
+# It unpacks into a stage on the same filesystem, moves each piece into place and writes the manifest last.
 fix_node() {
-  local signer unit name="node-$NODE_LATEST-linux-$NODE_ARCH"
+  local signer unit current name="node-$NODE_LATEST-linux-$NODE_ARCH"
   [[ -n "$NODE_LATEST" ]] || { printf 'nodejs.org/dist did not answer.\n'; return 1; }
+  current="$(node_version)"
+  if [[ -n "$current" ]] && version_lt "$NODE_LATEST" "$current"; then
+    printf 'nodejs.org names %s, older than the installed %s; no downgrade.\n' "$NODE_LATEST" "$current"
+    return 1
+  fi
   TMP_DIR="$(mktemp -d)"
-  trap 'rm -rf "$TMP_DIR"' EXIT
+  mkdir -p "$NODE_PREFIX"
+  STAGE_DIR="$(mktemp -d "$NODE_PREFIX/.node-stage.XXXXXX")"
+  trap 'rm -rf "$TMP_DIR" "$STAGE_DIR"' EXIT
   curl -fsSL "$NODE_KEYRING_URL" -o "$TMP_DIR/keys.kbx"
   curl -fsSL "https://nodejs.org/dist/$NODE_LATEST/SHASUMS256.txt.asc" -o "$TMP_DIR/SHASUMS256.txt.asc"
   curl -fsSL "https://nodejs.org/dist/$NODE_LATEST/$name.tar.xz" -o "$TMP_DIR/$name.tar.xz"
@@ -319,13 +365,27 @@ fix_node() {
     return 1
   fi
   (cd "$TMP_DIR" && grep " $name.tar.xz\$" SHASUMS256.txt | sha256sum --quiet -c -)
-  # The old install's files go first, so nothing of an older npm lingers.
   tar -tJf "$TMP_DIR/$name.tar.xz" | node_units "$name" > "$TMP_DIR/units"
-  while read -r unit; do rm -rf "${NODE_PREFIX:?}/$unit"; done < <(sort -u "$TMP_DIR/units" "$NODE_MANIFEST" 2>/dev/null || true)
-  mkdir -p "$NODE_PREFIX"
-  tar -xJf "$TMP_DIR/$name.tar.xz" -C "$NODE_PREFIX" --strip-components=1 --no-same-owner \
+  [[ -s "$TMP_DIR/units" ]] || { printf '%s holds nothing under bin, include, lib or share.\n' "$name.tar.xz"; return 1; }
+  tar -xJf "$TMP_DIR/$name.tar.xz" -C "$STAGE_DIR" --strip-components=1 --no-same-owner \
     "$name/bin" "$name/include" "$name/lib" "$name/share"
-  cp "$TMP_DIR/units" "$NODE_MANIFEST"
+  # From here the live tree changes; without a manifest, check_node calls it unfinished.
+  touch "$TMP_DIR/old"
+  if [[ -f "$NODE_MANIFEST" ]]; then
+    while IFS= read -r unit; do
+      if valid_unit "$unit"; then printf '%s\n' "$unit"; else printf 'Skipping manifest line %q.\n' "$unit" >&2; fi
+    done < "$NODE_MANIFEST" > "$TMP_DIR/old"
+    rm -f "$NODE_MANIFEST"
+  fi
+  # What only the old release shipped goes before anything moves, so no removal can reach a new file.
+  while IFS= read -r unit; do rm -rf "${NODE_PREFIX:?}/$unit"; done < <(sort -u "$TMP_DIR/old" | comm -23 - "$TMP_DIR/units")
+  while IFS= read -r unit; do
+    rm -rf "${NODE_PREFIX:?}/$unit"
+    mkdir -p "$(dirname "$NODE_PREFIX/$unit")"
+    mv -T "$STAGE_DIR/$unit" "$NODE_PREFIX/$unit"
+  done < "$TMP_DIR/units"
+  cp "$TMP_DIR/units" "$NODE_MANIFEST.new"
+  mv -T "$NODE_MANIFEST.new" "$NODE_MANIFEST"
 }
 
 check_go() {
