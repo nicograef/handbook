@@ -15,7 +15,7 @@
 #
 # Node, Go and Neovim: snaps on Ubuntu. Debian has no snap, so Node comes from the nodejs.org tarball in
 # /usr/local, Go from go.dev's tarball in /usr/local/go, and Neovim from the release tarball in ~/.local.
-# An apt nodejs, NodeSource's included, is removed after its own prompt.
+# An apt nodejs, NodeSource's included, is removed after its own prompt, once the tarball is in place.
 # A host without a display server skips the Nerd Font and xclip; the client's terminal renders the font.
 # Docker packages are installed, never upgraded: that restarts dockerd. A piped --yes skips the human steps.
 # A probe that fails stops the run with an ERROR line naming it; --check exits 1 when an item differs.
@@ -88,7 +88,8 @@ ITEMS=("apt|apt packages" "ghrepo|gh apt repo")
 if [[ "$DISTRO" == ubuntu ]]; then
   ITEMS+=("snaps|snaps")
 else
-  ITEMS+=("aptnode|no apt nodejs" "node|Node" "go|Go" "nvimbin|Neovim")
+  # The tarball lands first: /usr/local/bin precedes /usr/bin, so the apt Node goes only once it is replaced.
+  ITEMS+=("node|Node" "aptnode|no apt nodejs" "go|Go" "nvimbin|Neovim")
 fi
 ITEMS+=(
   "aptnvim|no apt neovim"
@@ -272,9 +273,10 @@ check_aptnode() {
   for f in "${NODESOURCE_FILES[@]}"; do
     if [[ -e "$f" ]]; then found+=("${f%/*}"); found[-1]="${found[-1]##*/}/${f##*/}"; fi
   done
-  if ((${#found[@]})); then flag WRONG "${found[*]}; the nodejs.org tarball replaces them"; fi
+  if ((${#found[@]})); then flag WRONG "${found[*]}; the nodejs.org tarball replaces them once installed"; fi
 }
 fix_aptnode() {
+  [[ -x "$NODE_PREFIX/bin/node" ]] || { printf 'The nodejs.org tarball is not installed; the apt Node stays.\n'; return 1; }
   rm -f "${NODESOURCE_FILES[@]}"
   if installed nodejs; then apt-get remove -y nodejs; fi
   apt-get update -qq

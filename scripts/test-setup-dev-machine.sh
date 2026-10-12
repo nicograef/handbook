@@ -413,22 +413,30 @@ if grep -qxF 'apt-get install -y --no-upgrade docker-ce docker-ce-cli containerd
   log "docker-ce host -> keeps docker-ce, installs only what is missing"
 else fail "docker-ce host: $(grep '^apt-get install' "$CALLS")"; fi
 
-# 12. A NodeSource host: the check names what NodeSource left, the fix removes it after its prompt, then
-#     installs the tarball.
+# 12. A NodeSource host: the check names what NodeSource left. A tarball that fails verification leaves the
+#     apt Node alone; one that installs is followed by the removal, after its prompt.
 fresh_machine debian
 node_tarball v26.99.0 bin/npx
 node_release v26.99.0
+sed -i 's/^\([0-9a-f]\{63\}\)[0-9a-f]  /\1x  /' "$FIX/node-shasums.asc"
 mkdir -p "$FIX/etc/apt/sources.list.d" "$FIX/etc/apt/preferences.d" "$FIX/etc/apt/apt.conf.d" "$FIX/usr/share/keyrings"
 touch "$FIX/etc/apt/sources.list.d/nodesource.sources" "$FIX/etc/apt/preferences.d/nodejs" "$FIX/etc/apt/preferences.d/nsolid" \
   "$FIX/etc/apt/apt.conf.d/52unattended-upgrades-nodesource" "$FIX/usr/share/keyrings/nodesource.gpg" "$STATE/nodejs"
 check_run "nodesource"
-if grep -qE '^WRONG +no apt nodejs +apt nodejs 26\.1\.0-1nodesource1 sources\.list\.d/nodesource\.sources keyrings/nodesource\.gpg' "$OUT"; then
+if grep -qE '^WRONG +no apt nodejs +apt nodejs 26\.1\.0-1nodesource1 sources\.list\.d/nodesource\.sources keyrings/nodesource\.gpg.*replaces them once installed' "$OUT"; then
   log "nodesource --check -> WRONG with what it left"
 else fail "nodesource --check: $(cat "$OUT")"; fi
 run 'y\nFixture User\nfixture@example.com\n\n' --yes
+if [[ "$rc" -eq 1 && -f "$STATE/nodejs" && -f "$FIX/etc/apt/sources.list.d/nodesource.sources" ]] \
+  && ! grep -q '^apt-get remove -y nodejs' "$CALLS" && grep -qF 'Fix for Node failed' "$OUT"; then
+  log "nodesource, tarball fails -> apt Node kept"
+else fail "nodesource, tarball fails: rc $rc: $(grep '^apt-get' "$CALLS")"; fi
+node_release v26.99.0
+run 'y\n' --yes
 leftover="$(find "$FIX/etc" "$FIX/usr" -name '*nodesource*' -o -name nodejs -o -name nsolid)"
-in_order "apt-get remove -y nodejs" "curl -fsSL https://nodejs.org/dist/v26.99.0/node-v26.99.0-linux-$NODE_ARCH.tar.xz"
-if [[ "$rc" -eq 0 && -z "$leftover" ]] && node_kept; then log "nodesource --yes -> removed after the prompt, tarball installed"
+in_order "curl -fsSL https://nodejs.org/dist/v26.99.0/node-v26.99.0-linux-$NODE_ARCH.tar.xz" "apt-get remove -y nodejs"
+if [[ "$rc" -eq 0 && -z "$leftover" && ! -f "$STATE/nodejs" ]] && node_kept; then
+  log "nodesource --yes -> tarball installed, then apt Node removed after the prompt"
 else fail "nodesource --yes: rc $rc, left: $leftover: $(cat "$OUT")"; fi
 
 # 13. A --yes without a terminal: no git identity or GitHub key from an empty pipe.
