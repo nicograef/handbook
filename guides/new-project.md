@@ -16,7 +16,7 @@ Take an empty directory to a repository whose `make check` passes. Index: [READM
 | `<database-name>` | Postgres database name | `orders` |
 | `<project-go-version>` | Go release for the `go` directive of `go.mod` | `1.26.5` |
 | `<project-python-version>` | Python minor in the `Dockerfile.python` base tag | `3.12` |
-| `<uv-version>` | uv version in the `Dockerfile.python` base tag | `0.12.18` |
+| `<uv-version>` | uv version in the `Dockerfile.python` base tag | `0.13.0` |
 | `<pytest-marker>` | Opt-in pytest marker for integration tests | `integration` |
 | `<node-major>` | Node major in the `Dockerfile.spa` base tag | `26` |
 

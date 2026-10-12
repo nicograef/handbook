@@ -92,7 +92,7 @@ if command -v uv >/dev/null 2>&1; then
   info "uv already installed: $(uv --version)"
 else
   # The floor in [tool.uv] required-version of backend/pyproject.toml: uv refuses to run below it.
-  curl -LsSf https://astral.sh/uv/0.12.18/install.sh | sh
+  curl -LsSf https://astral.sh/uv/0.13.0/install.sh | sh
   export PATH="$HOME/.local/bin:$PATH"
 fi
 

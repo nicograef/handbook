@@ -88,7 +88,7 @@ GO
 stub_python() {
   local d="$FIX/python"
   mkdir -p "$d"
-  docker run --rm --name "$PREFIX-scaffold" ghcr.io/astral-sh/uv:0.12.18-python3.12-trixie-slim \
+  docker run --rm --name "$PREFIX-scaffold" ghcr.io/astral-sh/uv:0.13.0-python3.12-trixie-slim \
     sh -c 'cd /tmp && uv init -q --package --python 3.12 stub >&2 && cd stub && uv add -q --no-sync uvicorn >&2 && tar -cf - .' |
     tar -xf - -C "$d"
   cat >"$d/src/stub/api.py" <<'PY'
