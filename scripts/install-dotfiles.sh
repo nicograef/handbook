@@ -8,7 +8,8 @@
 # What it does:
 #   1. Pre-flight: jq present, every link origin exists; any failure exits 1 before a change
 #   2. Symlinks every LINKS entry below into $HOME: shell dotfiles, Neovim, repo-status and the
-#      Claude Code config; a real file or directory in the way is moved to <name>.bak.
+#      Claude Code config; a real file or directory in the way is moved to <name>.bak, and an
+#      older <name>.bak to <name>.bak.~N~. A link already in place is left alone.
 #      Removes links in ~/.claude and ~/.agents that point into this repo at a file that is gone.
 #   3. Selects the handbook palette in Ptyxis's default profile when Ptyxis is installed
 #   4. Installs the nico@handbook plugin (skills, agent, hooks) when claude is on PATH
@@ -72,6 +73,8 @@ preflight() {
 # Moves a real file or directory at the destination to .bak, then links it.
 link() {
   local origin="$DOTFILES_DIR/$1" dest="$HOME/$2"
+  if [[ -L "$dest" && "$(readlink "$dest")" == "$origin" ]]; then return; fi
+  relinked=true
   if [[ -e "$dest" && ! -L "$dest" ]]; then
     mv -T --backup=numbered "$dest" "$dest.bak"
     log "Moved $dest to $dest.bak"
@@ -88,9 +91,11 @@ if [[ "$CHECK" == true ]]; then
   exit 0
 fi
 
+relinked=false
 for entry in "${LINKS[@]}"; do
   link "${entry%% *}" "${entry#* }"
 done
+if [[ "$relinked" == false ]]; then log "Every link already in place"; fi
 
 # A link into this repo whose target is gone names a moved or deleted file.
 for dest in "$HOME"/.claude/* "$HOME"/.agents/*; do
@@ -123,11 +128,18 @@ fi
 
 # ~/.claude.json holds machine state (auth, project list), so it is merged, not linked.
 # It carries the /config choices that have no settings.json key.
+# Running sessions write it too, so it is rewritten only when a pref differs.
 CLAUDE_JSON="$HOME/.claude.json"
 [[ -f "$CLAUDE_JSON" ]] || echo '{}' > "$CLAUDE_JSON"
-tmp="$(mktemp)"
-jq '. + {leftArrowOpensAgents: false}' "$CLAUDE_JSON" > "$tmp" && mv "$tmp" "$CLAUDE_JSON"
-log "Merged /config prefs into $CLAUDE_JSON"
+if jq -e '.leftArrowOpensAgents == false' "$CLAUDE_JSON" >/dev/null; then
+  log "/config prefs already in $CLAUDE_JSON"
+else
+  tmp="$(mktemp)"
+  jq '. + {leftArrowOpensAgents: false}' "$CLAUDE_JSON" > "$tmp"
+  chmod --reference="$CLAUDE_JSON" "$tmp"
+  mv "$tmp" "$CLAUDE_JSON"
+  log "Merged /config prefs into $CLAUDE_JSON"
+fi
 
 log "Setting git config defaults…"
 git config --global init.defaultBranch main

@@ -29,7 +29,7 @@
 - [x] Dev script: distro detection, guarded probes, ERR trap
 - [x] Dev script: Debian node, go, neovim items; docker set; uv via pipx
 - [x] Fixture test: Debian path, broken snap probe
-- [ ] install-dotfiles.sh rerun reports and `~/.claude.json`
+- [x] install-dotfiles.sh rerun reports and `~/.claude.json`
 - [ ] setup-server.sh rerun
 - [ ] Docs and README
 - [ ] `make check` green; `--check` on staging
