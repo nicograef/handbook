@@ -9,7 +9,7 @@
 #   2. Puts one logging stub first on PATH for apt, snap, gh, npm, uv, nvim and the rest;
 #      marker files hold the fake machine state, and a tool appears when its fix installs it.
 #   3. Asserts the root guard, --check on the fresh machine, --yes on it, then --check again.
-#   4. Reruns --yes on a gh login that lacks the key scopes and a deleted font.
+#   4. Reruns --yes on a gh login that lacks the key scopes and a deleted font, then with both keys present.
 #   5. Asserts a broken snap probe names itself and another distro is refused.
 #   6. Repeats the fresh and fixed runs on a headless Debian: no snap, the Node, Go and Neovim tarballs,
 #      no font or xclip. A rerun changes nothing; a Node upgrade drops the old files; a wrong signature or
@@ -323,6 +323,16 @@ if [[ "$rc" -eq 0 && "$refreshes" -eq 1 && "$adds" == *"--type signing"* && "$ad
 else fail "scopeless login: rc $rc, $refreshes refreshes, adds: $adds: $(cat "$OUT")"; fi
 if grep -qF 'terminal finds the new font' "$OUT"; then log "font fix -> asks for a new login"
 else fail "no new-login notice after the font fix: $(cat "$OUT")"; fi
+
+# 5b. A login without the key scopes, both keys already on GitHub: the row names the scopes, no title is asked.
+printf 'repo\n' > "$STATE/scopes"
+run '' --check
+if grep -qE '^WRONG .*lacks admin:public_key admin:ssh_signing_key' "$OUT"; then log "scopeless login, keys present --check -> names the scopes"
+else fail "scopeless login, keys present --check: $(cat "$OUT")"; fi
+run '' --yes
+if [[ "$rc" -eq 0 ]] && ! grep -q '^gh ssh-key add' "$CALLS" && ! grep -qF 'Key title' "$OUT"; then
+  log "scopeless login, keys present --yes -> no title asked, nothing added"
+else fail "scopeless login, keys present --yes: rc $rc: $(cat "$OUT")"; fi
 
 # 6. A broken snap probe stops the run with its name, never silently.
 touch "$STATE/nosnap"

@@ -548,6 +548,15 @@ fix_sshconfig() {
   as_user chmod 600 "$TARGET_HOME/.ssh/config"
 }
 
+# missing_scopes — the key scopes the gh login lacks, space-separated; without them the key list reads empty.
+missing_scopes() {
+  local status scope out=""
+  status="$(as_user gh auth status 2>&1 || true)"
+  for scope in ${GH_KEY_SCOPES//,/ }; do
+    if [[ "$status" != *"'$scope'"* ]]; then out+="$scope "; fi
+  done
+  printf '%s' "$out"
+}
 # missing_key_types — the types of the local key that GitHub lacks, space-separated.
 missing_key_types() {
   local key list type out=""
@@ -564,20 +573,20 @@ check_ghkeys() {
   local missing
   if [[ ! -f "$KEY.pub" ]]; then flag MISSING "no SSH key"; return; fi
   if ! user_has gh || ! as_user gh auth status >/dev/null 2>&1; then flag MISSING "gh not logged in"; return; fi
+  missing="$(missing_scopes)"
+  if [[ -n "$missing" ]]; then flag WRONG "gh login lacks ${missing% }, so the keys cannot be listed"; return; fi
   missing="$(missing_key_types)"
   if [[ -n "$missing" ]]; then flag MISSING "${missing% } key"; fi
 }
 fix_ghkeys() {
-  local status scope type title=""
+  local type types title=""
   interactive || { printf 'The GitHub keys need a terminal for the key title and the browser approval.\n'; return 1; }
-  # A login made outside this script may lack the scopes, and then the key list reads empty.
-  status="$(as_user gh auth status 2>&1 || true)"
-  for scope in ${GH_KEY_SCOPES//,/ }; do
-    if [[ "$status" != *"'$scope'"* ]]; then as_user gh auth refresh -h github.com -s "$GH_KEY_SCOPES"; break; fi
-  done
+  if [[ -n "$(missing_scopes)" ]]; then as_user gh auth refresh -h github.com -s "$GH_KEY_SCOPES"; fi
+  types="$(missing_key_types)"
+  if [[ -z "$types" ]]; then printf 'GitHub already has both keys.\n'; return 0; fi
   title="$(ask "Key title on GitHub [$(hostname)]:")" || true
   title="${title:-$(hostname)}"
-  for type in $(missing_key_types); do
+  for type in $types; do
     as_user gh ssh-key add "$KEY.pub" --type "$type" --title "$title"
   done
 }
