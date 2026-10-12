@@ -121,7 +121,10 @@ vim.api.nvim_create_autocmd('FileType', {
   end,
 })
 
-vim.lsp.enable({ 'ts_ls', 'ty', 'ruff', 'biome', 'bashls', 'yamlls', 'jsonls' })
+-- tsc is TypeScript 7's native server. Biome and the oxc tools attach only where the project
+-- configures them; lspconfig would start the oxc ones rootless everywhere else.
+for _, name in ipairs({ 'oxlint', 'oxfmt' }) do vim.lsp.config(name, { workspace_required = true }) end
+vim.lsp.enable({ 'tsc', 'ty', 'ruff', 'biome', 'oxlint', 'oxfmt', 'bashls', 'yamlls', 'jsonls' })
 
 vim.api.nvim_create_autocmd('LspAttach', {
   callback = function(ev)
@@ -129,8 +132,8 @@ vim.api.nvim_create_autocmd('LspAttach', {
     if client:supports_method('textDocument/completion') then
       vim.lsp.completion.enable(true, client.id, ev.buf, { autotrigger = true })
     end
-    -- Only the formatters format; ts_ls and the others would fight them.
-    if client.name == 'ruff' or client.name == 'biome' then
+    -- Only the formatters format; tsc and the others would fight them.
+    if vim.list_contains({ 'ruff', 'biome', 'oxfmt' }, client.name) then
       vim.api.nvim_create_autocmd('BufWritePre', {
         group = vim.api.nvim_create_augroup('format.' .. ev.buf, {}),
         buffer = ev.buf,
