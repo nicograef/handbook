@@ -106,7 +106,8 @@ case "${PROMPT_COMMAND:-}" in
   *) PROMPT_COMMAND="${PROMPT_COMMAND:+$PROMPT_COMMAND$'\n'}history -a" ;;
 esac
 
-# Prompt: path + git branch with dirty state (* modified, + staged).
+# Prompt: path + git branch with dirty state (* modified, + staged); over SSH
+# the host leads, coloured as in .tmux.conf: red on *prod*, yellow on *staging*.
 # Overrides the stock PS1, which every stock .bashrc sets before sourcing this
 # file.
 if ! declare -F __git_ps1 >/dev/null; then
@@ -116,8 +117,15 @@ fi
 if declare -F __git_ps1 >/dev/null; then
   # shellcheck disable=SC2034  # read by __git_ps1
   GIT_PS1_SHOWDIRTYSTATE=1
-  PS1='\[\e[32m\]\w\[\e[33m\]$(__git_ps1 " (%s)")\[\e[0m\] \$ '
+  _host='' _title='\w'
+  if [ -n "${SSH_CONNECTION:-}" ]; then
+    case "$HOSTNAME" in *prod*) _c=31 ;; *staging*) _c=33 ;; *) _c=35 ;; esac
+    _host="\[\e[1;${_c}m\]\h\[\e[0m\] " _title='\h: \w'
+    unset _c
+  fi
+  PS1="$_host"'\[\e[32m\]\w\[\e[33m\]$(__git_ps1 " (%s)")\[\e[0m\] \$ '
   case "$TERM" in
-    xterm*|rxvt*|tmux*|screen*) PS1="\[\e]0;\w\a\]$PS1" ;;
+    xterm*|rxvt*|tmux*|screen*) PS1="\[\e]0;$_title\a\]$PS1" ;;
   esac
+  unset _host _title
 fi
