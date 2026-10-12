@@ -290,9 +290,8 @@ vim.o.completeopt = 'menuone,noselect,popup,fuzzy'
 vim.diagnostic.config({ virtual_text = true })   -- the message shows at the end of its line
 
 -- Building a parser needs the tree-sitter CLI and a C compiler; installed ones are skipped.
-require('nvim-treesitter').install({
-  'bash', 'css', 'html', 'javascript', 'json', 'python', 'toml', 'tsx', 'typescript', 'yaml',
-})
+-- <sfile> finds parsers.txt beside this file, under nvim -u too.
+require('nvim-treesitter').install(vim.fn.readfile(vim.fn.expand('<sfile>:p:h') .. '/parsers.txt'))
 autocmd('FileType', {
   callback = function(ev)
     local lang = vim.treesitter.language.get_lang(ev.match)

@@ -3,8 +3,9 @@
 Neovim for prose and code: Markdown, YAML and JSON, plus TypeScript and Python with LSP.
 Eleven plugins on the built-in `vim.pack`; everything else is a Neovim built-in.
 
-- [dotfiles/nvim/init.lua](../dotfiles/nvim/init.lua) is the whole config; it sets only non-defaults.
+- [dotfiles/nvim/init.lua](../dotfiles/nvim/init.lua) is the config; it sets only non-defaults.
 - [dotfiles/nvim/nvim-pack-lock.json](../dotfiles/nvim/nvim-pack-lock.json) pins each plugin's revision.
+- [dotfiles/nvim/parsers.txt](../dotfiles/nvim/parsers.txt) lists the tree-sitter parsers to build.
 - [scripts/install-dotfiles.sh](../scripts/install-dotfiles.sh) links the directory to `~/.config/nvim`.
 
 | Plugin | Role |
@@ -68,7 +69,7 @@ Neovim is the snap on Ubuntu and Step 1's tarball on Debian. The steps below are
    tree-sitter-cli's install script fetches its binary, so npm must allow it.
 
 3. **Start Neovim once.** `vim.pack` clones the plugins at the lockfile's revisions,
-   then nvim-treesitter builds ten parsers in the background.
+   then nvim-treesitter builds the parsers in `parsers.txt` in the background.
 
    ```bash
    nvim

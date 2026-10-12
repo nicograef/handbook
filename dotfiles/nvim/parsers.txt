@@ -1,0 +1,10 @@
+bash
+css
+html
+javascript
+json
+python
+toml
+tsx
+typescript
+yaml

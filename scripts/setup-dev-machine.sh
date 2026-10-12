@@ -133,9 +133,7 @@ UV_BIN="$TARGET_HOME/.local/bin/uv"
 NVIM_DATA="$TARGET_HOME/.local/share/nvim/site"
 NVIM_LOCK="$HANDBOOK_DIR/dotfiles/nvim/nvim-pack-lock.json"
 FONT_URL="https://github.com/ryanoasis/nerd-fonts/releases/latest/download/NerdFontsSymbolsOnly.tar.xz"
-# The parser list lives in init.lua's nvim-treesitter install call.
-mapfile -t PARSERS < <(sed -n "/require('nvim-treesitter').install({/,/})/p" "$HANDBOOK_DIR/dotfiles/nvim/init.lua" \
-  | sed 1d | grep -o "'[a-z_]*'" | tr -d "'")
+mapfile -t PARSERS < "$HANDBOOK_DIR/dotfiles/nvim/parsers.txt"
 
 # as_user <cmd...> — run in the user's home with a clean environment; the session bus keeps gh's keyring.
 as_user() {

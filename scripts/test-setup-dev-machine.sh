@@ -50,10 +50,10 @@ fresh_machine() {
   git -C "$CLONE" remote add origin https://github.com/nicograef/handbook.git
 }
 
-# One stub for every command; it dispatches on its own name. @FIX@ and @LOCK@ are filled below.
+# One stub for every command; it dispatches on its own name. @FIX@, @LOCK@ and @PARSERS@ are filled below.
 cat > "$FIX/stub" <<'STUB'
 #!/usr/bin/env bash
-FIX=@FIX@ S=@FIX@/state LOCK=@LOCK@
+FIX=@FIX@ S=@FIX@/state LOCK=@LOCK@ PARSERS=@PARSERS@
 name="$(basename "$0")"
 echo "$name $*" >> "$FIX/calls"
 appear() { ln -sf "$FIX/stub" "$FIX/bin/$1"; }
@@ -181,13 +181,11 @@ case "$name" in
   nvim)
     [[ "$1" == --version ]] && { echo 'NVIM v0.99.0'; exit 0; }
     touch "$S/nvim"; mkdir -p "$FIX/home/.local/share/nvim/site/parser"
-    for p in bash css html javascript json python toml tsx typescript yaml; do
-      touch "$FIX/home/.local/share/nvim/site/parser/$p.so"
-    done ;;
+    while IFS= read -r p; do touch "$FIX/home/.local/share/nvim/site/parser/$p.so"; done < "$PARSERS" ;;
 esac
 exit 0
 STUB
-sed -i "s|@FIX@|$FIX|g; s|@LOCK@|$CLONE/dotfiles/nvim/nvim-pack-lock.json|g" "$FIX/stub"
+sed -i "s|@FIX@|$FIX|g; s|@LOCK@|$CLONE/dotfiles/nvim/nvim-pack-lock.json|g; s|@PARSERS@|$CLONE/dotfiles/nvim/parsers.txt|g" "$FIX/stub"
 chmod +x "$FIX/stub"
 # Present from the start, gh too so the real one never runs; npm, nvim, uv and claude appear when their fix runs.
 for c in dpkg-query apt apt-get snap id usermod curl git ssh-keygen pipx fc-list fc-cache gh hostname; do

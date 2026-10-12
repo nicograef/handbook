@@ -35,6 +35,7 @@ A web app on a fresh server chains Fresh server, Deploy, Monitoring, then Backup
 | [dotfiles/ptyxis/catppuccin-mocha-grey.palette](dotfiles/ptyxis/catppuccin-mocha-grey.palette) | Ptyxis palette: Catppuccin Mocha with a darker, less blue background, as in Neovim and tmux |
 | [dotfiles/nvim/cheatsheet.md](dotfiles/nvim/cheatsheet.md) | Keys being learned, shown in a Neovim corner float |
 | [dotfiles/nvim/nvim-pack-lock.json](dotfiles/nvim/nvim-pack-lock.json) | Neovim plugin revisions `vim.pack` installs and pins |
+| [dotfiles/nvim/parsers.txt](dotfiles/nvim/parsers.txt) | Tree-sitter parsers init.lua and setup-dev-machine.sh install |
 | [templates/ssh_config](templates/ssh_config) | `~/.ssh/config` defaults: agent, keep-alive, hashed known_hosts |
 | [guides/neovim.md](guides/neovim.md) | Neovim for prose and code: plugins, language servers, keys; the install steps for servers |
 | [scripts/report-repo-status.sh](scripts/report-repo-status.sh) | Repos under `~/r` with unpushed, uncommitted or stashed work; `repo-status` |
