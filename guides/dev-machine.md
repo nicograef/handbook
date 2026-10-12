@@ -1,11 +1,11 @@
 # New Dev Machine
 
-Take a fresh Ubuntu laptop to a working toolchain with [scripts/setup-dev-machine.sh](../scripts/setup-dev-machine.sh).
-Its header lists every item it checks and fixes, in apply order.
+Take a fresh Ubuntu laptop or Debian host to a working toolchain with [scripts/setup-dev-machine.sh](../scripts/setup-dev-machine.sh).
+Its header says where Node, Go and Neovim come from on each distro.
 
 ## Prerequisites
 
-An Ubuntu desktop with a `sudo` user. Cloning needs `git`; the script stops without `jq`:
+Ubuntu or Debian with a `sudo` user. Cloning needs `git`; the script stops without `jq`:
 
 ```bash
 sudo apt install -y git jq
@@ -58,7 +58,7 @@ sudo ~/r/handbook/scripts/setup-dev-machine.sh --yes
 `--check` needs no root and changes nothing:
 
 ```bash
-~/r/handbook/scripts/setup-dev-machine.sh --check   # → 18 lines starting with ok, then "Everything matches the handbook"
+~/r/handbook/scripts/setup-dev-machine.sh --check   # → every line starts with ok, then "Everything matches the handbook"
 docker run --rm hello-world | grep Hello             # → Hello from Docker!
 ```
 
@@ -69,3 +69,5 @@ docker run --rm hello-world | grep Hello             # → Hello from Docker!
 | `docker run` needs sudo | The session started before the group change | Log out and back in |
 | `GitHub keys` stays `MISSING` | The browser approval for the key scopes was skipped | Rerun the script and approve it |
 | `snaps` shows `WRONG` for node | The snap tracks another major | Rerun the script; it switches to `NODE_CHANNEL` |
+| `uv` shows `PATH has <path>` | That uv is not pipx's | Rerun the script; pipx's uv in `~/.local/bin` comes first in your shells |
+| A line starts with `ERROR:` | The probe it names failed | Fix that command, then rerun |

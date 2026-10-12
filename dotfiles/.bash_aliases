@@ -6,6 +6,8 @@ for _p in "$HOME/.local/bin" "$HOME/go/bin"; do
   case ":$PATH:" in *":$_p:"*) ;; *) PATH="$_p:$PATH" ;; esac
 done
 unset _p
+# Go from go.dev's tarball, as on Debian.
+if [ -d /usr/local/go/bin ] && [[ ":$PATH:" != *":/usr/local/go/bin:"* ]]; then PATH="$PATH:/usr/local/go/bin"; fi
 
 # The stock .bashrc loads bash-completion only after this file; fzf and the m
 # completer below need it now.

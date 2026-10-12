@@ -26,9 +26,9 @@
 
 ## Checklist
 
-- [ ] Dev script: distro detection, guarded probes, ERR trap
-- [ ] Dev script: Debian node, go, neovim items; docker set; uv via pipx
-- [ ] Fixture test: Debian path, broken snap probe
+- [x] Dev script: distro detection, guarded probes, ERR trap
+- [x] Dev script: Debian node, go, neovim items; docker set; uv via pipx
+- [x] Fixture test: Debian path, broken snap probe
 - [ ] install-dotfiles.sh rerun reports and `~/.claude.json`
 - [ ] setup-server.sh rerun
 - [ ] Docs and README

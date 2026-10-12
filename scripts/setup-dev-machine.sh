@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# setup-dev-machine.sh – check an Ubuntu dev machine against the handbook, then fix what differs
+# setup-dev-machine.sh – check an Ubuntu or Debian dev machine against the handbook, then fix what differs
 #
 # Usage (from a handbook clone):
 #   sudo scripts/setup-dev-machine.sh          # check, then ask before each fix
@@ -7,13 +7,18 @@
 #   scripts/setup-dev-machine.sh --check       # report only, no root; exit 1 if anything differs
 #
 # What it does:
-#   1. Prints one line per item: ok, MISSING, OUTDATED or WRONG, with the reason
-#   2. Walks the items that differ in the order of ITEMS and fixes each after a [Y/n/q] prompt
-#   3. Runs apt, snap and usermod as root; everything in $HOME runs as the user who ran sudo
-#   4. Updates only the tools listed here; unattended-upgrades handles the rest of the system
+#   1. Reads the distro from /etc/os-release and refuses any but Ubuntu and Debian
+#   2. Prints one line per item: ok, MISSING, OUTDATED or WRONG, with the reason
+#   3. Walks the items that differ in the order of ITEMS and fixes each after a [Y/n/q] prompt
+#   4. Runs apt, snap, usermod and the /usr/local install as root; everything in $HOME runs as the user who ran sudo
+#   5. Updates only the tools listed here; unattended-upgrades handles the rest of the system
+#
+# Node, Go and Neovim: snaps on Ubuntu. Debian has no snap, so Node comes from NodeSource's apt repo,
+# Go from go.dev's tarball in /usr/local/go, and Neovim from the release tarball in ~/.local.
+# A probe that fails stops the run with an ERROR line naming it; --check exits 1 when an item differs.
 #
 # Human steps: git identity, SSH key passphrase, gh login, the GitHub key title.
-set -euo pipefail
+set -Eeuo pipefail
 
 usage() {
   printf 'usage: %s [--check | --yes]\n' "$0" >&2
@@ -27,20 +32,38 @@ case "$#:${1:-}" in
   *) usage; exit 2 ;;
 esac
 
+log() { printf '\033[1;34m▸ %s\033[0m\n' "$1"; }
+die() { printf 'ERROR: %s\n' "$1" >&2; exit 1; }
+
+# on_err <line> — a failing command outside a condition ends the run; this names it. Subshells stay quiet.
+on_err() {
+  local rc=$?
+  if [[ "$BASHPID" == "$$" ]]; then printf 'ERROR: %s failed (exit %s, line %s)\n' "$BASH_COMMAND" "$rc" "$1" >&2; fi
+}
+trap 'on_err "$LINENO"' ERR
+
 # ── Configuration ────────────────────────────────────────────────────────────
-NODE_CHANNEL="${NODE_CHANNEL:-26/stable}"           # Node's snap channel; refreshes within the major
+NODE_CHANNEL="${NODE_CHANNEL:-26/stable}"           # Node's snap channel; its major names the NodeSource repo on Debian
 TARGET_USER="${TARGET_USER:-${SUDO_USER:-$(id -un)}}"
 TARGET_HOME="${TARGET_HOME:-$(getent passwd "$TARGET_USER" | cut -d: -f6)}"
-USER_PATH="${USER_PATH:-$TARGET_HOME/.local/bin:$TARGET_HOME/go/bin:/snap/bin:/usr/local/bin:/usr/bin:/bin}"
+USER_PATH="${USER_PATH:-$TARGET_HOME/.local/bin:$TARGET_HOME/go/bin:/usr/local/go/bin:/snap/bin:/usr/local/bin:/usr/bin:/bin}"
 ETC_DIR="${ETC_DIR:-/etc}"                          # the fixture test points this at a temp dir
+GO_ROOT="${GO_ROOT:-/usr/local/go}"                 # Debian: go.dev's install path; the tarball unpacks a go/ dir
 SETUP_ALLOW_NONROOT="${SETUP_ALLOW_NONROOT:-false}" # the fixture test only: skip the root guard
 # ─────────────────────────────────────────────────────────────────────────────
 
+DISTRO="$(sed -n 's/^ID="\{0,1\}\([a-z]*\).*/\1/p' "$ETC_DIR/os-release" 2>/dev/null || true)"
+case "$DISTRO" in
+  ubuntu|debian) ;;
+  *) die "this script supports Ubuntu and Debian; $ETC_DIR/os-release names '${DISTRO:-nothing}'" ;;
+esac
+
 HANDBOOK_DIR="$(cd "$(dirname "$0")/.." && pwd)"
 HANDBOOK_SSH_URL="git@github.com:nicograef/handbook.git"
+ARCH="$(dpkg --print-architecture)"
 
-APT_PACKAGES=(git jq curl gcc make shellcheck tmux bat eza fzf fd-find ripgrep git-delta gitleaks lazygit
-  xclip pipx docker.io docker-compose-v2 docker-buildx)
+# The docker packages join the list once dpkg can be asked which Docker the host has.
+APT_PACKAGES=(git jq curl gcc make shellcheck tmux bat eza fzf fd-find ripgrep git-delta gitleaks lazygit xclip pipx)
 SNAPS=("node $NODE_CHANNEL" "go latest/stable" "nvim latest/stable")
 NPM_TOOLS=(pnpm)
 # guides/neovim.md repeats these two lists for servers; check-repo's contracts stage compares them.
@@ -49,10 +72,13 @@ UV_TOOLS=(ruff ty)
 NPM_ALLOW_SCRIPTS="pnpm,tree-sitter-cli" # their install scripts put the native binary in place
 
 # Apply order: each item may rely on the ones above it.
-ITEMS=(
-  "apt|apt packages"
-  "ghrepo|gh apt repo"
-  "snaps|snaps"
+ITEMS=("apt|apt packages" "ghrepo|gh apt repo")
+if [[ "$DISTRO" == ubuntu ]]; then
+  ITEMS+=("snaps|snaps")
+else
+  ITEMS+=("node|Node apt repo" "go|Go" "nvimbin|Neovim")
+fi
+ITEMS+=(
   "aptnvim|no apt neovim"
   "docker|docker group"
   "gitid|git identity"
@@ -77,15 +103,21 @@ GH_LIST_LINE="deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings
 GH_UU="$ETC_DIR/apt/apt.conf.d/52unattended-upgrades-gh"
 GH_UU_LINE='Unattended-Upgrade::Origins-Pattern { "origin=gh,codename=stable"; };'
 GH_KEY_SCOPES="admin:public_key,admin:ssh_signing_key" # to list and add both key types
+NODE_MAJOR="${NODE_CHANNEL%%/*}"
+NODE_LIST="$ETC_DIR/apt/sources.list.d/nodesource.sources"
+NODE_URI="URIs: https://deb.nodesource.com/node_$NODE_MAJOR.x"
+NODE_UU="$ETC_DIR/apt/apt.conf.d/52unattended-upgrades-nodesource"
+NODE_UU_LINE='Unattended-Upgrade::Origins-Pattern { "site=deb.nodesource.com"; };'
+if [[ "$ARCH" == amd64 ]]; then NVIM_ARCH=x86_64; else NVIM_ARCH="$ARCH"; fi
+NVIM_DIR="$TARGET_HOME/.local/nvim-linux-$NVIM_ARCH"
+NVIM_LINK="$TARGET_HOME/.local/bin/nvim"
+UV_BIN="$TARGET_HOME/.local/bin/uv"
 NVIM_DATA="$TARGET_HOME/.local/share/nvim/site"
 NVIM_LOCK="$HANDBOOK_DIR/dotfiles/nvim/nvim-pack-lock.json"
 FONT_URL="https://github.com/ryanoasis/nerd-fonts/releases/latest/download/NerdFontsSymbolsOnly.tar.xz"
 # The parser list lives in init.lua's nvim-treesitter install call.
 mapfile -t PARSERS < <(sed -n "/require('nvim-treesitter').install({/,/})/p" "$HANDBOOK_DIR/dotfiles/nvim/init.lua" \
   | sed 1d | grep -o "'[a-z_]*'" | tr -d "'")
-
-log() { printf '\033[1;34m▸ %s\033[0m\n' "$1"; }
-die() { printf 'ERROR: %s\n' "$1" >&2; exit 1; }
 
 # as_user <cmd...> — run in the user's home with a clean environment; the session bus keeps gh's keyring.
 as_user() {
@@ -111,7 +143,25 @@ in_list() { [[ " $2 " == *" $1 "* ]]; }
 # Upgradable apt packages and refreshable snaps, read once per pass.
 refresh_caches() {
   APT_UPGRADABLE="$(LC_ALL=C apt list --upgradable 2>/dev/null | sed -n 's|/.*||p' | tr '\n' ' ')"
-  SNAP_REFRESHABLE="$(LC_ALL=C snap refresh --list 2>/dev/null | awk 'NR > 1 {print $1}' | tr '\n' ' ')"
+  SNAP_REFRESHABLE=""
+  if [[ "$DISTRO" == ubuntu ]] && command -v snap >/dev/null 2>&1; then
+    SNAP_REFRESHABLE="$(LC_ALL=C snap refresh --list 2>/dev/null | awk 'NR > 1 {print $1}' | tr '\n' ' ')"
+  fi
+}
+
+# read_releases — Debian's newest Go and Neovim, read once per run; unreachable leaves them empty and unflagged.
+read_releases() {
+  local json
+  GO_LATEST="" GO_SHA256="" NVIM_LATEST="" NVIM_SHA256=""
+  [[ "$DISTRO" == debian ]] || return 0
+  json="$(curl -fsS --max-time 10 'https://go.dev/dl/?mode=json' 2>/dev/null || true)"
+  GO_LATEST="$(jq -r '.[0].version // empty' <<<"$json" 2>/dev/null || true)"
+  GO_SHA256="$(jq -r --arg a "$ARCH" '.[0].files[] | select(.os == "linux" and .arch == $a and .kind == "archive")
+    | .sha256' <<<"$json" 2>/dev/null || true)"
+  json="$(curl -fsS --max-time 10 https://api.github.com/repos/neovim/neovim/releases/latest 2>/dev/null || true)"
+  NVIM_LATEST="$(jq -r '.tag_name // empty' <<<"$json" 2>/dev/null || true)"
+  NVIM_SHA256="$(jq -r --arg n "nvim-linux-$NVIM_ARCH.tar.gz" '.assets[] | select(.name == $n) | .digest
+    | ltrimstr("sha256:")' <<<"$json" 2>/dev/null || true)"
 }
 
 # flag <status> <detail> — the first non-ok status sticks; details accumulate.
@@ -157,6 +207,7 @@ fix_ghrepo() {
 
 check_snaps() {
   local entry name channel tracking
+  if ! command -v snap >/dev/null 2>&1; then flag MISSING "snapd"; return; fi
   for entry in "${SNAPS[@]}"; do
     name="${entry% *}" channel="${entry#* }"
     tracking="$(LC_ALL=C snap list "$name" 2>/dev/null | awk 'NR == 2 {print $4}' || true)"
@@ -171,6 +222,7 @@ check_snaps() {
 }
 fix_snaps() {
   local entry name channel
+  if ! command -v snap >/dev/null 2>&1; then apt-get install -y snapd; fi
   for entry in "${SNAPS[@]}"; do
     name="${entry% *}" channel="${entry#* }"
     if snap list "$name" >/dev/null 2>&1; then
@@ -181,8 +233,71 @@ fix_snaps() {
   done
 }
 
-# /usr/bin precedes /snap/bin, so the apt package would shadow the snap.
-check_aptnvim() { if installed neovim; then flag WRONG "apt neovim shadows the snap"; fi; }
+check_node() {
+  local version
+  if ! grep -qxF "$NODE_URI" "$NODE_LIST" 2>/dev/null; then flag MISSING "NodeSource node_$NODE_MAJOR.x repo"; fi
+  if [[ "$(cat "$NODE_UU" 2>/dev/null)" != "$NODE_UU_LINE" ]]; then flag WRONG "$NODE_UU"; fi
+  version="$(dpkg-query -W -f='${Version}' nodejs 2>/dev/null || true)"
+  if ! installed nodejs; then flag MISSING nodejs
+  elif [[ "$version" != "$NODE_MAJOR".* ]]; then flag WRONG "nodejs $version, not $NODE_MAJOR.x"
+  elif in_list nodejs "$APT_UPGRADABLE"; then flag OUTDATED nodejs; fi
+}
+# NodeSource's documented setup script writes its keyring, the source and an apt pin, then updates the index.
+fix_node() {
+  local setup
+  if ! grep -qxF "$NODE_URI" "$NODE_LIST" 2>/dev/null; then
+    setup="$(mktemp)"
+    curl -fsSL "https://deb.nodesource.com/setup_$NODE_MAJOR.x" -o "$setup"
+    bash "$setup"
+    rm -f "$setup"
+  fi
+  install -d -m 755 "$(dirname "$NODE_UU")"
+  printf '%s\n' "$NODE_UU_LINE" > "$NODE_UU"
+  apt-get install -y nodejs
+}
+
+check_go() {
+  local current
+  if [[ ! -x "$GO_ROOT/bin/go" ]]; then flag MISSING "$GO_ROOT"; return; fi
+  current="$(as_user "$GO_ROOT/bin/go" version | awk '{print $3}')"
+  if [[ -n "$GO_LATEST" && "$current" != "$GO_LATEST" ]]; then flag OUTDATED "$current → $GO_LATEST"; fi
+}
+# go.dev's steps: untarring over an existing tree breaks it, so the old one goes first.
+fix_go() {
+  local dir file="$GO_LATEST.linux-$ARCH.tar.gz"
+  [[ -n "$GO_LATEST" && -n "$GO_SHA256" ]] || { printf 'go.dev/dl did not answer.\n'; return 1; }
+  dir="$(mktemp -d)"
+  curl -fsSL "https://go.dev/dl/$file" -o "$dir/$file"
+  sha256sum --quiet -c <<<"$GO_SHA256  $dir/$file"
+  rm -rf "$GO_ROOT"
+  tar -C "$(dirname "$GO_ROOT")" -xzf "$dir/$file"
+  rm -rf "$dir"
+}
+
+check_nvimbin() {
+  local current
+  if [[ ! -x "$NVIM_DIR/bin/nvim" || "$(readlink -f "$NVIM_LINK")" != "$(readlink -f "$NVIM_DIR/bin/nvim")" ]]; then
+    flag MISSING "$NVIM_LINK → $NVIM_DIR"; return
+  fi
+  current="$(as_user "$NVIM_LINK" --version | awk 'NR == 1 {print $2}')"
+  if [[ -n "$NVIM_LATEST" && "$current" != "$NVIM_LATEST" ]]; then flag OUTDATED "nvim $current → $NVIM_LATEST"; fi
+}
+# guides/neovim.md's install step; the digest GitHub publishes for the asset verifies it.
+fix_nvimbin() {
+  local dir file="nvim-linux-$NVIM_ARCH.tar.gz"
+  [[ -n "$NVIM_LATEST" && -n "$NVIM_SHA256" ]] || { printf 'The GitHub releases API did not answer.\n'; return 1; }
+  dir="$(as_user mktemp -d)"
+  as_user curl -fsSL "https://github.com/neovim/neovim/releases/download/$NVIM_LATEST/$file" -o "$dir/$file"
+  sha256sum --quiet -c <<<"$NVIM_SHA256  $dir/$file"
+  as_user rm -rf "$NVIM_DIR"
+  as_user mkdir -p "$(dirname "$NVIM_LINK")"
+  as_user tar -C "$(dirname "$NVIM_DIR")" -xzf "$dir/$file"
+  as_user ln -sfn "$NVIM_DIR/bin/nvim" "$NVIM_LINK"
+  as_user rm -rf "$dir"
+}
+
+# Debian's and Ubuntu's neovim lag the release vim.pack needs; on Ubuntu /usr/bin also shadows /snap/bin.
+check_aptnvim() { if installed neovim; then flag WRONG "apt neovim predates vim.pack"; fi; }
 fix_aptnvim() { apt-get remove -y neovim; }
 
 check_docker() {
@@ -215,19 +330,25 @@ check_ghauth() {
 # The GitHub keys item uploads the key; the scopes it needs come with this login.
 fix_ghauth() { as_user gh auth login -h github.com -p ssh --skip-ssh-key -s "$GH_KEY_SCOPES"; }
 
+# The dev machine runs pipx's uv at PyPI's latest; a project's required-version is only a floor.
+pipx_has_uv() { user_has pipx && in_list uv "$(as_user pipx list --short 2>/dev/null | awk '{print $1}' | tr '\n' ' ' || true)"; }
 check_uv() {
-  local current latest
-  if ! user_has uv; then flag MISSING uv; return; fi
-  current="$(as_user uv --version | awk '{print $2}')"
+  local current latest other
+  if ! pipx_has_uv; then
+    other="$(as_user sh -c 'command -v uv' 2>/dev/null || true)"
+    flag MISSING "uv from pipx${other:+; PATH has $other}"
+    return
+  fi
+  current="$(as_user "$UV_BIN" --version | awk '{print $2}')"
   latest="$(curl -fsS --max-time 10 https://pypi.org/pypi/uv/json 2>/dev/null | jq -r '.info.version' || true)"
   if [[ -n "$latest" && "$current" != "$latest" ]]; then flag OUTDATED "uv $current → $latest"; fi
 }
-# .bash_aliases puts ~/.local/bin on PATH for new terminals.
-fix_uv() { if user_has uv; then as_user pipx upgrade uv; else as_user pipx install uv; fi; }
+# .bash_aliases puts ~/.local/bin on PATH for new terminals; --force replaces a uv the standalone installer left there.
+fix_uv() { if pipx_has_uv; then as_user pipx upgrade uv; else as_user pipx install --force uv; fi; }
 
 check_npm() {
   local p have old prefix
-  if ! user_has npm; then flag MISSING "npm; install the node snap first"; return; fi
+  if ! user_has npm; then flag MISSING "npm; install node first"; return; fi
   prefix="$(as_user npm config get prefix)"
   if [[ "$prefix" != "$TARGET_HOME/.local" ]]; then flag WRONG "npm prefix is $prefix"; fi
   if [[ "$(as_user npm config get allow-scripts)" != "$NPM_ALLOW_SCRIPTS" ]]; then flag WRONG "allow-scripts"; fi
@@ -373,6 +494,14 @@ print_row() { printf '%-9s %-20s %s\n' "$STATUS" "$2" "$DETAIL"; }
 [[ -n "$TARGET_HOME" && -d "$TARGET_HOME" ]] || die "no home directory for user '$TARGET_USER'"
 command -v jq >/dev/null 2>&1 || die "jq not found; install it first (apt install git jq)"
 TARGET_UID="$(id -u "$TARGET_USER")"
+# A host that runs Docker's own packages, as setup-server.sh installs them, keeps them: the distro's would replace them.
+if installed docker-ce; then
+  APT_PACKAGES+=(docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin)
+elif [[ "$DISTRO" == ubuntu ]]; then
+  APT_PACKAGES+=(docker.io docker-compose-v2 docker-buildx)
+else
+  APT_PACKAGES+=(docker.io docker-compose docker-buildx)
+fi
 if [[ "$MODE" != check && "$SETUP_ALLOW_NONROOT" != true ]]; then
   [[ "$EUID" -eq 0 ]] || die "run with sudo, or pass --check to report only"
   [[ -n "${SUDO_USER:-}" && "$SUDO_USER" != root ]] || die "run with sudo from your own account, not as root"
@@ -383,6 +512,7 @@ if [[ "$MODE" != check ]]; then
   apt-get update -qq
 fi
 refresh_caches
+read_releases
 
 log "Checking $TARGET_USER's machine against $HANDBOOK_DIR"
 bad=0
@@ -413,11 +543,13 @@ for entry in "${ITEMS[@]}"; do
     n|N) left+=("$label"); continue ;;
   esac
   log "Fixing $label"
-  # A subshell outside any condition keeps errexit on inside the fix.
+  # A subshell outside any condition keeps errexit on inside the fix; its failure is reported below.
+  trap - ERR
   set +e
   (set -e; "fix_$id")
   rc=$?
   set -e
+  trap 'on_err "$LINENO"' ERR
   if [[ "$rc" -ne 0 ]]; then printf 'Fix for %s failed (exit %s).\n' "$label" "$rc" >&2; fi
   refresh_caches
   run_check "$id"

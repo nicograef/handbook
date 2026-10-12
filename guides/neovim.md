@@ -31,9 +31,9 @@ Completion is `vim.lsp.completion` with autotrigger. ruff, Biome and oxfmt forma
 Diagnostic messages show at the end of their line.
 Biome, oxlint and oxfmt come from the project's `node_modules` and attach only where it configures them.
 
-On an Ubuntu desktop, [setup-dev-machine.sh](../scripts/setup-dev-machine.sh) does Steps 1–3.
-It installs the Neovim snap, the servers, the tree-sitter CLI, `xclip`, a Nerd Font and the parsers.
-The steps below are for Debian and servers.
+On a dev machine, [setup-dev-machine.sh](../scripts/setup-dev-machine.sh) does Steps 1–3.
+It installs Neovim, the servers, the tree-sitter CLI, `xclip`, a Nerd Font and the parsers.
+Neovim is the snap on Ubuntu and Step 1's tarball on Debian. The steps below are for servers.
 
 ## Prerequisites
 
