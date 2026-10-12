@@ -38,9 +38,9 @@ Have your git name and email ready, and a browser logged in to GitHub.
    | --- | --- |
    | `git user.name:` / `git user.email:` | Your git identity |
    | `Enter passphrase` | A passphrase for `~/.ssh/id_ed25519`, or empty |
-   | `gh auth login` | GitHub.com, SSH, upload the key, log in with the browser |
+   | `gh auth login` | Log in with a web browser |
    | `Key title on GitHub` | This machine's name; Enter takes the hostname |
-   | `gh auth refresh` | Approve the signing-key scope in the browser |
+   | `gh auth refresh`, only for an older login | Approve the key scopes in the browser |
 
 3. **New login** — log out and back in. The session then has the `docker` group and the new `PATH`.
 
@@ -67,5 +67,5 @@ docker run --rm hello-world | grep Hello             # → Hello from Docker!
 | Symptom | Cause | Fix |
 | --- | --- | --- |
 | `docker run` needs sudo | The session started before the group change | Log out and back in |
-| `GitHub keys` stays `MISSING` | The browser approval for the key scope was skipped | Rerun the script and approve it |
+| `GitHub keys` stays `MISSING` | The browser approval for the key scopes was skipped | Rerun the script and approve it |
 | `snaps` shows `WRONG` for node | The snap tracks another major | Rerun the script; it switches to `NODE_CHANNEL` |

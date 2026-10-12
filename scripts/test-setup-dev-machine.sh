@@ -9,6 +9,7 @@
 #   2. Puts one logging stub first on PATH for apt, snap, gh, npm, uv, nvim and the rest;
 #      marker files hold the fake machine state, and a tool appears when its fix installs it.
 #   3. Asserts the root guard, --check on the fresh machine, --yes on it, then --check again.
+#   4. Reruns --yes on a gh login that lacks the key scopes.
 
 set -euo pipefail
 
@@ -76,13 +77,16 @@ case "$name" in
     while [[ $# -gt 0 && "$1" != -f ]]; do shift; done
     echo "ssh-ed25519 AAAAFIXTUREKEY fixture" > "$2.pub" ;;
   gh)
+    # $S/scopes holds the token's scopes, one per line; login and refresh take them from -s, the last argument.
+    has() { grep -qx "$1" "$S/scopes" 2>/dev/null; }
     case "$1 $2" in
       "--version "*) echo 'gh version 2.0.0' ;;
-      "auth status") [[ -f "$S/ghauth" ]] || exit 1; [[ -f "$S/scope" ]] && echo 'scopes: admin:ssh_signing_key' ;;
-      "auth login") touch "$S/ghauth" ;;
-      "auth refresh") touch "$S/scope" ;;
-      "ssh-key list") cat "$S/keys" 2>/dev/null ;;
-      "ssh-key add") printf 'title\tssh-ed25519 AAAAFIXTUREKEY\tdate\t1\t%s\n' "$5" >> "$S/keys" ;;
+      "auth status") [[ -f "$S/ghauth" ]] || exit 1; echo "Token scopes: $(sed "s/.*/'&'/" "$S/scopes" 2>/dev/null | paste -sd,)" ;;
+      "auth login"|"auth refresh") touch "$S/ghauth"; tr , '\n' <<<"${*: -1}" >> "$S/scopes" ;;
+      "ssh-key list") has admin:public_key || exit 1; cat "$S/keys" 2>/dev/null ;;
+      "ssh-key add")
+        if [[ "$5" == signing ]]; then has admin:ssh_signing_key || exit 1; else has admin:public_key || exit 1; fi
+        printf 'title\tssh-ed25519 AAAAFIXTUREKEY\tdate\t1\t%s\n' "$5" >> "$S/keys" ;;
     esac ;;
   pipx) [[ "$1 $2" == "install uv" ]] && appear uv; true ;;
   uv)
@@ -156,8 +160,10 @@ else log "fresh --check -> read-only"; fi
 run 'Fixture User\nfixture@example.com\n\n' --yes
 if [[ "$rc" -eq 0 ]]; then log "fresh --yes -> exit 0"; else fail "fresh --yes: rc $rc: $(cat "$OUT")"; fi
 order=("apt-get install -y git" "apt-get install -y gh" "snap install node --classic --channel=26/stable"
-  "usermod -aG docker" "ssh-keygen -t ed25519 -C fixture@example.com" "gh auth login" "pipx install uv"
+  "usermod -aG docker" "ssh-keygen -t ed25519 -C fixture@example.com"
+  "gh auth login -h github.com -p ssh --skip-ssh-key -s admin:public_key,admin:ssh_signing_key" "pipx install uv"
   "npm config set prefix $HOME_DIR/.local" "uv tool install ruff" "claude plugin install"
+  "gh ssh-key add $HOME_DIR/.ssh/id_ed25519.pub --type authentication"
   "gh ssh-key add $HOME_DIR/.ssh/id_ed25519.pub --type signing" "nvim --headless")
 last=0
 for call in "${order[@]}"; do
@@ -167,6 +173,8 @@ for call in "${order[@]}"; do
   else last="$line"; fi
 done
 log "--yes -> fixes run in item order"
+if grep -q '^gh auth refresh' "$CALLS"; then fail "--yes asked for a second gh approval"
+else log "--yes -> the gh login carries the key scopes"; fi
 # shellcheck disable=SC2016 # the new shell expands $PATH
 path="$(env -i HOME="$HOME_DIR" PATH=/usr/bin:/bin bash -c '. ~/.bash_aliases >/dev/null 2>&1; echo "$PATH"')"
 if [[ ":$path:" == *":$HOME_DIR/.local/bin:"* ]]; then log "--yes -> a new terminal has ~/.local/bin"
@@ -180,5 +188,15 @@ if grep -qF 'docker group' "$OUT" && grep -qF 'Log out and back in' "$OUT"; then
 run '' --check
 if [[ "$rc" -eq 0 && "$(rows ok)" -eq 18 ]]; then log "fixed --check -> 18 rows ok"
 else fail "fixed --check: rc $rc: $(cat "$OUT")"; fi
+
+# 5. A login without the key scopes, the authentication key already on GitHub.
+grep -F authentication "$STATE/keys" > "$STATE/keys.auth" && mv "$STATE/keys.auth" "$STATE/keys"
+printf 'repo\n' > "$STATE/scopes"
+run '\n' --yes
+refreshes="$(grep -c '^gh auth refresh -h github.com -s admin:public_key,admin:ssh_signing_key$' "$CALLS" || true)"
+adds="$(grep '^gh ssh-key add' "$CALLS" || true)"
+if [[ "$rc" -eq 0 && "$refreshes" -eq 1 && "$adds" == *"--type signing"* && "$adds" != *authentication* ]]; then
+  log "scopeless login -> one refresh, only the signing key added"
+else fail "scopeless login: rc $rc, $refreshes refreshes, adds: $adds: $(cat "$OUT")"; fi
 
 finish

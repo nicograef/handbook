@@ -75,6 +75,7 @@ GH_LIST="$ETC_DIR/apt/sources.list.d/github-cli.list"
 GH_LIST_LINE="deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/githubcli-archive-keyring.gpg] https://cli.github.com/packages stable main"
 GH_UU="$ETC_DIR/apt/apt.conf.d/52unattended-upgrades-gh"
 GH_UU_LINE='Unattended-Upgrade::Origins-Pattern { "origin=gh,codename=stable"; };'
+GH_KEY_SCOPES="admin:public_key,admin:ssh_signing_key" # to list and add both key types
 NVIM_DATA="$TARGET_HOME/.local/share/nvim/site"
 NVIM_LOCK="$HANDBOOK_DIR/dotfiles/nvim/nvim-pack-lock.json"
 FONT_URL="https://github.com/ryanoasis/nerd-fonts/releases/latest/download/NerdFontsSymbolsOnly.tar.xz"
@@ -210,8 +211,8 @@ check_ghauth() {
   if ! user_has gh; then flag MISSING "gh not installed"; return; fi
   if ! as_user gh auth status >/dev/null 2>&1; then flag MISSING "not logged in"; fi
 }
-# Pick SSH and upload the key when gh asks.
-fix_ghauth() { as_user gh auth login -h github.com -p ssh; }
+# The GitHub keys item uploads the key; the scopes it needs come with this login.
+fix_ghauth() { as_user gh auth login -h github.com -p ssh --skip-ssh-key -s "$GH_KEY_SCOPES"; }
 
 check_uv() {
   local current latest
@@ -307,13 +308,15 @@ check_ghkeys() {
   if [[ -n "$missing" ]]; then flag MISSING "${missing% } key"; fi
 }
 fix_ghkeys() {
-  local type title
+  local status scope type title
+  # A login made outside this script may lack the scopes, and then the key list reads empty.
+  status="$(as_user gh auth status 2>&1 || true)"
+  for scope in ${GH_KEY_SCOPES//,/ }; do
+    if [[ "$status" != *"'$scope'"* ]]; then as_user gh auth refresh -h github.com -s "$GH_KEY_SCOPES"; break; fi
+  done
   title="$(ask "Key title on GitHub [$(hostname)]:")"
   title="${title:-$(hostname)}"
   for type in $(missing_key_types); do
-    if [[ "$type" == signing && "$(as_user gh auth status 2>&1 || true)" != *admin:ssh_signing_key* ]]; then
-      as_user gh auth refresh -h github.com -s admin:ssh_signing_key
-    fi
     as_user gh ssh-key add "$KEY.pub" --type "$type" --title "$title"
   done
 }
