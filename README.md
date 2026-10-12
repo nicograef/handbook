@@ -31,7 +31,7 @@ A web app on a fresh server chains Fresh server, Deploy, Monitoring, then Backup
 | [dotfiles/.inputrc](dotfiles/.inputrc) | Readline: prefix history search on Up/Down, case-insensitive completion |
 | [dotfiles/gitignore-global](dotfiles/gitignore-global) | Global git ignore: OS, editor and tooling junk |
 | [dotfiles/.tmux.conf](dotfiles/.tmux.conf) | tmux defaults for remote work (mouse, scrollback, escape-time) |
-| [dotfiles/nvim/init.lua](dotfiles/nvim/init.lua) | Neovim config on vim.pack: tokyonight, snacks picker and explorer, which-key, lualine; LSP, completion, format on save, treesitter; precognition and hardtime for learning; German keyboard remaps |
+| [dotfiles/nvim/init.lua](dotfiles/nvim/init.lua) | Neovim config on vim.pack: tokyonight, snacks picker and explorer, which-key, lualine; LSP, completion, format on save, treesitter and text objects; gitsigns, mini.icons; precognition and hardtime for learning; German keyboard remaps |
 | [dotfiles/nvim/cheatsheet.md](dotfiles/nvim/cheatsheet.md) | Keys being learned, shown in a Neovim corner float |
 | [dotfiles/nvim/nvim-pack-lock.json](dotfiles/nvim/nvim-pack-lock.json) | Neovim plugin revisions `vim.pack` installs and pins |
 | [templates/ssh_config](templates/ssh_config) | `~/.ssh/config` defaults: agent, keep-alive, hashed known_hosts |

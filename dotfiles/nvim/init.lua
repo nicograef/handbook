@@ -1,5 +1,5 @@
 -- init.lua – Neovim for prose and code on vim.pack: tokyonight, snacks picker and explorer,
--- which-key, lualine, precognition, hardtime; LSP with built-in completion and format on save, treesitter.
+-- which-key, lualine, gitsigns, mini.icons, precognition, hardtime; LSP, format on save, treesitter.
 -- Install and use: guides/neovim.md.
 -- Only non-defaults are set: `:help nvim-defaults` lists what is already on.
 
@@ -129,9 +129,14 @@ vim.pack.add({
   'https://github.com/tris203/precognition.nvim',
   'https://github.com/m4xshen/hardtime.nvim',
   'https://github.com/MunifTanjim/nui.nvim',
+  'https://github.com/lewis6991/gitsigns.nvim',
+  { src = 'https://github.com/nvim-treesitter/nvim-treesitter-textobjects', version = 'main' },
+  'https://github.com/nvim-mini/mini.icons',
 })
 
 vim.cmd.colorscheme('tokyonight-night')
+require('mini.icons').setup()
+MiniIcons.mock_nvim_web_devicons()   -- lualine asks for nvim-web-devicons
 require('snacks').setup({
   picker = {}, explorer = {}, indent = {}, scope = {}, words = {}, notifier = {},
   input = {}, bigfile = {}, quickfile = {},
@@ -139,6 +144,7 @@ require('snacks').setup({
 require('which-key').setup({
   spec = {
     { '<leader>f', group = 'file' }, { '<leader>s', group = 'search' }, { '<leader>u', group = 'ui' },
+    { '<leader>g', group = 'git' }, { '<leader>gh', group = 'hunks' },
   },
 })
 require('lualine').setup()
@@ -184,6 +190,28 @@ Snacks.toggle.inlay_hints():map('<leader>uh')
 Snacks.toggle.diagnostics():map('<leader>ud')
 Snacks.toggle.option('spell', { name = 'Spelling' }):map('<leader>us')
 Snacks.toggle.option('wrap', { name = 'Wrap' }):map('<leader>uw')
+
+-- ── Git ──────────────────────────────────────────────────────────────────────
+require('gitsigns').setup({
+  on_attach = function(buf)
+    local gs = require('gitsigns')
+    local function map(mode, lhs, rhs, desc) vim.keymap.set(mode, lhs, rhs, { buffer = buf, desc = desc }) end
+    map('n', ']h', function() gs.nav_hunk('next') end, 'Next hunk')
+    map('n', '[h', function() gs.nav_hunk('prev') end, 'Previous hunk')
+    map('n', '<leader>ghs', gs.stage_hunk, 'Stage hunk')
+    map('n', '<leader>ghr', gs.reset_hunk, 'Reset hunk')
+    map('n', '<leader>ghp', gs.preview_hunk, 'Preview hunk')
+    map({ 'o', 'x' }, 'ih', gs.select_hunk, 'Hunk')
+  end,
+})
+Snacks.toggle.new({
+  name = 'Git signs',
+  get = function() return require('gitsigns.config').config.signcolumn end,
+  set = function(on) require('gitsigns').toggle_signs(on) end,
+}):map('<leader>uG')
+vim.keymap.set('n', '<leader>gb', function() Snacks.git.blame_line() end, { desc = 'Blame line' })
+vim.keymap.set('n', '<leader>gB', function() Snacks.gitbrowse() end, { desc = 'Open in browser' })
+vim.keymap.set('n', '<leader>gg', function() Snacks.lazygit() end, { desc = 'Lazygit' })
 
 -- ── Learning ─────────────────────────────────────────────────────────────────
 -- precognition shows the motions reachable from the cursor. hardtime blocks a key
@@ -243,7 +271,7 @@ Snacks.toggle.new({
 -- ── Code ─────────────────────────────────────────────────────────────────────
 -- Server binaries live outside Neovim (guides/neovim.md); a missing one leaves its
 -- server off. nvim-lspconfig supplies the configs, vim.lsp.enable starts them.
-vim.o.signcolumn = 'yes'         -- diagnostics do not shift the text sideways
+vim.o.signcolumn = 'yes:2'       -- a diagnostic and a git sign side by side; text never shifts
 vim.o.winborder = 'rounded'
 vim.o.completeopt = 'menuone,noselect,popup,fuzzy'
 vim.diagnostic.config({ virtual_text = true })   -- the message shows at the end of its line
@@ -263,6 +291,30 @@ vim.api.nvim_create_autocmd('FileType', {
     end
   end,
 })
+
+-- Function, class and argument text objects. Linewise outer objects leave no empty line.
+require('nvim-treesitter-textobjects').setup({
+  select = { lookahead = true, selection_modes = { ['@function.outer'] = 'V', ['@class.outer'] = 'V' } },
+  move = { set_jumps = true },
+})
+for lhs, obj in pairs({
+  af = '@function.outer', ['if'] = '@function.inner', ac = '@class.outer',
+  ic = '@class.inner', aa = '@parameter.outer', ia = '@parameter.inner',
+}) do
+  vim.keymap.set({ 'x', 'o' }, lhs, function()
+    require('nvim-treesitter-textobjects.select').select_textobject(obj, 'textobjects')
+  end, { desc = obj })
+end
+-- ]c and [c keep their built-in meaning in diff mode: next and previous change.
+for lhs, move in pairs({
+  [']f'] = { 'goto_next_start', '@function.outer' }, ['[f'] = { 'goto_previous_start', '@function.outer' },
+  [']c'] = { 'goto_next_start', '@class.outer' }, ['[c'] = { 'goto_previous_start', '@class.outer' },
+}) do
+  vim.keymap.set({ 'n', 'x', 'o' }, lhs, function()
+    if vim.wo.diff and lhs:sub(2) == 'c' then return vim.cmd.normal({ lhs, bang = true }) end
+    require('nvim-treesitter-textobjects.move')[move[1]](move[2], 'textobjects')
+  end, { desc = move[2] })
+end
 
 -- tsc is TypeScript 7's native server. Biome and the oxc tools attach only where the project
 -- configures them; lspconfig would start the oxc ones rootless everywhere else.

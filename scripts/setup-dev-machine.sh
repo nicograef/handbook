@@ -39,7 +39,7 @@ SETUP_ALLOW_NONROOT="${SETUP_ALLOW_NONROOT:-false}" # the fixture test only: ski
 HANDBOOK_DIR="$(cd "$(dirname "$0")/.." && pwd)"
 HANDBOOK_SSH_URL="git@github.com:nicograef/handbook.git"
 
-APT_PACKAGES=(git jq curl gcc make shellcheck tmux bat eza fzf fd-find ripgrep git-delta gitleaks
+APT_PACKAGES=(git jq curl gcc make shellcheck tmux bat eza fzf fd-find ripgrep git-delta gitleaks lazygit
   xclip pipx docker.io docker-compose-v2 docker-buildx)
 SNAPS=("node $NODE_CHANNEL" "go latest/stable" "nvim latest/stable")
 NPM_TOOLS=(pnpm)
