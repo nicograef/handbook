@@ -285,16 +285,18 @@ check_go() {
   current="$(as_user "$GO_ROOT/bin/go" version | awk '{print $3}')"
   if [[ -n "$GO_LATEST" && "$current" != "$GO_LATEST" ]]; then flag OUTDATED "$current → $GO_LATEST"; fi
 }
+# The download fixes run in a subshell; TMP_DIR is global so their EXIT trap still sees it.
+
 # go.dev's steps: untarring over an existing tree breaks it, so the old one goes first.
 fix_go() {
-  local dir file="$GO_LATEST.linux-$ARCH.tar.gz"
+  local file="$GO_LATEST.linux-$ARCH.tar.gz"
   [[ -n "$GO_LATEST" && -n "$GO_SHA256" ]] || { printf 'go.dev/dl did not answer.\n'; return 1; }
-  dir="$(mktemp -d)"
-  trap 'rm -rf "$dir"' EXIT
-  curl -fsSL "https://go.dev/dl/$file" -o "$dir/$file"
-  sha256sum --quiet -c <<<"$GO_SHA256  $dir/$file"
+  TMP_DIR="$(mktemp -d)"
+  trap 'rm -rf "$TMP_DIR"' EXIT
+  curl -fsSL "https://go.dev/dl/$file" -o "$TMP_DIR/$file"
+  sha256sum --quiet -c <<<"$GO_SHA256  $TMP_DIR/$file"
   rm -rf "$GO_ROOT"
-  tar -C "$(dirname "$GO_ROOT")" -xzf "$dir/$file"
+  tar -C "$(dirname "$GO_ROOT")" -xzf "$TMP_DIR/$file"
 }
 
 check_nvimbin() {
@@ -307,15 +309,15 @@ check_nvimbin() {
 }
 # guides/neovim.md's install step; the digest GitHub publishes for the asset verifies it.
 fix_nvimbin() {
-  local dir file="nvim-linux-$NVIM_ARCH.tar.gz"
+  local file="nvim-linux-$NVIM_ARCH.tar.gz"
   [[ -n "$NVIM_LATEST" && -n "$NVIM_SHA256" ]] || { printf 'The GitHub releases API did not answer.\n'; return 1; }
-  dir="$(as_user mktemp -d)"
-  trap 'rm -rf "$dir"' EXIT
-  as_user curl -fsSL "https://github.com/neovim/neovim/releases/download/$NVIM_LATEST/$file" -o "$dir/$file"
-  sha256sum --quiet -c <<<"$NVIM_SHA256  $dir/$file"
+  TMP_DIR="$(as_user mktemp -d)"
+  trap 'rm -rf "$TMP_DIR"' EXIT
+  as_user curl -fsSL "https://github.com/neovim/neovim/releases/download/$NVIM_LATEST/$file" -o "$TMP_DIR/$file"
+  sha256sum --quiet -c <<<"$NVIM_SHA256  $TMP_DIR/$file"
   as_user rm -rf "$NVIM_DIR"
   as_user mkdir -p "$(dirname "$NVIM_LINK")"
-  as_user tar -C "$(dirname "$NVIM_DIR")" -xzf "$dir/$file"
+  as_user tar -C "$(dirname "$NVIM_DIR")" -xzf "$TMP_DIR/$file"
   as_user ln -sfn "$NVIM_DIR/bin/nvim" "$NVIM_LINK"
 }
 
