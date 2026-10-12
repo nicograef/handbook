@@ -46,10 +46,12 @@ DRY_RUN="${DRY_RUN:-false}"                      # set to "true" or pass --dry-r
 REPORT_HEALTH_SHA256="c30cabb5055830d10cf87d08a50655778c9ad28d12da7ce58e341a51f843b51d"
 
 log() { printf '\n\033[1;34m▸ %s\033[0m\n' "$1"; }
+die() { printf 'ERROR: %s\n' "$1" >&2; exit 1; }
+dry() { printf '  \033[0;33m[DRY-RUN]\033[0m %s\n' "$*"; }
 
 run() {
   if [[ "$DRY_RUN" == "true" ]]; then
-    printf '  \033[0;33m[DRY-RUN]\033[0m %s\n' "$*"
+    dry "$*"
   else
     "$@"
   fi
@@ -59,10 +61,20 @@ run() {
 write_file() {
   local path="$1"
   if [[ "$DRY_RUN" == "true" ]]; then
-    printf '  \033[0;33m[DRY-RUN]\033[0m write %s\n' "$path"
+    dry "write $path"
     cat >/dev/null
   else
     cat > "$path"
+  fi
+}
+
+# append_line <path> <line> — append <line> unless <path> holds it, previewing (not writing) in dry-run.
+append_line() {
+  if grep -qxF -- "$2" "$1" 2>/dev/null; then return 0; fi
+  if [[ "$DRY_RUN" == "true" ]]; then
+    dry "append '$2' to $1"
+  else
+    printf '%s\n' "$2" >> "$1"
   fi
 }
 
@@ -81,8 +93,7 @@ fi
 # ── Pre-flight checks ───────────────────────────────────────────────────────
 # Root is required for real runs; a dry-run only previews, so allow it anywhere.
 if [[ $EUID -ne 0 && "$DRY_RUN" != "true" ]]; then
-  echo "ERROR: This script must be run as root." >&2
-  exit 1
+  die "This script must be run as root."
 fi
 
 USER_HOME="/home/$USERNAME"
@@ -90,12 +101,10 @@ SSH_DIR="$USER_HOME/.ssh"
 # Password login ends below, so a key must parse: blank or comment lines would lock the user out.
 if [[ -n "$SSH_PUBLIC_KEY" ]]; then
   if ! ssh-keygen -lf - <<<"$SSH_PUBLIC_KEY" >/dev/null 2>&1; then
-    echo "ERROR: SSH_PUBLIC_KEY is not a public key." >&2
-    exit 1
+    die "SSH_PUBLIC_KEY is not a public key."
   fi
 elif ! ssh-keygen -lf "$SSH_DIR/authorized_keys" >/dev/null 2>&1; then
-  echo "ERROR: SSH_PUBLIC_KEY is not set and $SSH_DIR/authorized_keys holds no valid key. Export it or edit the script." >&2
-  exit 1
+  die "SSH_PUBLIC_KEY is not set and $SSH_DIR/authorized_keys holds no valid key. Export it or edit the script."
 fi
 
 # passwd -S prints P for a usable password; a missing user or a non-root dry-run reads as none.
@@ -104,19 +113,16 @@ if [[ "$(passwd -S "$USERNAME" 2>/dev/null | awk '{print $2}' || true)" == P ]];
 
 # A commit URL never changes, so the fetched file is the one this script's digest names.
 if [[ ! "$HANDBOOK_REF" =~ ^[0-9a-f]{40}$ ]]; then
-  echo "ERROR: HANDBOOK_REF must be a full commit sha. Set it to: git rev-parse HEAD (in a pushed handbook clone)" >&2
-  exit 1
+  die "HANDBOOK_REF must be a full commit sha. Set it to: git rev-parse HEAD (in a pushed handbook clone)"
 fi
 
 if [[ "$PASSWORDLESS_SUDO" != "true" ]]; then
   if [[ -z "$USER_PASSWORD_HASH" && "$HAS_PASSWORD" != true ]]; then
-    echo "ERROR: USER_PASSWORD_HASH is not set and '$USERNAME' has no password. Set it, or pass PASSWORDLESS_SUDO=true for NOPASSWD sudo." >&2
-    exit 1
+    die "USER_PASSWORD_HASH is not set and '$USERNAME' has no password. Set it, or pass PASSWORDLESS_SUDO=true for NOPASSWD sudo."
   fi
   # chpasswd -e stores the value verbatim, so plaintext would leave an unusable password.
   if [[ -n "$USER_PASSWORD_HASH" && "$USER_PASSWORD_HASH" != \$* ]]; then
-    echo "ERROR: USER_PASSWORD_HASH is not a crypt hash. Generate it with: mkpasswd -m yescrypt" >&2
-    exit 1
+    die "USER_PASSWORD_HASH is not a crypt hash. Generate it with: mkpasswd -m yescrypt"
   fi
 fi
 
@@ -156,8 +162,7 @@ else
   run chmod 600 /swapfile
   run mkswap /swapfile
   run swapon /swapfile
-  grep -q '^/swapfile ' /etc/fstab 2>/dev/null \
-    || run bash -c "echo '/swapfile none swap sw 0 0' >> /etc/fstab"
+  grep -q '^/swapfile ' /etc/fstab 2>/dev/null || append_line /etc/fstab '/swapfile none swap sw 0 0'
 fi
 
 # A tmpfs /tmp is RAM- and swap-backed; it cannot be dropped like page cache.
@@ -172,8 +177,7 @@ fi
 # image lacks makes perl, and every tool built on it, warn on each call.
 log "Generating locales"
 for loc in $SYSTEM_LOCALE $EXTRA_LOCALES; do
-  grep -qx "$loc ${loc#*.}" /etc/locale.gen 2>/dev/null \
-    || run bash -c "echo '$loc ${loc#*.}' >> /etc/locale.gen"
+  append_line /etc/locale.gen "$loc ${loc#*.}"
 done
 run locale-gen
 # A stock image sets LANG=C.UTF-8 in /etc/default/locale.
@@ -184,17 +188,15 @@ run update-locale "LANG=$SYSTEM_LOCALE"
 log "Fetching report-health.sh at $HANDBOOK_REF"
 REPORT_HEALTH_URL="https://raw.githubusercontent.com/nicograef/handbook/${HANDBOOK_REF}/scripts/report-health.sh"
 if [[ "$DRY_RUN" == "true" ]]; then
-  printf '  \033[0;33m[DRY-RUN]\033[0m fetch %s and verify sha256 %s\n' "$REPORT_HEALTH_URL" "$REPORT_HEALTH_SHA256"
+  dry "fetch $REPORT_HEALTH_URL and verify sha256 $REPORT_HEALTH_SHA256"
 else
   REPORT_HEALTH_TMP="$(mktemp)"
   trap 'rm -f "$REPORT_HEALTH_TMP"' EXIT
   if ! curl -fsSL "$REPORT_HEALTH_URL" -o "$REPORT_HEALTH_TMP"; then
-    echo "ERROR: cannot fetch $REPORT_HEALTH_URL. Is HANDBOOK_REF pushed?" >&2
-    exit 1
+    die "cannot fetch $REPORT_HEALTH_URL. Is HANDBOOK_REF pushed?"
   fi
   if ! sha256sum --quiet -c <<< "$REPORT_HEALTH_SHA256  $REPORT_HEALTH_TMP"; then
-    echo "ERROR: report-health.sh at $HANDBOOK_REF does not match this script. Run the setup-server.sh of that commit." >&2
-    exit 1
+    die "report-health.sh at $HANDBOOK_REF does not match this script. Run the setup-server.sh of that commit."
   fi
 fi
 
@@ -216,11 +218,7 @@ elif [[ -z "$USER_PASSWORD_HASH" ]]; then
   echo "  No USER_PASSWORD_HASH — keeping the password of '$USERNAME'."
 else
   # adduser --disabled-password leaves the password unset, which locks prompted sudo out.
-  if [[ "$DRY_RUN" == "true" ]]; then
-    printf '  \033[0;33m[DRY-RUN]\033[0m set password hash for %s via chpasswd -e\n' "$USERNAME"
-  else
-    printf '%s:%s\n' "$USERNAME" "$USER_PASSWORD_HASH" | chpasswd -e
-  fi
+  run chpasswd -e <<<"$USERNAME:$USER_PASSWORD_HASH"
 fi
 
 # ── 3. SSH hardening ────────────────────────────────────────────────────────
@@ -229,7 +227,7 @@ run mkdir -p "$SSH_DIR"
 if [[ -z "$SSH_PUBLIC_KEY" ]]; then
   echo "  No SSH_PUBLIC_KEY — keeping the keys in $SSH_DIR/authorized_keys."
 elif [[ "$DRY_RUN" == "true" ]]; then
-  printf '  \033[0;33m[DRY-RUN]\033[0m append SSH_PUBLIC_KEY to %s (deduplicated)\n' "$SSH_DIR/authorized_keys"
+  dry "append SSH_PUBLIC_KEY to $SSH_DIR/authorized_keys (deduplicated)"
 else
   echo "$SSH_PUBLIC_KEY" >> "$SSH_DIR/authorized_keys"
   sort -u "$SSH_DIR/authorized_keys" -o "$SSH_DIR/authorized_keys"
@@ -245,11 +243,7 @@ SSHD_DROPIN="/etc/ssh/sshd_config.d/00-hardening.conf"
 # sshd keeps the first value it reads and cloud images ship 50-cloud-init.conf, so the 00- drop-in wins.
 # Some minimal images omit the Include; line 1 puts the drop-ins ahead of every main-config directive.
 INCLUDE_LINE="Include /etc/ssh/sshd_config.d/*.conf"
-if [[ "$DRY_RUN" == "true" ]]; then
-  printf '  \033[0;33m[DRY-RUN]\033[0m ensure %s starts with "%s"\n' "$SSHD_CONFIG" "$INCLUDE_LINE"
-elif ! grep -qxF "$INCLUDE_LINE" "$SSHD_CONFIG"; then
-  sed -i "1i $INCLUDE_LINE" "$SSHD_CONFIG"
-fi
+grep -qsxF "$INCLUDE_LINE" "$SSHD_CONFIG" || run sed -i "1i $INCLUDE_LINE" "$SSHD_CONFIG"
 
 run install -m 0755 -d /etc/ssh/sshd_config.d
 write_file "$SSHD_DROPIN" <<'EOF'
@@ -373,7 +367,7 @@ EOF
 
 log "Installing hourly health ping"
 if [[ "$DRY_RUN" == "true" ]]; then
-  printf '  \033[0;33m[DRY-RUN]\033[0m install the verified report-health.sh as /usr/local/bin/report-health (executable)\n'
+  dry "install the verified report-health.sh as /usr/local/bin/report-health (executable)"
 else
   install -m 0755 "$REPORT_HEALTH_TMP" /usr/local/bin/report-health
 fi
