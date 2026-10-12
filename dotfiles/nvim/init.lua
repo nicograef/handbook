@@ -1,4 +1,4 @@
--- init.lua – Neovim for prose and code on vim.pack: tokyonight, snacks picker and explorer,
+-- init.lua – Neovim for prose and code on vim.pack: catppuccin, snacks picker and explorer,
 -- which-key, lualine, gitsigns, mini.icons, precognition, hardtime; LSP, format on save, treesitter.
 -- Install and use: guides/neovim.md.
 -- Only non-defaults are set: `:help nvim-defaults` lists what is already on.
@@ -123,7 +123,7 @@ vim.api.nvim_create_autocmd('PackChanged', {
 })
 
 vim.pack.add({
-  'https://github.com/folke/tokyonight.nvim',
+  { src = 'https://github.com/catppuccin/nvim', name = 'catppuccin' },
   'https://github.com/folke/snacks.nvim',
   'https://github.com/folke/which-key.nvim',
   'https://github.com/nvim-lualine/lualine.nvim',
@@ -137,7 +137,18 @@ vim.pack.add({
   'https://github.com/nvim-mini/mini.icons',
 })
 
-vim.cmd.colorscheme('tokyonight-night')
+-- Mocha with neutral greys of equal luminance in place of its blue-tinted backgrounds.
+-- dotfiles/ptyxis/catppuccin-mocha-grey.palette and .tmux.conf use the same greys.
+require('catppuccin').setup({
+  flavour = 'mocha',
+  color_overrides = {
+    mocha = {
+      crust = '#121212', mantle = '#191919', base = '#1f1f1f',
+      surface0 = '#333333', surface1 = '#484848', surface2 = '#5c5c5c',
+    },
+  },
+})
+vim.cmd.colorscheme('catppuccin')
 require('mini.icons').setup()
 MiniIcons.mock_nvim_web_devicons()   -- lualine asks for nvim-web-devicons
 require('snacks').setup({

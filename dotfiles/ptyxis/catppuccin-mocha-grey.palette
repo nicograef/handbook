@@ -1,0 +1,23 @@
+# Catppuccin Mocha with neutral greys of equal luminance for the blue-tinted base and surfaces.
+# dotfiles/nvim/init.lua and dotfiles/.tmux.conf use the same greys.
+[Palette]
+Name=Catppuccin Mocha Grey
+Background=#1F1F1F
+Foreground=#CDD6F4
+Cursor=#CDD6F4
+Color0=#484848
+Color1=#F38BA8
+Color2=#A6E3A1
+Color3=#F9E2AF
+Color4=#89B4FA
+Color5=#F5C2E7
+Color6=#94E2D5
+Color7=#BAC2DE
+Color8=#5C5C5C
+Color9=#F38BA8
+Color10=#A6E3A1
+Color11=#F9E2AF
+Color12=#89B4FA
+Color13=#F5C2E7
+Color14=#94E2D5
+Color15=#A6ADC8

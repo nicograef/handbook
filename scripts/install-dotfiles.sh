@@ -10,10 +10,11 @@
 #   2. Symlinks every LINKS entry below into $HOME: shell dotfiles, Neovim, repo-status and the
 #      Claude Code config; a real file or directory in the way is moved to <name>.bak.
 #      Removes links in ~/.claude and ~/.agents that point into this repo at a file that is gone.
-#   3. Installs the nico@handbook plugin (skills, agent, hooks) when claude is on PATH
-#   4. Sets git config defaults (pull.rebase, fetch.prune, etc.)
-#   5. Sets up SSH commit signing when ~/.ssh/id_ed25519.pub exists
-#   6. Points to the gh install docs if gh is missing
+#   3. Selects the handbook palette in Ptyxis's default profile when Ptyxis is installed
+#   4. Installs the nico@handbook plugin (skills, agent, hooks) when claude is on PATH
+#   5. Sets git config defaults (pull.rebase, fetch.prune, etc.)
+#   6. Sets up SSH commit signing when ~/.ssh/id_ed25519.pub exists
+#   7. Points to the gh install docs if gh is missing
 #
 # .bashrc is left alone: the Ubuntu default sources ~/.bash_aliases.
 set -euo pipefail
@@ -42,6 +43,7 @@ LINKS=(
   "dotfiles/.inputrc .inputrc"
   "dotfiles/gitignore-global .config/git/ignore"
   "dotfiles/nvim .config/nvim"
+  "dotfiles/ptyxis/catppuccin-mocha-grey.palette .local/share/org.gnome.Ptyxis/palettes/catppuccin-mocha-grey.palette"
   "scripts/report-repo-status.sh .local/bin/repo-status"
   "claude/global.md .claude/CLAUDE.md"
   "claude/settings.json .claude/settings.json"
@@ -97,6 +99,15 @@ for dest in "$HOME"/.claude/* "$HOME"/.agents/*; do
     log "Removed stale link $dest"
   fi
 done
+
+# Ptyxis names a palette by its file name without .palette.
+if gsettings list-schemas 2>/dev/null | grep -qx org.gnome.Ptyxis; then
+  uuid="$(gsettings get org.gnome.Ptyxis default-profile-uuid | tr -d "'")"
+  gsettings set "org.gnome.Ptyxis.Profile:/org/gnome/Ptyxis/Profiles/$uuid/" palette catppuccin-mocha-grey
+  log "Ptyxis palette: catppuccin-mocha-grey"
+else
+  log "SKIP: Ptyxis not installed, terminal palette not set"
+fi
 
 # claude/settings.json enables the plugin; registering its local marketplace makes it load.
 if ! command -v claude >/dev/null 2>&1; then
