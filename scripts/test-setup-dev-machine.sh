@@ -99,6 +99,8 @@ case "$name" in
     case "$1 $2 $3" in
       "config get prefix") cat "$S/npmprefix" 2>/dev/null || echo /usr ;;
       "config set prefix") echo "$4" > "$S/npmprefix" ;;
+      "config get allow-scripts") cat "$S/npmallow" 2>/dev/null ;;
+      "config set allow-scripts="*) echo "${3#allow-scripts=}" > "$S/npmallow" ;;
       "ls -g --depth=0") jq -Rn '{dependencies: ([inputs | {(.): {}}] | add // {})}' "$S/npm" 2>/dev/null || echo '{}' ;;
       "outdated -g --json") echo '{}' ;;
       "install -g "*) shift 2; printf '%s\n' "${@%@latest}" >> "$S/npm" ;;
@@ -162,7 +164,8 @@ if [[ "$rc" -eq 0 ]]; then log "fresh --yes -> exit 0"; else fail "fresh --yes: 
 order=("apt-get install -y git" "apt-get install -y gh" "snap install node --classic --channel=26/stable"
   "usermod -aG docker" "ssh-keygen -t ed25519 -C fixture@example.com"
   "gh auth login -h github.com -p ssh --skip-ssh-key -s admin:public_key,admin:ssh_signing_key" "pipx install uv"
-  "npm config set prefix $HOME_DIR/.local" "uv tool install ruff" "claude plugin install"
+  "npm config set prefix $HOME_DIR/.local"
+  "npm config set allow-scripts=pnpm,tree-sitter-cli --location=user" "uv tool install ruff" "claude plugin install"
   "gh ssh-key add $HOME_DIR/.ssh/id_ed25519.pub --type authentication"
   "gh ssh-key add $HOME_DIR/.ssh/id_ed25519.pub --type signing" "nvim --headless")
 last=0

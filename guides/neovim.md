@@ -55,9 +55,11 @@ The steps below are for Debian and servers.
 
    ```bash
    uv tool install ruff && uv tool install ty
-   npm install -g typescript bash-language-server yaml-language-server \
-     vscode-langservers-extracted tree-sitter-cli
+   npm install -g --allow-scripts=tree-sitter-cli typescript bash-language-server \
+     yaml-language-server vscode-langservers-extracted tree-sitter-cli
    ```
+
+   tree-sitter-cli's install script fetches its binary, so npm must allow it.
 
 3. **Start Neovim once.** `vim.pack` clones the plugins at the lockfile's revisions,
    then nvim-treesitter builds ten parsers in the background.

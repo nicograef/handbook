@@ -334,7 +334,7 @@ check_contracts() {
   # 7. guides/neovim.md installs the servers and uv tools that setup-dev-machine.sh installs.
   want="$(sed -n 's/^\(NPM_SERVERS\|UV_TOOLS\)=(\(.*\))$/\2/p' scripts/setup-dev-machine.sh | words)"
   got="$(awk '/npm install -g|uv tool install/ {on = 1} on {cont = sub(/\\$/, ""); print; if (!cont) on = 0}' guides/neovim.md \
-    | sed -E 's/npm install -g|uv tool install|&&//g' | words)"
+    | sed -E 's/npm install -g|uv tool install|&&|--[a-z-]+=[^ ]*//g' | words)"
   [[ "$want" == "$got" ]] || log "guides/neovim.md installs '$got'; setup-dev-machine.sh installs '$want'"
 }
 

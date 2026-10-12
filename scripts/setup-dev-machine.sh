@@ -46,6 +46,7 @@ NPM_TOOLS=(pnpm)
 # guides/neovim.md repeats these two lists for servers; check-repo's contracts stage compares them.
 NPM_SERVERS=(typescript bash-language-server yaml-language-server vscode-langservers-extracted tree-sitter-cli)
 UV_TOOLS=(ruff ty)
+NPM_ALLOW_SCRIPTS="pnpm,tree-sitter-cli" # their install scripts put the native binary in place
 
 # Apply order: each item may rely on the ones above it.
 ITEMS=(
@@ -229,6 +230,7 @@ check_npm() {
   if ! user_has npm; then flag MISSING "npm; install the node snap first"; return; fi
   prefix="$(as_user npm config get prefix)"
   if [[ "$prefix" != "$TARGET_HOME/.local" ]]; then flag WRONG "npm prefix is $prefix"; fi
+  if [[ "$(as_user npm config get allow-scripts)" != "$NPM_ALLOW_SCRIPTS" ]]; then flag WRONG "allow-scripts"; fi
   have="$(as_user npm ls -g --depth=0 --json 2>/dev/null | jq -r '.dependencies // {} | keys[]' | tr '\n' ' ' || true)"
   old="$(as_user npm outdated -g --json 2>/dev/null | jq -r 'keys[]' | tr '\n' ' ' || true)"
   NPM_FIX=()
@@ -239,6 +241,7 @@ check_npm() {
 }
 fix_npm() {
   as_user npm config set prefix "$TARGET_HOME/.local"
+  as_user npm config set allow-scripts="$NPM_ALLOW_SCRIPTS" --location=user
   if ((${#NPM_FIX[@]})); then as_user npm install -g "${NPM_FIX[@]}"; fi
 }
 
