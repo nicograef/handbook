@@ -22,7 +22,8 @@ Six plugins on the built-in `vim.pack`; everything else is a Neovim built-in.
 | Python | ruff, ty |
 | Shell, YAML, JSON | bashls, yamlls, jsonls |
 
-Completion is `vim.lsp.completion` with autotrigger. ruff, Biome and oxfmt format on save.
+Completion is `vim.lsp.completion` with autotrigger. ruff, Biome and oxfmt format on save; ruff and Biome also sort imports.
+Diagnostic messages show at the end of their line.
 Biome, oxlint and oxfmt come from the project's `node_modules` and attach only where it configures them.
 
 On an Ubuntu desktop, [setup-dev-machine.sh](../scripts/setup-dev-machine.sh) does Steps 1–3.

@@ -109,6 +109,7 @@ end
 vim.o.signcolumn = 'yes'         -- diagnostics do not shift the text sideways
 vim.o.winborder = 'rounded'
 vim.o.completeopt = 'menuone,noselect,popup,fuzzy'
+vim.diagnostic.config({ virtual_text = true })   -- the message shows at the end of its line
 
 -- Building a parser needs the tree-sitter CLI and a C compiler; installed ones are skipped.
 require('nvim-treesitter').install({
@@ -126,6 +127,23 @@ vim.api.nvim_create_autocmd('FileType', {
 for _, name in ipairs({ 'oxlint', 'oxfmt' }) do vim.lsp.config(name, { workspace_required = true }) end
 vim.lsp.enable({ 'tsc', 'ty', 'ruff', 'biome', 'oxlint', 'oxfmt', 'bashls', 'yamlls', 'jsonls' })
 
+-- Formatting leaves import order alone; ruff and Biome sort imports through this code action.
+local function organize_imports(client, buf)
+  local params = {
+    textDocument = vim.lsp.util.make_text_document_params(buf),
+    range = { start = { line = 0, character = 0 }, ['end'] = { line = vim.api.nvim_buf_line_count(buf), character = 0 } },
+    context = { only = { 'source.organizeImports' }, diagnostics = {} },
+  }
+  local res = client:request_sync('textDocument/codeAction', params, 1000, buf)
+  for _, action in ipairs(res and res.result or {}) do
+    if not action.edit and client:supports_method('codeAction/resolve') then
+      local resolved = client:request_sync('codeAction/resolve', action, 1000, buf)
+      action = resolved and resolved.result or action
+    end
+    if action.edit then vim.lsp.util.apply_workspace_edit(action.edit, client.offset_encoding) end
+  end
+end
+
 vim.api.nvim_create_autocmd('LspAttach', {
   callback = function(ev)
     local client = assert(vim.lsp.get_client_by_id(ev.data.client_id))
@@ -137,7 +155,10 @@ vim.api.nvim_create_autocmd('LspAttach', {
       vim.api.nvim_create_autocmd('BufWritePre', {
         group = vim.api.nvim_create_augroup('format.' .. ev.buf, {}),
         buffer = ev.buf,
-        callback = function() vim.lsp.buf.format({ bufnr = ev.buf, id = client.id }) end,
+        callback = function()
+          organize_imports(client, ev.buf)
+          vim.lsp.buf.format({ bufnr = ev.buf, id = client.id })
+        end,
       })
     end
   end,
