@@ -80,7 +80,7 @@ vim.pack.add({
   { src = 'https://github.com/nvim-treesitter/nvim-treesitter', version = 'main' },
 })
 
-vim.cmd.colorscheme('tokyonight-moon')
+vim.cmd.colorscheme('tokyonight-night')
 require('snacks').setup({ picker = {}, explorer = {} })
 require('which-key').setup({
   spec = { { '<leader>f', group = 'file' }, { '<leader>s', group = 'search' } },

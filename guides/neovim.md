@@ -9,7 +9,7 @@ Six plugins on the built-in `vim.pack`; everything else is a Neovim built-in.
 
 | Plugin | Role |
 | --- | --- |
-| tokyonight | Colour scheme, `moon` style |
+| tokyonight | Colour scheme, `night` style |
 | snacks.nvim | File, grep and LSP picker; file explorer |
 | which-key | Shows the keys that follow a typed prefix |
 | lualine | Status line |
@@ -119,7 +119,7 @@ Sources: [`:help 'langmap'`](https://neovim.io/doc/user/options.html#'langmap'),
 
 ```bash
 readlink -f ~/.config/nvim                                           # → <clone>/dotfiles/nvim
-nvim --headless -c 'lua print(vim.g.colors_name, #vim.pack.get())' -c q   # → tokyonight-moon 6
+nvim --headless -c 'lua print(vim.g.colors_name, #vim.pack.get())' -c q   # → tokyonight-night 6
 nvim --headless -c 'lua print(vim.fn.maparg("<Space><Space>", "n") ~= "")' -c q   # → true
 nvim --headless -c 'lua print(vim.o.shiftwidth, vim.o.clipboard)' -c q   # → 2 unnamedplus (desktop) / 2 (server)
 nvim --headless <py> +'sleep 3' +'lua print(vim.iter(vim.lsp.get_clients({bufnr=0})):map(function(c) return c.name end):join(","))' +q   # → ruff,ty
