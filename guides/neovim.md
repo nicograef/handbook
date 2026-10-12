@@ -1,25 +1,43 @@
 # Neovim
 
-Minimal Neovim for prose, Markdown, YAML and JSON: one config file, no plugins, no IDE layer.
+Neovim for prose and code: Markdown, YAML and JSON, plus TypeScript and Python with LSP.
+Six plugins on the built-in `vim.pack`; everything else is a Neovim built-in.
 
 - [dotfiles/nvim/init.lua](../dotfiles/nvim/init.lua) is the whole config; it sets only non-defaults.
-- [scripts/install-dotfiles.sh](../scripts/install-dotfiles.sh) links its directory to `~/.config/nvim`.
-- Distributions (kickstart, LazyVim, NvChad, AstroNvim) ship LSP and completion machinery
-  that text editing never uses.
+- [dotfiles/nvim/nvim-pack-lock.json](../dotfiles/nvim/nvim-pack-lock.json) pins each plugin's revision.
+- [scripts/install-dotfiles.sh](../scripts/install-dotfiles.sh) links the directory to `~/.config/nvim`.
+
+| Plugin | Role |
+| --- | --- |
+| tokyonight | Colour scheme, `moon` style |
+| snacks.nvim | File, grep and LSP picker; file explorer |
+| which-key | Shows the keys that follow a typed prefix |
+| lualine | Status line |
+| nvim-lspconfig | Server configs that `vim.lsp.enable` starts |
+| nvim-treesitter | Builds parsers for highlighting |
+
+| Language | Servers |
+| --- | --- |
+| TypeScript, JavaScript | `tsc` (TypeScript 7), Biome, oxlint, oxfmt |
+| Python | ruff, ty |
+| Shell, YAML, JSON | bashls, yamlls, jsonls |
+
+Completion is `vim.lsp.completion` with autotrigger. ruff, Biome and oxfmt format on save.
+Biome, oxlint and oxfmt come from the project's `node_modules` and attach only where it configures them.
 
 ## Prerequisites
 
-- The latest Neovim release, from [github.com/neovim/neovim/releases](https://github.com/neovim/neovim/releases/latest).
-  apt lags a major version behind (Debian 13 ships 0.10) and is not used.
+- The latest Neovim release; `vim.pack` needs 0.12. apt lags a major version behind and is not used.
 - The handbook cloned and [`install.sh`](../install.sh) run — [dev-machine.md](dev-machine.md). It is idempotent; re-run it when the clone predates the Neovim link.
+- Node with an npm prefix of `~/.local`, uv, and a C compiler (`build-essential`) — [dev-machine.md](dev-machine.md).
 - A desktop clipboard needs `xclip`; the clipboard comment in [dotfiles/nvim/init.lua](../dotfiles/nvim/init.lua) says why.
+- A Nerd Font for picker and status line icons; Ptyxis finds it through fontconfig fallback.
 
 ## Steps
 
-1. **Install.** Ubuntu desktop: the classic snap ships the latest release and refreshes
-   itself. Debian and servers: the pre-built tarball from the release page, unpacked into
-   `~/.local` — no sudo, and `~/.local/bin` precedes `/usr/bin` on `PATH`. Never the apt
-   package beside the snap: `/usr/bin` precedes `/snap/bin`, so apt would shadow it.
+1. **Install Neovim.** Ubuntu desktop: the classic snap ships the latest release and refreshes
+   itself. Debian and servers: the pre-built tarball, unpacked into `~/.local` — no sudo.
+   Never the apt package beside the snap: `/usr/bin` precedes `/snap/bin`, so apt would shadow it.
 
    ```bash
    sudo snap install nvim --classic && sudo apt install xclip   # Ubuntu desktop
@@ -33,11 +51,45 @@ Minimal Neovim for prose, Markdown, YAML and JSON: one config file, no plugins, 
    The tarball does not refresh itself; the [release page](https://github.com/neovim/neovim/releases/latest)
    shows when a re-run is due. Source: [INSTALL.md](https://github.com/neovim/neovim/blob/master/INSTALL.md).
 
-2. **Start the tutorial.**
+2. **Install the language servers and the tree-sitter CLI.** The global TypeScript 7 serves
+   projects that pin an older one, since only 7 has `tsc --lsp`.
 
    ```bash
-   nvim +Tutor
+   uv tool install ruff && uv tool install ty
+   npm install -g typescript bash-language-server yaml-language-server \
+     vscode-langservers-extracted tree-sitter-cli
    ```
+
+3. **Start Neovim once.** `vim.pack` clones the plugins at the lockfile's revisions,
+   then nvim-treesitter builds ten parsers in the background.
+
+   ```bash
+   nvim
+   ```
+
+4. **Update plugins.** `vim.pack.update()` opens a review tab; `:write` applies it.
+   An nvim-treesitter update rebuilds the parsers. Commit the changed lockfile.
+
+   ```bash
+   nvim +'lua vim.pack.update()'
+   git -C <clone> commit -m 'chore(nvim): update plugins' dotfiles/nvim/nvim-pack-lock.json
+   ```
+
+## Keys
+
+The leader is Space. LSP keys are Neovim's defaults (`:help lsp-defaults`).
+Plugin management: [`:help vim.pack`](https://neovim.io/doc/user/pack.html).
+
+| Press | Does |
+| --- | --- |
+| `<Space><Space>` / `<Space>/` / `<Space>,` | Find files / grep / buffers |
+| `<Space>fr` / `<Space>e` | Recent files / file explorer |
+| `<Space>sh` / `<Space>sk` | Help pages / keymaps |
+| `<Space>sd` / `<Space>ss` | Diagnostics / LSP symbols |
+| `gd` / `grr` / `gri` | Definition / references / implementations |
+| `K` / `grn` / `gra` | Hover / rename / code action |
+| `]d` / `[d` | Next / previous diagnostic |
+| `Ctrl-Y` / `Ctrl-E` | Accept / dismiss a completion |
 
 ## German keyboard
 
@@ -61,9 +113,15 @@ Sources: [`:help 'langmap'`](https://neovim.io/doc/user/options.html#'langmap'),
 
 ## Verify
 
+`<py>` is a Python file in a uv project; `<ts>` is a TypeScript file in an npm project with Biome.
+
 ```bash
-nvim --version | head -1                                             # → the tag of the latest release
 readlink -f ~/.config/nvim                                           # → <clone>/dotfiles/nvim
+nvim --headless -c 'lua print(vim.g.colors_name, #vim.pack.get())' -c q   # → tokyonight-moon 6
+nvim --headless -c 'lua print(vim.fn.maparg("<Space><Space>", "n") ~= "")' -c q   # → true
 nvim --headless -c 'lua print(vim.o.shiftwidth, vim.o.clipboard)' -c q   # → 2 unnamedplus (desktop) / 2 (server)
-nvim +'checkhealth vim.provider'                                     # Clipboard: xclip (desktop); no tool (server)
+nvim --headless <py> +'sleep 3' +'lua print(vim.iter(vim.lsp.get_clients({bufnr=0})):map(function(c) return c.name end):join(","))' +q   # → ruff,ty
+nvim --headless <ts> +'sleep 3' +'lua print(vim.iter(vim.lsp.get_clients({bufnr=0})):map(function(c) return c.name end):join(","))' +q   # → biome,tsc
+nvim --headless x.py +'lua print(vim.treesitter.highlighter.active[vim.api.nvim_get_current_buf()] ~= nil)' +q   # → true
+d=$(mktemp -d) && printf 'x=1\n' > "$d/f.py" && nvim --headless "$d/f.py" +'sleep 2' +w +q && cat "$d/f.py"   # → x = 1
 ```
