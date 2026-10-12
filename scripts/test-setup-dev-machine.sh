@@ -10,7 +10,8 @@
 #      marker files hold the fake machine state, and a tool appears when its fix installs it.
 #   3. Asserts the root guard, --check on the fresh machine, --yes on it, then --check again.
 #   4. Reruns --yes on a gh login that lacks the key scopes and a deleted font, then with both keys present,
-#      with an inactive account holding the scopes, and with a key list that fails whole or for one type.
+#      with an inactive account holding the scopes or an invalid token, and with a key list that fails whole
+#      or for one type.
 #   5. Asserts a broken snap probe names itself and another distro is refused.
 #   6. Repeats the fresh and fixed runs on a headless Debian: no snap, the Node, Go and Neovim tarballs,
 #      no font or xclip. A rerun changes nothing; a Node upgrade drops the old files; a wrong signature or
@@ -124,6 +125,8 @@ case "$name" in
       "--version "*) echo 'gh version 2.0.0' ;;
       "auth status")
         [[ -f "$S/ghauth" ]] || exit 1
+        # $S/otherbad: the inactive account's token is invalid, and gh then exits 1 unless --active.
+        [[ -f "$S/otherbad" && "$*" != *--active* && "$*" != *--json* ]] && exit 1
         if [[ "$*" == *--json* ]]; then
           # Without --active, gh lists every account of the host, as the text form does.
           other=false; [[ -f "$S/otherscopes" && "$*" != *--active* ]] && other=true
@@ -372,7 +375,14 @@ if [[ "$rc" -eq 0 ]] && ! grep -qE '^(gh ssh-key add|hostname)' "$CALLS"; then l
 else fail "inactive account's scopes --yes: rc $rc: $(cat "$OUT")"; fi
 rm "$STATE/otherscopes"
 
-# 5d. Both keys on GitHub, but the list fails whole or for one type: WRONG with gh's error, nothing added.
+# 5d. An inactive account with an invalid token leaves the active login and the keys ok.
+touch "$STATE/otherbad"
+run '' --check
+if grep -qE '^ok +gh login' "$OUT" && grep -qE '^ok +GitHub keys' "$OUT"; then log "invalid inactive account --check -> login and keys ok"
+else fail "invalid inactive account --check: $(cat "$OUT")"; fi
+rm "$STATE/otherbad"
+
+# 5e. Both keys on GitHub, but the list fails whole or for one type: WRONG with gh's error, nothing added.
 for down in listdown signingdown; do
   touch "$STATE/$down"
   run '' --check

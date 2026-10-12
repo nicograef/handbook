@@ -459,7 +459,7 @@ fix_sshkey() {
 
 check_ghauth() {
   if ! user_has gh; then flag MISSING "gh not installed"; return; fi
-  if ! as_user gh auth status >/dev/null 2>&1; then flag MISSING "not logged in"; fi
+  if ! as_user gh auth status --active -h github.com >/dev/null 2>&1; then flag MISSING "not logged in"; fi
 }
 # The GitHub keys item uploads the key; the scopes it needs come with this login.
 fix_ghauth() { as_user gh auth login -h github.com -p ssh --skip-ssh-key -s "$GH_KEY_SCOPES"; }
@@ -581,7 +581,7 @@ missing_key_types() {
 check_ghkeys() {
   local missing
   if [[ ! -f "$KEY.pub" ]]; then flag MISSING "no SSH key"; return; fi
-  if ! user_has gh || ! as_user gh auth status >/dev/null 2>&1; then flag MISSING "gh not logged in"; return; fi
+  if ! user_has gh || ! as_user gh auth status --active -h github.com >/dev/null 2>&1; then flag MISSING "gh not logged in"; return; fi
   missing="$(missing_scopes)"
   if [[ -n "$missing" ]]; then flag WRONG "gh login lacks ${missing% }, so the keys cannot be listed"; return; fi
   if ! missing="$(missing_key_types)"; then flag WRONG "cannot list the GitHub keys: ${missing:-gh failed}"; return; fi
