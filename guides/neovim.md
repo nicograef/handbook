@@ -1,7 +1,7 @@
 # Neovim
 
 Neovim for prose and code: Markdown, YAML and JSON, plus TypeScript and Python with LSP.
-Six plugins on the built-in `vim.pack`; everything else is a Neovim built-in.
+Nine plugins on the built-in `vim.pack`; everything else is a Neovim built-in.
 
 - [dotfiles/nvim/init.lua](../dotfiles/nvim/init.lua) is the whole config; it sets only non-defaults.
 - [dotfiles/nvim/nvim-pack-lock.json](../dotfiles/nvim/nvim-pack-lock.json) pins each plugin's revision.
@@ -14,7 +14,10 @@ Six plugins on the built-in `vim.pack`; everything else is a Neovim built-in.
 | which-key | Shows the keys that follow a typed prefix |
 | lualine | Status line |
 | nvim-lspconfig | Server configs that `vim.lsp.enable` starts |
-| nvim-treesitter | Builds parsers for highlighting |
+| nvim-treesitter | Builds parsers for highlighting, indent and folds |
+| precognition.nvim | Shows the motions reachable from the cursor |
+| hardtime.nvim | Blocks a key repeated too often and names the better motion |
+| nui.nvim | Popup for `:Hardtime report` |
 
 | Language | Servers |
 | --- | --- |
@@ -94,7 +97,12 @@ Plugin management: [`:help vim.pack`](https://neovim.io/doc/user/pack.html).
 | `]e` / `[e`, `]w` / `[w` | Next / previous error, warning |
 | `<Space>u` + `f` `F` `h` `d` `s` `w` | Toggle autoformat (buffer, global), inlay hints, diagnostics, spell, wrap |
 | `<Space>n` | Notification history |
+| `<Space>u` + `k` `p` `H` | Toggle cheat sheet, motion hints, hardtime |
 | `Ctrl-Y` / `Ctrl-E` | Accept / dismiss a completion |
+
+The cheat sheet in the top-right corner is [dotfiles/nvim/cheatsheet.md](../dotfiles/nvim/cheatsheet.md).
+Replace a line once its key sticks; the float picks the change up on the next start.
+`:Hardtime report` lists the habits hardtime blocked most.
 
 ## German keyboard
 
@@ -122,7 +130,7 @@ Sources: [`:help 'langmap'`](https://neovim.io/doc/user/options.html#'langmap'),
 
 ```bash
 readlink -f ~/.config/nvim                                           # → <clone>/dotfiles/nvim
-nvim --headless -c 'lua print(vim.g.colors_name, #vim.pack.get())' -c q   # → tokyonight-night 6
+nvim --headless -c 'lua print(vim.g.colors_name, #vim.pack.get())' -c q   # → tokyonight-night 9
 nvim --headless -c 'lua print(vim.fn.maparg("<Space><Space>", "n") ~= "")' -c q   # → true
 nvim --headless -c 'lua print(vim.o.shiftwidth, vim.o.clipboard)' -c q   # → 2 unnamedplus (desktop) / 2 (server)
 nvim --headless x.py +'lua print(vim.wo.foldmethod, vim.fn.maparg("]e", "n") ~= "")' +q   # → expr true

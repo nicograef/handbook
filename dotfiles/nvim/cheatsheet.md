@@ -1,0 +1,16 @@
+- `w` `b` `e`     next word, back, word end
+- `f` `t` + `;`   to / before a char, repeat
+- `%`             matching bracket
+- `*`             search word under cursor
+- `Ctrl-d` `-u`   half page down, up
+- `Ctrl-o` `-i`   jump back, forward
+- `ciw` `ci"`     change word, in quotes
+- `dap`           delete paragraph
+- `.`             repeat last change
+- `o` `O`         open line below, above
+- `gcc`           toggle comment
+- `>>`            indent line
+- `]b` `[b`       next, previous buffer
+- `Ctrl-w hjkl`   move between windows
+- `Ctrl-l`        clear search highlight
+- `:m +1`         move line down

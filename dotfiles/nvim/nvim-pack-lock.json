@@ -1,8 +1,16 @@
 {
   "plugins": {
+    "hardtime.nvim": {
+      "rev": "721a75b9a0c2eb1fb811d34507708ee315cb04eb",
+      "src": "https://github.com/m4xshen/hardtime.nvim"
+    },
     "lualine.nvim": {
       "rev": "221ce6b2d999187044529f49da6554a92f740a96",
       "src": "https://github.com/nvim-lualine/lualine.nvim"
+    },
+    "nui.nvim": {
+      "rev": "10fc361835c856ba4233ef5ea135b919bf3dce97",
+      "src": "https://github.com/MunifTanjim/nui.nvim"
     },
     "nvim-lspconfig": {
       "rev": "6d27c288ff951e1e94cb5f91c800adeddf0dc0c2",
@@ -12,6 +20,10 @@
       "rev": "1a4f47b03dfe92d28de7d5654c67327ef008c9e6",
       "src": "https://github.com/nvim-treesitter/nvim-treesitter",
       "version": "'main'"
+    },
+    "precognition.nvim": {
+      "rev": "add3cc30e6d68e977bbb76927c11b45b80c3a209",
+      "src": "https://github.com/tris203/precognition.nvim"
     },
     "snacks.nvim": {
       "rev": "882c996cf28183f4d63640de0b4c02ec886d01f2",

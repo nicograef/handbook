@@ -1,5 +1,5 @@
 -- init.lua – Neovim for prose and code on vim.pack: tokyonight, snacks picker and explorer,
--- which-key, lualine; LSP with built-in completion and format on save, treesitter highlighting.
+-- which-key, lualine, precognition, hardtime; LSP with built-in completion and format on save, treesitter.
 -- Install and use: guides/neovim.md.
 -- Only non-defaults are set: `:help nvim-defaults` lists what is already on.
 
@@ -126,6 +126,9 @@ vim.pack.add({
   'https://github.com/nvim-lualine/lualine.nvim',
   'https://github.com/neovim/nvim-lspconfig',
   { src = 'https://github.com/nvim-treesitter/nvim-treesitter', version = 'main' },
+  'https://github.com/tris203/precognition.nvim',
+  'https://github.com/m4xshen/hardtime.nvim',
+  'https://github.com/MunifTanjim/nui.nvim',
 })
 
 vim.cmd.colorscheme('tokyonight-night')
@@ -181,6 +184,61 @@ Snacks.toggle.inlay_hints():map('<leader>uh')
 Snacks.toggle.diagnostics():map('<leader>ud')
 Snacks.toggle.option('spell', { name = 'Spelling' }):map('<leader>us')
 Snacks.toggle.option('wrap', { name = 'Wrap' }):map('<leader>uw')
+
+-- ── Learning ─────────────────────────────────────────────────────────────────
+-- precognition shows the motions reachable from the cursor. hardtime blocks a key
+-- repeated too often and names the better motion; :Hardtime report needs nui.
+require('precognition').setup({})
+require('hardtime').setup({
+  disabled_filetypes = { snacks_picker_list = true, snacks_picker_input = true, snacks_input = true },
+})
+Snacks.toggle.new({
+  name = 'Motion hints',
+  get = function() return require('precognition').is_visible() end,
+  set = function(on) require('precognition')[on and 'show' or 'hide']() end,
+}):map('<leader>up')
+Snacks.toggle.new({
+  name = 'Hardtime',
+  get = function() return require('hardtime').is_plugin_enabled end,
+  set = function(on) require('hardtime')[on and 'enable' or 'disable']() end,
+}):map('<leader>uH')
+
+-- The keys being learned (cheatsheet.md) stay in a float in the top-right corner.
+-- It takes no focus and hides below 100 columns.
+local sheet = { path = vim.fn.stdpath('config') .. '/cheatsheet.md', on = true }
+local function sheet_update()
+  local valid = sheet.win and vim.api.nvim_win_is_valid(sheet.win)
+  if not sheet.on or vim.o.columns < 100 or vim.fn.filereadable(sheet.path) == 0 then
+    if valid then vim.api.nvim_win_close(sheet.win, true) end
+    return
+  end
+  if not sheet.buf then
+    sheet.buf = vim.api.nvim_create_buf(false, true)
+    vim.api.nvim_buf_set_lines(sheet.buf, 0, -1, false, vim.fn.readfile(sheet.path))
+    vim.treesitter.start(sheet.buf, 'markdown')   -- no filetype, so no FileType autocmds
+  end
+  local lines = vim.api.nvim_buf_get_lines(sheet.buf, 0, -1, false)
+  local width = math.max(unpack(vim.tbl_map(vim.fn.strdisplaywidth, lines)))
+  local config = {
+    relative = 'editor', anchor = 'NE', row = 0, col = vim.o.columns, zindex = 10,
+    width = width, height = #lines, style = 'minimal', focusable = false, title = ' Learning ',
+  }
+  if valid then vim.api.nvim_win_set_config(sheet.win, config)
+  else sheet.win = vim.api.nvim_open_win(sheet.buf, false, config) end
+end
+sheet_update()
+autocmd({ 'VimResized', 'WinEnter' }, { callback = sheet_update })
+-- :only closes floats too; reopen once the close is done.
+autocmd('WinClosed', {
+  callback = function(ev)
+    if tonumber(ev.match) == sheet.win then vim.schedule(sheet_update) end
+  end,
+})
+Snacks.toggle.new({
+  name = 'Cheat sheet',
+  get = function() return sheet.on end,
+  set = function(on) sheet.on = on; sheet_update() end,
+}):map('<leader>uk')
 
 -- ── Code ─────────────────────────────────────────────────────────────────────
 -- Server binaries live outside Neovim (guides/neovim.md); a missing one leaves its
