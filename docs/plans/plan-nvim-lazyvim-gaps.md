@@ -6,16 +6,16 @@
 
 Add the LazyVim behaviour that improves daily editing without leaving the lean `vim.pack` setup.
 Options, autocmds, snacks modules, treesitter indent and folds, keymaps, a learning panel, and gitsigns.
-Optional: code text objects and lazygit.
+Code text objects and lazygit follow. The goal behind every phase: learning Vim properly, with no shortcuts that hide the built-ins.
 
 ## Architectural decisions
 
 - **Config shape**: `dotfiles/nvim/init.lua` stays the single config file. No `lua/` modules.
-- **Keys**: follow LazyVim's lhs where one exists. They reach `[`/`]` through the existing German-keyboard remaps.
+- **Keys**: no mapping replaces or shortcuts a built-in key; the user learns the built-ins. New keys only add what Vim lacks, with LazyVim's lhs where one exists. They reach `[`/`]` through the German-keyboard remaps.
 - **Toggles**: `Snacks.toggle`. It sets each key's which-key label; the `<leader>u` (ui) and `<leader>g` (git) groups go into the which-key spec.
-- **New plugins**: gitsigns.nvim, plus nvim-treesitter-textobjects (`main` branch) if Phase 5 ships. Nothing else.
+- **New plugins**: gitsigns.nvim, nvim-treesitter-textobjects (`main` branch), precognition.nvim, hardtime.nvim and nui.nvim. Nothing else.
 - **Checks**: run every `nvim --headless` criterion as `XDG_CONFIG_HOME=$PWD/dotfiles nvim …` from the tree under work. `~/.config/nvim` links to the main clone, so a worktree would otherwise test the old config.
-- **Out of scope**: mason, conform, nvim-lint, blink.cmp, trouble, todo-comments, bufferline, noice, dashboard, flash, mini.pairs, grug-far, persistence, lazydev.
+- **Out of scope**: screenkey.nvim, nvim-training, a learning-path guide section; mason, conform, nvim-lint, blink.cmp, trouble, todo-comments, bufferline, noice, dashboard, flash, mini.pairs, grug-far, persistence, lazydev.
 
 ## Inventory
 
@@ -33,17 +33,17 @@ Optional: code text objects and lazygit.
 
 - `updatetime` stays at its default. snacks `words` has its own 200 ms debounce (`snacks/words.lua — config.debounce`).
 - `wrap` stays on. The config is for prose too; LazyVim's `wrap=false` does not fit.
-- `spelllang` stays at the default `en`; spell turns on only for markdown, text and gitcommit.
-- `<Esc>` clears the search highlight. `<C-l>` becomes window-right, so its default hlsearch clear moves to `<Esc>`.
+- `spelllang=en,de`; spell turns on only for markdown, text and gitcommit. Neovim offers the German spell file download on first use.
+- No shortcuts over built-ins: no `<S-h>`/`<S-l>` (built-in `H`/`L`; buffers are `]b`/`[b`), no `<A-j>`/`<A-k>` (`:m`), no `<C-h/j/k/l>` (`Ctrl-w h/j/k/l`), no `<Esc>` hlsearch clear (`Ctrl-l`).
 - Folds open by default: `foldlevel=99`, so treesitter folds never hide code on open.
 - which-key cannot stay open while you edit: its popup reads the keys you type (`loop = true` holds it until `<Esc>`). The always-on hint is a separate non-focusable float.
+- The learning panel is a float, shown on every start.
+- `signcolumn=yes:2`, so a diagnostic sign and a git sign show side by side.
+- hardtime runs in block mode. nui.nvim is loaded only by `:Hardtime report` (`hardtime/report.lua`), which counts the user's most frequent bad habits.
 - lazygit comes from apt: Ubuntu 26.04 offers `lazygit` 0.57.
 
 ## Open questions / Risks
 
-- Phases 6 and 7 are optional. Ship them only if the user confirms.
-- `<A-j>`/`<A-k>` may be taken by Ptyxis or GNOME. Verify in a real terminal, not headless.
-- `signcolumn=yes` holds one sign. A diagnostic sign (priority 10) hides a git sign (6) on its line. The inline diagnostic message still shows.
 - nvim-treesitter `main` indentexpr is marked experimental upstream. If Python `o` indents wrongly, drop it for that language.
 
 ## Phase 1: Options and autocmds
@@ -114,13 +114,7 @@ Optional: code text objects and lazygit.
 
 ### What to build
 
-- Window and buffer movement:
-  - `<C-h/j/k/l>` moves between windows
-  - `<S-h>`/`<S-l>` goes to the previous or next buffer
-- Diagnostics and search:
-  - `]e`/`[e` and `]w`/`[w` jump to errors or warnings, through `vim.diagnostic.jump({ count, severity })`
-  - `<Esc>` in Normal mode clears hlsearch
-- `<A-j>`/`<A-k>` move the line or selection in Normal, Insert and Visual mode.
+- `]e`/`[e` and `]w`/`[w` jump to errors or warnings, through `vim.diagnostic.jump({ count, severity })`.
 - The which-key spec gains `{ '<leader>u', group = 'ui' }`.
 - Toggles in the `<leader>u` group: `uf` (buffer autoformat), `uF` (global autoformat), `uh` (inlay hints), `ud` (diagnostics), `us` (spell), `uw` (wrap).
 - Format on save, organize imports included, is skipped while `vim.b.autoformat` or `vim.g.autoformat` is `false`.
@@ -129,7 +123,8 @@ Optional: code text objects and lazygit.
 ### Acceptance criteria
 
 - [ ] `grep -c "'<leader>u', group = 'ui'" dotfiles/nvim/init.lua` → `1`
-- [ ] `nvim --headless +'lua for _, k in ipairs({"<C-H>","<S-L>","]e","[w","<M-j>","<Space>uf","<Space>uh"}) do print(k, vim.fn.maparg(k, "n") ~= "") end' +q` → all `true`
+- [ ] `nvim --headless +'lua for _, k in ipairs({"]e","[w","<Space>uf","<Space>uh"}) do print(k, vim.fn.maparg(k, "n") ~= "") end' +q` → all `true`
+- [ ] `nvim --headless +'lua for _, k in ipairs({"H","L","<C-H>","<M-j>","<Esc>"}) do print(k, vim.fn.maparg(k, "n") == "") end' +q` → all `true`
 - [ ] `d=$(mktemp -d) && printf '[project]\nname="t"\nversion="0"\n' > $d/pyproject.toml && printf 'x=1\n' > $d/f.py && nvim --headless $d/f.py +'sleep 2' +'let b:autoformat = v:false' +w +q && cat $d/f.py` → `x=1`
 - [ ] The same command without the `let` → `x = 1`
 - [ ] `make check` passes
@@ -153,6 +148,7 @@ Optional: code text objects and lazygit.
 - `cheatsheet.md` holds about 15 keys, one per line as `key  meaning`. The user edits it as keys stick. The first set:
   - Motions: `w`/`b`/`e`, `f`/`t` with `;`, `%`, `*`, `Ctrl-d`/`Ctrl-u`, `Ctrl-o`/`Ctrl-i`
   - Edits: `ciw`, `ci"`, `dap`, `.`, `o`/`O`, `gcc`, `>>`
+  - Built-ins in place of shortcuts: `]b`/`[b`, `Ctrl-w h/j/k/l`, `Ctrl-l`, `:m +1`
 - Markdown highlighting in the float comes from the existing treesitter parser.
 
 ### Acceptance criteria
@@ -175,7 +171,7 @@ Optional: code text objects and lazygit.
 
 ### What to build
 
-- gitsigns shows changed lines in the sign column.
+- gitsigns shows changed lines in the sign column; `signcolumn` becomes `yes:2`.
 - Hunk keys:
   - `]h`/`[h` jump between hunks
   - `<leader>ghs` stages, `<leader>ghr` resets, `<leader>ghp` previews
@@ -186,12 +182,12 @@ Optional: code text objects and lazygit.
 
 ### Acceptance criteria
 
-- [ ] `nvim --headless -c 'lua print(#vim.pack.get())' -c q` → `7`
+- [ ] `nvim --headless -c 'lua print(#vim.pack.get(), vim.o.signcolumn)' -c q` → `7 yes:2`
 - [ ] `d=$(mktemp -d) && git -C $d init -q && echo a > $d/f && git -C $d add f && git -C $d -c user.name=t -c user.email=t@t -c commit.gpgsign=false commit -qm i && echo b >> $d/f && nvim --headless $d/f +'sleep 1' +'lua print(vim.b.gitsigns_status)' +q` → `+1`
 - [ ] `grep -c gitsigns dotfiles/nvim/nvim-pack-lock.json` → `2`
 - [ ] `make check` passes
 
-## Phase 6 (optional): Code text objects
+## Phase 6: Code text objects
 
 **Depends on**: 5 (same file and lockfile)
 
@@ -214,9 +210,9 @@ Optional: code text objects and lazygit.
 - [ ] `nvim --headless -c 'lua print(#vim.pack.get())' -c q` → `8`
 - [ ] `make check` passes
 
-## Phase 7 (optional): lazygit
+## Phase 7: lazygit
 
-**Depends on**: 6 if it ships, else 5 (same files)
+**Depends on**: 6 (same files)
 
 ### Context
 
@@ -233,4 +229,31 @@ Optional: code text objects and lazygit.
 
 - [ ] `scripts/setup-dev-machine.sh --check | grep lazygit` reports it missing; the `sudo` install is a manual step
 - [ ] `nvim --headless +'lua print(vim.fn.maparg("<Space>gg", "n") ~= "")' +q` → `true`
+- [ ] `make check` passes
+
+## Phase 8: Learning plugins
+
+**Depends on**: 7 (same files)
+
+### Context
+
+- `dotfiles/nvim/init.lua — vim.pack.add()` — gains precognition.nvim, hardtime.nvim, nui.nvim
+- `dotfiles/nvim/nvim-pack-lock.json` — three pins
+- `guides/neovim.md — intro, plugin table, Verify` — count becomes eleven
+- `README.md — dotfiles/nvim/init.lua row` — names the learning plugins
+
+### What to build
+
+- precognition shows motion hints from the cursor, visible at start. `<leader>up` toggles it.
+- hardtime runs in block mode with its defaults: repeats past `max_count`, arrow keys and the mouse are blocked; hints name the better motion.
+- hardtime's `disabled_filetypes` adds the snacks picker and explorer list filetypes, so scrolling a picker list is never blocked.
+- `<leader>uH` toggles hardtime. `:Hardtime report` opens the habit report through nui.
+- `:checkhealth` shows no error for any of the three.
+
+### Acceptance criteria
+
+- [ ] `nvim --headless -c 'lua print(#vim.pack.get())' -c q` → `11`
+- [ ] `nvim --headless +'lua print(require("hardtime.config").config.restriction_mode)' +q` → `block`
+- [ ] `nvim --headless +'lua print(vim.fn.maparg("<Space>up", "n") ~= "", vim.fn.maparg("<Space>uH", "n") ~= "")' +q` → `true true`
+- [ ] `nvim --headless +'lua require("nui.popup")' +q` exits without error
 - [ ] `make check` passes
