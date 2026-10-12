@@ -87,8 +87,14 @@ fi
 
 USER_HOME="/home/$USERNAME"
 SSH_DIR="$USER_HOME/.ssh"
-if [[ -z "$SSH_PUBLIC_KEY" && ! -s "$SSH_DIR/authorized_keys" ]]; then
-  echo "ERROR: SSH_PUBLIC_KEY is not set and $SSH_DIR/authorized_keys holds no key. Export it or edit the script." >&2
+# Password login ends below, so a key must parse: blank or comment lines would lock the user out.
+if [[ -n "$SSH_PUBLIC_KEY" ]]; then
+  if ! ssh-keygen -lf - <<<"$SSH_PUBLIC_KEY" >/dev/null 2>&1; then
+    echo "ERROR: SSH_PUBLIC_KEY is not a public key." >&2
+    exit 1
+  fi
+elif ! ssh-keygen -lf "$SSH_DIR/authorized_keys" >/dev/null 2>&1; then
+  echo "ERROR: SSH_PUBLIC_KEY is not set and $SSH_DIR/authorized_keys holds no valid key. Export it or edit the script." >&2
   exit 1
 fi
 
