@@ -24,6 +24,8 @@ vim.o.smoothscroll = true
 vim.o.spelllang = 'en,de'
 vim.o.foldlevel = 99             -- folds start open
 vim.o.foldtext = ''              -- a fold shows its first line, highlighted
+vim.o.foldmethod = 'expr'
+vim.o.foldexpr = 'v:lua.vim.treesitter.foldexpr()'   -- no folds where no parser runs
 if vim.fn.executable('rg') == 1 then
   vim.o.grepprg = 'rg --vimgrep'   -- the default adds -uu, which searches ignored files
 end
@@ -79,7 +81,8 @@ autocmd({ 'FocusGained', 'TermClose', 'TermLeave' }, {
 autocmd('BufReadPost', {
   callback = function(ev)
     local mark = vim.api.nvim_buf_get_mark(ev.buf, '"')
-    if vim.bo[ev.buf].filetype ~= 'gitcommit' and mark[1] > 0
+    -- filetype is still unset here: this group runs before filetype detection.
+    if vim.filetype.match({ buf = ev.buf }) ~= 'gitcommit' and mark[1] > 0
       and mark[1] <= vim.api.nvim_buf_line_count(ev.buf) then
       pcall(vim.api.nvim_win_set_cursor, 0, mark)
     end
@@ -249,8 +252,14 @@ local function sheet_update()
   local width = math.max(unpack(vim.tbl_map(vim.fn.strdisplaywidth, lines)))
   local config = {
     relative = 'editor', anchor = 'NE', row = 0, col = vim.o.columns, zindex = 10,
-    width = width, height = #lines, style = 'minimal', focusable = false, title = ' Learning ',
+    width = width, height = #lines, style = 'minimal', focusable = false,
+    border = 'rounded', title = ' Learning ',
   }
+  -- A float lives in one tab page; follow the user into a new one.
+  if valid and vim.api.nvim_win_get_tabpage(sheet.win) ~= vim.api.nvim_get_current_tabpage() then
+    vim.api.nvim_win_close(sheet.win, true)
+    valid = false
+  end
   if valid then vim.api.nvim_win_set_config(sheet.win, config)
   else sheet.win = vim.api.nvim_open_win(sheet.buf, false, config) end
 end
@@ -285,9 +294,9 @@ vim.api.nvim_create_autocmd('FileType', {
     local lang = vim.treesitter.language.get_lang(ev.match)
     if lang and vim.treesitter.language.add(lang) then
       vim.treesitter.start(ev.buf, lang)
-      vim.bo[ev.buf].indentexpr = "v:lua.require'nvim-treesitter'.indentexpr()"
-      vim.wo[0][0].foldmethod = 'expr'
-      vim.wo[0][0].foldexpr = 'v:lua.vim.treesitter.foldexpr()'
+      if vim.treesitter.query.get(lang, 'indents') then
+        vim.bo[ev.buf].indentexpr = "v:lua.require'nvim-treesitter'.indentexpr()"
+      end
     end
   end,
 })
@@ -311,7 +320,7 @@ for lhs, move in pairs({
   [']c'] = { 'goto_next_start', '@class.outer' }, ['[c'] = { 'goto_previous_start', '@class.outer' },
 }) do
   vim.keymap.set({ 'n', 'x', 'o' }, lhs, function()
-    if vim.wo.diff and lhs:sub(2) == 'c' then return vim.cmd.normal({ lhs, bang = true }) end
+    if vim.wo.diff and lhs:sub(2) == 'c' then return vim.cmd.normal({ vim.v.count1 .. lhs, bang = true }) end
     require('nvim-treesitter-textobjects.move')[move[1]](move[2], 'textobjects')
   end, { desc = move[2] })
 end
