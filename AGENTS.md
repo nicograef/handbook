@@ -10,7 +10,7 @@ Rules for maintaining this repo. Setting up a machine, project or server starts 
 - After renaming or deleting a file, `grep -r '<filename>' .` and fix every reference.
 - When a tool version changes, grep the repo and update every occurrence.
 - `make check` runs every repo self-check, the prose caps (sentence ≤ 20 words, paragraph ≤ 3 lines) and history words included; `make help` lists the stages.
-- English only. Markdown exceptions are `LANG_ALLOW` in `scripts/check-repo.sh`; elsewhere, umlaut key names in `dotfiles/init.lua` and the owner's name in `claude/settings.json`.
+- English only. Markdown exceptions are `LANG_ALLOW` in `scripts/check-repo.sh`; elsewhere, umlaut key names in `dotfiles/nvim/init.lua` and the owner's name in `claude/settings.json`.
 - A multi-file change starts with `docs/plans/plan-<slug>.md` (goal, files, checklist), ticked as you go and deleted when done. A single-file edit skips the plan.
 
 ## Layout

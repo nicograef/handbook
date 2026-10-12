@@ -1,4 +1,5 @@
--- init.lua – minimal Neovim for prose, Markdown, YAML and JSON; install and use: guides/neovim.md.
+-- init.lua – Neovim for prose and code on vim.pack: tokyonight, snacks picker and explorer,
+-- which-key, lualine. Install and use: guides/neovim.md.
 -- Only non-defaults are set: `:help nvim-defaults` lists what is already on.
 
 -- ── Editing ──────────────────────────────────────────────────────────────────
@@ -52,3 +53,39 @@ for lhs, rhs in pairs(de) do
   vim.keymap.set({ 'n', 'x', 'o' }, lhs, rhs, { remap = true })
 end
 vim.o.langmap = from .. ';' .. to
+
+-- ── Plugins ──────────────────────────────────────────────────────────────────
+-- vim.pack installs on first start and pins revisions in nvim-pack-lock.json beside
+-- this file; vim.pack.update() updates them. Keys follow LazyVim for these plugins.
+vim.g.mapleader = ' '
+vim.g.maplocalleader = ' '
+
+vim.pack.add({
+  'https://github.com/folke/tokyonight.nvim',
+  'https://github.com/folke/snacks.nvim',
+  'https://github.com/folke/which-key.nvim',
+  'https://github.com/nvim-lualine/lualine.nvim',
+})
+
+vim.cmd.colorscheme('tokyonight-moon')
+require('snacks').setup({ picker = {}, explorer = {} })
+require('which-key').setup({
+  spec = { { '<leader>f', group = 'file' }, { '<leader>s', group = 'search' } },
+})
+require('lualine').setup()
+
+local pick = function(name) return function() Snacks.picker[name]() end end
+for lhs, map in pairs({
+  ['<leader><space>'] = { pick('files'), 'Find files' },
+  ['<leader>/'] = { pick('grep'), 'Grep' },
+  ['<leader>,'] = { pick('buffers'), 'Buffers' },
+  ['<leader>fr'] = { pick('recent'), 'Recent files' },
+  ['<leader>e'] = { function() Snacks.explorer() end, 'Explorer' },
+  ['<leader>sh'] = { pick('help'), 'Help pages' },
+  ['<leader>sk'] = { pick('keymaps'), 'Keymaps' },
+  ['<leader>sd'] = { pick('diagnostics'), 'Diagnostics' },
+  ['<leader>ss'] = { pick('lsp_symbols'), 'LSP symbols' },
+  gd = { pick('lsp_definitions'), 'Go to definition' },
+}) do
+  vim.keymap.set('n', lhs, map[1], { desc = map[2] })
+end

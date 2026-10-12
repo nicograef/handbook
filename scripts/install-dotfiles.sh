@@ -41,7 +41,7 @@ LINKS=(
   "dotfiles/.tmux.conf .tmux.conf"
   "dotfiles/.inputrc .inputrc"
   "dotfiles/gitignore-global .config/git/ignore"
-  "dotfiles/init.lua .config/nvim/init.lua"
+  "dotfiles/nvim .config/nvim"
   "scripts/report-repo-status.sh .local/bin/repo-status"
   "claude/global.md .claude/CLAUDE.md"
   "claude/settings.json .claude/settings.json"

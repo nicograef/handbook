@@ -30,7 +30,8 @@ A web app on a fresh server chains Fresh server, Deploy, Monitoring, then Backup
 | [dotfiles/.inputrc](dotfiles/.inputrc) | Readline: prefix history search on Up/Down, case-insensitive completion |
 | [dotfiles/gitignore-global](dotfiles/gitignore-global) | Global git ignore: OS, editor and tooling junk |
 | [dotfiles/.tmux.conf](dotfiles/.tmux.conf) | tmux defaults for remote work (mouse, scrollback, escape-time) |
-| [dotfiles/init.lua](dotfiles/init.lua) | Neovim config: prose defaults, 2-space indent, German keyboard remaps |
+| [dotfiles/nvim/init.lua](dotfiles/nvim/init.lua) | Neovim config on vim.pack: tokyonight, snacks picker and explorer, which-key, lualine; German keyboard remaps |
+| [dotfiles/nvim/nvim-pack-lock.json](dotfiles/nvim/nvim-pack-lock.json) | Neovim plugin revisions `vim.pack` installs and pins |
 | [templates/ssh_config](templates/ssh_config) | `~/.ssh/config` defaults: agent, keep-alive, hashed known_hosts |
 | [guides/neovim.md](guides/neovim.md) | Neovim for text editing |
 | [scripts/report-repo-status.sh](scripts/report-repo-status.sh) | Repos under `~/r` with unpushed, uncommitted or stashed work; `repo-status` |
