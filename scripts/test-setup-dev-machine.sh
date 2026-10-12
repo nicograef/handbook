@@ -125,7 +125,11 @@ case "$name" in
       "auth status")
         [[ -f "$S/ghauth" ]] || exit 1
         if [[ "$*" == *--json* ]]; then
-          jq -n --arg s "$(scopes "$S/scopes")" '{hosts: {"github.com": [{active: true, scopes: $s}]}}' | jq -r "${*: -1}"
+          # Without --active, gh lists every account of the host, as the text form does.
+          other=false; [[ -f "$S/otherscopes" && "$*" != *--active* ]] && other=true
+          jq -n --arg s "$(scopes "$S/scopes")" --arg o "$(scopes "$S/otherscopes")" --argjson other "$other" \
+            '{hosts: {"github.com": ([{active: true, scopes: $s}] + if $other then [{active: false, scopes: $o}] else [] end)}}' \
+            | jq -r "${*: -1}"
         else
           echo "  - Token scopes: $(sed "s/.*/'&'/" "$S/scopes" 2>/dev/null | paste -sd,)"
           [[ -f "$S/otherscopes" ]] && echo "  - Active account: false"$'\n'"  - Token scopes: $(sed "s/.*/'&'/" "$S/otherscopes" | paste -sd,)"
