@@ -13,8 +13,9 @@
 #   4. Runs apt, snap, usermod and the /usr/local install as root; everything in $HOME runs as the user who ran sudo
 #   5. Updates only the tools listed here; unattended-upgrades handles the rest of the system
 #
-# Node, Go and Neovim: snaps on Ubuntu. Debian has no snap, so Node comes from NodeSource's apt repo,
-# Go from go.dev's tarball in /usr/local/go, and Neovim from the release tarball in ~/.local.
+# Node, Go and Neovim: snaps on Ubuntu. Debian has no snap, so Node comes from the nodejs.org tarball in
+# /usr/local, Go from go.dev's tarball in /usr/local/go, and Neovim from the release tarball in ~/.local.
+# An apt nodejs, NodeSource's included, is removed after its own prompt.
 # A host without a display server skips the Nerd Font and xclip; the client's terminal renders the font.
 # Docker packages are installed, never upgraded: that restarts dockerd. A piped --yes skips the human steps.
 # A probe that fails stops the run with an ERROR line naming it; --check exits 1 when an item differs.
@@ -45,12 +46,19 @@ on_err() {
 trap 'on_err "$LINENO"' ERR
 
 # ── Configuration ────────────────────────────────────────────────────────────
-NODE_CHANNEL="${NODE_CHANNEL:-26/stable}"           # Node's snap channel; its major names the NodeSource repo on Debian
+NODE_CHANNEL="${NODE_CHANNEL:-26/stable}"           # Node's snap channel; on Debian, its major picks the tarball
 TARGET_USER="${TARGET_USER:-${SUDO_USER:-$(id -un)}}"
 TARGET_HOME="${TARGET_HOME:-$(getent passwd "$TARGET_USER" | cut -d: -f6)}"
 USER_PATH="${USER_PATH:-$TARGET_HOME/.local/bin:$TARGET_HOME/go/bin:/usr/local/go/bin:/snap/bin:/usr/local/bin:/usr/bin:/bin}"
 ETC_DIR="${ETC_DIR:-/etc}"                          # the fixture test points this at a temp dir
 GO_ROOT="${GO_ROOT:-/usr/local/go}"                 # Debian: go.dev's install path; the tarball unpacks a go/ dir
+NODE_PREFIX="${NODE_PREFIX:-/usr/local}"            # Debian: the Node tarball's bin, include, lib and share land here
+# The active Node.js releasers' primary keys, as the official Docker image pins them; the fixture test swaps them.
+# Source: https://github.com/nodejs/release-keys#readme
+NODE_KEYS="${NODE_KEYS:-5BE8A3F6C8A5C01D106C0AD820B1A390B168D356 DD792F5973C6DE52C432CBDAC77ABFA00DDBF2B7
+  CC68F5A3106FF448322E48ED27F5E38D5B0A215F 890C08DB8579162FEE0DF9DB8BEAB4DFCF555EF4
+  C82FA3AE1CBEDC6BE46B9360C43CEC45C17AB93C 108F52B48DB57BB0CC439B2997B01419BD92F80A
+  655F3B5C1FB3FA8D1A0CA6BDE4A7D232B936D2FD A363A499291CBBC940DD62E41F10027AF002F8B0}"
 SETUP_ALLOW_NONROOT="${SETUP_ALLOW_NONROOT:-false}" # the fixture test only: skip the root guard
 SETUP_ASSUME_TTY="${SETUP_ASSUME_TTY:-false}"       # the fixture test only: answer the human steps from a pipe
 # ─────────────────────────────────────────────────────────────────────────────
@@ -66,7 +74,7 @@ HANDBOOK_SSH_URL="git@github.com:nicograef/handbook.git"
 ARCH="$(dpkg --print-architecture)"
 
 # xclip and the docker packages join once dpkg can be asked about the display server and the Docker in use.
-APT_PACKAGES=(git jq curl gcc make shellcheck tmux bat eza fzf fd-find ripgrep git-delta gitleaks lazygit pipx)
+APT_PACKAGES=(git jq curl gcc make shellcheck tmux bat eza fzf fd-find ripgrep git-delta gitleaks lazygit pipx gpgv xz-utils)
 DOCKER_PACKAGES=()
 SNAPS=("node $NODE_CHANNEL" "go latest/stable" "nvim latest/stable")
 NPM_TOOLS=(pnpm)
@@ -80,7 +88,7 @@ ITEMS=("apt|apt packages" "ghrepo|gh apt repo")
 if [[ "$DISTRO" == ubuntu ]]; then
   ITEMS+=("snaps|snaps")
 else
-  ITEMS+=("node|Node apt repo" "go|Go" "nvimbin|Neovim")
+  ITEMS+=("aptnode|no apt nodejs" "node|Node" "go|Go" "nvimbin|Neovim")
 fi
 ITEMS+=(
   "aptnvim|no apt neovim"
@@ -108,6 +116,15 @@ GH_UU="$ETC_DIR/apt/apt.conf.d/52unattended-upgrades-gh"
 GH_UU_LINE='Unattended-Upgrade::Origins-Pattern { "origin=gh,codename=stable"; };'
 GH_KEY_SCOPES="admin:public_key,admin:ssh_signing_key" # to list and add both key types
 NODE_MAJOR="${NODE_CHANNEL%%/*}"
+NODE_KEYS="$(tr -s ' \n' '  ' <<<"$NODE_KEYS")"
+NODE_KEYRING_URL="https://github.com/nodejs/release-keys/raw/HEAD/gpg-only-active-keys/pubring.kbx"
+if [[ "$ARCH" == amd64 ]]; then NODE_ARCH=x64; else NODE_ARCH="$ARCH"; fi
+NODE_MANIFEST="$NODE_PREFIX/lib/node-tarball.files" # what the last tarball install put under NODE_PREFIX
+# What NodeSource's setup script writes; its keyring sits outside /etc.
+NODESOURCE_FILES=("$ETC_DIR/apt/sources.list.d/nodesource.sources" "$ETC_DIR/apt/sources.list.d/nodesource.list"
+  "$ETC_DIR/apt/keyrings/nodesource.gpg" "${ETC_DIR%/etc}/usr/share/keyrings/nodesource.gpg"
+  "$ETC_DIR/apt/preferences.d/nodejs" "$ETC_DIR/apt/preferences.d/nsolid"
+  "$ETC_DIR/apt/apt.conf.d/52unattended-upgrades-nodesource")
 if [[ "$ARCH" == amd64 ]]; then NVIM_ARCH=x86_64; else NVIM_ARCH="$ARCH"; fi
 NVIM_DIR="$TARGET_HOME/.local/nvim-linux-$NVIM_ARCH"
 NVIM_LINK="$TARGET_HOME/.local/bin/nvim"
@@ -149,11 +166,15 @@ refresh_caches() {
   fi
 }
 
-# read_releases — Debian's newest Go and Neovim, read once per run; unreachable leaves them empty and unflagged.
+# read_releases — Debian's newest Node of NODE_MAJOR, Go and Neovim, read once per run; unreachable leaves
+# them empty and unflagged.
 read_releases() {
   local json
-  GO_LATEST="" GO_SHA256="" NVIM_LATEST="" NVIM_SHA256=""
+  NODE_LATEST="" GO_LATEST="" GO_SHA256="" NVIM_LATEST="" NVIM_SHA256=""
   [[ "$DISTRO" == debian ]] || return 0
+  json="$(curl -fsS --max-time 10 https://nodejs.org/dist/index.json 2>/dev/null || true)"
+  NODE_LATEST="$(jq -r --arg m "v$NODE_MAJOR." --arg f "linux-$NODE_ARCH" \
+    'map(select((.version | startswith($m)) and (.files | index($f)))) | .[0].version // empty' <<<"$json" 2>/dev/null || true)"
   json="$(curl -fsS --max-time 10 'https://go.dev/dl/?mode=json' 2>/dev/null || true)"
   GO_LATEST="$(jq -r '.[0].version // empty' <<<"$json" 2>/dev/null || true)"
   GO_SHA256="$(jq -r --arg a "$ARCH" '.[0].files[] | select(.os == "linux" and .arch == $a and .kind == "archive")
@@ -245,38 +266,64 @@ fix_snaps() {
   done
 }
 
-# node_source <check|add> — the one place that names Debian's Node source: NodeSource's apt repo.
-# Its documented setup script writes the keyring, the source and an apt pin, then updates the index.
-node_source() {
-  local list="$ETC_DIR/apt/sources.list.d/nodesource.sources" uri="URIs: https://deb.nodesource.com/node_$NODE_MAJOR.x"
-  local uu="$ETC_DIR/apt/apt.conf.d/52unattended-upgrades-nodesource" setup
-  local uu_line='Unattended-Upgrade::Origins-Pattern { "site=deb.nodesource.com"; };'
-  if [[ "$1" == check ]]; then
-    if ! grep -qxF "$uri" "$list" 2>/dev/null; then flag MISSING "NodeSource node_$NODE_MAJOR.x repo"; fi
-    if [[ "$(cat "$uu" 2>/dev/null)" != "$uu_line" ]]; then flag WRONG "$uu"; fi
-    return
-  fi
-  if ! grep -qxF "$uri" "$list" 2>/dev/null; then
-    setup="$(mktemp)"
-    curl -fsSL "https://deb.nodesource.com/setup_$NODE_MAJOR.x" -o "$setup"
-    bash "$setup"
-    rm -f "$setup"
-  fi
-  install -d -m 755 "$(dirname "$uu")"
-  printf '%s\n' "$uu_line" > "$uu"
+check_aptnode() {
+  local f found=()
+  if installed nodejs; then found+=("apt nodejs $(dpkg-query -W -f='${Version}' nodejs 2>/dev/null || true)"); fi
+  for f in "${NODESOURCE_FILES[@]}"; do
+    if [[ -e "$f" ]]; then found+=("${f%/*}"); found[-1]="${found[-1]##*/}/${f##*/}"; fi
+  done
+  if ((${#found[@]})); then flag WRONG "${found[*]}; the nodejs.org tarball replaces them"; fi
+}
+fix_aptnode() {
+  rm -f "${NODESOURCE_FILES[@]}"
+  if installed nodejs; then apt-get remove -y nodejs; fi
+  apt-get update -qq
+}
+
+# node_units <top> — the tarball's paths under bin, include, lib and share, cut to what one rm removes:
+# a package in lib/node_modules, include/node, share/doc/node, otherwise the file.
+node_units() {
+  sed -n "s|^$1/||p" | { grep -E '^(bin|include|lib|share)/.' || true; } | awk -F/ '
+    $1 == "lib" && $2 == "node_modules" {print $1 "/" $2 "/" $3; next}
+    $1 == "include" {print $1 "/" $2; next}
+    $1 == "share" && $2 == "doc" {print $1 "/" $2 "/" $3; next}
+    {print}' | { grep -v '/$' || true; } | sort -u
 }
 
 check_node() {
-  local version
-  node_source check
-  version="$(dpkg-query -W -f='${Version}' nodejs 2>/dev/null || true)"
-  if ! installed nodejs; then flag MISSING nodejs
-  elif [[ "$version" != "$NODE_MAJOR".* ]]; then flag WRONG "nodejs $version, not $NODE_MAJOR.x"
-  elif in_list nodejs "$APT_UPGRADABLE"; then flag OUTDATED nodejs; fi
+  local current
+  if [[ ! -x "$NODE_PREFIX/bin/node" ]]; then flag MISSING "$NODE_PREFIX/bin/node"; return; fi
+  current="$(as_user "$NODE_PREFIX/bin/node" --version)"
+  if [[ "$current" != "v$NODE_MAJOR".* ]]; then flag WRONG "node $current, not $NODE_MAJOR.x"
+  elif [[ -n "$NODE_LATEST" && "$current" != "$NODE_LATEST" ]]; then flag OUTDATED "node $current → $NODE_LATEST"; fi
 }
+# The download fixes run in a subshell; TMP_DIR is global so their EXIT trap still sees it.
+
+# Verified as the official Docker image does: a pinned releaser's signature over SHASUMS256.txt, then the
+# tarball's sha256. Source: https://github.com/nodejs/node#verifying-binaries
 fix_node() {
-  node_source add
-  apt-get install -y nodejs
+  local signer unit name="node-$NODE_LATEST-linux-$NODE_ARCH"
+  [[ -n "$NODE_LATEST" ]] || { printf 'nodejs.org/dist did not answer.\n'; return 1; }
+  TMP_DIR="$(mktemp -d)"
+  trap 'rm -rf "$TMP_DIR"' EXIT
+  curl -fsSL "$NODE_KEYRING_URL" -o "$TMP_DIR/keys.kbx"
+  curl -fsSL "https://nodejs.org/dist/$NODE_LATEST/SHASUMS256.txt.asc" -o "$TMP_DIR/SHASUMS256.txt.asc"
+  curl -fsSL "https://nodejs.org/dist/$NODE_LATEST/$name.tar.xz" -o "$TMP_DIR/$name.tar.xz"
+  # VALIDSIG's last field is the signer's primary key.
+  signer="$(gpgv --status-fd 1 --keyring "$TMP_DIR/keys.kbx" --output "$TMP_DIR/SHASUMS256.txt" <"$TMP_DIR/SHASUMS256.txt.asc" \
+    2>/dev/null | awk '$2 == "VALIDSIG" {print $NF}' || true)"
+  if [[ -z "$signer" ]] || ! in_list "$signer" "$NODE_KEYS"; then
+    printf 'SHASUMS256.txt of %s carries no valid signature of a pinned releaser key.\n' "$NODE_LATEST"
+    return 1
+  fi
+  (cd "$TMP_DIR" && grep " $name.tar.xz\$" SHASUMS256.txt | sha256sum --quiet -c -)
+  # The old install's files go first, so nothing of an older npm lingers.
+  tar -tJf "$TMP_DIR/$name.tar.xz" | node_units "$name" > "$TMP_DIR/units"
+  while read -r unit; do rm -rf "${NODE_PREFIX:?}/$unit"; done < <(sort -u "$TMP_DIR/units" "$NODE_MANIFEST" 2>/dev/null || true)
+  mkdir -p "$NODE_PREFIX"
+  tar -xJf "$TMP_DIR/$name.tar.xz" -C "$NODE_PREFIX" --strip-components=1 --no-same-owner \
+    "$name/bin" "$name/include" "$name/lib" "$name/share"
+  cp "$TMP_DIR/units" "$NODE_MANIFEST"
 }
 
 check_go() {
@@ -285,8 +332,6 @@ check_go() {
   current="$(as_user "$GO_ROOT/bin/go" version | awk '{print $3}')"
   if [[ -n "$GO_LATEST" && "$current" != "$GO_LATEST" ]]; then flag OUTDATED "$current → $GO_LATEST"; fi
 }
-# The download fixes run in a subshell; TMP_DIR is global so their EXIT trap still sees it.
-
 # go.dev's steps: untarring over an existing tree breaks it, so the old one goes first.
 fix_go() {
   local file="$GO_LATEST.linux-$ARCH.tar.gz"
@@ -570,7 +615,7 @@ for entry in "${ITEMS[@]}"; do
   if [[ "$STATUS" == ok ]]; then continue; fi
   reply=y
   # Removing a package always asks, --yes included.
-  if [[ "$MODE" == ask || "$id" == aptnvim ]]; then
+  if [[ "$MODE" == ask || "$id" == aptnvim || "$id" == aptnode ]]; then
     reply="$(ask "Fix $label ($DETAIL)? [Y/n/q]")" || reply=n
   fi
   case "${reply:-y}" in
