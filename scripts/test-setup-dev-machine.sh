@@ -9,7 +9,7 @@
 #   2. Puts one logging stub first on PATH for apt, snap, gh, npm, uv, nvim and the rest;
 #      marker files hold the fake machine state, and a tool appears when its fix installs it.
 #   3. Asserts the root guard, --check on the fresh machine, --yes on it, then --check again.
-#   4. Reruns --yes on a gh login that lacks the key scopes.
+#   4. Reruns --yes on a gh login that lacks the key scopes and a deleted font.
 
 set -euo pipefail
 
@@ -189,14 +189,17 @@ run '' --check
 if [[ "$rc" -eq 0 && "$(rows ok)" -eq 18 ]]; then log "fixed --check -> 18 rows ok"
 else fail "fixed --check: rc $rc: $(cat "$OUT")"; fi
 
-# 5. A login without the key scopes, the authentication key already on GitHub.
+# 5. A login without the key scopes, the authentication key already on GitHub, the font gone.
 grep -F authentication "$STATE/keys" > "$STATE/keys.auth" && mv "$STATE/keys.auth" "$STATE/keys"
 printf 'repo\n' > "$STATE/scopes"
+rm -r "$HOME_DIR/.local/share/fonts/nerd"
 run '\n' --yes
 refreshes="$(grep -c '^gh auth refresh -h github.com -s admin:public_key,admin:ssh_signing_key$' "$CALLS" || true)"
 adds="$(grep '^gh ssh-key add' "$CALLS" || true)"
 if [[ "$rc" -eq 0 && "$refreshes" -eq 1 && "$adds" == *"--type signing"* && "$adds" != *authentication* ]]; then
   log "scopeless login -> one refresh, only the signing key added"
 else fail "scopeless login: rc $rc, $refreshes refreshes, adds: $adds: $(cat "$OUT")"; fi
+if grep -qF 'terminal finds the new font' "$OUT"; then log "font fix -> asks for a new login"
+else fail "no new-login notice after the font fix: $(cat "$OUT")"; fi
 
 finish

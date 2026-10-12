@@ -419,10 +419,11 @@ for entry in "${ITEMS[@]}"; do
   refresh_caches
   run_check "$id"
   print_row "$id" "$label"
-  if [[ "$STATUS" != ok ]]; then left+=("$label"); elif [[ "$id" == docker ]]; then RELOGIN=true; fi
+  # A running session keeps its groups, and a running terminal its font list.
+  if [[ "$STATUS" != ok ]]; then left+=("$label"); elif [[ "$id" == docker || "$id" == font ]]; then RELOGIN=true; fi
 done
 
-if [[ "$RELOGIN" == true ]]; then log "Log out and back in: the session then has the docker group"; fi
+if [[ "$RELOGIN" == true ]]; then log "Log out and back in: the session then has the docker group and the terminal finds the new font"; fi
 if ((${#left[@]})); then
   log "Still differs: $(IFS=,; printf '%s' "${left[*]}")"
   exit 1

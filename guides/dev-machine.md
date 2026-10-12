@@ -42,7 +42,7 @@ Have your git name and email ready, and a browser logged in to GitHub.
    | `Key title on GitHub` | This machine's name; Enter takes the hostname |
    | `gh auth refresh`, only for an older login | Approve the key scopes in the browser |
 
-3. **New login** — log out and back in. The session then has the `docker` group and the new `PATH`.
+3. **New login** — log out and back in. The session then has the `docker` group, and the terminal finds the Nerd Font.
 
 ## Update
 
