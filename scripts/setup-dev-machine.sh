@@ -112,7 +112,7 @@ ITEMS+=(
 KEY="$TARGET_HOME/.ssh/id_ed25519"
 KEYRING="$ETC_DIR/apt/keyrings/githubcli-archive-keyring.gpg"
 GH_LIST="$ETC_DIR/apt/sources.list.d/github-cli.list"
-GH_LIST_LINE="deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/githubcli-archive-keyring.gpg] https://cli.github.com/packages stable main"
+GH_LIST_LINE="deb [arch=$ARCH signed-by=/etc/apt/keyrings/githubcli-archive-keyring.gpg] https://cli.github.com/packages stable main"
 GH_UU="$ETC_DIR/apt/apt.conf.d/52unattended-upgrades-gh"
 GH_UU_LINE='Unattended-Upgrade::Origins-Pattern { "origin=gh,codename=stable"; };'
 GH_KEY_SCOPES="admin:public_key,admin:ssh_signing_key" # to list and add both key types
@@ -153,11 +153,16 @@ as_user() {
 
 # shellcheck disable=SC2016 # $1 expands in the inner shell
 user_has() { as_user sh -c 'command -v "$1"' _ "$1" >/dev/null 2>&1; }
+gh_logged_in() { as_user gh auth status --active -h github.com >/dev/null 2>&1; }
 installed() { [[ "$(dpkg-query -W -f='${Status}' "$1" 2>/dev/null)" == "install ok installed" ]]; }
 in_list() { [[ " $2 " == *" $1 "* ]]; }
 
-# Upgradable apt packages and refreshable snaps, read once per pass.
-refresh_caches() {
+# read_caches — upgradable apt packages and refreshable snaps. The fix loop clears CACHES_READ after each
+# fix, so the next check that needs them reads them anew.
+CACHES_READ=false
+read_caches() {
+  if [[ "$CACHES_READ" == true ]]; then return 0; fi
+  CACHES_READ=true
   APT_UPGRADABLE="$(LC_ALL=C apt list --upgradable 2>/dev/null | sed -n 's|/.*||p' | tr '\n' ' ')"
   SNAP_REFRESHABLE=""
   if [[ "$DISTRO" == ubuntu ]] && command -v snap >/dev/null 2>&1; then
@@ -165,20 +170,22 @@ refresh_caches() {
   fi
 }
 
-# read_releases — Debian's newest Node of NODE_MAJOR, Go and Neovim, read once per run; unreachable leaves
-# them empty and unflagged.
+# read_releases — the newest uv, and on Debian the newest Node of NODE_MAJOR, Go and Neovim, read once per run;
+# unreachable leaves them empty and unflagged.
 read_releases() {
   local json
   NODE_LATEST="" GO_LATEST="" GO_SHA256="" NVIM_LATEST="" NVIM_SHA256=""
+  UV_LATEST="$(curl -fsS --compressed --max-time 10 https://pypi.org/pypi/uv/json 2>/dev/null \
+    | jq -r '.info.version // empty' 2>/dev/null || true)"
   [[ "$DISTRO" == debian ]] || return 0
-  json="$(curl -fsS --max-time 10 https://nodejs.org/dist/index.json 2>/dev/null || true)"
+  json="$(curl -fsS --compressed --max-time 10 https://nodejs.org/dist/index.json 2>/dev/null || true)"
   NODE_LATEST="$(jq -r --arg m "v$NODE_MAJOR." --arg f "linux-$NODE_ARCH" \
     'map(select((.version | startswith($m)) and (.files | index($f)))) | .[0].version // empty' <<<"$json" 2>/dev/null || true)"
-  json="$(curl -fsS --max-time 10 'https://go.dev/dl/?mode=json' 2>/dev/null || true)"
+  json="$(curl -fsS --compressed --max-time 10 'https://go.dev/dl/?mode=json' 2>/dev/null || true)"
   GO_LATEST="$(jq -r '.[0].version // empty' <<<"$json" 2>/dev/null || true)"
   GO_SHA256="$(jq -r --arg a "$ARCH" '.[0].files[] | select(.os == "linux" and .arch == $a and .kind == "archive")
     | .sha256' <<<"$json" 2>/dev/null || true)"
-  json="$(curl -fsS --max-time 10 https://api.github.com/repos/neovim/neovim/releases/latest 2>/dev/null || true)"
+  json="$(curl -fsS --compressed --max-time 10 https://api.github.com/repos/neovim/neovim/releases/latest 2>/dev/null || true)"
   NVIM_LATEST="$(jq -r '.tag_name // empty' <<<"$json" 2>/dev/null || true)"
   NVIM_SHA256="$(jq -r --arg n "nvim-linux-$NVIM_ARCH.tar.gz" '.assets[] | select(.name == $n) | .digest
     | ltrimstr("sha256:")' <<<"$json" 2>/dev/null || true)"
@@ -187,8 +194,10 @@ read_releases() {
 # flag <status> <detail> — the first non-ok status sticks; details accumulate.
 flag() {
   if [[ "$STATUS" == ok ]]; then STATUS="$1"; fi
-  DETAIL+="${DETAIL:+; }$2"
+  note "$2"
 }
+# note <detail> — add a detail and leave the status as it is.
+note() { DETAIL+="${DETAIL:+; }$1"; }
 
 # ask <prompt> — print the reply; fail at the end of input, so no answer is ever made up.
 ask() {
@@ -204,6 +213,7 @@ interactive() { [[ -t 0 || "$SETUP_ASSUME_TTY" == true ]]; }
 
 check_apt() {
   local p missing=() old=()
+  read_caches
   for p in "${APT_PACKAGES[@]}"; do
     if ! installed "$p"; then missing+=("$p"); elif in_list "$p" "$APT_UPGRADABLE"; then old+=("$p"); fi
   done
@@ -212,7 +222,7 @@ check_apt() {
   done
   if ((${#missing[@]})); then flag MISSING "${missing[*]}"; fi
   if ((${#old[@]})); then flag OUTDATED "${old[*]}"; fi
-  if [[ "$DESKTOP" != true ]]; then DETAIL+="${DETAIL:+; }xclip not needed: no display server"; fi
+  if [[ "$DESKTOP" != true ]]; then note "xclip not needed: no display server"; fi
 }
 # install also upgrades an installed package to its candidate. Docker is only installed: an upgrade
 # restarts dockerd, which stops every container, so it waits for the maintenance window's full-upgrade.
@@ -222,6 +232,7 @@ fix_apt() {
 }
 
 check_ghrepo() {
+  read_caches
   if [[ ! -s "$KEYRING" ]]; then flag MISSING "keyring"; fi
   if [[ "$(cat "$GH_LIST" 2>/dev/null)" != "$GH_LIST_LINE" ]]; then flag WRONG "$GH_LIST"; fi
   if [[ "$(cat "$GH_UU" 2>/dev/null)" != "$GH_UU_LINE" ]]; then flag WRONG "$GH_UU"; fi
@@ -240,6 +251,7 @@ fix_ghrepo() {
 check_snaps() {
   local entry name channel tracking
   if ! command -v snap >/dev/null 2>&1; then flag MISSING "snapd"; return; fi
+  read_caches
   for entry in "${SNAPS[@]}"; do
     name="${entry% *}" channel="${entry#* }"
     tracking="$(LC_ALL=C snap list "$name" 2>/dev/null | awk 'NR == 2 {print $4}' || true)"
@@ -280,8 +292,7 @@ check_aptnode() {
 }
 fix_aptnode() {
   local p extra=()
-  STATUS=ok DETAIL=""
-  check_node
+  run_check node
   if [[ "$STATUS" != ok ]]; then printf 'The nodejs.org Node is not in place (%s); the apt Node stays.\n' "$DETAIL"; return 1; fi
   if installed nodejs; then
     for p in $(node_removals); do
@@ -330,9 +341,9 @@ check_node() {
   fi
   current="$(node_version)"
   if [[ "$current" != "v$NODE_MAJOR".* ]]; then flag WRONG "node '$current', not $NODE_MAJOR.x"
-  elif [[ -z "$NODE_LATEST" ]]; then DETAIL+="${DETAIL:+; }nodejs.org did not answer; version not compared"
+  elif [[ -z "$NODE_LATEST" ]]; then note "nodejs.org did not answer; version not compared"
   elif version_lt "$current" "$NODE_LATEST"; then flag OUTDATED "node $current → $NODE_LATEST"
-  elif version_lt "$NODE_LATEST" "$current"; then DETAIL+="${DETAIL:+; }nodejs.org names the older $NODE_LATEST; kept $current"
+  elif version_lt "$NODE_LATEST" "$current"; then note "nodejs.org names the older $NODE_LATEST; kept $current"
   fi
 }
 # The download fixes run in a subshell; TMP_DIR and STAGE_DIR are global, so their EXIT trap sees them.
@@ -457,7 +468,7 @@ fix_sshkey() {
 
 check_ghauth() {
   if ! user_has gh; then flag MISSING "gh not installed"; return; fi
-  if ! as_user gh auth status --active -h github.com >/dev/null 2>&1; then flag MISSING "not logged in"; fi
+  if ! gh_logged_in; then flag MISSING "not logged in"; fi
 }
 # The GitHub keys item uploads the key; the scopes it needs come with this login.
 fix_ghauth() { as_user gh auth login -h github.com -p ssh --skip-ssh-key -s "$GH_KEY_SCOPES"; }
@@ -465,7 +476,7 @@ fix_ghauth() { as_user gh auth login -h github.com -p ssh --skip-ssh-key -s "$GH
 # The dev machine runs pipx's uv at PyPI's latest; a project's required-version is only a floor.
 pipx_has_uv() { user_has pipx && in_list uv "$(as_user pipx list --short 2>/dev/null | awk '{print $1}' | tr '\n' ' ' || true)"; }
 check_uv() {
-  local current latest other
+  local current other
   if ! pipx_has_uv; then
     other="$(as_user sh -c 'command -v uv' 2>/dev/null || true)"
     if [[ "$other" == "$UV_BIN" ]]; then flag MISSING "uv from pipx; replaces the non-pipx $UV_BIN"
@@ -474,8 +485,7 @@ check_uv() {
     return
   fi
   current="$(as_user "$UV_BIN" --version | awk '{print $2}')"
-  latest="$(curl -fsS --max-time 10 https://pypi.org/pypi/uv/json 2>/dev/null | jq -r '.info.version' || true)"
-  if [[ -n "$latest" && "$current" != "$latest" ]]; then flag OUTDATED "uv $current → $latest"; fi
+  if [[ -n "$UV_LATEST" && "$current" != "$UV_LATEST" ]]; then flag OUTDATED "uv $current → $UV_LATEST"; fi
 }
 # .bash_aliases puts ~/.local/bin on PATH for new terminals; --force replaces a uv the standalone installer left there.
 fix_uv() { if pipx_has_uv; then as_user pipx upgrade uv; else as_user pipx install --force uv; fi; }
@@ -500,18 +510,20 @@ fix_npm() {
   if ((${#NPM_FIX[@]})); then as_user npm install -g "${NPM_FIX[@]}"; fi
 }
 
+# uv_tools [--outdated] — the user's uv tools, space-separated.
+uv_tools() { as_user uv tool list "$@" 2>/dev/null | awk '!/^-/ {print $1}' | tr '\n' ' '; }
 check_uvtools() {
   local t have old
   if ! user_has uv; then flag MISSING "uv"; return; fi
-  have="$(as_user uv tool list 2>/dev/null | awk '!/^-/ {print $1}' | tr '\n' ' ')"
-  old="$(as_user uv tool list --outdated 2>/dev/null | awk '!/^-/ {print $1}' | tr '\n' ' ')"
+  have="$(uv_tools)"
+  old="$(uv_tools --outdated)"
   for t in "${UV_TOOLS[@]}"; do
     if ! in_list "$t" "$have"; then flag MISSING "$t"; elif in_list "$t" "$old"; then flag OUTDATED "$t"; fi
   done
 }
 fix_uvtools() {
   local t have
-  have="$(as_user uv tool list 2>/dev/null | awk '!/^-/ {print $1}' | tr '\n' ' ')"
+  have="$(uv_tools)"
   for t in "${UV_TOOLS[@]}"; do
     if in_list "$t" "$have"; then as_user uv tool upgrade "$t"; else as_user uv tool install "$t"; fi
   done
@@ -579,7 +591,7 @@ missing_key_types() {
 check_ghkeys() {
   local missing
   if [[ ! -f "$KEY.pub" ]]; then flag MISSING "no SSH key"; return; fi
-  if ! user_has gh || ! as_user gh auth status --active -h github.com >/dev/null 2>&1; then flag MISSING "gh not logged in"; return; fi
+  if ! user_has gh || ! gh_logged_in; then flag MISSING "gh not logged in"; return; fi
   missing="$(missing_scopes)"
   if [[ -n "$missing" ]]; then flag WRONG "gh login lacks ${missing% }, so the keys cannot be listed"; return; fi
   if ! missing="$(missing_key_types)"; then flag WRONG "cannot list the GitHub keys: ${missing:-gh failed}"; return; fi
@@ -607,7 +619,7 @@ fix_remote() { as_user git -C "$HANDBOOK_DIR" remote set-url origin "$HANDBOOK_S
 
 # The font renders in the terminal of the machine the screen belongs to, never on a headless host.
 check_font() {
-  if [[ "$DESKTOP" != true ]]; then DETAIL="not needed: no display server"; return; fi
+  if [[ "$DESKTOP" != true ]]; then note "not needed: no display server"; return; fi
   if [[ "$(as_user fc-list : family 2>/dev/null || true)" != *[Nn]erd* ]]; then flag MISSING "no Nerd Font"; fi
 }
 fix_font() {
@@ -644,7 +656,7 @@ run_check() {
   "check_$1"
 }
 
-print_row() { printf '%-9s %-20s %s\n' "$STATUS" "$2" "$DETAIL"; }
+print_row() { printf '%-9s %-20s %s\n' "$STATUS" "$1" "$DETAIL"; }
 
 [[ -n "$TARGET_HOME" && -d "$TARGET_HOME" ]] || die "no home directory for user '$TARGET_USER'"
 command -v jq >/dev/null 2>&1 || die "jq not found; install it first (apt install git jq)"
@@ -669,14 +681,14 @@ if [[ "$MODE" != check ]]; then
   log "Refreshing apt indexes"
   apt-get update -qq
 fi
-refresh_caches
+read_caches
 read_releases
 
 log "Checking $TARGET_USER's machine against $HANDBOOK_DIR"
 bad=0
 for entry in "${ITEMS[@]}"; do
   run_check "${entry%%|*}"
-  print_row "${entry%%|*}" "${entry#*|}"
+  print_row "${entry#*|}"
   if [[ "$STATUS" != ok ]]; then bad=$((bad + 1)); fi
 done
 
@@ -709,9 +721,9 @@ for entry in "${ITEMS[@]}"; do
   set -e
   trap 'on_err "$LINENO"' ERR
   if [[ "$rc" -ne 0 ]]; then printf 'Fix for %s failed (exit %s).\n' "$label" "$rc" >&2; fi
-  refresh_caches
+  CACHES_READ=false
   run_check "$id"
-  print_row "$id" "$label"
+  print_row "$label"
   # A running session keeps its groups, and a running terminal its font list.
   if [[ "$STATUS" != ok ]]; then left+=("$label"); elif [[ "$id" == docker || "$id" == font ]]; then RELOGIN=true; fi
 done
