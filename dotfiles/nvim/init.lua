@@ -114,7 +114,7 @@ vim.g.mapleader = ' '
 vim.g.maplocalleader = ' '
 
 -- Parsers must match nvim-treesitter's revision, so an update rebuilds them.
-vim.api.nvim_create_autocmd('PackChanged', {
+autocmd('PackChanged', {
   callback = function(ev)
     if ev.data.spec.name == 'nvim-treesitter' and ev.data.kind == 'update' then
       if not ev.data.active then vim.cmd.packadd('nvim-treesitter') end
@@ -293,7 +293,7 @@ vim.diagnostic.config({ virtual_text = true })   -- the message shows at the end
 require('nvim-treesitter').install({
   'bash', 'css', 'html', 'javascript', 'json', 'python', 'toml', 'tsx', 'typescript', 'yaml',
 })
-vim.api.nvim_create_autocmd('FileType', {
+autocmd('FileType', {
   callback = function(ev)
     local lang = vim.treesitter.language.get_lang(ev.match)
     if lang and vim.treesitter.language.add(lang) then
@@ -308,7 +308,6 @@ vim.api.nvim_create_autocmd('FileType', {
 -- Function, class and argument text objects. Linewise outer objects leave no empty line.
 require('nvim-treesitter-textobjects').setup({
   select = { lookahead = true, selection_modes = { ['@function.outer'] = 'V', ['@class.outer'] = 'V' } },
-  move = { set_jumps = true },
 })
 for lhs, obj in pairs({
   af = '@function.outer', ['if'] = '@function.inner', ac = '@class.outer',
@@ -351,7 +350,7 @@ local function organize_imports(client, buf)
   end
 end
 
-vim.api.nvim_create_autocmd('LspAttach', {
+autocmd('LspAttach', {
   callback = function(ev)
     local client = assert(vim.lsp.get_client_by_id(ev.data.client_id))
     if client:supports_method('textDocument/completion') then
