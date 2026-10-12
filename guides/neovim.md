@@ -32,6 +32,11 @@ Biome, oxlint and oxfmt come from the project's `node_modules` and attach only w
 - Node with an npm prefix of `~/.local`, uv, and a C compiler (`build-essential`) — [dev-machine.md](dev-machine.md).
 - A desktop clipboard needs `xclip`; the clipboard comment in [dotfiles/nvim/init.lua](../dotfiles/nvim/init.lua) says why.
 - A Nerd Font for picker and status line icons; Ptyxis finds it through fontconfig fallback.
+  The symbols-only font is enough; `fc-list | grep -i nerd` then lists it:
+
+  ```bash
+  mkdir -p ~/.local/share/fonts/nerd && curl -fsSL https://github.com/ryanoasis/nerd-fonts/releases/latest/download/NerdFontsSymbolsOnly.tar.xz | tar -C ~/.local/share/fonts/nerd -xJf - && fc-cache -f
+  ```
 
 ## Steps
 
