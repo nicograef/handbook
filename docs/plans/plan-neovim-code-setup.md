@@ -118,6 +118,6 @@ Rewrite the guide for prose and code. Cover the plugin list, the language-server
 
 ### Acceptance criteria
 
-- [ ] `git grep -n 'dotfiles/init.lua' -- ':!docs/plans'; grep -rn 'dotfiles/init.lua' ~/.claude/rules` prints nothing.
-- [ ] Every command in the guide's Verify block prints its stated result.
-- [ ] `make check` passes.
+- [x] `git grep -n 'dotfiles/init.lua' -- ':!docs/plans'; grep -rn 'dotfiles/init.lua' ~/.claude/rules` prints nothing.
+- [x] Every command in the guide's Verify block prints its stated result.
+- [x] `make check` passes.
