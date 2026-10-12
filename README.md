@@ -23,7 +23,8 @@ A web app on a fresh server chains Fresh server, Deploy, Monitoring, then Backup
 
 | File | Description |
 | --- | --- |
-| [guides/dev-machine.md](guides/dev-machine.md) | Set up a dev machine: gh, Node, uv, Go, pnpm, Claude Code, Docker, CLI tools, dotfiles, Claude config, editor |
+| [guides/dev-machine.md](guides/dev-machine.md) | Set up a dev machine with `setup-dev-machine.sh`: clone, run, prompts, update, verify |
+| [scripts/setup-dev-machine.sh](scripts/setup-dev-machine.sh) | Check a dev machine against the handbook, then install, update and configure what differs; `--check` reports only |
 | [install.sh](install.sh) | Dotfiles entrypoint; runs `scripts/install-dotfiles.sh` |
 | [scripts/install-dotfiles.sh](scripts/install-dotfiles.sh) | Symlink shell and Claude config on a dev machine; `--check` lists the links |
 | [dotfiles/.bash_aliases](dotfiles/.bash_aliases) | Shell aliases (git, make, pnpm), editor, history tuning, git prompt |
@@ -33,7 +34,7 @@ A web app on a fresh server chains Fresh server, Deploy, Monitoring, then Backup
 | [dotfiles/nvim/init.lua](dotfiles/nvim/init.lua) | Neovim config on vim.pack: tokyonight, snacks picker and explorer, which-key, lualine; LSP, completion, format on save, treesitter; German keyboard remaps |
 | [dotfiles/nvim/nvim-pack-lock.json](dotfiles/nvim/nvim-pack-lock.json) | Neovim plugin revisions `vim.pack` installs and pins |
 | [templates/ssh_config](templates/ssh_config) | `~/.ssh/config` defaults: agent, keep-alive, hashed known_hosts |
-| [guides/neovim.md](guides/neovim.md) | Neovim for prose and code: plugins, language servers, keys |
+| [guides/neovim.md](guides/neovim.md) | Neovim for prose and code: plugins, language servers, keys; the install steps for Debian and servers |
 | [scripts/report-repo-status.sh](scripts/report-repo-status.sh) | Repos under `~/r` with unpushed, uncommitted or stashed work; `repo-status` |
 
 ## Project
@@ -117,6 +118,7 @@ A web app on a fresh server chains Fresh server, Deploy, Monitoring, then Backup
 | [scripts/test-plan-run-guard.sh](scripts/test-plan-run-guard.sh) | Fixture test for `plan-run-guard.sh`; `make test-plan-run-guard` |
 | [scripts/test-git-guard.sh](scripts/test-git-guard.sh) | Fixture test for `git-guard.sh`; `make test-git-guard` |
 | [scripts/test-report-health.sh](scripts/test-report-health.sh) | Fixture test for `report-health.sh`; `make test-report-health` |
+| [scripts/test-setup-dev-machine.sh](scripts/test-setup-dev-machine.sh) | Fixture test for `setup-dev-machine.sh`; `make test-setup-dev-machine` |
 | [scripts/test-dockerfiles.sh](scripts/test-dockerfiles.sh) | Builds the Dockerfile templates against stub apps until healthy; `make test-dockerfiles` |
 | [scripts/lib/test-harness.sh](scripts/lib/test-harness.sh) | Shared setup and verdict the fixture tests source; `make test` runs them |
 

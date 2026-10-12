@@ -25,29 +25,23 @@ Six plugins on the built-in `vim.pack`; everything else is a Neovim built-in.
 Completion is `vim.lsp.completion` with autotrigger. ruff, Biome and oxfmt format on save.
 Biome, oxlint and oxfmt come from the project's `node_modules` and attach only where it configures them.
 
+On an Ubuntu desktop, [setup-dev-machine.sh](../scripts/setup-dev-machine.sh) does Steps 1–3.
+It installs the Neovim snap, the servers, the tree-sitter CLI, `xclip`, a Nerd Font and the parsers.
+The steps below are for Debian and servers.
+
 ## Prerequisites
 
 - The latest Neovim release; `vim.pack` needs 0.12. apt lags a major version behind and is not used.
-- The handbook cloned and [`install.sh`](../install.sh) run — [dev-machine.md](dev-machine.md). It is idempotent; re-run it when the clone predates the Neovim link.
-- Node with an npm prefix of `~/.local`, uv, and a C compiler (`build-essential`) — [dev-machine.md](dev-machine.md).
+- The handbook cloned and [`install.sh`](../install.sh) run. It is idempotent; re-run it when the clone predates the Neovim link.
+- Node with an npm prefix of `~/.local`, uv, and a C compiler (`build-essential`).
 - A desktop clipboard needs `xclip`; the clipboard comment in [dotfiles/nvim/init.lua](../dotfiles/nvim/init.lua) says why.
-- A Nerd Font for picker and status line icons; Ptyxis finds it through fontconfig fallback.
-  The symbols-only font is enough; `fc-list | grep -i nerd` then lists it:
-
-  ```bash
-  mkdir -p ~/.local/share/fonts/nerd && curl -fsSL https://github.com/ryanoasis/nerd-fonts/releases/latest/download/NerdFontsSymbolsOnly.tar.xz | tar -C ~/.local/share/fonts/nerd -xJf - && fc-cache -f
-  ```
+- A Nerd Font where the terminal renders, for picker and status line icons. The symbols-only one is enough.
 
 ## Steps
 
-1. **Install Neovim.** Ubuntu desktop: the classic snap ships the latest release and refreshes
-   itself. Debian and servers: the pre-built tarball, unpacked into `~/.local` — no sudo.
-   Never the apt package beside the snap: `/usr/bin` precedes `/snap/bin`, so apt would shadow it.
+1. **Install Neovim.** The pre-built tarball, unpacked into `~/.local` — no sudo.
 
    ```bash
-   sudo snap install nvim --classic && sudo apt install xclip   # Ubuntu desktop
-
-   # Debian desktop (add `sudo apt install xclip`) and servers; re-run to update
    curl -fsSLO https://github.com/neovim/neovim/releases/latest/download/nvim-linux-x86_64.tar.gz
    rm -rf ~/.local/nvim-linux-x86_64 && tar -C ~/.local -xzf nvim-linux-x86_64.tar.gz
    ln -sfn ~/.local/nvim-linux-x86_64/bin/nvim ~/.local/bin/nvim && rm nvim-linux-x86_64.tar.gz
