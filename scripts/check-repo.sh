@@ -249,10 +249,10 @@ resolve_home_claude() {
   done
 }
 
-## contracts: verify handbook raw URLs name tracked paths, setup-server.sh pins report-health.sh's digest, install-dotfiles.sh --check passes, the settings enable the plugin, and every hook script path exists
+## contracts: verify handbook raw URLs name tracked paths, setup-server.sh pins report-health.sh's digest, install-dotfiles.sh --check passes, the settings enable the plugin, every hook script path exists, and neovim.md installs setup-dev-machine.sh's tool lists
 check_contracts() {
   local hit file path table line pinned actual name market entry mpath default
-  local candidate resolved
+  local candidate resolved want got
   local -a files=("${HOOK_FILES[@]}")
   mapfile -t -O "${#files[@]}" files < <(tracked 'plugin/skills/*/SKILL.md')
 
@@ -331,7 +331,15 @@ check_contracts() {
       [[ -e "$resolved" ]] || log "script path in $file names a missing file: $candidate -> $resolved"
     done < <(script_candidates "$file")
   done
+  # 7. guides/neovim.md installs the servers and uv tools that setup-dev-machine.sh installs.
+  want="$(sed -n 's/^\(NPM_SERVERS\|UV_TOOLS\)=(\(.*\))$/\2/p' scripts/setup-dev-machine.sh | words)"
+  got="$(awk '/npm install -g|uv tool install/ {on = 1} on {cont = sub(/\\$/, ""); print; if (!cont) on = 0}' guides/neovim.md \
+    | sed -E 's/npm install -g|uv tool install|&&//g' | words)"
+  [[ "$want" == "$got" ]] || log "guides/neovim.md installs '$got'; setup-dev-machine.sh installs '$want'"
 }
+
+# words prints its input's words sorted, one line, space-separated.
+words() { tr -s '[:space:]' '\n' | sed '/^$/d' | sort | tr '\n' ' '; }
 
 # script_candidates prints the script paths one file names: every token ending in .sh in a
 # hook or statusLine command, quotes and variable assignments stripped, plus the path of every
