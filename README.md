@@ -23,7 +23,7 @@ A web app on a fresh server chains Fresh server, Deploy, Monitoring, then Backup
 
 | File | Description |
 | --- | --- |
-| [guides/dev-machine.md](guides/dev-machine.md) | Set up a dev machine: gh, Node, pnpm, uv, Claude Code, Docker, CLI tools, dotfiles, Claude config, editor |
+| [guides/dev-machine.md](guides/dev-machine.md) | Set up a dev machine: gh, Node, uv, Go, pnpm, Claude Code, Docker, CLI tools, dotfiles, Claude config, editor |
 | [install.sh](install.sh) | Dotfiles entrypoint; runs `scripts/install-dotfiles.sh` |
 | [scripts/install-dotfiles.sh](scripts/install-dotfiles.sh) | Symlink shell and Claude config on a dev machine; `--check` lists the links |
 | [dotfiles/.bash_aliases](dotfiles/.bash_aliases) | Shell aliases (git, make, pnpm), editor, history tuning, git prompt |

@@ -1,6 +1,8 @@
 # shellcheck shell=bash
 if command -v nvim >/dev/null; then EDITOR=nvim; else EDITOR=nano; fi
 export EDITOR VISUAL="$EDITOR"
+# go install builds into ~/go/bin.
+case ":$PATH:" in *":$HOME/go/bin:"*) ;; *) PATH="$HOME/go/bin:$PATH" ;; esac
 
 # The stock .bashrc loads bash-completion only after this file; fzf and the m
 # completer below need it now.

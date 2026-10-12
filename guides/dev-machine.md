@@ -56,20 +56,26 @@ Placeholders: `<name>` and `<email>` are your git identity; `<title>` names this
    pipx ensurepath
    ```
 
-6. **pnpm** — install it globally with npm, prefixed to `~/.local`, so no global install needs sudo. `pnpm --version` prints a version:
+6. **Go** — the classic snap tracks the latest release. `go install` builds into `~/go/bin`, which `.bash_aliases` puts on `PATH`:
+
+   ```bash
+   sudo snap install go --classic
+   ```
+
+7. **pnpm** — install it globally with npm, prefixed to `~/.local`, so no global install needs sudo. `pnpm --version` prints a version:
 
    ```bash
    npm config set prefix ~/.local
    npm install -g pnpm
    ```
 
-7. **Claude Code** — the native installer puts `claude` into `~/.local/bin` and updates itself. Run it without sudo; `claude --version` then prints a version:
+8. **Claude Code** — the native installer puts `claude` into `~/.local/bin` and updates itself. Run it without sudo; `claude --version` then prints a version:
 
    ```bash
    curl -fsSL https://claude.ai/install.sh | bash
    ```
 
-8. **Docker** — Ubuntu's packages, then join the `docker` group. After a new login, `docker run --rm hello-world` works without sudo.
+9. **Docker** — Ubuntu's packages, then join the `docker` group. After a new login, `docker run --rm hello-world` works without sudo.
    Without `docker-buildx`, `docker build` falls back to the legacy builder:
 
    ```bash
@@ -77,20 +83,20 @@ Placeholders: `<name>` and `<email>` are your git identity; `<title>` names this
    sudo usermod -aG docker "$USER"
    ```
 
-9. **CLI tools** — tmux, the tools [dotfiles/.bash_aliases](../dotfiles/.bash_aliases) aliases, and `make` and `shellcheck` for the handbook's `make check`.
-   gitleaks lets the git guard hook scan each agent commit for secrets. `rg --version` then prints a version:
+10. **CLI tools** — tmux, the tools [dotfiles/.bash_aliases](../dotfiles/.bash_aliases) aliases, and `make` and `shellcheck` for the handbook's `make check`.
+    gitleaks lets the git guard hook scan each agent commit for secrets. `rg --version` then prints a version:
 
-   ```bash
-   sudo apt install -y tmux bat eza fzf fd-find ripgrep git-delta make shellcheck gitleaks
-   ```
+    ```bash
+    sudo apt install -y tmux bat eza fzf fd-find ripgrep git-delta make shellcheck gitleaks
+    ```
 
-10. **Clone the handbook** — over SSH, with the key gh uploaded. `~/r/handbook` then holds the clone:
+11. **Clone the handbook** — over SSH, with the key gh uploaded. `~/r/handbook` then holds the clone:
 
     ```bash
     mkdir -p ~/r && git clone git@github.com:nicograef/handbook.git ~/r/handbook
     ```
 
-11. **Run install.sh** — it links the dotfiles and the Claude config, and sets up commit signing.
+12. **Run install.sh** — it links the dotfiles and the Claude config, and sets up commit signing.
     The header of [scripts/install-dotfiles.sh](../scripts/install-dotfiles.sh) lists what it does. It ends with `Done – restart your shell`; the line above reads `gh already installed`:
 
     ```bash
@@ -100,14 +106,14 @@ Placeholders: `<name>` and `<email>` are your git identity; `<title>` names this
     The Claude config enables the `nico` plugin from `/home/nico/r/handbook/plugin`; another clone path edits `extraKnownMarketplaces`.
     `install.sh` installs the plugin when `claude` is on PATH; otherwise rerun it after installing Claude Code.
 
-12. **SSH config** — copy the [ssh_config](../templates/ssh_config) template; `--update=none` keeps an existing config.
+13. **SSH config** — copy the [ssh_config](../templates/ssh_config) template; `--update=none` keeps an existing config.
     Host entries go above its defaults. `ssh -G github.com | grep identitiesonly` then prints `identitiesonly yes`:
 
     ```bash
     cp --update=none ~/r/handbook/templates/ssh_config ~/.ssh/config && chmod 600 ~/.ssh/config
     ```
 
-13. **Signing key** — grant gh the signing-key scope, then upload the same key as a signing key.
+14. **Signing key** — grant gh the signing-key scope, then upload the same key as a signing key.
     `gh ssh-key list` then shows it twice, typed `authentication` and `signing`:
 
     ```bash
@@ -115,20 +121,20 @@ Placeholders: `<name>` and `<email>` are your git identity; `<title>` names this
     gh ssh-key add ~/.ssh/id_ed25519.pub --type signing --title "<title>"
     ```
 
-14. **Editor** — [neovim.md](neovim.md) installs Neovim; `install.sh` has already linked its config.
-15. **New login** — log out and back in. The session then has the `docker` group and the new `PATH`.
+15. **Editor** — [neovim.md](neovim.md) installs Neovim; `install.sh` has already linked its config.
+16. **New login** — log out and back in. The session then has the `docker` group and the new `PATH`.
 
 ## Verify
 
 Each version command prints a version; the symlinks resolve into the clone:
 
 ```bash
-for c in 'git --version' 'gh --version' 'node --version' 'pnpm --version' 'uv --version' \
+for c in 'git --version' 'gh --version' 'node --version' 'pnpm --version' 'uv --version' 'go version' \
   'claude --version' 'docker --version' 'docker compose version' 'docker buildx version' \
   'tmux -V' 'batcat --version' 'eza --version' 'fzf --version' 'fdfind --version' \
   'rg --version' 'delta --version' 'jq --version' 'make --version' 'shellcheck --version' 'nvim --version'; do
   $c >/dev/null 2>&1 && echo "ok   $c" || echo "FAIL $c"
-done                                               # → 20 lines, each starting with ok
+done                                               # → 21 lines, each starting with ok
 readlink -f ~/.claude/CLAUDE.md ~/.bash_aliases    # → <home>/r/handbook/claude/global.md, <home>/r/handbook/dotfiles/.bash_aliases
 claude plugin list --json | jq -e 'any(.id == "nico@handbook" and .enabled)'   # → true
 git config --global commit.gpgsign                 # → true
