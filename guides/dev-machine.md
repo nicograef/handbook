@@ -67,7 +67,7 @@ docker run --rm hello-world | grep Hello             # → Hello from Docker!
 | Symptom | Cause | Fix |
 | --- | --- | --- |
 | `docker run` needs sudo | The session started before the group change | Log out and back in |
-| `GitHub keys` stays `MISSING` | The browser approval for the key scopes was skipped | Rerun the script and approve it |
+| `GitHub keys` stays `WRONG` | The key scopes were not approved, or gh could not list the keys | Rerun the script and approve the scopes; else fix the error the row names |
 | `snaps` shows `WRONG` for node | The snap tracks another major | Rerun the script; it switches to `NODE_CHANNEL` |
 | `uv` says it shadows `<path>` | That uv is not pipx's | Answer `y` to put pipx's uv first in your shells; root and cron keep `<path>` |
 | A line starts with `ERROR:` | The probe it names failed | Fix that command, then rerun |

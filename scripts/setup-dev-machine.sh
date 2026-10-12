@@ -548,20 +548,29 @@ fix_sshconfig() {
   as_user chmod 600 "$TARGET_HOME/.ssh/config"
 }
 
-# missing_scopes — the key scopes the gh login lacks, space-separated; without them the key list reads empty.
+# missing_scopes — the key scopes the active gh login lacks, space-separated; without them the key list fails.
+# The text status lists every account's scopes, so only the active account's JSON entry counts.
 missing_scopes() {
-  local status scope out=""
-  status="$(as_user gh auth status 2>&1 || true)"
+  local scopes scope out=""
+  scopes="$(as_user gh auth status --active -h github.com --json hosts \
+    --jq '.hosts["github.com"][]? | select(.active) | .scopes // ""' 2>/dev/null || true)"
   for scope in ${GH_KEY_SCOPES//,/ }; do
-    if [[ "$status" != *"'$scope'"* ]]; then out+="$scope "; fi
+    if ! in_list "$scope" "${scopes//,/ }"; then out+="$scope "; fi
   done
   printf '%s' "$out"
 }
-# missing_key_types — the types of the local key that GitHub lacks, space-separated.
+# missing_key_types — the types of the local key that GitHub lacks, space-separated. Fails with gh's first
+# error when either type's list cannot be read: gh then prints a warning and may still exit 0 with the other.
 missing_key_types() {
-  local key list type out=""
+  local key list err type out=""
   key="$(cut -d' ' -f2 "$KEY.pub")"
-  list="$(as_user gh ssh-key list 2>/dev/null || true)"
+  err="$(mktemp)"
+  if ! list="$(as_user gh ssh-key list 2>"$err")" || [[ -s "$err" ]]; then
+    sed -n '1{s/^warning: *//;p}' "$err"
+    rm -f "$err"
+    return 1
+  fi
+  rm -f "$err"
   for type in authentication signing; do
     if ! awk -v k="$key" -v t="$type" 'index($0, k) && $NF == t {found = 1} END {exit !found}' <<<"$list"; then
       out+="$type "
@@ -575,14 +584,14 @@ check_ghkeys() {
   if ! user_has gh || ! as_user gh auth status >/dev/null 2>&1; then flag MISSING "gh not logged in"; return; fi
   missing="$(missing_scopes)"
   if [[ -n "$missing" ]]; then flag WRONG "gh login lacks ${missing% }, so the keys cannot be listed"; return; fi
-  missing="$(missing_key_types)"
+  if ! missing="$(missing_key_types)"; then flag WRONG "cannot list the GitHub keys: ${missing:-gh failed}"; return; fi
   if [[ -n "$missing" ]]; then flag MISSING "${missing% } key"; fi
 }
 fix_ghkeys() {
   local type types title=""
   interactive || { printf 'The GitHub keys need a terminal for the key title and the browser approval.\n'; return 1; }
   if [[ -n "$(missing_scopes)" ]]; then as_user gh auth refresh -h github.com -s "$GH_KEY_SCOPES"; fi
-  types="$(missing_key_types)"
+  if ! types="$(missing_key_types)"; then printf 'Cannot list the GitHub keys: %s\n' "${types:-gh failed}"; return 1; fi
   if [[ -z "$types" ]]; then printf 'GitHub already has both keys.\n'; return 0; fi
   title="$(ask "Key title on GitHub [$(hostname)]:")" || true
   title="${title:-$(hostname)}"

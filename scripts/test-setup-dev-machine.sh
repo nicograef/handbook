@@ -9,7 +9,8 @@
 #   2. Puts one logging stub first on PATH for apt, snap, gh, npm, uv, nvim and the rest;
 #      marker files hold the fake machine state, and a tool appears when its fix installs it.
 #   3. Asserts the root guard, --check on the fresh machine, --yes on it, then --check again.
-#   4. Reruns --yes on a gh login that lacks the key scopes and a deleted font, then with both keys present.
+#   4. Reruns --yes on a gh login that lacks the key scopes and a deleted font, then with both keys present,
+#      with an inactive account holding the scopes, and with a key list that fails whole or for one type.
 #   5. Asserts a broken snap probe names itself and another distro is refused.
 #   6. Repeats the fresh and fixed runs on a headless Debian: no snap, the Node, Go and Neovim tarballs,
 #      no font or xclip. A rerun changes nothing; a Node upgrade drops the old files; a wrong signature or
@@ -110,13 +111,32 @@ case "$name" in
     while [[ $# -gt 0 && "$1" != -f ]]; do shift; done
     echo "ssh-ed25519 AAAAFIXTUREKEY fixture" > "$2.pub" ;;
   gh)
-    # $S/scopes holds the token's scopes, one per line; login and refresh take them from -s, the last argument.
+    # $S/scopes holds the active token's scopes, one per line, $S/otherscopes an inactive account's;
+    # login and refresh take them from -s, the last argument.
     has() { grep -qx "$1" "$S/scopes" 2>/dev/null; }
+    scopes() { paste -sd, "$1" 2>/dev/null | sed 's/,/, /g'; }
+    # list_type <type> <scope> — one key type's rows, or gh's warning when the scope or $S/<type>down denies it.
+    list_type() {
+      if has "$2" && [[ ! -f "$S/$1down" ]]; then grep -P "\t$1\$" "$S/keys" 2>/dev/null; return 0; fi
+      echo "warning:  HTTP 404: Not Found (https://api.github.com/user/$1)" >&2; return 1
+    }
     case "$1 $2" in
       "--version "*) echo 'gh version 2.0.0' ;;
-      "auth status") [[ -f "$S/ghauth" ]] || exit 1; echo "Token scopes: $(sed "s/.*/'&'/" "$S/scopes" 2>/dev/null | paste -sd,)" ;;
+      "auth status")
+        [[ -f "$S/ghauth" ]] || exit 1
+        if [[ "$*" == *--json* ]]; then
+          jq -n --arg s "$(scopes "$S/scopes")" '{hosts: {"github.com": [{active: true, scopes: $s}]}}' | jq -r "${*: -1}"
+        else
+          echo "  - Token scopes: $(sed "s/.*/'&'/" "$S/scopes" 2>/dev/null | paste -sd,)"
+          [[ -f "$S/otherscopes" ]] && echo "  - Active account: false"$'\n'"  - Token scopes: $(sed "s/.*/'&'/" "$S/otherscopes" | paste -sd,)"
+        fi ;;
       "auth login"|"auth refresh") touch "$S/ghauth"; tr , '\n' <<<"${*: -1}" >> "$S/scopes" ;;
-      "ssh-key list") has admin:public_key || exit 1; cat "$S/keys" 2>/dev/null ;;
+      "ssh-key list")
+        [[ -f "$S/listdown" ]] && { echo 'warning:  HTTP 502: Bad Gateway (https://api.github.com/user/keys)' >&2; exit 1; }
+        fails=0
+        list_type authentication admin:public_key || fails=$((fails + 1))
+        list_type signing admin:ssh_signing_key || fails=$((fails + 1))
+        [[ "$fails" -lt 2 ]] || exit 1 ;;
       "ssh-key add")
         if [[ "$5" == signing ]]; then has admin:ssh_signing_key || exit 1; else has admin:public_key || exit 1; fi
         printf 'title\tssh-ed25519 AAAAFIXTUREKEY\tdate\t1\t%s\n' "$5" >> "$S/keys" ;;
@@ -224,7 +244,7 @@ export USER_PATH="$HOME_DIR/.local/bin:$FIX/usr-local/bin:$FIX/bin:$FIX/sysbin"
 SCRIPT="$CLONE/scripts/setup-dev-machine.sh"
 # What a --check on a fresh machine may call: reads only.
 READS='^(dpkg-query .*|apt list .*|snap (list|refresh --list).*|id .*|curl .*(pypi|go\.dev/dl/\?mode|api\.github|nodejs\.org/dist/index)[^ ]*'
-READS+='|git (-C [^ ]+ (rev-parse HEAD|remote get-url origin)|config --global [a-zA-Z.]+)|fc-list .*|gh auth status|pipx list --short)$'
+READS+='|git (-C [^ ]+ (rev-parse HEAD|remote get-url origin)|config --global [a-zA-Z.]+)|fc-list .*|gh auth status( .*)?|pipx list --short)$'
 # What a fix calls: a rerun on a matching machine must call none of them.
 WRITES='^(apt-get (install|remove)|snap (install|refresh [a-z])|usermod|ssh-keygen|gh (auth (login|refresh)|ssh-key add)|pipx (install|upgrade)|npm (config set|install)|uv tool (install|upgrade)|claude plugin (install|marketplace)|curl -fsSL|nvim --headless|git (config --global [a-zA-Z.]+ .|remote set-url)|fc-cache)'
 
@@ -333,6 +353,30 @@ run '' --yes
 if [[ "$rc" -eq 0 ]] && ! grep -q '^gh ssh-key add' "$CALLS" && ! grep -qF 'Key title' "$OUT"; then
   log "scopeless login, keys present --yes -> no title asked, nothing added"
 else fail "scopeless login, keys present --yes: rc $rc: $(cat "$OUT")"; fi
+
+# 5c. An inactive account holds the key scopes the active login lacks: the row still names the scopes.
+printf 'repo\n' > "$STATE/scopes"
+printf 'admin:public_key\nadmin:ssh_signing_key\n' > "$STATE/otherscopes"
+run '' --check
+if grep -qE '^WRONG .*lacks admin:public_key admin:ssh_signing_key' "$OUT"; then log "inactive account's scopes --check -> names the scopes"
+else fail "inactive account's scopes --check: $(cat "$OUT")"; fi
+run 'ne\n' --yes
+if [[ "$rc" -eq 0 ]] && ! grep -q '^gh ssh-key add' "$CALLS"; then log "inactive account's scopes --yes -> refresh, nothing added"
+else fail "inactive account's scopes --yes: rc $rc: $(cat "$OUT")"; fi
+rm "$STATE/otherscopes"
+
+# 5d. Both keys on GitHub, but the list fails whole or for one type: WRONG with gh's error, nothing added.
+for down in listdown signingdown; do
+  touch "$STATE/$down"
+  run '' --check
+  if grep -qE '^WRONG +GitHub keys +cannot list the GitHub keys: HTTP' "$OUT"; then log "$down --check -> WRONG with gh's error"
+  else fail "$down --check: $(cat "$OUT")"; fi
+  run 'ne\n' --yes
+  if [[ "$rc" -eq 1 ]] && ! grep -qE '^gh (ssh-key add|auth refresh)' "$CALLS" && grep -qF 'Cannot list the GitHub keys' "$OUT"; then
+    log "$down --yes -> no refresh, nothing added, still WRONG"
+  else fail "$down --yes: rc $rc: $(cat "$OUT")"; fi
+  rm "$STATE/$down"
+done
 
 # 6. A broken snap probe stops the run with its name, never silently.
 touch "$STATE/nosnap"
