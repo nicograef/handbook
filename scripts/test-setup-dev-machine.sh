@@ -161,7 +161,7 @@ order=("apt-get install -y git" "apt-get install -y gh" "snap install node --cla
   "gh ssh-key add $HOME_DIR/.ssh/id_ed25519.pub --type signing" "nvim --headless")
 last=0
 for call in "${order[@]}"; do
-  line="$(grep -nF -- "$call" "$CALLS" | head -1 | cut -d: -f1)"
+  line="$(grep -nF -- "$call" "$CALLS" | head -1 | cut -d: -f1 || true)"
   if [[ -z "$line" ]]; then fail "--yes never ran: $call"
   elif [[ "$line" -lt "$last" ]]; then fail "--yes ran out of order: $call"
   else last="$line"; fi
