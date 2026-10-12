@@ -183,7 +183,7 @@
   "autoUpdatesChannel": "latest",
   "tui": "fullscreen",
   "skipWorkflowUsageWarning": true,
-  "theme": "dark-ansi",
+  "theme": "custom:nico:catppuccin",
   "preferredNotifChannel": "auto",
   "fileCheckpointingEnabled": false,
   "showTurnDuration": true,

@@ -1,7 +1,7 @@
 {
   "name": "nico",
   "version": "1.0.0",
-  "description": "Nico's shared skills, the web-researcher agent and the git and plan-run guard hooks",
+  "description": "Nico's shared skills, the web-researcher agent, the git and plan-run guard hooks and the Catppuccin theme",
   "author": {
     "name": "nicograef",
     "url": "https://github.com/nicograef"

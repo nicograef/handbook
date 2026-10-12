@@ -1,0 +1,7 @@
+{
+  "name": "Catppuccin ANSI",
+  "base": "dark-ansi",
+  "overrides": {
+    "selectionBg": "rgb(59, 66, 97)"
+  }
+}
