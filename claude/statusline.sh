@@ -83,7 +83,7 @@ for pair in "5h:$five_h" "7d:$seven_d"; do
   sep=""; [[ -n "$line2" ]] && sep=" ${DIM}·${RESET} "
   line2="$line2$(printf "${sep}$(level "$used" "$DIM")%s %.0f%%${RESET}" "$label" "$used")"
   if [[ "$label" == "5h" ]] && [[ -n "$five_h_reset" ]]; then
-    line2="$line2$(printf " ${DIM}↻%s${RESET}" "$five_h_reset")"
+    line2="$line2$(printf " ${DIM}until %s${RESET}" "$five_h_reset")"
   fi
 done
 
