@@ -146,6 +146,8 @@ case "$name" in
       "list --short") [[ -f "$S/pipxuv" ]] && echo 'uv 1.0.0' ;;
       "install --force uv") touch "$S/pipxuv"; appear uv; mkdir -p "$FIX/home/.local/bin"; ln -sf "$FIX/stub" "$FIX/home/.local/bin/uv" ;;
     esac ;;
+  # Only the GitHub key title's prompt and default call it: its call log line marks the ask under piped stdin.
+  hostname) echo fixture ;;
   go) echo 'go version go1.99.0 linux/amd64' ;;
   uv)
     case "$*" in
@@ -181,7 +183,7 @@ STUB
 sed -i "s|@FIX@|$FIX|g; s|@LOCK@|$CLONE/dotfiles/nvim/nvim-pack-lock.json|g" "$FIX/stub"
 chmod +x "$FIX/stub"
 # Present from the start, gh too so the real one never runs; npm, nvim, uv and claude appear when their fix runs.
-for c in dpkg-query apt apt-get snap id usermod curl git ssh-keygen pipx fc-list fc-cache gh; do
+for c in dpkg-query apt apt-get snap id usermod curl git ssh-keygen pipx fc-list fc-cache gh hostname; do
   ln -s "$FIX/stub" "$FIX/bin/$c"
 done
 
@@ -338,8 +340,9 @@ rm -r "$HOME_DIR/.local/share/fonts/nerd"
 run '\n' --yes
 refreshes="$(grep -c '^gh auth refresh -h github.com -s admin:public_key,admin:ssh_signing_key$' "$CALLS" || true)"
 adds="$(grep '^gh ssh-key add' "$CALLS" || true)"
-if [[ "$rc" -eq 0 && "$refreshes" -eq 1 && "$adds" == *"--type signing"* && "$adds" != *authentication* ]]; then
-  log "scopeless login -> one refresh, only the signing key added"
+if [[ "$rc" -eq 0 && "$refreshes" -eq 1 && "$adds" == *"--type signing"* && "$adds" != *authentication* ]] \
+  && grep -q '^hostname' "$CALLS"; then
+  log "scopeless login -> one refresh, title asked, only the signing key added"
 else fail "scopeless login: rc $rc, $refreshes refreshes, adds: $adds: $(cat "$OUT")"; fi
 if grep -qF 'terminal finds the new font' "$OUT"; then log "font fix -> asks for a new login"
 else fail "no new-login notice after the font fix: $(cat "$OUT")"; fi
@@ -350,7 +353,7 @@ run '' --check
 if grep -qE '^WRONG .*lacks admin:public_key admin:ssh_signing_key' "$OUT"; then log "scopeless login, keys present --check -> names the scopes"
 else fail "scopeless login, keys present --check: $(cat "$OUT")"; fi
 run '' --yes
-if [[ "$rc" -eq 0 ]] && ! grep -q '^gh ssh-key add' "$CALLS" && ! grep -qF 'Key title' "$OUT"; then
+if [[ "$rc" -eq 0 ]] && ! grep -qE '^(gh ssh-key add|hostname)' "$CALLS"; then
   log "scopeless login, keys present --yes -> no title asked, nothing added"
 else fail "scopeless login, keys present --yes: rc $rc: $(cat "$OUT")"; fi
 
@@ -361,7 +364,7 @@ run '' --check
 if grep -qE '^WRONG .*lacks admin:public_key admin:ssh_signing_key' "$OUT"; then log "inactive account's scopes --check -> names the scopes"
 else fail "inactive account's scopes --check: $(cat "$OUT")"; fi
 run 'ne\n' --yes
-if [[ "$rc" -eq 0 ]] && ! grep -q '^gh ssh-key add' "$CALLS"; then log "inactive account's scopes --yes -> refresh, nothing added"
+if [[ "$rc" -eq 0 ]] && ! grep -qE '^(gh ssh-key add|hostname)' "$CALLS"; then log "inactive account's scopes --yes -> no title asked, nothing added"
 else fail "inactive account's scopes --yes: rc $rc: $(cat "$OUT")"; fi
 rm "$STATE/otherscopes"
 
@@ -372,8 +375,8 @@ for down in listdown signingdown; do
   if grep -qE '^WRONG +GitHub keys +cannot list the GitHub keys: HTTP' "$OUT"; then log "$down --check -> WRONG with gh's error"
   else fail "$down --check: $(cat "$OUT")"; fi
   run 'ne\n' --yes
-  if [[ "$rc" -eq 1 ]] && ! grep -qE '^gh (ssh-key add|auth refresh)' "$CALLS" && grep -qF 'Cannot list the GitHub keys' "$OUT"; then
-    log "$down --yes -> no refresh, nothing added, still WRONG"
+  if [[ "$rc" -eq 1 ]] && ! grep -qE '^(gh (ssh-key add|auth refresh)|hostname)' "$CALLS" && grep -qF 'Cannot list the GitHub keys' "$OUT"; then
+    log "$down --yes -> no refresh, no title asked, nothing added, still WRONG"
   else fail "$down --yes: rc $rc: $(cat "$OUT")"; fi
   rm "$STATE/$down"
 done
