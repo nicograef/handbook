@@ -8,15 +8,13 @@ input=$(cat)
 export LC_NUMERIC=C
 
 # One jq call; the unit separator keeps empty fields in place, unlike tab or space.
-IFS=$'\x1f' read -r model cwd effort pct cost added removed five_h five_h_reset seven_d < <(
+IFS=$'\x1f' read -r model cwd effort pct cost five_h five_h_reset seven_d < <(
   echo "$input" | jq -r '[
     (.model.display_name // .model.id // "unknown"),
     (.workspace.current_dir // .cwd // ""),
     (.effort.level // ""),
     (.context_window.used_percentage // ""),
     (.cost.total_cost_usd // ""),
-    (.cost.total_lines_added // 0),
-    (.cost.total_lines_removed // 0),
     (.rate_limits.five_hour.used_percentage // ""),
     (try (.rate_limits.five_hour.resets_at | localtime | strftime("%H:%M")) catch ""),
     (.rate_limits.seven_day.used_percentage // "")
@@ -52,8 +50,16 @@ if [[ -n "$branch" ]]; then
 fi
 printf "%s" "$line1"
 
-# Line 2: context bar, cost and line counts once the API has reported them
+# level <percent> — the colour for a usage share: red from 80, yellow from 50, else the given default.
+level() {
+  local p=${1%.*}
+  if [[ "${p:-0}" -ge 80 ]]; then printf '%s' "$RED"; elif [[ "${p:-0}" -ge 50 ]]; then printf '%s' "$YELLOW"; else printf '%s' "$2"; fi
+}
+
+# Line 2: context bar, then the API cost or, for a subscriber, the rate limits.
+# A subscription bills no per-token cost, so the cost shows only without rate limits.
 line2=""
+if [[ -n "$five_h" || -n "$seven_d" ]]; then cost=""; fi
 if [[ -n "$pct" ]] || [[ -n "$cost" ]]; then
   ip=${pct%.*}; [[ -z "$ip" ]] && ip=0
   filled=$(( ip / 10 )); [[ "$filled" -gt 10 ]] && filled=10; [[ "$filled" -lt 0 ]] && filled=0
@@ -62,14 +68,11 @@ if [[ -n "$pct" ]] || [[ -n "$cost" ]]; then
     if [[ "$i" -lt "$filled" ]]; then bar="${bar}█"; else bar="${bar}░"; fi
     i=$((i + 1))
   done
-  if [[ "$ip" -ge 80 ]]; then c=$RED; elif [[ "$ip" -ge 50 ]]; then c=$YELLOW; else c=$GREEN; fi
+  c=$(level "$ip" "$GREEN")
 
   line2=$(printf "${c}%s${RESET} ${DIM}%s%% ctx${RESET}" "$bar" "$ip")
   if [[ -n "$cost" ]]; then
     line2="$line2$(printf " ${DIM}·${RESET} ${DIM}\$%.2f${RESET}" "$cost")"
-  fi
-  if [[ "$added" != "0" ]] || [[ "$removed" != "0" ]]; then
-    line2="$line2$(printf " ${DIM}·${RESET} ${GREEN}+%s${RESET} ${RED}-%s${RESET}" "$added" "$removed")"
   fi
 fi
 
@@ -78,7 +81,7 @@ for pair in "5h:$five_h" "7d:$seven_d"; do
   label=${pair%%:*}; used=${pair#*:}
   [[ -z "$used" ]] && continue
   sep=""; [[ -n "$line2" ]] && sep=" ${DIM}·${RESET} "
-  line2="$line2$(printf "${sep}${DIM}%s %.0f%%${RESET}" "$label" "$used")"
+  line2="$line2$(printf "${sep}$(level "$used" "$DIM")%s %.0f%%${RESET}" "$label" "$used")"
   if [[ "$label" == "5h" ]] && [[ -n "$five_h_reset" ]]; then
     line2="$line2$(printf " ${DIM}↻%s${RESET}" "$five_h_reset")"
   fi
