@@ -91,6 +91,9 @@ Plugin management: [`:help vim.pack`](https://neovim.io/doc/user/pack.html).
 | `gd` / `grr` / `gri` | Definition / references / implementations |
 | `K` / `grn` / `gra` | Hover / rename / code action |
 | `]d` / `[d` | Next / previous diagnostic |
+| `]e` / `[e`, `]w` / `[w` | Next / previous error, warning |
+| `<Space>u` + `f` `F` `h` `d` `s` `w` | Toggle autoformat (buffer, global), inlay hints, diagnostics, spell, wrap |
+| `<Space>n` | Notification history |
 | `Ctrl-Y` / `Ctrl-E` | Accept / dismiss a completion |
 
 ## German keyboard
@@ -122,6 +125,7 @@ readlink -f ~/.config/nvim                                           # → <clon
 nvim --headless -c 'lua print(vim.g.colors_name, #vim.pack.get())' -c q   # → tokyonight-night 6
 nvim --headless -c 'lua print(vim.fn.maparg("<Space><Space>", "n") ~= "")' -c q   # → true
 nvim --headless -c 'lua print(vim.o.shiftwidth, vim.o.clipboard)' -c q   # → 2 unnamedplus (desktop) / 2 (server)
+nvim --headless x.py +'lua print(vim.wo.foldmethod, vim.fn.maparg("]e", "n") ~= "")' +q   # → expr true
 nvim --headless <py> +'sleep 3' +'lua print(vim.iter(vim.lsp.get_clients({bufnr=0})):map(function(c) return c.name end):join(","))' +q   # → ruff,ty
 nvim --headless <ts> +'sleep 3' +'lua print(vim.iter(vim.lsp.get_clients({bufnr=0})):map(function(c) return c.name end):join(","))' +q   # → biome,tsc
 nvim --headless x.py +'lua print(vim.treesitter.highlighter.active[vim.api.nvim_get_current_buf()] ~= nil)' +q   # → true

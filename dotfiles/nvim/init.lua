@@ -13,6 +13,17 @@ vim.o.breakindent = true         -- wrapped lines keep their indent
 vim.o.ignorecase = true
 vim.o.smartcase = true
 vim.o.undofile = true            -- undo history survives closing the file
+vim.o.timeoutlen = 300           -- which-key opens after 300 ms instead of 1 s
+vim.o.cursorline = true
+vim.o.splitright = true
+vim.o.splitbelow = true
+vim.o.laststatus = 3             -- one status line for all windows
+vim.o.jumpoptions = 'view'       -- Ctrl-o restores the scroll position too
+vim.o.virtualedit = 'block'      -- Ctrl-v selects past the end of short lines
+vim.o.smoothscroll = true
+vim.o.spelllang = 'en,de'
+vim.o.foldlevel = 99             -- folds start open
+vim.o.foldtext = ''              -- a fold shows its first line, highlighted
 if vim.fn.executable('rg') == 1 then
   vim.o.grepprg = 'rg --vimgrep'   -- the default adds -uu, which searches ignored files
 end
@@ -55,6 +66,43 @@ for lhs, rhs in pairs(de) do
 end
 vim.o.langmap = from .. ';' .. to
 
+-- ── Autocmds ─────────────────────────────────────────────────────────────────
+local group = vim.api.nvim_create_augroup('config', {})
+local function autocmd(event, opts)
+  vim.api.nvim_create_autocmd(event, vim.tbl_extend('force', { group = group }, opts))
+end
+autocmd('TextYankPost', { callback = function() vim.hl.on_yank() end })
+-- 'autoread' reloads a file changed outside Neovim only when something runs :checktime.
+autocmd({ 'FocusGained', 'TermClose', 'TermLeave' }, {
+  callback = function() if vim.o.buftype ~= 'nofile' then vim.cmd.checktime() end end,
+})
+autocmd('BufReadPost', {
+  callback = function(ev)
+    local mark = vim.api.nvim_buf_get_mark(ev.buf, '"')
+    if vim.bo[ev.buf].filetype ~= 'gitcommit' and mark[1] > 0
+      and mark[1] <= vim.api.nvim_buf_line_count(ev.buf) then
+      pcall(vim.api.nvim_win_set_cursor, 0, mark)
+    end
+  end,
+})
+autocmd('FileType', {
+  pattern = { 'help', 'qf', 'man', 'checkhealth' },
+  callback = function(ev)
+    vim.bo[ev.buf].buflisted = false
+    vim.keymap.set('n', 'q', '<Cmd>close<CR>', { buffer = ev.buf, desc = 'Close window' })
+  end,
+})
+autocmd('BufWritePre', {
+  callback = function(ev)
+    if ev.match:match('^%w%w+:[\\/][\\/]') then return end   -- scp:// and other URLs
+    vim.fn.mkdir(vim.fn.fnamemodify(ev.match, ':p:h'), 'p')
+  end,
+})
+autocmd('FileType', {
+  pattern = { 'markdown', 'text', 'gitcommit' },
+  callback = function() vim.opt_local.spell = true end,
+})
+
 -- ── Plugins ──────────────────────────────────────────────────────────────────
 -- vim.pack installs on first start and pins revisions in nvim-pack-lock.json beside
 -- this file; vim.pack.update() updates them. Keys follow LazyVim for these plugins.
@@ -81,9 +129,14 @@ vim.pack.add({
 })
 
 vim.cmd.colorscheme('tokyonight-night')
-require('snacks').setup({ picker = {}, explorer = {} })
+require('snacks').setup({
+  picker = {}, explorer = {}, indent = {}, scope = {}, words = {}, notifier = {},
+  input = {}, bigfile = {}, quickfile = {},
+})
 require('which-key').setup({
-  spec = { { '<leader>f', group = 'file' }, { '<leader>s', group = 'search' } },
+  spec = {
+    { '<leader>f', group = 'file' }, { '<leader>s', group = 'search' }, { '<leader>u', group = 'ui' },
+  },
 })
 require('lualine').setup()
 
@@ -99,9 +152,35 @@ for lhs, map in pairs({
   ['<leader>sd'] = { pick('diagnostics'), 'Diagnostics' },
   ['<leader>ss'] = { pick('lsp_symbols'), 'LSP symbols' },
   gd = { pick('lsp_definitions'), 'Go to definition' },
+  ['<leader>n'] = { function() Snacks.notifier.show_history() end, 'Notification history' },
 }) do
   vim.keymap.set('n', lhs, map[1], { desc = map[2] })
 end
+
+-- ]d and [d jump to any diagnostic; these skip to one severity.
+local function jump(count, severity)
+  return function() vim.diagnostic.jump({ count = count, severity = severity }) end
+end
+local sev = vim.diagnostic.severity
+vim.keymap.set('n', ']e', jump(1, sev.ERROR), { desc = 'Next error' })
+vim.keymap.set('n', '[e', jump(-1, sev.ERROR), { desc = 'Previous error' })
+vim.keymap.set('n', ']w', jump(1, sev.WARN), { desc = 'Next warning' })
+vim.keymap.set('n', '[w', jump(-1, sev.WARN), { desc = 'Previous warning' })
+
+-- Format on save runs unless b:autoformat or g:autoformat is false.
+local function flag(scope, name)
+  return Snacks.toggle.new({
+    name = name,
+    get = function() return vim[scope].autoformat ~= false end,
+    set = function(on) vim[scope].autoformat = on end,
+  })
+end
+flag('b', 'Autoformat (buffer)'):map('<leader>uf')
+flag('g', 'Autoformat (global)'):map('<leader>uF')
+Snacks.toggle.inlay_hints():map('<leader>uh')
+Snacks.toggle.diagnostics():map('<leader>ud')
+Snacks.toggle.option('spell', { name = 'Spelling' }):map('<leader>us')
+Snacks.toggle.option('wrap', { name = 'Wrap' }):map('<leader>uw')
 
 -- ── Code ─────────────────────────────────────────────────────────────────────
 -- Server binaries live outside Neovim (guides/neovim.md); a missing one leaves its
@@ -118,7 +197,12 @@ require('nvim-treesitter').install({
 vim.api.nvim_create_autocmd('FileType', {
   callback = function(ev)
     local lang = vim.treesitter.language.get_lang(ev.match)
-    if lang and vim.treesitter.language.add(lang) then vim.treesitter.start(ev.buf, lang) end
+    if lang and vim.treesitter.language.add(lang) then
+      vim.treesitter.start(ev.buf, lang)
+      vim.bo[ev.buf].indentexpr = "v:lua.require'nvim-treesitter'.indentexpr()"
+      vim.wo[0][0].foldmethod = 'expr'
+      vim.wo[0][0].foldexpr = 'v:lua.vim.treesitter.foldexpr()'
+    end
   end,
 })
 
@@ -156,6 +240,7 @@ vim.api.nvim_create_autocmd('LspAttach', {
         group = vim.api.nvim_create_augroup('format.' .. ev.buf, {}),
         buffer = ev.buf,
         callback = function()
+          if vim.b[ev.buf].autoformat == false or vim.g.autoformat == false then return end
           organize_imports(client, ev.buf)
           vim.lsp.buf.format({ bufnr = ev.buf, id = client.id })
         end,
