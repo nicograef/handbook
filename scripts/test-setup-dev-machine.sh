@@ -11,8 +11,10 @@
 #   3. Asserts the root guard, --check on the fresh machine, --yes on it, then --check again.
 #   4. Reruns --yes on a gh login that lacks the key scopes and a deleted font.
 #   5. Asserts a broken snap probe names itself and another distro is refused.
-#   6. Repeats the fresh and fixed runs on Debian: no snap, NodeSource, the Go and Neovim tarballs.
-#      A rerun changes nothing, and a host with docker-ce keeps it.
+#   6. Repeats the fresh and fixed runs on a headless Debian: no snap, NodeSource, the Go and Neovim
+#      tarballs, no font or xclip. A rerun changes nothing, a wrong digest leaves the old trees, a host
+#      with docker-ce keeps it and never upgrades it, and a --yes without a terminal skips the human steps.
+#   Every --check leaves the fixture's files as they were.
 
 set -euo pipefail
 
@@ -39,6 +41,8 @@ fresh_machine() {
   rm -f "$FIX/bin/npm" "$FIX/bin/nvim" "$FIX/bin/uv" "$FIX/bin/claude"
   mkdir -p "$HOME_DIR" "$STATE" "$FIX/etc" "$FIX/usr-local"
   printf 'PRETTY_NAME="fixture"\nID=%s\n' "$1" > "$FIX/etc/os-release"
+  # The Ubuntu fixture is a desktop, the Debian one a headless VPS.
+  if [[ "$1" == ubuntu ]]; then touch "$STATE/xwayland"; fi
   git -C "$CLONE" remote remove origin 2>/dev/null || true
   git -C "$CLONE" remote add origin https://github.com/nicograef/handbook.git
 }
@@ -55,9 +59,10 @@ case "$name" in
     pkg="${*: -1}"
     if [[ "$*" == *Version* ]]; then [[ -f "$S/$pkg" ]] && printf '26.1.0-1nodesource1'; exit 0; fi
     if [[ "$pkg" == neovim ]]; then printf 'unknown ok not-installed'
-    elif [[ -f "$S/$pkg" || ( " gh nodejs docker-ce " != *" $pkg "* && -f "$S/apt" ) ]]; then printf 'install ok installed'
+    elif [[ -f "$S/$pkg" || ( " gh nodejs docker-ce xwayland xserver-xorg-core " != *" $pkg "* && -f "$S/apt" ) ]]; then
+      printf 'install ok installed'
     else exit 1; fi ;;
-  apt) echo 'Listing...' ;;
+  apt) echo 'Listing...'; cat "$S/upgradable" 2>/dev/null ;;
   apt-get)
     if [[ "$1 $2" == "install -y" && "$3" == gh ]]; then touch "$S/gh"; appear gh
     elif [[ "$1 $2" == "install -y" && "$3" == nodejs ]]; then touch "$S/nodejs"; appear npm
@@ -84,9 +89,9 @@ case "$name" in
       *keyring*) out="${*: -1}"; echo key > "$out" ;;
       *deb.nodesource.com/setup_26.x*) cp "$FIX/nodesource-setup" "${*: -1}" ;;
       *go.dev/dl/?mode=json*) cat "$FIX/go.json" ;;
-      *go.dev/dl/go1.99.0.*) cp "$FIX/go.tar.gz" "${*: -1}" ;;
+      *go.dev/dl/go1.99.*) cp "$FIX/go.tar.gz" "${*: -1}" ;;
       *api.github.com/repos/neovim*) cat "$FIX/nvim.json" ;;
-      *releases/download/v0.99.0/*) cp "$FIX/nvim.tar.gz" "${*: -1}" ;;
+      *releases/download/v0.99.*) cp "$FIX/nvim.tar.gz" "${*: -1}" ;;
       *claude.ai*) echo "ln -sf $FIX/stub $FIX/bin/claude" ;;
       *nerd-fonts*) cat "$FIX/font.tar.xz" ;;
     esac ;;
@@ -174,10 +179,17 @@ SETUP
 export PATH="$FIX/bin:$PATH"
 TARGET_USER="$(id -un)"
 export TARGET_USER TARGET_HOME="$HOME_DIR" ETC_DIR="$FIX/etc" GO_ROOT="$FIX/usr-local/go"
-export USER_PATH="$HOME_DIR/.local/bin:$FIX/bin:/usr/bin:/bin"
+# The user's PATH holds the stubs and these system tools only, so a real npm, uv or nvim on the host stays out.
+mkdir -p "$FIX/sysbin"
+for c in bash sh env git mkdir cp mv chmod rm ln readlink cat grep sed awk tr cut sort head paste jq mktemp \
+  tar xz gzip basename dirname touch; do
+  ln -s "$(command -v "$c")" "$FIX/sysbin/$c"
+done
+export USER_PATH="$HOME_DIR/.local/bin:$FIX/bin:$FIX/sysbin"
 SCRIPT="$CLONE/scripts/setup-dev-machine.sh"
-# What a --check may call: reads only.
-READS='^(dpkg-query|apt list|snap (list|refresh --list)|id|curl .*(pypi|go\.dev/dl/\?mode|api\.github)[^ ]*|git|fc-list|gh auth status|pipx list)( |$)'
+# What a --check on a fresh machine may call: reads only.
+READS='^(dpkg-query .*|apt list .*|snap (list|refresh --list).*|id .*|curl .*(pypi|go\.dev/dl/\?mode|api\.github)[^ ]*'
+READS+='|git (-C [^ ]+ (rev-parse HEAD|remote get-url origin)|config --global [a-zA-Z.]+)|fc-list .*|gh auth status|pipx list --short)$'
 # What a fix calls: a rerun on a matching machine must call none of them.
 WRITES='^(apt-get (install|remove)|snap (install|refresh [a-z])|usermod|ssh-keygen|gh (auth (login|refresh)|ssh-key add)|pipx (install|upgrade)|npm (config set|install)|uv tool (install|upgrade)|claude plugin (install|marketplace)|nodesource-setup|curl -fsSL|nvim --headless|git (config --global [a-zA-Z.]+ .|remote set-url)|fc-cache)'
 
@@ -190,6 +202,18 @@ run() { # run <stdin> [args...]; sets rc, stdout in $OUT
 }
 
 rows() { grep -cE "^$1 " "$OUT" || true; }
+
+# snapshot — every file of the fake machine with its mtime and size.
+snapshot() { find "$HOME_DIR" "$STATE" "$FIX/etc" "$FIX/usr-local" "$CLONE" -printf '%p %T@ %s\n' | sort; }
+
+# check_run <label> — run --check and fail if it touched a file.
+check_run() {
+  local before
+  before="$(snapshot)"
+  run '' --check
+  if [[ "$(snapshot)" != "$before" ]]; then fail "$1 --check changed files: $(diff <(echo "$before") <(snapshot) | head -5)"
+  else log "$1 --check -> no file changed"; fi
+}
 
 # in_order <call...> — each call ran, in this order.
 in_order() {
@@ -211,10 +235,10 @@ if [[ "$EUID" -ne 0 ]]; then
   else fail "non-root apply: rc $rc: $(cat "$OUT")"; fi
 fi
 
-export SETUP_ALLOW_NONROOT=true
+export SETUP_ALLOW_NONROOT=true SETUP_ASSUME_TTY=true
 
 # 2. A fresh machine: everything but the absent apt neovim differs, and nothing changes.
-run '' --check
+check_run fresh
 if [[ "$rc" -eq 1 && "$(rows ok)" -eq 1 ]]; then log "fresh --check -> exit 1, 17 rows differ"
 else fail "fresh --check: rc $rc, ok rows $(rows ok): $(cat "$OUT")"; fi
 if grep -vE "$READS" "$CALLS" | grep -q .; then fail "fresh --check changed something: $(grep -vE "$READS" "$CALLS")"
@@ -223,7 +247,8 @@ else log "fresh --check -> read-only"; fi
 # 3. --yes fixes every item; the prompts get name, email and the default key title.
 run 'Fixture User\nfixture@example.com\n\n' --yes
 if [[ "$rc" -eq 0 ]]; then log "fresh --yes -> exit 0"; else fail "fresh --yes: rc $rc: $(cat "$OUT")"; fi
-in_order "apt-get install -y git" "docker.io docker-compose-v2 docker-buildx" "apt-get install -y gh" \
+in_order "apt-get install -y git" "gitleaks pipx xclip" "apt-get install -y --no-upgrade docker.io docker-compose-v2 docker-buildx" \
+  "apt-get install -y gh" \
   "snap install node --classic --channel=26/stable" \
   "usermod -aG docker" "ssh-keygen -t ed25519 -C fixture@example.com" \
   "gh auth login -h github.com -p ssh --skip-ssh-key -s admin:public_key,admin:ssh_signing_key" "pipx install --force uv" \
@@ -244,7 +269,7 @@ if grep -qF 'docker group' "$OUT" && grep -qF 'Log out and back in' "$OUT"; then
   log "--yes -> asks for a new login"; else fail "no new-login notice: $(cat "$OUT")"; fi
 
 # 4. The fixed machine matches.
-run '' --check
+check_run fixed
 if [[ "$rc" -eq 0 && "$(rows ok)" -eq 18 ]]; then log "fixed --check -> 18 rows ok"
 else fail "fixed --check: rc $rc: $(cat "$OUT")"; fi
 
@@ -276,28 +301,32 @@ if [[ "$rc" -eq 1 ]] && grep -qF "supports Ubuntu and Debian; $FIX/etc/os-releas
   log "fedora -> refused"
 else fail "fedora: rc $rc: $(cat "$OUT")"; fi
 
-# 8. Debian: no snap call even with snapd broken, and the distro's docker packages.
+# 8. A headless Debian: no snap call even with snapd broken, the distro's docker packages, no font or xclip.
 fresh_machine debian
 touch "$STATE/nosnap"
-run '' --check
-if [[ "$rc" -eq 1 && "$(rows ok)" -eq 1 ]] && grep -qE '^MISSING +Go ' "$OUT"; then log "debian fresh --check -> exit 1, 19 rows differ"
+check_run "debian fresh"
+if [[ "$rc" -eq 1 && "$(rows ok)" -eq 2 ]] && grep -qE '^MISSING +Go ' "$OUT" \
+  && grep -qE '^ok +Nerd Font +not needed: no display server' "$OUT"; then log "debian fresh --check -> exit 1, 18 rows differ, no font"
 else fail "debian fresh --check: rc $rc, ok rows $(rows ok): $(cat "$OUT")"; fi
-if grep -vE "$READS" "$CALLS" | grep -q .; then fail "debian fresh --check changed something: $(grep -vE "$READS" "$CALLS")"
-else log "debian fresh --check -> read-only"; fi
+if grep -vE "$READS" "$CALLS" | grep -q .; then fail "debian fresh --check called more than reads: $(grep -vE "$READS" "$CALLS")"
+else log "debian fresh --check -> reads only"; fi
 
 run 'Fixture User\nfixture@example.com\n\n' --yes
 if [[ "$rc" -eq 0 ]]; then log "debian fresh --yes -> exit 0"; else fail "debian fresh --yes: rc $rc: $(cat "$OUT")"; fi
-in_order "apt-get install -y git" "docker.io docker-compose docker-buildx" "apt-get install -y gh" "nodesource-setup" \
+in_order "apt-get install -y git" "apt-get install -y --no-upgrade docker.io docker-compose docker-buildx" \
+  "apt-get install -y gh" "nodesource-setup" \
   "apt-get install -y nodejs" "curl -fsSL https://go.dev/dl/go1.99.0.linux-$ARCH.tar.gz" \
   "curl -fsSL https://github.com/neovim/neovim/releases/download/v0.99.0/nvim-linux-$NVIM_ARCH.tar.gz" \
   "usermod -aG docker" "pipx install --force uv" "npm config set prefix $HOME_DIR/.local" "nvim --headless"
 log "debian --yes -> fixes run in item order"
 if grep -q '^snap' "$CALLS"; then fail "debian --yes called snap"; else log "debian --yes -> no snap call"; fi
+if grep -qE 'xclip|nerd-fonts|^fc-cache' "$CALLS"; then fail "headless --yes installed xclip or the font"
+else log "headless --yes -> no xclip, no font"; fi
 if [[ "$(readlink -f "$HOME_DIR/.local/bin/nvim")" == "$HOME_DIR/.local/nvim-linux-$NVIM_ARCH/bin/nvim" \
   && -x "$FIX/usr-local/go/bin/go" ]]; then log "debian --yes -> nvim in ~/.local, go in GO_ROOT"
 else fail "debian --yes: nvim or go not in place"; fi
 
-run '' --check
+check_run "debian fixed"
 if [[ "$rc" -eq 0 && "$(rows ok)" -eq 20 ]]; then log "debian fixed --check -> 20 rows ok"
 else fail "debian fixed --check: rc $rc: $(cat "$OUT")"; fi
 
@@ -306,12 +335,38 @@ run '' --yes
 if [[ "$rc" -eq 0 && "$(rows ok)" -eq 20 ]] && ! grep -qE "$WRITES" "$CALLS"; then log "debian rerun --yes -> changes nothing"
 else fail "debian rerun --yes: rc $rc: $(grep -E "$WRITES" "$CALLS")"; fi
 
-# A host with Docker's own packages, as setup-server.sh installs them, keeps them.
-rm "$STATE/apt"
-touch "$STATE/docker-ce"
+# 9. Newer Go and Neovim releases whose digests do not match: both fixes fail, the old trees stay.
+cp "$FIX/go.json" "$FIX/go.json.good"
+cp "$FIX/nvim.json" "$FIX/nvim.json.good"
+jq '.[0].version = "go1.99.1" | .[0].files[0].sha256 = ("0" * 64)' "$FIX/go.json.good" > "$FIX/go.json"
+jq '.tag_name = "v0.99.1" | .assets[0].digest = ("sha256:" + "0" * 64)' "$FIX/nvim.json.good" > "$FIX/nvim.json"
 run '' --yes
-if grep -qF 'docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin' "$CALLS" \
-  && ! grep -qF 'docker.io' "$CALLS"; then log "docker-ce host -> keeps docker-ce"
+if [[ "$rc" -eq 1 ]] && grep -qF 'Fix for Go failed' "$OUT" && grep -qF 'Fix for Neovim failed' "$OUT" \
+  && [[ -x "$FIX/usr-local/go/bin/go" && -x "$HOME_DIR/.local/nvim-linux-$NVIM_ARCH/bin/nvim" ]]; then
+  log "wrong digests -> both fixes fail, old trees kept"
+else fail "wrong digests: rc $rc: $(cat "$OUT")"; fi
+mv "$FIX/go.json.good" "$FIX/go.json"
+mv "$FIX/nvim.json.good" "$FIX/nvim.json"
+
+# 10. A host with Docker's own packages, as setup-server.sh installs them: kept, and a newer docker-ce
+#     is no reason to touch it.
+touch "$STATE/docker-ce"
+printf 'docker-ce/trixie 5:99 amd64 [upgradable from: 5:98]\n' > "$STATE/upgradable"
+run '' --check
+if [[ "$rc" -eq 0 ]]; then log "docker-ce upgradable -> still ok"; else fail "docker-ce upgradable: rc $rc: $(cat "$OUT")"; fi
+rm "$STATE/apt"
+run '' --yes
+if grep -qxF 'apt-get install -y --no-upgrade docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin' "$CALLS" \
+  && ! grep -E '^apt-get install -y [^-]' "$CALLS" | grep -qF docker && ! grep -qF 'docker.io' "$CALLS"; then
+  log "docker-ce host -> keeps docker-ce, installs only what is missing"
 else fail "docker-ce host: $(grep '^apt-get install' "$CALLS")"; fi
+
+# 11. A --yes without a terminal: no git identity or GitHub key from an empty pipe.
+fresh_machine debian
+SETUP_ASSUME_TTY=false run '' --yes
+if [[ "$rc" -eq 1 ]] && ! grep -qE '^git config --global user\.(name|email) ' "$CALLS" && ! grep -q '^gh ssh-key add' "$CALLS" \
+  && grep -qF 'git identity needs a terminal' "$OUT" && grep -qF 'GitHub keys need a terminal' "$OUT"; then
+  log "piped --yes -> human steps skipped"
+else fail "piped --yes: rc $rc: $(grep -E '^(git config --global user|gh ssh-key add)' "$CALLS")"; fi
 
 finish

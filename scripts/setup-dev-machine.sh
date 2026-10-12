@@ -15,6 +15,8 @@
 #
 # Node, Go and Neovim: snaps on Ubuntu. Debian has no snap, so Node comes from NodeSource's apt repo,
 # Go from go.dev's tarball in /usr/local/go, and Neovim from the release tarball in ~/.local.
+# A host without a display server skips the Nerd Font and xclip; the client's terminal renders the font.
+# Docker packages are installed, never upgraded: that restarts dockerd. A piped --yes skips the human steps.
 # A probe that fails stops the run with an ERROR line naming it; --check exits 1 when an item differs.
 #
 # Human steps: git identity, SSH key passphrase, gh login, the GitHub key title.
@@ -50,6 +52,7 @@ USER_PATH="${USER_PATH:-$TARGET_HOME/.local/bin:$TARGET_HOME/go/bin:/usr/local/g
 ETC_DIR="${ETC_DIR:-/etc}"                          # the fixture test points this at a temp dir
 GO_ROOT="${GO_ROOT:-/usr/local/go}"                 # Debian: go.dev's install path; the tarball unpacks a go/ dir
 SETUP_ALLOW_NONROOT="${SETUP_ALLOW_NONROOT:-false}" # the fixture test only: skip the root guard
+SETUP_ASSUME_TTY="${SETUP_ASSUME_TTY:-false}"       # the fixture test only: answer the human steps from a pipe
 # ─────────────────────────────────────────────────────────────────────────────
 
 DISTRO="$(sed -n 's/^ID="\{0,1\}\([a-z]*\).*/\1/p' "$ETC_DIR/os-release" 2>/dev/null || true)"
@@ -62,8 +65,9 @@ HANDBOOK_DIR="$(cd "$(dirname "$0")/.." && pwd)"
 HANDBOOK_SSH_URL="git@github.com:nicograef/handbook.git"
 ARCH="$(dpkg --print-architecture)"
 
-# The docker packages join the list once dpkg can be asked which Docker the host has.
-APT_PACKAGES=(git jq curl gcc make shellcheck tmux bat eza fzf fd-find ripgrep git-delta gitleaks lazygit xclip pipx)
+# xclip and the docker packages join once dpkg can be asked about the display server and the Docker in use.
+APT_PACKAGES=(git jq curl gcc make shellcheck tmux bat eza fzf fd-find ripgrep git-delta gitleaks lazygit pipx)
+DOCKER_PACKAGES=()
 SNAPS=("node $NODE_CHANNEL" "go latest/stable" "nvim latest/stable")
 NPM_TOOLS=(pnpm)
 # guides/neovim.md repeats these two lists for servers; check-repo's contracts stage compares them.
@@ -104,10 +108,6 @@ GH_UU="$ETC_DIR/apt/apt.conf.d/52unattended-upgrades-gh"
 GH_UU_LINE='Unattended-Upgrade::Origins-Pattern { "origin=gh,codename=stable"; };'
 GH_KEY_SCOPES="admin:public_key,admin:ssh_signing_key" # to list and add both key types
 NODE_MAJOR="${NODE_CHANNEL%%/*}"
-NODE_LIST="$ETC_DIR/apt/sources.list.d/nodesource.sources"
-NODE_URI="URIs: https://deb.nodesource.com/node_$NODE_MAJOR.x"
-NODE_UU="$ETC_DIR/apt/apt.conf.d/52unattended-upgrades-nodesource"
-NODE_UU_LINE='Unattended-Upgrade::Origins-Pattern { "site=deb.nodesource.com"; };'
 if [[ "$ARCH" == amd64 ]]; then NVIM_ARCH=x86_64; else NVIM_ARCH="$ARCH"; fi
 NVIM_DIR="$TARGET_HOME/.local/nvim-linux-$NVIM_ARCH"
 NVIM_LINK="$TARGET_HOME/.local/bin/nvim"
@@ -170,11 +170,15 @@ flag() {
   DETAIL+="${DETAIL:+; }$2"
 }
 
+# ask <prompt> — print the reply; fail at the end of input, so no answer is ever made up.
 ask() {
   local reply
-  read -r -p "$1 " reply || reply=n
+  read -r -p "$1 " reply || return 1
   printf '%s' "$reply"
 }
+
+# The human steps need someone at a terminal; a piped --yes skips them.
+interactive() { [[ -t 0 || "$SETUP_ASSUME_TTY" == true ]]; }
 
 # ── Items: check_<id> sets STATUS and DETAIL, fix_<id> brings the item to target ─
 
@@ -183,11 +187,19 @@ check_apt() {
   for p in "${APT_PACKAGES[@]}"; do
     if ! installed "$p"; then missing+=("$p"); elif in_list "$p" "$APT_UPGRADABLE"; then old+=("$p"); fi
   done
+  for p in "${DOCKER_PACKAGES[@]}"; do
+    if ! installed "$p"; then missing+=("$p"); fi
+  done
   if ((${#missing[@]})); then flag MISSING "${missing[*]}"; fi
   if ((${#old[@]})); then flag OUTDATED "${old[*]}"; fi
+  if [[ "$DESKTOP" != true ]]; then DETAIL+="${DETAIL:+; }xclip not needed: no display server"; fi
 }
-# install also upgrades an installed package to its candidate.
-fix_apt() { apt-get install -y "${APT_PACKAGES[@]}"; }
+# install also upgrades an installed package to its candidate. Docker is only installed: an upgrade
+# restarts dockerd, which stops every container, so it waits for the maintenance window's full-upgrade.
+fix_apt() {
+  apt-get install -y "${APT_PACKAGES[@]}"
+  apt-get install -y --no-upgrade "${DOCKER_PACKAGES[@]}"
+}
 
 check_ghrepo() {
   if [[ ! -s "$KEYRING" ]]; then flag MISSING "keyring"; fi
@@ -233,26 +245,37 @@ fix_snaps() {
   done
 }
 
-check_node() {
-  local version
-  if ! grep -qxF "$NODE_URI" "$NODE_LIST" 2>/dev/null; then flag MISSING "NodeSource node_$NODE_MAJOR.x repo"; fi
-  if [[ "$(cat "$NODE_UU" 2>/dev/null)" != "$NODE_UU_LINE" ]]; then flag WRONG "$NODE_UU"; fi
-  version="$(dpkg-query -W -f='${Version}' nodejs 2>/dev/null || true)"
-  if ! installed nodejs; then flag MISSING nodejs
-  elif [[ "$version" != "$NODE_MAJOR".* ]]; then flag WRONG "nodejs $version, not $NODE_MAJOR.x"
-  elif in_list nodejs "$APT_UPGRADABLE"; then flag OUTDATED nodejs; fi
-}
-# NodeSource's documented setup script writes its keyring, the source and an apt pin, then updates the index.
-fix_node() {
-  local setup
-  if ! grep -qxF "$NODE_URI" "$NODE_LIST" 2>/dev/null; then
+# node_source <check|add> — the one place that names Debian's Node source: NodeSource's apt repo.
+# Its documented setup script writes the keyring, the source and an apt pin, then updates the index.
+node_source() {
+  local list="$ETC_DIR/apt/sources.list.d/nodesource.sources" uri="URIs: https://deb.nodesource.com/node_$NODE_MAJOR.x"
+  local uu="$ETC_DIR/apt/apt.conf.d/52unattended-upgrades-nodesource" setup
+  local uu_line='Unattended-Upgrade::Origins-Pattern { "site=deb.nodesource.com"; };'
+  if [[ "$1" == check ]]; then
+    if ! grep -qxF "$uri" "$list" 2>/dev/null; then flag MISSING "NodeSource node_$NODE_MAJOR.x repo"; fi
+    if [[ "$(cat "$uu" 2>/dev/null)" != "$uu_line" ]]; then flag WRONG "$uu"; fi
+    return
+  fi
+  if ! grep -qxF "$uri" "$list" 2>/dev/null; then
     setup="$(mktemp)"
     curl -fsSL "https://deb.nodesource.com/setup_$NODE_MAJOR.x" -o "$setup"
     bash "$setup"
     rm -f "$setup"
   fi
-  install -d -m 755 "$(dirname "$NODE_UU")"
-  printf '%s\n' "$NODE_UU_LINE" > "$NODE_UU"
+  install -d -m 755 "$(dirname "$uu")"
+  printf '%s\n' "$uu_line" > "$uu"
+}
+
+check_node() {
+  local version
+  node_source check
+  version="$(dpkg-query -W -f='${Version}' nodejs 2>/dev/null || true)"
+  if ! installed nodejs; then flag MISSING nodejs
+  elif [[ "$version" != "$NODE_MAJOR".* ]]; then flag WRONG "nodejs $version, not $NODE_MAJOR.x"
+  elif in_list nodejs "$APT_UPGRADABLE"; then flag OUTDATED nodejs; fi
+}
+fix_node() {
+  node_source add
   apt-get install -y nodejs
 }
 
@@ -267,11 +290,11 @@ fix_go() {
   local dir file="$GO_LATEST.linux-$ARCH.tar.gz"
   [[ -n "$GO_LATEST" && -n "$GO_SHA256" ]] || { printf 'go.dev/dl did not answer.\n'; return 1; }
   dir="$(mktemp -d)"
+  trap 'rm -rf "$dir"' EXIT
   curl -fsSL "https://go.dev/dl/$file" -o "$dir/$file"
   sha256sum --quiet -c <<<"$GO_SHA256  $dir/$file"
   rm -rf "$GO_ROOT"
   tar -C "$(dirname "$GO_ROOT")" -xzf "$dir/$file"
-  rm -rf "$dir"
 }
 
 check_nvimbin() {
@@ -287,13 +310,13 @@ fix_nvimbin() {
   local dir file="nvim-linux-$NVIM_ARCH.tar.gz"
   [[ -n "$NVIM_LATEST" && -n "$NVIM_SHA256" ]] || { printf 'The GitHub releases API did not answer.\n'; return 1; }
   dir="$(as_user mktemp -d)"
+  trap 'rm -rf "$dir"' EXIT
   as_user curl -fsSL "https://github.com/neovim/neovim/releases/download/$NVIM_LATEST/$file" -o "$dir/$file"
   sha256sum --quiet -c <<<"$NVIM_SHA256  $dir/$file"
   as_user rm -rf "$NVIM_DIR"
   as_user mkdir -p "$(dirname "$NVIM_LINK")"
   as_user tar -C "$(dirname "$NVIM_DIR")" -xzf "$dir/$file"
   as_user ln -sfn "$NVIM_DIR/bin/nvim" "$NVIM_LINK"
-  as_user rm -rf "$dir"
 }
 
 # Debian's and Ubuntu's neovim lag the release vim.pack needs; on Ubuntu /usr/bin also shadows /snap/bin.
@@ -310,8 +333,10 @@ check_gitid() {
   if [[ -z "$(as_user git config --global user.email || true)" ]]; then flag MISSING user.email; fi
 }
 fix_gitid() {
-  local name email
-  name="$(ask 'git user.name:')" email="$(ask 'git user.email:')"
+  local name="" email=""
+  interactive || { printf 'The git identity needs a terminal to ask for it.\n'; return 1; }
+  name="$(ask 'git user.name:')" || true
+  email="$(ask 'git user.email:')" || true
   [[ -n "$name" && -n "$email" ]] || { printf 'Both values are required.\n'; return 1; }
   as_user git config --global user.name "$name"
   as_user git config --global user.email "$email"
@@ -336,7 +361,9 @@ check_uv() {
   local current latest other
   if ! pipx_has_uv; then
     other="$(as_user sh -c 'command -v uv' 2>/dev/null || true)"
-    flag MISSING "uv from pipx${other:+; PATH has $other}"
+    if [[ "$other" == "$UV_BIN" ]]; then flag MISSING "uv from pipx; replaces the non-pipx $UV_BIN"
+    elif [[ -n "$other" ]]; then flag MISSING "uv from pipx; it shadows $other in your shells"
+    else flag MISSING "uv from pipx"; fi
     return
   fi
   current="$(as_user "$UV_BIN" --version | awk '{print $2}')"
@@ -432,13 +459,14 @@ check_ghkeys() {
   if [[ -n "$missing" ]]; then flag MISSING "${missing% } key"; fi
 }
 fix_ghkeys() {
-  local status scope type title
+  local status scope type title=""
+  interactive || { printf 'The GitHub keys need a terminal for the key title and the browser approval.\n'; return 1; }
   # A login made outside this script may lack the scopes, and then the key list reads empty.
   status="$(as_user gh auth status 2>&1 || true)"
   for scope in ${GH_KEY_SCOPES//,/ }; do
     if [[ "$status" != *"'$scope'"* ]]; then as_user gh auth refresh -h github.com -s "$GH_KEY_SCOPES"; break; fi
   done
-  title="$(ask "Key title on GitHub [$(hostname)]:")"
+  title="$(ask "Key title on GitHub [$(hostname)]:")" || true
   title="${title:-$(hostname)}"
   for type in $(missing_key_types); do
     as_user gh ssh-key add "$KEY.pub" --type "$type" --title "$title"
@@ -452,7 +480,9 @@ check_remote() {
 }
 fix_remote() { as_user git -C "$HANDBOOK_DIR" remote set-url origin "$HANDBOOK_SSH_URL"; }
 
+# The font renders in the terminal of the machine the screen belongs to, never on a headless host.
 check_font() {
+  if [[ "$DESKTOP" != true ]]; then DETAIL="not needed: no display server"; return; fi
   if [[ "$(as_user fc-list : family 2>/dev/null || true)" != *[Nn]erd* ]]; then flag MISSING "no Nerd Font"; fi
 }
 fix_font() {
@@ -496,12 +526,15 @@ command -v jq >/dev/null 2>&1 || die "jq not found; install it first (apt instal
 TARGET_UID="$(id -u "$TARGET_USER")"
 # A host that runs Docker's own packages, as setup-server.sh installs them, keeps them: the distro's would replace them.
 if installed docker-ce; then
-  APT_PACKAGES+=(docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin)
+  DOCKER_PACKAGES=(docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin)
 elif [[ "$DISTRO" == ubuntu ]]; then
-  APT_PACKAGES+=(docker.io docker-compose-v2 docker-buildx)
+  DOCKER_PACKAGES=(docker.io docker-compose-v2 docker-buildx)
 else
-  APT_PACKAGES+=(docker.io docker-compose docker-buildx)
+  DOCKER_PACKAGES=(docker.io docker-compose docker-buildx)
 fi
+# A desktop has a display server; a headless host (a VPS, even one booting graphical.target) has neither package.
+DESKTOP=false
+if installed xwayland || installed xserver-xorg-core; then DESKTOP=true APT_PACKAGES+=(xclip); fi
 if [[ "$MODE" != check && "$SETUP_ALLOW_NONROOT" != true ]]; then
   [[ "$EUID" -eq 0 ]] || die "run with sudo, or pass --check to report only"
   [[ -n "${SUDO_USER:-}" && "$SUDO_USER" != root ]] || die "run with sudo from your own account, not as root"
@@ -536,7 +569,7 @@ for entry in "${ITEMS[@]}"; do
   reply=y
   # Removing a package always asks, --yes included.
   if [[ "$MODE" == ask || "$id" == aptnvim ]]; then
-    reply="$(ask "Fix $label ($DETAIL)? [Y/n/q]")"
+    reply="$(ask "Fix $label ($DETAIL)? [Y/n/q]")" || reply=n
   fi
   case "${reply:-y}" in
     q|Q) left+=("$label"); break ;;
