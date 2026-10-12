@@ -115,11 +115,11 @@ Every phase serves learning Vim properly: no shortcut hides a built-in.
 
 ### Acceptance criteria
 
-- [ ] `nvim --headless +'lua local n = 0 for _, w in ipairs(vim.api.nvim_list_wins()) do local c = vim.api.nvim_win_get_config(w) if c.relative ~= "" and not c.focusable then n = n + 1 end end print(n)' +q` → `1`
-- [ ] `nvim --headless +'lua print(require("hardtime.config").config.restriction_mode, pcall(require, "nui.popup"))' +q` → `block true`
-- [ ] `nvim --headless +'lua for _, k in ipairs({"<Space>uk","<Space>up","<Space>uH"}) do print(k, vim.fn.maparg(k, "n") ~= "") end' +q` → all `true`
-- [ ] `nvim --headless -c 'lua print(#vim.pack.get())' -c q` → `9`
-- [ ] `make check` passes
+- [x] `nvim --headless +'lua local n = 0 for _, w in ipairs(vim.api.nvim_list_wins()) do local c = vim.api.nvim_win_get_config(w) if c.relative ~= "" and not c.focusable then n = n + 1 end end print(n)' +q` → `1`
+- [x] `nvim --headless +'lua print(require("hardtime.config").config.restriction_mode, pcall(require, "nui.popup"))' +q` → `block true`
+- [x] `nvim --headless +'lua for _, k in ipairs({"<Space>uk","<Space>up","<Space>uH"}) do print(k, vim.fn.maparg(k, "n") ~= "") end' +q` → all `true`
+- [x] `nvim --headless -c 'lua print(#vim.pack.get())' -c q` → `9`
+- [x] `make check` passes
 
 ## Phase 3: Git, code text objects, file icons
 
