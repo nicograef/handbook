@@ -96,12 +96,12 @@ Extend the init.lua header comment and the README row to name the code features.
 
 ### Acceptance criteria
 
-- [ ] `cd ~/r/gyva && nvim --headless src/gyva/__init__.py +'sleep 3' +'lua print(vim.iter(vim.lsp.get_clients({bufnr=0})):map(function(c) return c.name end):join(","))' +q` prints `ruff` and `ty`.
-- [ ] The same command on a `.ts` file under `~/r/gyva/web/src` prints `ts_ls` and `biome`.
-- [ ] `nvim --headless x.py +'lua print(vim.treesitter.highlighter.active[vim.api.nvim_get_current_buf()] ~= nil)' +q` prints `true`.
-- [ ] `d=$(mktemp -d) && printf 'x=1\n' > "$d/f.py" && nvim --headless "$d/f.py" +'sleep 2' +w +q && cat "$d/f.py"` prints `x = 1`.
-- [ ] On a `.ts` file under `~/r/gyva/web/src`: `nvim --headless <file> +'sleep 3' +'lua print(#vim.api.nvim_get_autocmds({group="nvim.lsp.completion_"..vim.api.nvim_get_current_buf(), event="InsertCharPre"}) > 0)' +q` prints `true` (autotrigger is on).
-- [ ] `make check` passes.
+- [x] `cd ~/r/gyva && nvim --headless src/gyva/__init__.py +'sleep 3' +'lua print(vim.iter(vim.lsp.get_clients({bufnr=0})):map(function(c) return c.name end):join(","))' +q` prints `ruff` and `ty`.
+- [x] The same command on a `.ts` file under `~/r/gyva/web/src` prints `ts_ls` and `biome`.
+- [x] `nvim --headless x.py +'lua print(vim.treesitter.highlighter.active[vim.api.nvim_get_current_buf()] ~= nil)' +q` prints `true`.
+- [x] `d=$(mktemp -d) && printf 'x=1\n' > "$d/f.py" && nvim --headless "$d/f.py" +'sleep 2' +w +q && cat "$d/f.py"` prints `x = 1`.
+- [x] On a `.ts` file under `~/r/gyva/web/src`: `nvim --headless <file> +'sleep 3' +'lua print(#vim.api.nvim_get_autocmds({group="nvim.lsp.completion_"..vim.api.nvim_get_current_buf(), event="InsertCharPre"}) > 0)' +q` prints `true` (autotrigger is on).
+- [x] `make check` passes.
 
 ## Phase 3: Guide and machine record
 
