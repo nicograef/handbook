@@ -1,5 +1,6 @@
 -- init.lua – Neovim for prose and code on vim.pack: tokyonight, snacks picker and explorer,
--- which-key, lualine. Install and use: guides/neovim.md.
+-- which-key, lualine; LSP with built-in completion and format on save, treesitter highlighting.
+-- Install and use: guides/neovim.md.
 -- Only non-defaults are set: `:help nvim-defaults` lists what is already on.
 
 -- ── Editing ──────────────────────────────────────────────────────────────────
@@ -60,11 +61,23 @@ vim.o.langmap = from .. ';' .. to
 vim.g.mapleader = ' '
 vim.g.maplocalleader = ' '
 
+-- Parsers must match nvim-treesitter's revision, so an update rebuilds them.
+vim.api.nvim_create_autocmd('PackChanged', {
+  callback = function(ev)
+    if ev.data.spec.name == 'nvim-treesitter' and ev.data.kind == 'update' then
+      if not ev.data.active then vim.cmd.packadd('nvim-treesitter') end
+      vim.cmd('TSUpdate')
+    end
+  end,
+})
+
 vim.pack.add({
   'https://github.com/folke/tokyonight.nvim',
   'https://github.com/folke/snacks.nvim',
   'https://github.com/folke/which-key.nvim',
   'https://github.com/nvim-lualine/lualine.nvim',
+  'https://github.com/neovim/nvim-lspconfig',
+  { src = 'https://github.com/nvim-treesitter/nvim-treesitter', version = 'main' },
 })
 
 vim.cmd.colorscheme('tokyonight-moon')
@@ -89,3 +102,40 @@ for lhs, map in pairs({
 }) do
   vim.keymap.set('n', lhs, map[1], { desc = map[2] })
 end
+
+-- ── Code ─────────────────────────────────────────────────────────────────────
+-- Server binaries live outside Neovim (guides/neovim.md); a missing one leaves its
+-- server off. nvim-lspconfig supplies the configs, vim.lsp.enable starts them.
+vim.o.signcolumn = 'yes'         -- diagnostics do not shift the text sideways
+vim.o.winborder = 'rounded'
+vim.o.completeopt = 'menuone,noselect,popup,fuzzy'
+
+-- Building a parser needs the tree-sitter CLI and a C compiler; installed ones are skipped.
+require('nvim-treesitter').install({
+  'bash', 'css', 'html', 'javascript', 'json', 'python', 'toml', 'tsx', 'typescript', 'yaml',
+})
+vim.api.nvim_create_autocmd('FileType', {
+  callback = function(ev)
+    local lang = vim.treesitter.language.get_lang(ev.match)
+    if lang and vim.treesitter.language.add(lang) then vim.treesitter.start(ev.buf, lang) end
+  end,
+})
+
+vim.lsp.enable({ 'ts_ls', 'ty', 'ruff', 'biome', 'bashls', 'yamlls', 'jsonls' })
+
+vim.api.nvim_create_autocmd('LspAttach', {
+  callback = function(ev)
+    local client = assert(vim.lsp.get_client_by_id(ev.data.client_id))
+    if client:supports_method('textDocument/completion') then
+      vim.lsp.completion.enable(true, client.id, ev.buf, { autotrigger = true })
+    end
+    -- Only the formatters format; ts_ls and the others would fight them.
+    if client.name == 'ruff' or client.name == 'biome' then
+      vim.api.nvim_create_autocmd('BufWritePre', {
+        group = vim.api.nvim_create_augroup('format.' .. ev.buf, {}),
+        buffer = ev.buf,
+        callback = function() vim.lsp.buf.format({ bufnr = ev.buf, id = client.id }) end,
+      })
+    end
+  end,
+})
