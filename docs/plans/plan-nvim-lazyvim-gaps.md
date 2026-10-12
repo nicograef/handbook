@@ -148,10 +148,10 @@ Every phase serves learning Vim properly: no shortcut hides a built-in.
 
 ### Acceptance criteria
 
-- [ ] `nvim --headless -c 'lua print(#vim.pack.get(), vim.o.signcolumn)' -c q` → `12 yes:2`
-- [ ] `d=$(mktemp -d) && git -C $d init -q && echo a > $d/f && git -C $d add f && git -C $d -c user.name=t -c user.email=t@t -c commit.gpgsign=false commit -qm i && echo b >> $d/f && nvim --headless $d/f +'sleep 1' +'lua print(vim.b.gitsigns_status)' +q` → `+1`
-- [ ] `printf 'def f():\n    return 1\n\nx = 2\n' > /tmp/t.py && nvim --headless /tmp/t.py +'normal 2Gdaf' +'lua print(vim.api.nvim_buf_line_count(0))' +'q!'` → `2`
-- [ ] `nvim --headless +'lua print(Snacks.util.icon("x.py", "file") ~= "󰈔 ", require("nvim-web-devicons").get_icon("x.ts", "ts") ~= nil)' +q` → `true true`
-- [ ] `nvim --headless +'lua for _, k in ipairs({"<Space>gg","<Space>gb","<Space>gB"}) do print(k, vim.fn.maparg(k, "n") ~= "") end' +q` → all `true`
-- [ ] `scripts/setup-dev-machine.sh --check | grep lazygit` reports it missing
-- [ ] `make check` passes
+- [x] `nvim --headless -c 'lua print(#vim.pack.get(), vim.o.signcolumn)' -c q` → `12 yes:2`
+- [x] `d=$(mktemp -d) && git -C $d init -q && echo a > $d/f && git -C $d add f && git -C $d -c user.name=t -c user.email=t@t -c commit.gpgsign=false commit -qm i && echo b >> $d/f && nvim --headless $d/f +'sleep 1' +'lua print(vim.b.gitsigns_status)' +q` → `+1`
+- [x] `printf 'def f():\n    return 1\n\nx = 2\n' > /tmp/t.py && nvim --headless /tmp/t.py +'normal 2Gdaf' +'lua print(vim.api.nvim_buf_line_count(0))' +'q!'` → `2`
+- [x] `nvim --headless +'lua print(Snacks.util.icon("x.py", "file") ~= "󰈔 ", require("nvim-web-devicons").get_icon("x.ts", "ts") ~= nil)' +q` → `true true`
+- [x] `nvim --headless +'lua for _, k in ipairs({"<Space>gg","<Space>gb","<Space>gB"}) do print(k, vim.fn.maparg(k, "n") ~= "") end' +q` → all `true`
+- [x] `scripts/setup-dev-machine.sh --check | grep lazygit` reports it missing
+- [x] `make check` passes
