@@ -80,7 +80,7 @@ A web app on a fresh server chains Fresh server, Deploy, Monitoring, then Backup
 | [reference/postgresql.md](reference/postgresql.md) | PostgreSQL: queries, indexes, golang-migrate migrations |
 | [reference/linux-services.md](reference/linux-services.md) | Linux services: command sharp edges and resource-usage thresholds |
 | [reference/netcup.md](reference/netcup.md) | netcup server API: auth, firewall model, endpoints, snapshots, DNS API |
-| [scripts/setup-server.sh](scripts/setup-server.sh) | Provision a fresh Debian/Ubuntu VPS (user, SSH, swap, UFW, fail2ban, Docker) |
+| [scripts/setup-server.sh](scripts/setup-server.sh) | Provision a fresh Debian/Ubuntu VPS (user, SSH, swap, UFW, fail2ban, Docker); reruns on a set-up host |
 | [templates/prod-init.sh](templates/prod-init.sh) | Production deploy and update: pin and downgrade guard, backup, health poll |
 | [templates/backup-postgres.sh](templates/backup-postgres.sh) | Verified, retained PostgreSQL backups for a Compose stack (cron) |
 | [scripts/host-audit.sh](scripts/host-audit.sh) | Read-only audit of the state `setup-server.sh` leaves: one ok/FAIL/note line per check |

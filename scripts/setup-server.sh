@@ -7,6 +7,13 @@
 #   ssh root@host "HANDBOOK_REF=$REF SSH_PUBLIC_KEY='ssh-ed25519 AAAA...' USERNAME=nico USER_PASSWORD_HASH='$HASH' bash -s" < scripts/setup-server.sh
 #   ssh root@host "HANDBOOK_REF=$REF SSH_PUBLIC_KEY='ssh-ed25519 AAAA...' bash -s -- --dry-run" < scripts/setup-server.sh   # preview only
 #
+# Rerun on a set-up host, as USERNAME in its handbook clone; root has no login by then.
+# The keys in authorized_keys and the user's password stay, so neither value is needed.
+# Repeat every other Configuration value the first run set, such as EXTRA_UFW_PORTS=.
+# The rerun upgrades every package and restarts ssh, fail2ban and an upgraded Docker: run it in a maintenance window.
+#   git -C ~/r/handbook pull --ff-only && cd ~/r/handbook
+#   sudo HANDBOOK_REF="$(git rev-parse HEAD)" scripts/setup-server.sh
+#
 # What it does:
 #   1. System update & base packages
 #   1b. Swapfile (auto-sized from RAM, capped at 8G); appends it to /etc/fstab
@@ -23,10 +30,10 @@ set -euo pipefail
 
 # ── Configuration ────────────────────────────────────────────────────────────
 USERNAME="${USERNAME:-nico}"
-SSH_PUBLIC_KEY="${SSH_PUBLIC_KEY:-}"              # paste your pubkey here or export before running
+SSH_PUBLIC_KEY="${SSH_PUBLIC_KEY:-}"              # paste your pubkey here or export before running; a rerun may omit it
 EXTRA_UFW_PORTS="${EXTRA_UFW_PORTS-80/tcp 443/tcp}"   # space-separated; empty opens only SSH
 PASSWORDLESS_SUDO="${PASSWORDLESS_SUDO:-false}"  # "true" grants NOPASSWD sudo (convenience over prompts)
-USER_PASSWORD_HASH="${USER_PASSWORD_HASH:-}"     # `mkpasswd -m yescrypt` output; required unless PASSWORDLESS_SUDO=true
+USER_PASSWORD_HASH="${USER_PASSWORD_HASH:-}"     # `mkpasswd -m yescrypt` output; required unless PASSWORDLESS_SUDO=true or the user has a password
 HEALTH_PING_URL="${HEALTH_PING_URL:-}"           # optional: hourly dead-man health-ping URL (e.g. a Better Stack heartbeat)
 SWAP_SIZE_GB="${SWAP_SIZE_GB:-auto}"             # swapfile size in GB; "auto" = RAM capped at 8; "0" skips swap
 SYSTEM_LOCALE="${SYSTEM_LOCALE:-en_US.UTF-8}"     # the system's LANG, for cron, services and sessions that send none
@@ -78,10 +85,16 @@ if [[ $EUID -ne 0 && "$DRY_RUN" != "true" ]]; then
   exit 1
 fi
 
-if [[ -z "$SSH_PUBLIC_KEY" ]]; then
-  echo "ERROR: SSH_PUBLIC_KEY is not set. Export it or edit the script." >&2
+USER_HOME="/home/$USERNAME"
+SSH_DIR="$USER_HOME/.ssh"
+if [[ -z "$SSH_PUBLIC_KEY" && ! -s "$SSH_DIR/authorized_keys" ]]; then
+  echo "ERROR: SSH_PUBLIC_KEY is not set and $SSH_DIR/authorized_keys holds no key. Export it or edit the script." >&2
   exit 1
 fi
+
+# passwd -S prints P for a usable password; a missing user or a non-root dry-run reads as none.
+HAS_PASSWORD=false
+if [[ "$(passwd -S "$USERNAME" 2>/dev/null | awk '{print $2}' || true)" == P ]]; then HAS_PASSWORD=true; fi
 
 # A commit URL never changes, so the fetched file is the one this script's digest names.
 if [[ ! "$HANDBOOK_REF" =~ ^[0-9a-f]{40}$ ]]; then
@@ -90,12 +103,12 @@ if [[ ! "$HANDBOOK_REF" =~ ^[0-9a-f]{40}$ ]]; then
 fi
 
 if [[ "$PASSWORDLESS_SUDO" != "true" ]]; then
-  if [[ -z "$USER_PASSWORD_HASH" ]]; then
-    echo "ERROR: USER_PASSWORD_HASH is not set. Set it, or pass PASSWORDLESS_SUDO=true for NOPASSWD sudo." >&2
+  if [[ -z "$USER_PASSWORD_HASH" && "$HAS_PASSWORD" != true ]]; then
+    echo "ERROR: USER_PASSWORD_HASH is not set and '$USERNAME' has no password. Set it, or pass PASSWORDLESS_SUDO=true for NOPASSWD sudo." >&2
     exit 1
   fi
   # chpasswd -e stores the value verbatim, so plaintext would leave an unusable password.
-  if [[ "$USER_PASSWORD_HASH" != \$* ]]; then
+  if [[ -n "$USER_PASSWORD_HASH" && "$USER_PASSWORD_HASH" != \$* ]]; then
     echo "ERROR: USER_PASSWORD_HASH is not a crypt hash. Generate it with: mkpasswd -m yescrypt" >&2
     exit 1
   fi
@@ -193,6 +206,8 @@ run passwd -l root
 if [[ "$PASSWORDLESS_SUDO" == "true" ]]; then
   write_file "/etc/sudoers.d/$USERNAME" <<< "$USERNAME ALL=(ALL) NOPASSWD:ALL"
   run chmod 440 "/etc/sudoers.d/$USERNAME"
+elif [[ -z "$USER_PASSWORD_HASH" ]]; then
+  echo "  No USER_PASSWORD_HASH — keeping the password of '$USERNAME'."
 else
   # adduser --disabled-password leaves the password unset, which locks prompted sudo out.
   if [[ "$DRY_RUN" == "true" ]]; then
@@ -204,10 +219,10 @@ fi
 
 # ── 3. SSH hardening ────────────────────────────────────────────────────────
 log "Setting up SSH key for '$USERNAME'"
-USER_HOME="/home/$USERNAME"
-SSH_DIR="$USER_HOME/.ssh"
 run mkdir -p "$SSH_DIR"
-if [[ "$DRY_RUN" == "true" ]]; then
+if [[ -z "$SSH_PUBLIC_KEY" ]]; then
+  echo "  No SSH_PUBLIC_KEY — keeping the keys in $SSH_DIR/authorized_keys."
+elif [[ "$DRY_RUN" == "true" ]]; then
   printf '  \033[0;33m[DRY-RUN]\033[0m append SSH_PUBLIC_KEY to %s (deduplicated)\n' "$SSH_DIR/authorized_keys"
 else
   echo "$SSH_PUBLIC_KEY" >> "$SSH_DIR/authorized_keys"
@@ -363,6 +378,8 @@ if [[ -n "$HEALTH_PING_URL" ]]; then
 HEALTH_PING_URL="$HEALTH_PING_URL"
 EOF
   run chmod 600 /etc/default/report-health
+elif [[ -f /etc/default/report-health ]]; then
+  echo "  HEALTH_PING_URL not set — keeping the URL in /etc/default/report-health."
 else
   echo "  HEALTH_PING_URL not set — installing script + cron, but no URL persisted; set /etc/default/report-health later to enable pings."
 fi

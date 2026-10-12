@@ -30,6 +30,6 @@
 - [x] Dev script: Debian node, go, neovim items; docker set; uv via pipx
 - [x] Fixture test: Debian path, broken snap probe
 - [x] install-dotfiles.sh rerun reports and `~/.claude.json`
-- [ ] setup-server.sh rerun
-- [ ] Docs and README
+- [x] setup-server.sh rerun
+- [x] Docs and README
 - [ ] `make check` green; `--check` on staging

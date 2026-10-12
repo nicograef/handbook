@@ -80,6 +80,11 @@ A read-only https clone supplies the aliases, prompt and tmux config; the [insta
 
    Expected: it ends with `Done – restart your shell`. A later `git -C ~/r/handbook pull` updates every linked file.
 
+## Rerun
+
+The script reruns on a set-up host as maintenance; the rerun invocation is in its header comment.
+It keeps the authorized keys and the password. It upgrades every package, so run it in a maintenance window.
+
 ## Verify
 
 [`scripts/host-audit.sh`](../scripts/host-audit.sh) reads every setting the steps above apply, and changes nothing.
