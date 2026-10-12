@@ -220,10 +220,8 @@ check_uv() {
   latest="$(curl -fsS --max-time 10 https://pypi.org/pypi/uv/json 2>/dev/null | jq -r '.info.version' || true)"
   if [[ -n "$latest" && "$current" != "$latest" ]]; then flag OUTDATED "uv $current → $latest"; fi
 }
-fix_uv() {
-  if user_has uv; then as_user pipx upgrade uv; else as_user pipx install uv; fi
-  as_user pipx ensurepath
-}
+# .bash_aliases puts ~/.local/bin on PATH for new terminals.
+fix_uv() { if user_has uv; then as_user pipx upgrade uv; else as_user pipx install uv; fi; }
 
 check_npm() {
   local p have old prefix

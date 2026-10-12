@@ -167,6 +167,10 @@ for call in "${order[@]}"; do
   else last="$line"; fi
 done
 log "--yes -> fixes run in item order"
+# shellcheck disable=SC2016 # the new shell expands $PATH
+path="$(env -i HOME="$HOME_DIR" PATH=/usr/bin:/bin bash -c '. ~/.bash_aliases >/dev/null 2>&1; echo "$PATH"')"
+if [[ ":$path:" == *":$HOME_DIR/.local/bin:"* ]]; then log "--yes -> a new terminal has ~/.local/bin"
+else fail "a new terminal lacks ~/.local/bin: $path"; fi
 if [[ "$(git -C "$CLONE" remote get-url origin)" == git@github.com:nicograef/handbook.git ]]; then
   log "--yes -> origin over SSH"; else fail "origin not switched to SSH"; fi
 if grep -qF 'docker group' "$OUT" && grep -qF 'Log out and back in' "$OUT"; then
