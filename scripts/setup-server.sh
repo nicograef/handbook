@@ -416,7 +416,7 @@ echo "  Firewall: UFW active (ssh + ${EXTRA_UFW_PORTS:-no extra ports})"
 echo "  fail2ban: active"
 echo "  Docker:   $(docker --version 2>/dev/null || echo 'not installed (dry-run)')"
 echo "  Upgrades: unattended (distro stock origins, no auto-reboot)"
-if [[ -n "$HEALTH_PING_URL" ]]; then
+if [[ -n "$HEALTH_PING_URL" || -f /etc/default/report-health ]]; then
   echo "  Health:   hourly ping (URL in /etc/default/report-health)"
 else
   echo "  Health:   hourly check installed (no ping URL — set /etc/default/report-health to enable)"
