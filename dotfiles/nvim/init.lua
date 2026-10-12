@@ -137,14 +137,13 @@ vim.pack.add({
   'https://github.com/nvim-mini/mini.icons',
 })
 
--- Mocha with neutral greys of equal luminance in place of its blue-tinted backgrounds.
--- dotfiles/ptyxis/catppuccin-mocha-grey.palette and .tmux.conf use the same greys.
+-- Mocha defaults with darker, less blue backgrounds; every other colour stays Mocha.
+-- dotfiles/ptyxis/catppuccin-mocha-grey.palette and .tmux.conf use the same backgrounds.
 require('catppuccin').setup({
   flavour = 'mocha',
   color_overrides = {
     mocha = {
-      crust = '#121212', mantle = '#191919', base = '#1f1f1f',
-      surface0 = '#333333', surface1 = '#484848', surface2 = '#5c5c5c',
+      base = '#16161a', mantle = '#111114', crust = '#0c0c0e',
     },
   },
 })

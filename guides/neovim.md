@@ -9,7 +9,7 @@ Twelve plugins on the built-in `vim.pack`; everything else is a Neovim built-in.
 
 | Plugin | Role |
 | --- | --- |
-| catppuccin | Colour scheme: Mocha with neutral grey backgrounds |
+| catppuccin | Colour scheme: Mocha with darker, less blue backgrounds |
 | snacks.nvim | File, grep and LSP picker; file explorer |
 | which-key | Shows the keys that follow a typed prefix |
 | lualine | Status line |
