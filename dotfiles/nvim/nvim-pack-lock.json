@@ -38,10 +38,6 @@
       "src": "https://github.com/nvim-treesitter/nvim-treesitter-textobjects",
       "version": "'main'"
     },
-    "precognition.nvim": {
-      "rev": "add3cc30e6d68e977bbb76927c11b45b80c3a209",
-      "src": "https://github.com/tris203/precognition.nvim"
-    },
     "snacks.nvim": {
       "rev": "882c996cf28183f4d63640de0b4c02ec886d01f2",
       "src": "https://github.com/folke/snacks.nvim"

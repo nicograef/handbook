@@ -1,5 +1,5 @@
 -- init.lua – Neovim for prose and code on vim.pack: catppuccin, snacks picker and explorer,
--- which-key, lualine, gitsigns, mini.icons, precognition, hardtime; LSP, format on save, treesitter.
+-- which-key, lualine, gitsigns, mini.icons, hardtime; LSP, format on save, treesitter.
 -- Install and use: guides/neovim.md.
 -- Only non-defaults are set: `:help nvim-defaults` lists what is already on.
 
@@ -8,6 +8,7 @@ vim.o.number = true
 vim.o.relativenumber = true      -- the count for motions like 5j / 3dd is visible
 vim.o.scrolloff = 5
 vim.o.confirm = true             -- :q on unsaved changes asks instead of erroring
+vim.o.wrap = false               -- long lines run past the edge; <Space>uw wraps them
 vim.o.linebreak = true           -- wrap at word boundaries
 vim.o.breakindent = true         -- wrapped lines keep their indent
 vim.o.ignorecase = true
@@ -129,7 +130,6 @@ vim.pack.add({
   'https://github.com/nvim-lualine/lualine.nvim',
   'https://github.com/neovim/nvim-lspconfig',
   { src = 'https://github.com/nvim-treesitter/nvim-treesitter', version = 'main' },
-  'https://github.com/tris203/precognition.nvim',
   'https://github.com/m4xshen/hardtime.nvim',
   'https://github.com/MunifTanjim/nui.nvim',
   'https://github.com/lewis6991/gitsigns.nvim',
@@ -227,17 +227,11 @@ vim.keymap.set('n', '<leader>gB', function() Snacks.gitbrowse() end, { desc = 'O
 vim.keymap.set('n', '<leader>gg', function() Snacks.lazygit() end, { desc = 'Lazygit' })
 
 -- ── Learning ─────────────────────────────────────────────────────────────────
--- precognition shows the motions reachable from the cursor. hardtime blocks a key
--- repeated too often and names the better motion; :Hardtime report needs nui.
-require('precognition').setup({})
+-- hardtime blocks a key repeated too often and names the better motion;
+-- :Hardtime report needs nui.
 require('hardtime').setup({
   disabled_filetypes = { snacks_picker_list = true, snacks_picker_input = true, snacks_input = true },
 })
-Snacks.toggle.new({
-  name = 'Motion hints',
-  get = function() return require('precognition').is_visible() end,
-  set = function(on) require('precognition')[on and 'show' or 'hide']() end,
-}):map('<leader>up')
 Snacks.toggle.new({
   name = 'Hardtime',
   get = function() return require('hardtime').is_plugin_enabled end,

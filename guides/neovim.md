@@ -1,7 +1,7 @@
 # Neovim
 
 Neovim for prose and code: Markdown, YAML and JSON, plus TypeScript and Python with LSP.
-Twelve plugins on the built-in `vim.pack`; everything else is a Neovim built-in.
+Eleven plugins on the built-in `vim.pack`; everything else is a Neovim built-in.
 
 - [dotfiles/nvim/init.lua](../dotfiles/nvim/init.lua) is the whole config; it sets only non-defaults.
 - [dotfiles/nvim/nvim-pack-lock.json](../dotfiles/nvim/nvim-pack-lock.json) pins each plugin's revision.
@@ -15,7 +15,6 @@ Twelve plugins on the built-in `vim.pack`; everything else is a Neovim built-in.
 | lualine | Status line |
 | nvim-lspconfig | Server configs that `vim.lsp.enable` starts |
 | nvim-treesitter | Builds parsers for highlighting, indent and folds |
-| precognition.nvim | Shows the motions reachable from the cursor |
 | hardtime.nvim | Blocks a key repeated too often and names the better motion |
 | nui.nvim | Popup for `:Hardtime report` |
 | gitsigns.nvim | Marks changed lines; stages, resets and previews hunks |
@@ -100,7 +99,7 @@ Plugin management: [`:help vim.pack`](https://neovim.io/doc/user/pack.html).
 | `]e` / `[e`, `]w` / `[w` | Next / previous error, warning |
 | `<Space>u` + `f` `F` `h` `d` `s` `w` | Toggle autoformat (buffer, global), inlay hints, diagnostics, spell, wrap |
 | `<Space>n` | Notification history |
-| `<Space>u` + `k` `p` `H` `G` | Toggle cheat sheet, motion hints, hardtime, git signs |
+| `<Space>u` + `k` `H` `G` | Toggle cheat sheet, hardtime, git signs |
 | `]h` / `[h`, `ih` | Next / previous hunk, hunk text object |
 | `<Space>gh` + `s` `r` `p` | Stage / reset / preview hunk |
 | `<Space>gb` / `<Space>gB` / `<Space>gg` | Blame line / open in browser / lazygit |
@@ -138,7 +137,7 @@ Sources: [`:help 'langmap'`](https://neovim.io/doc/user/options.html#'langmap'),
 
 ```bash
 readlink -f ~/.config/nvim                                           # → <clone>/dotfiles/nvim
-nvim --headless -c 'lua print(vim.g.colors_name, #vim.pack.get())' -c q   # → catppuccin-mocha 12
+nvim --headless -c 'lua print(vim.g.colors_name, #vim.pack.get())' -c q   # → catppuccin-mocha 11
 nvim --headless -c 'lua print(vim.fn.maparg("<Space><Space>", "n") ~= "")' -c q   # → true
 nvim --headless -c 'lua print(vim.o.shiftwidth, vim.o.clipboard)' -c q   # → 2 unnamedplus (desktop) / 2 (server)
 nvim --headless x.py +'lua print(vim.wo.foldmethod, vim.fn.maparg("]e", "n") ~= "")' +q   # → expr true
