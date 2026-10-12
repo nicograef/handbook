@@ -5,7 +5,7 @@
 ## Goal
 
 Add the LazyVim behaviour that improves daily editing without leaving the lean `vim.pack` setup.
-Options, autocmds, snacks modules, treesitter indent and folds, keymaps, a learning panel, and gitsigns.
+Options, autocmds, snacks modules, treesitter indent and folds, keymaps, a learning panel, gitsigns, and file icons.
 Code text objects and lazygit follow. The goal behind every phase: learning Vim properly, with no shortcuts that hide the built-ins.
 
 ## Architectural decisions
@@ -13,7 +13,7 @@ Code text objects and lazygit follow. The goal behind every phase: learning Vim 
 - **Config shape**: `dotfiles/nvim/init.lua` stays the single config file. No `lua/` modules.
 - **Keys**: no mapping replaces or shortcuts a built-in key; the user learns the built-ins. New keys only add what Vim lacks, with LazyVim's lhs where one exists. They reach `[`/`]` through the German-keyboard remaps.
 - **Toggles**: `Snacks.toggle`. It sets each key's which-key label; the `<leader>u` (ui) and `<leader>g` (git) groups go into the which-key spec.
-- **New plugins**: gitsigns.nvim, nvim-treesitter-textobjects (`main` branch), precognition.nvim, hardtime.nvim and nui.nvim. Nothing else.
+- **New plugins**: gitsigns.nvim, nvim-treesitter-textobjects (`main` branch), precognition.nvim, hardtime.nvim, nui.nvim and mini.icons (`nvim-mini/mini.icons`). Nothing else.
 - **Checks**: run every `nvim --headless` criterion as `XDG_CONFIG_HOME=$PWD/dotfiles nvim …` from the tree under work. `~/.config/nvim` links to the main clone, so a worktree would otherwise test the old config.
 - **Out of scope**: screenkey.nvim, nvim-training, a learning-path guide section; mason, conform, nvim-lint, blink.cmp, trouble, todo-comments, bufferline, noice, dashboard, flash, mini.pairs, grug-far, persistence, lazydev.
 
@@ -256,4 +256,28 @@ Code text objects and lazygit follow. The goal behind every phase: learning Vim 
 - [ ] `nvim --headless +'lua print(require("hardtime.config").config.restriction_mode)' +q` → `block`
 - [ ] `nvim --headless +'lua print(vim.fn.maparg("<Space>up", "n") ~= "", vim.fn.maparg("<Space>uH", "n") ~= "")' +q` → `true true`
 - [ ] `nvim --headless +'lua require("nui.popup")' +q` exits without error
+- [ ] `make check` passes
+
+## Phase 9: File icons
+
+**Depends on**: 8 (same files)
+
+### Context
+
+- `dotfiles/nvim/init.lua — vim.pack.add()` — gains `https://github.com/nvim-mini/mini.icons`
+- `dotfiles/nvim/nvim-pack-lock.json` — one pin
+- `guides/neovim.md — intro, plugin table, Verify` — count becomes twelve
+- `README.md — dotfiles/nvim/init.lua row` — names mini.icons
+- `snacks/util/init.lua — M.icon()` (plugin source) — snacks tries mini.icons first, then nvim-web-devicons
+
+### What to build
+
+- mini.icons gives per-format file and folder icons in the snacks explorer and picker.
+- `MiniIcons.mock_nvim_web_devicons()` serves lualine, which asks for nvim-web-devicons.
+
+### Acceptance criteria
+
+- [ ] `nvim --headless +'lua print(Snacks.util.icon("x.py", "file") ~= "󰈔 ")' +q` → `true`
+- [ ] `nvim --headless +'lua print(require("nvim-web-devicons").get_icon("x.ts", "ts") ~= nil)' +q` → `true`
+- [ ] `nvim --headless -c 'lua print(#vim.pack.get())' -c q` → `12`
 - [ ] `make check` passes
