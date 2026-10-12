@@ -100,7 +100,8 @@ for dest in "$HOME"/.claude/* "$HOME"/.agents/*; do
   fi
 done
 
-# Ptyxis names a palette by its file name without .palette.
+# Ptyxis names a palette by its file name without .palette. It watches the palettes folder,
+# not the link target: after editing the palette, re-run this script to re-link it.
 if gsettings list-schemas 2>/dev/null | grep -qx org.gnome.Ptyxis; then
   uuid="$(gsettings get org.gnome.Ptyxis default-profile-uuid | tr -d "'")"
   gsettings set "org.gnome.Ptyxis.Profile:/org/gnome/Ptyxis/Profiles/$uuid/" palette catppuccin-mocha-grey
