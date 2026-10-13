@@ -44,7 +44,7 @@ oxlint reports these rules as warnings by default, so `--deny-warnings` makes a 
 Format with Prettier, the formatter the editor settings template names. `.prettierignore` lists
 `pnpm-lock.yaml`: pnpm rewrites it in its own format, which would fail `format:check`.
 
-Pin pnpm with `packageManager` in `package.json`, an exact `pnpm@<version>`. CI's pnpm setup reads it.
+Pin pnpm with `packageManager` in `package.json`, an exact `pnpm@<version>`. CI, the image and `setup-dev-tools.sh` install it.
 
 Use pnpm and commit `pnpm-lock.yaml`. CI and the image run `pnpm install --frozen-lockfile`, which
 fails instead of re-resolving.

@@ -1,15 +1,16 @@
 # Copy to frontend/Dockerfile, the name release.yml builds, and copy .dockerignore beside it.
 # Copy nginx-spa.conf to frontend/nginx.conf; this file COPYs it unedited.
+# Fill <node-major>: the Node major in .node-version.
 # The build writes dist/; nginx answers GET / on port 80, which its healthcheck probes.
 
 # ── Build ──
-FROM node:26-alpine AS build
+FROM node:<node-major>-alpine AS build
 WORKDIR /app
 
-# npm, not Corepack: Node 25+ images ship without Corepack.
+# npm installs the packageManager pin CI runs; Node 25+ images ship without Corepack.
 # The cache mount keeps the pnpm store across builds and out of the image.
 COPY package.json pnpm-lock.yaml ./
-RUN npm install -g pnpm@12
+RUN npm install -g "$(node -p "require('./package.json').packageManager.split('+')[0]")"
 RUN --mount=type=cache,id=pnpm,target=/pnpm/store \
     pnpm install --frozen-lockfile --store-dir /pnpm/store
 

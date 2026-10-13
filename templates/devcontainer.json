@@ -9,11 +9,11 @@
   "features": {
     // -- Go --
     // "ghcr.io/devcontainers/features/go:1": {
-    //   "version": "1.26"  // TODO: set your Go version
+    //   "version": "<project-go-version>"
     // },
     // -- Node --
     // "ghcr.io/devcontainers/features/node:1": {
-    //   "version": "26"  // TODO: set your Node version
+    //   "version": "<node-major>"
     // },
     // -- Docker-in-Docker (for docker compose in dev) --
     // "ghcr.io/devcontainers/features/docker-in-docker:2": {}

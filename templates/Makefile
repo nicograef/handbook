@@ -10,24 +10,49 @@ FRONTEND_DIR ?= frontend
 
 # ── Local Development (one terminal per target) ──
 
-.PHONY: db be fe
+# Each `# >>> stack: NAME` block belongs to one stack; a repo deletes the blocks of the stacks it lacks.
+# A Go backend uncomments its blocks.
+
+# >>> stack: database
+.PHONY: db
 
 db:            ## Start database container
 	docker compose up postgres
+# <<< stack: database
 
-# Go backend: cd $(BACKEND_DIR) && go run ./cmd/<name>
+# >>> stack: python
+.PHONY: be
+
 be:            ## Start backend with reload on :8080
 	cd $(BACKEND_DIR) && uv run uvicorn --factory <package>.api:app --reload --port 8080
+# <<< stack: python
+
+# >>> stack: go
+# .PHONY: be
+#
+# be:            ## Start backend on :8080
+# 	cd $(BACKEND_DIR) && go run ./cmd/<name>
+# <<< stack: go
+
+# >>> stack: frontend
+.PHONY: fe
 
 fe:            ## Start frontend dev server
 	cd $(FRONTEND_DIR) && pnpm dev
+# <<< stack: frontend
 
 # ── Code Quality ──
 
-# The uv and pnpm recipes mirror ci.yml's steps and order,
-# so a green `make check` predicts a green CI.
+# Each gate mirrors ci.yml's steps and order, so a green `make check` predicts a green CI.
+# Each stack block adds its gate to `check`.
 
-.PHONY: be-check fe-check check
+.PHONY: check
+
+check:         ## Run all checks
+
+# >>> stack: python
+.PHONY: be-check
+check: be-check
 
 be-check:      ## Backend: uv gate (sync, lint, format, types, tests, audit)
 	cd $(BACKEND_DIR) && uv sync --locked
@@ -36,25 +61,39 @@ be-check:      ## Backend: uv gate (sync, lint, format, types, tests, audit)
 	cd $(BACKEND_DIR) && uv run ty check .
 	cd $(BACKEND_DIR) && uv run pytest
 	cd $(BACKEND_DIR) && uv audit
-# Go backend: use this recipe instead.
+# <<< stack: python
+
+# >>> stack: go
+# # `sqlc diff` fails on stale generated code, as ci.yml's drift check does, but ignores a dirty tree.
+# .PHONY: be-check
+# check: be-check
+#
+# be-check:      ## Backend: Go gate (modules, generated code, format, vet, lint, build, tests, vulns)
 # 	cd $(BACKEND_DIR) && go mod verify
 # 	cd $(BACKEND_DIR) && go mod tidy -diff
+# 	cd $(BACKEND_DIR) && go tool sqlc diff
 # 	cd $(BACKEND_DIR) && go tool goimports -l . | (! grep .)
 # 	cd $(BACKEND_DIR) && go vet ./...
 # 	cd $(BACKEND_DIR) && golangci-lint run
 # 	cd $(BACKEND_DIR) && go build ./...
 # 	cd $(BACKEND_DIR) && go test -race ./...
+# 	cd $(BACKEND_DIR) && go tool govulncheck ./...
+# <<< stack: go
+
+# >>> stack: frontend
+.PHONY: fe-check
+check: fe-check
 
 # The package.json scripts named in reference/stack-conventions.md (Node/TypeScript).
-fe-check:      ## Frontend: pnpm gate (install, format, lint, types, tests, build)
+fe-check:      ## Frontend: pnpm gate (install, format, lint, types, tests, build, audit)
 	cd $(FRONTEND_DIR) && pnpm install --frozen-lockfile
 	cd $(FRONTEND_DIR) && pnpm run format:check
 	cd $(FRONTEND_DIR) && pnpm run lint
 	cd $(FRONTEND_DIR) && pnpm run typecheck
 	cd $(FRONTEND_DIR) && pnpm run test
 	cd $(FRONTEND_DIR) && pnpm run build
-
-check: be-check fe-check  ## Run all checks
+	cd $(FRONTEND_DIR) && pnpm audit --audit-level high
+# <<< stack: frontend
 
 # ── Local Stack (docker-compose.yml — no TLS) ──
 
@@ -97,10 +136,12 @@ prod-release:  ## Push tag v$(VERSION); .github/workflows/release.yml builds the
 
 # ── Utilities ──
 
-.PHONY: db-shell help
+# >>> stack: database
+.PHONY: db-shell
 
 db-shell:      ## Open psql shell in running PostgreSQL container (needs the .env include above)
 	docker compose exec postgres psql -U $(POSTGRES_USER) -d $(POSTGRES_DB)
+# <<< stack: database
 
 # Enable once the server is provisioned.
 # ssh-prod:    ## SSH into production server
@@ -114,6 +155,8 @@ CLASS_developer := db be fe be-check fe-check check up down logs db-shell help
 CLASS_production := prod-deploy prod-down prod-logs prod-release
 
 HELP_WIDTH ?= 96
+
+.PHONY: help
 
 # `$(firstword $(MAKEFILE_LIST))`, not the whole list: `include .env` would put `.env` in it.
 help:          ## Show every target, by class (HELP_WIDTH=<n> moves the wrap column)

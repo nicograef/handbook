@@ -39,10 +39,8 @@ ensure_cmd go "Install Go (see .devcontainer/devcontainer.json features)."
 GO_BIN_PATH="$(go env GOPATH)/bin"
 export PATH="$GO_BIN_PATH:$PATH"
 
-# Pin to the version your CI uses. Built from source because golangci-lint can
-# only analyze Go versions <= the Go version it was built with (prebuilt
-# binaries often lag behind), and GitHub release downloads are blocked behind
-# some proxies (e.g. Claude Code cloud sessions).
+# CI's golangci-lint step reads GOLANGCI_LINT_VERSION from this file. Built from source: a prebuilt
+# binary lags the Go version it can analyze, and some proxies block GitHub release downloads.
 GOLANGCI_LINT_VERSION="v2.13.2"
 GO_TOOLCHAIN="go<project-go-version>" # the `go` directive from backend/go.mod, e.g. 1.26.5
 
@@ -66,12 +64,14 @@ echo "  golangci-lint:  $(golangci-lint --version | head -n 1)"
 
 ensure_cmd node "Install Node (see .devcontainer/devcontainer.json features)."
 
-# npm, not Corepack: Node 25 and later ship without Corepack.
-info "Ensuring pnpm..."
-if command -v pnpm >/dev/null 2>&1; then
-  info "pnpm already installed: $(pnpm --version)"
+# npm installs the packageManager pin CI runs; Node 25 and later ship without Corepack.
+PNPM_SPEC="$(cd "$PROJECT_ROOT/frontend" && node -p "require('./package.json').packageManager.split('+')[0]")"
+info "Ensuring $PNPM_SPEC..."
+if [ "pnpm@$(pnpm --version 2>/dev/null)" = "$PNPM_SPEC" ]; then
+  info "pnpm already installed: $PNPM_SPEC"
 else
-  npm install -g pnpm@12
+  npm install -g "$PNPM_SPEC"
+  hash -r
 fi
 
 # --frozen-lockfile: the lockfile is the contract; a setup never rewrites it.
@@ -92,7 +92,7 @@ if command -v uv >/dev/null 2>&1; then
   info "uv already installed: $(uv --version)"
 else
   # The floor in [tool.uv] required-version of backend/pyproject.toml: uv refuses to run below it.
-  curl -LsSf https://astral.sh/uv/0.13.0/install.sh | sh
+  curl -LsSf "https://astral.sh/uv/<uv-version>/install.sh" | sh
   export PATH="$HOME/.local/bin:$PATH"
 fi
 

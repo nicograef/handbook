@@ -5,7 +5,7 @@ Take an empty directory to a repository whose `make check` passes. Index: [READM
 ## Prerequisites
 
 - The dev machine passes [dev-machine.md#verify](dev-machine.md#verify).
-- The backend lives in `backend/`, the frontend in `frontend/`, migrations in `database/`; the templates name these directories.
+- The backend lives in `backend/`, the frontend in `frontend/`, migrations in `database/`; the templates name these directories. Every backend runs Postgres.
 
 | Input | Description | Example |
 |-------|-------------|---------|
@@ -14,15 +14,13 @@ Take an empty directory to a repository whose `make check` passes. Index: [READM
 | `<visibility>` | Repo visibility | `public` or `private` |
 | `<handbook>` | Path to your local handbook clone | `~/r/handbook` |
 | `<database-name>` | Postgres database name | `orders` |
-| `<project-go-version>` | Go release for the `go` directive of `go.mod` | `1.26.5` |
-| `<project-python-version>` | Python minor in the `Dockerfile.python` base tag | `3.12` |
-| `<uv-version>` | uv version in the `Dockerfile.python` base tag | `0.13.0` |
+| `<project-go-version>` | Go release: the `go` directive of `go.mod`, the devcontainer Go feature | `1.26.5` |
+| `<project-python-version>` | Python minor: `uv init`, the `Dockerfile.python` base tag | `3.12` |
+| `<uv-version>` | uv floor: `pyproject.toml`, the `Dockerfile.python` base tag, `setup-dev-tools.sh` | `0.13.0` |
 | `<pytest-marker>` | Opt-in pytest marker for integration tests | `integration` |
-| `<node-major>` | Node major in the `Dockerfile.spa` base tag | `26` |
+| `<node-major>` | Node major: `.node-version`, the `Dockerfile.spa` base tag, the devcontainer Node feature | `26` |
 
 ## Pick the stack
-
-Every backend runs Postgres.
 
 | Stack | Dockerfile templates | devcontainer features | Stack sections | `<other-stacks>` |
 |-------|----------------------|-----------------------|----------------|------------------|
@@ -31,9 +29,9 @@ Every backend runs Postgres.
 | Go + React | [`Dockerfile.go`](../templates/Dockerfile.go), [`Dockerfile.spa`](../templates/Dockerfile.spa) | Go, Node, Docker-in-Docker | [Go](../reference/stack-conventions.md#go), [Node/TypeScript](../reference/stack-conventions.md#nodetypescript), [React](../reference/stack-conventions.md#react) | `python` |
 | Go | [`Dockerfile.go`](../templates/Dockerfile.go) | Go, Docker-in-Docker | [Go](../reference/stack-conventions.md#go) | `python frontend` |
 | React | [`Dockerfile.spa`](../templates/Dockerfile.spa) | Node | [Node/TypeScript](../reference/stack-conventions.md#nodetypescript), [React](../reference/stack-conventions.md#react) | `go python database` |
-| Docs | — | — | — | — |
+| Docs | — | — | — | `go python frontend database` |
 
-A Docs repository runs only [Create the repository](#create-the-repository), [Copy the base files](#copy-the-base-files) and [Set up the agent files](#set-up-the-agent-files).
+A Docs repository runs [Create the repository](#create-the-repository), [Copy the base files](#copy-the-base-files) and [Set up the agent files](#set-up-the-agent-files). Of [Fill the templates](#fill-the-templates), it runs only the block deletion.
 A React repository skips [Copy the production files](#copy-the-production-files): `prod-init.sh` does not deploy it. A static SPA goes to static hosting or behind an existing proxy.
 
 ## Create the repository
@@ -77,16 +75,18 @@ A React repository skips [Copy the production files](#copy-the-production-files)
 2. Scaffold each tier your row names and copy its Dockerfile template. Expected: `backend/Dockerfile` or `frontend/Dockerfile` exists per tier.
    ```bash
    uv init --package --python <project-python-version> backend && cp "$HANDBOOK/templates/Dockerfile.python" backend/Dockerfile   # Python
-   (mkdir -p backend && cd backend && go mod init github.com/<github-owner>/<project-name> && go mod edit -go=<project-go-version>)   # Go
-   cp "$HANDBOOK/templates/Dockerfile.go" backend/Dockerfile
-   pnpm create vite frontend --template react-ts --no-interactive               # React
-   cp "$HANDBOOK/templates/Dockerfile.spa" frontend/Dockerfile && cp "$HANDBOOK/templates/nginx-spa.conf" frontend/nginx.conf
+   (mkdir -p backend && cd backend && go mod init github.com/<github-owner>/<project-name> && go mod edit -go=<project-go-version>) && cp "$HANDBOOK/templates/Dockerfile.go" backend/Dockerfile   # Go
+   pnpm create vite frontend --template react-ts --no-interactive && cp "$HANDBOOK/templates/Dockerfile.spa" frontend/Dockerfile && cp "$HANDBOOK/templates/nginx-spa.conf" frontend/nginx.conf   # React
    for d in backend frontend; do cp "$HANDBOOK/templates/.dockerignore" "$d"/; done
    ```
-3. A Go backend adds its linter config and tools, and swaps in the Makefile's commented Go recipes. Expected: `go tool goimports -l .` runs.
+3. A Go backend adds its linter config, tools and a first sqlc query, and uncomments the Makefile's Go blocks. Expected: `go tool sqlc diff` in `backend/` exits 0.
    ```bash
-   cp "$HANDBOOK/templates/golangci.yml" backend/.golangci.yml
-   (cd backend && go get -tool golang.org/x/tools/cmd/goimports github.com/sqlc-dev/sqlc/cmd/sqlc golang.org/x/vuln/cmd/govulncheck)
+   cp "$HANDBOOK/templates/golangci.yml" backend/.golangci.yml && mkdir -p database/migrations backend/sqlc/queries
+   printf 'CREATE TABLE app_meta (key text PRIMARY KEY, value text NOT NULL);\n' > database/migrations/000001_init.up.sql && printf 'DROP TABLE app_meta;\n' > database/migrations/000001_init.down.sql
+   printf -- '-- name: GetMeta :one\nSELECT value FROM app_meta WHERE key = $1;\n' > backend/sqlc/queries/meta.sql
+   printf 'version: "2"\nsql:\n  - engine: postgresql\n    schema: ../database/migrations\n    queries: sqlc/queries\n    gen:\n      go: {package: db, out: internal/db}\n' > backend/sqlc.yaml
+   (cd backend && go get -tool golang.org/x/tools/cmd/goimports github.com/sqlc-dev/sqlc/cmd/sqlc golang.org/x/vuln/cmd/govulncheck && go tool sqlc generate)
+   sed -i '/^# >>> stack: go$/,/^# <<< stack: go$/{/stack: go$/!s/^# //}' Makefile
    ```
 
 ## Set up the toolchain
@@ -98,9 +98,10 @@ A React repository skips [Copy the production files](#copy-the-production-files)
    printf 'pnpm-lock.yaml\n' > .prettierignore     # pnpm owns the lockfile format
    printf "import { expect, test } from 'vitest'\nimport App from './App'\n\ntest('App is a component', () => {\n  expect(typeof App).toBe('function')\n})\n" > src/App.test.tsx && pnpm run format && cd ..
    ```
-2. Set the uv floor for the Python backend, add its dev tools and a smoke test. Expected: `backend/.python-version` holds `<project-python-version>`, and `backend/uv.lock` names `pytest`.
+2. Set the Python backend's uv floor, add uvicorn, its dev tools, the app factory and a smoke test. Expected: `backend/.python-version` holds `<project-python-version>`, and `backend/uv.lock` names `pytest` and `uvicorn`.
    ```bash
-   printf '\n[tool.uv]\nrequired-version = ">=<uv-version>"\n' >> backend/pyproject.toml && uv add --directory backend --dev pytest ruff ty
+   printf '\n[tool.uv]\nrequired-version = ">=<uv-version>"\n' >> backend/pyproject.toml && uv add --directory backend uvicorn && uv add --directory backend --dev pytest ruff ty
+   printf 'def app():\n    async def asgi(scope, receive, send):\n        if scope["type"] != "http":\n            return\n        status = 200 if scope["path"] == "/api/health" else 404\n        await send({"type": "http.response.start", "status": status, "headers": []})\n        await send({"type": "http.response.body", "body": b"ok"})\n\n    return asgi\n' > backend/src/backend/api.py
    mkdir -p backend/tests && printf 'from backend import main\n\n\ndef test_main_prints(capsys):\n    main()\n    assert capsys.readouterr().out\n' > backend/tests/test_smoke.py
    ```
 
@@ -117,16 +118,16 @@ A React repository skips [Copy the production files](#copy-the-production-files)
 
 ## Fill the templates
 
-1. Delete the blocks of your row's `<other-stacks>`. Expected: `grep -c 'stack: go$' .github/workflows/ci.yml` prints `0` on a Python row.
+1. Delete the blocks of your row's `<other-stacks>`. Expected: `grep -c 'stack: go$' Makefile` prints `0` on a Python row.
    ```bash
-   for s in <other-stacks>; do sed -i "/# >>> stack: $s\$/,/# <<< stack: $s\$/d" .github/workflows/ci.yml .github/dependabot.yml scripts/setup-dev-tools.sh; done
+   for s in <other-stacks>; do sed -i "/# >>> stack: $s\$/,/# <<< stack: $s\$/d" $(ls Makefile .github/workflows/ci.yml .github/dependabot.yml scripts/setup-dev-tools.sh 2>/dev/null); done
    ```
 2. Fill the names and versions. Expected: the `grep` prints nothing.
    ```bash
-   PROJECT=<project-name> OWNER=<github-owner> DB=<database-name> MARKER=<pytest-marker> GOV=<project-go-version>
+   PROJECT=<project-name> OWNER=<github-owner> DB=<database-name> MARKER=<pytest-marker> GOV=<project-go-version> UV=<uv-version> PY=<project-python-version> NODE=<node-major>
    FILES=$(ls Makefile docker-compose*.yml .devcontainer/* scripts/setup-dev-tools.sh .github/*.yml .github/workflows/*.yml */Dockerfile frontend/nginx.conf 2>/dev/null)
-   sed -i -e "s|<owner>|$OWNER|g; s|<project>|$PROJECT|g; s|<name>|$PROJECT|g; s|<package>|backend|g; s|<database-name>|$DB|g" \
-     -e "s|<marker>|$MARKER|g; s|<project-go-version>|$GOV|g; s|my-project-dev|$PROJECT-dev|" $FILES
+   sed -i -e "s|<owner>|$OWNER|g; s|<project>|$PROJECT|g; s|<name>|$PROJECT|g; s|<package>|backend|g; s|<database-name>|$DB|g; s|<marker>|$MARKER|g" \
+     -e "s|<project-go-version>|$GOV|g; s|<uv-version>|$UV|g; s|<project-python-version>|$PY|g; s|<node-major>|$NODE|g; s|my-project-dev|$PROJECT-dev|" $FILES
    sed -i "s|^name: [a-z]*|name: $PROJECT|" docker-compose*.yml
    grep -n '^[^#]*<[a-z][a-z-]\+>' $FILES    # placeholders outside comments
    ```
