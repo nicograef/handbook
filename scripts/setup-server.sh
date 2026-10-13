@@ -13,14 +13,14 @@
 # Every run writes HOST_ROLE to /etc/handbook-role; a dev or agent server declares itself with HOST_ROLE=dev.
 # The rerun upgrades every package and restarts ssh, fail2ban and an upgraded Docker: run it in a maintenance window.
 #   git -C ~/r/handbook pull --ff-only && cd ~/r/handbook
-#   sudo HANDBOOK_REF="$(git rev-parse HEAD)" scripts/setup-server.sh
+#   sudo scripts/setup-server.sh
 #
 # What it does:
 #   0. Write HOST_ROLE to /etc/handbook-role, which setup-dev-machine.sh refuses unless it says dev
 #   1. System update & base packages
 #   1b. Swapfile (auto-sized from RAM, capped at 8G); appends it to /etc/fstab
 #   1c. Locales: the system's LANG and those the operator's SSH client forwards
-#   1d. Fetch report-health.sh at HANDBOOK_REF; abort unless its sha256 matches REPORT_HEALTH_SHA256
+#   1d. Take report-health.sh from the clone, or fetch it at HANDBOOK_REF when piped; abort unless its sha256 matches
 #   2. Create non-root user with sudo and lingering
 #   3. SSH hardening (pubkey only, no root login) via a drop-in
 #   4. UFW firewall
@@ -40,13 +40,18 @@ HEALTH_PING_URL="${HEALTH_PING_URL:-}"           # optional: hourly dead-man hea
 SWAP_SIZE_GB="${SWAP_SIZE_GB:-auto}"             # swapfile size in GB; "auto" = RAM capped at 8; "0" skips swap
 SYSTEM_LOCALE="${SYSTEM_LOCALE:-en_US.UTF-8}"     # the system's LANG, for cron, services and sessions that send none
 EXTRA_LOCALES="${EXTRA_LOCALES:-en_GB.UTF-8}"     # space-separated; the other LANG/LC_* your SSH client sends
-HANDBOOK_REF="${HANDBOOK_REF:-}"                 # required: the 40-hex handbook commit this script came from
+HANDBOOK_REF="${HANDBOOK_REF:-}"                 # piped runs only: the 40-hex handbook commit this script came from
 HOST_ROLE="${HOST_ROLE:-prod}"                   # "prod" or "dev"; only a dev server takes setup-dev-machine.sh
 DRY_RUN="${DRY_RUN:-false}"                      # set to "true" or pass --dry-run
 # ─────────────────────────────────────────────────────────────────────────────
 
 # sha256 of scripts/report-health.sh in the same commit; check-repo's contracts stage keeps it in sync.
 REPORT_HEALTH_SHA256="c30cabb5055830d10cf87d08a50655778c9ad28d12da7ce58e341a51f843b51d"
+# Run from a clone, the sibling report-health.sh is installed; a piped run (bash -s) has no file beside it.
+LOCAL_REPORT_HEALTH=""
+if [[ -n "${BASH_SOURCE[0]:-}" && -f "$(dirname "${BASH_SOURCE[0]}")/report-health.sh" ]]; then
+  LOCAL_REPORT_HEALTH="$(dirname "${BASH_SOURCE[0]}")/report-health.sh"
+fi
 
 usage() {
   printf 'usage: [HOST_ROLE=prod|dev] %s [--dry-run]; the header lists every Configuration value\n' "$0" >&2
@@ -127,8 +132,8 @@ HAS_PASSWORD=false
 if [[ "$(passwd -S "$USERNAME" 2>/dev/null | awk '{print $2}' || true)" == P ]]; then HAS_PASSWORD=true; fi
 
 # A commit URL never changes, so the fetched file is the one this script's digest names.
-if [[ ! "$HANDBOOK_REF" =~ ^[0-9a-f]{40}$ ]]; then
-  die "HANDBOOK_REF must be a full commit sha. Set it to: git rev-parse HEAD (in a pushed handbook clone)"
+if [[ -z "$LOCAL_REPORT_HEALTH" && ! "$HANDBOOK_REF" =~ ^[0-9a-f]{40}$ ]]; then
+  die "a piped run needs HANDBOOK_REF, a full commit sha: git rev-parse HEAD in a pushed handbook clone"
 fi
 
 if [[ "$PASSWORDLESS_SUDO" != "true" ]]; then
@@ -212,18 +217,25 @@ run update-locale "LANG=$SYSTEM_LOCALE"
 
 # ── 1d. Fetch report-health ─────────────────────────────────────────────────
 # Fetched and verified before any account, SSH or firewall change, so a bad ref aborts a clean host.
-log "Fetching report-health.sh at $HANDBOOK_REF"
-REPORT_HEALTH_URL="https://raw.githubusercontent.com/nicograef/handbook/${HANDBOOK_REF}/scripts/report-health.sh"
+if [[ -n "$LOCAL_REPORT_HEALTH" ]]; then
+  log "Verifying $LOCAL_REPORT_HEALTH"
+  REPORT_HEALTH_SOURCE="$LOCAL_REPORT_HEALTH"
+else
+  log "Fetching report-health.sh at $HANDBOOK_REF"
+  REPORT_HEALTH_SOURCE="https://raw.githubusercontent.com/nicograef/handbook/${HANDBOOK_REF}/scripts/report-health.sh"
+fi
 if [[ "$DRY_RUN" == "true" ]]; then
-  dry "fetch $REPORT_HEALTH_URL and verify sha256 $REPORT_HEALTH_SHA256"
+  dry "copy $REPORT_HEALTH_SOURCE and verify sha256 $REPORT_HEALTH_SHA256"
 else
   REPORT_HEALTH_TMP="$(mktemp)"
   trap 'rm -f "$REPORT_HEALTH_TMP"' EXIT
-  if ! curl -fsSL "$REPORT_HEALTH_URL" -o "$REPORT_HEALTH_TMP"; then
-    die "cannot fetch $REPORT_HEALTH_URL. Is HANDBOOK_REF pushed?"
+  if [[ -n "$LOCAL_REPORT_HEALTH" ]]; then
+    cp "$LOCAL_REPORT_HEALTH" "$REPORT_HEALTH_TMP"
+  elif ! curl -fsSL "$REPORT_HEALTH_SOURCE" -o "$REPORT_HEALTH_TMP"; then
+    die "cannot fetch $REPORT_HEALTH_SOURCE. Is HANDBOOK_REF pushed?"
   fi
   if ! sha256sum --quiet -c <<< "$REPORT_HEALTH_SHA256  $REPORT_HEALTH_TMP"; then
-    die "report-health.sh at $HANDBOOK_REF does not match this script. Run the setup-server.sh of that commit."
+    die "$REPORT_HEALTH_SOURCE does not match this script's REPORT_HEALTH_SHA256. Use the setup-server.sh of the same commit."
   fi
 fi
 
