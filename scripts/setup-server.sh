@@ -9,14 +9,16 @@
 #
 # Rerun on a set-up host, as USERNAME in its handbook clone; root has no login by then.
 # The keys in authorized_keys and the user's password stay, so neither value is needed.
-# Repeat every other Configuration value the first run set, such as EXTRA_UFW_PORTS= or HOST_ROLE=dev.
+# Every run records its host-shaping Configuration in /etc/handbook-host.env, and a rerun reuses it.
+# Pass a value only to change it, such as INSTALL_DOCKER=true; the run records the new value.
 # Every run writes HOST_ROLE to /etc/handbook-role; a dev or agent server declares itself with HOST_ROLE=dev.
 # The rerun upgrades every package and restarts ssh, fail2ban and an upgraded Docker: run it in a maintenance window.
 #   git -C ~/r/handbook pull --ff-only && cd ~/r/handbook
 #   sudo scripts/setup-server.sh
 #
 # What it does:
-#   0. Write HOST_ROLE to /etc/handbook-role, which setup-dev-machine.sh refuses unless it says dev
+#   0. Write HOST_ROLE to /etc/handbook-role, which setup-dev-machine.sh refuses unless it says dev,
+#      and the Configuration to /etc/handbook-host.env
 #   1. System update & base packages
 #   1b. Swapfile (auto-sized from RAM, capped at 8G); appends it to /etc/fstab
 #   1c. Locales: the system's LANG and those the operator's SSH client forwards
@@ -25,12 +27,69 @@
 #   3. SSH hardening (pubkey only, no root login) via a drop-in
 #   4. UFW firewall
 #   5. fail2ban
-#   6. Docker + Compose, container-log rotation (IPv6 networking auto-enabled on IPv6-only hosts)
+#   6. Docker + Compose, container-log rotation (IPv6 networking auto-enabled on IPv6-only hosts),
+#      unless INSTALL_DOCKER=false
 #   7. Unattended upgrades (stock distro origins) + hourly health ping
 
 set -euo pipefail
 
+# ── Recorded configuration ──────────────────────────────────────────────────
+# host-audit.sh holds an identical copy from HOST_CONFIG_PATTERN to the function's end; check-repo compares them.
+# Each Configuration key setup-server.sh records, and the pattern its value must match.
+declare -A HOST_CONFIG_PATTERN=(
+  [USERNAME]='^[a-z_][a-z0-9_-]*$'
+  [EXTRA_UFW_PORTS]='^[A-Za-z0-9/: ]*$'
+  [HOST_ROLE]='^(prod|dev)$'
+  [SWAP_SIZE_GB]='^(auto|[0-9]+)$'
+  [SYSTEM_LOCALE]='^[A-Za-z0-9_.@-]+$'
+  [EXTRA_LOCALES]='^[A-Za-z0-9_.@ -]*$'
+  [PASSWORDLESS_SUDO]='^(true|false)$'
+  [INSTALL_DOCKER]='^(true|false)$'
+)
+# read_host_config <file> — give each value <file> records to its variable unless the environment set it.
+# Parsed, never sourced: every line is KEY=<printf %q value> with a known KEY and a value its pattern takes.
+read_host_config() {
+  local file="$1" line key value
+  local -a order=()
+  local -A found=()
+  HOST_CONFIG_USED="" HOST_CONFIG_ERROR=""
+  [[ -e "$file" ]] || return 0
+  if [[ ! -r "$file" ]]; then HOST_CONFIG_ERROR="cannot read $file"; return 1; fi
+  while IFS= read -r line || [[ -n "$line" ]]; do
+    [[ -z "$line" || "$line" == \#* ]] && continue
+    key="" value=""
+    if [[ "$line" =~ ^([A-Z_]+)=(.*)$ ]]; then key="${BASH_REMATCH[1]}" value="${BASH_REMATCH[2]}"; fi
+    if [[ "$value" == "''" ]]; then value=""; else value="${value//\\ / }"; fi
+    if [[ -z "$key" || ! -v "HOST_CONFIG_PATTERN[$key]" || "$(printf '%s=%q' "$key" "$value")" != "$line" \
+          || ! "$value" =~ ${HOST_CONFIG_PATTERN[$key]} ]]; then
+      HOST_CONFIG_ERROR="$file: $(printf '%q' "$line") is not a recorded Configuration value; fix or delete the file"
+      return 1
+    fi
+    [[ -v "found[$key]" ]] || order+=("$key")
+    found[$key]="$value"
+  done <"$file"
+  for key in "${order[@]}"; do
+    # EXTRA_UFW_PORTS alone counts a set empty value as set, as its ${VAR-default} does.
+    [[ -n "${!key-}" || ( "$key" == EXTRA_UFW_PORTS && -v EXTRA_UFW_PORTS ) ]] && continue
+    printf -v "$key" '%s' "${found[$key]}"
+    HOST_CONFIG_USED+="${HOST_CONFIG_USED:+ }$key=$(printf '%q' "${found[$key]}")"
+  done
+}
+HOST_CONFIG_FILE="${HOST_CONFIG_FILE:-/etc/handbook-host.env}"  # where a run records the keys above; a fixture dry run points it elsewhere
+if ! read_host_config "$HOST_CONFIG_FILE"; then
+  printf 'ERROR: %s\n' "$HOST_CONFIG_ERROR" >&2
+  exit 2
+fi
+HOST_CONFIG_SOURCE="$HOST_CONFIG_FILE"
+# A host set up before the record existed still names its role.
+if [[ ! -e "$HOST_CONFIG_FILE" && -z "${HOST_ROLE:-}" && -f /etc/handbook-role ]]; then
+  HOST_ROLE="$(tr -d '[:space:]' </etc/handbook-role)"
+  HOST_CONFIG_USED="HOST_ROLE=$(printf '%q' "$HOST_ROLE")"
+  HOST_CONFIG_SOURCE=/etc/handbook-role
+fi
+
 # ── Configuration ────────────────────────────────────────────────────────────
+# A value the environment leaves unset comes from the recorded configuration, then from the default here.
 USERNAME="${USERNAME:-nico}"
 SSH_PUBLIC_KEY="${SSH_PUBLIC_KEY:-}"              # paste your pubkey here or export before running; a rerun may omit it
 EXTRA_UFW_PORTS="${EXTRA_UFW_PORTS-80/tcp 443/tcp}"   # space-separated; empty opens only SSH
@@ -42,6 +101,7 @@ SYSTEM_LOCALE="${SYSTEM_LOCALE:-en_US.UTF-8}"     # the system's LANG, for cron,
 EXTRA_LOCALES="${EXTRA_LOCALES:-en_GB.UTF-8}"     # space-separated; the other LANG/LC_* your SSH client sends
 HANDBOOK_REF="${HANDBOOK_REF:-}"                 # piped runs only: the 40-hex handbook commit this script came from
 HOST_ROLE="${HOST_ROLE:-prod}"                   # "prod" or "dev"; only a dev server takes setup-dev-machine.sh
+INSTALL_DOCKER="${INSTALL_DOCKER:-true}"           # "false" skips Docker on a host that runs no containers, such as a backup target
 DRY_RUN="${DRY_RUN:-false}"                      # set to "true" or pass --dry-run
 # ─────────────────────────────────────────────────────────────────────────────
 
@@ -98,13 +158,20 @@ for arg in "$@"; do
   esac
 done
 
-case "$HOST_ROLE" in
-  prod|dev) ;;
-  *) printf 'ERROR: HOST_ROLE is %s, not prod or dev\n' "${HOST_ROLE:-empty}" >&2; usage; exit 2 ;;
-esac
+# A value the pattern rejects would make the next run refuse the record.
+for key in "${!HOST_CONFIG_PATTERN[@]}"; do
+  if [[ ! "${!key}" =~ ${HOST_CONFIG_PATTERN[$key]} ]]; then
+    printf 'ERROR: %s is %q, not a match for %s\n' "$key" "${!key}" "${HOST_CONFIG_PATTERN[$key]}" >&2
+    usage
+    exit 2
+  fi
+done
 
 if [[ "$DRY_RUN" == "true" ]]; then
   printf '\n\033[1;33m⚠ DRY-RUN MODE — no changes will be made\033[0m\n'
+fi
+if [[ -n "$HOST_CONFIG_USED" ]]; then
+  printf 'Using recorded configuration from %s: %s\n' "$HOST_CONFIG_SOURCE" "$HOST_CONFIG_USED"
 fi
 
 # ── Pre-flight checks ───────────────────────────────────────────────────────
@@ -152,11 +219,20 @@ if [[ "$PASSWORDLESS_SUDO" != "true" ]]; then
   fi
 fi
 
-# ── 0. Host role ────────────────────────────────────────────────────────────
-# Written first, so an interrupted first run never leaves the sshd drop-in without it.
+# ── 0. Host role and configuration ──────────────────────────────────────────
+# Written first, so an interrupted first run never leaves the sshd drop-in without them.
 log "Recording host role '$HOST_ROLE'"
 write_file /etc/handbook-role <<< "$HOST_ROLE"
 run chmod 644 /etc/handbook-role
+
+log "Recording the configuration in $HOST_CONFIG_FILE"
+HOST_CONFIG_RECORD=("# setup-server.sh Configuration; a rerun parses it as defaults, never sources it")
+while IFS= read -r key; do
+  HOST_CONFIG_RECORD+=("$(printf '%s=%q' "$key" "${!key}")")
+done < <(printf '%s\n' "${!HOST_CONFIG_PATTERN[@]}" | sort)
+if [[ "$DRY_RUN" == "true" ]]; then printf '    %s\n' "${HOST_CONFIG_RECORD[@]}"; fi
+printf '%s\n' "${HOST_CONFIG_RECORD[@]}" | write_file "$HOST_CONFIG_FILE"
+run chmod 644 "$HOST_CONFIG_FILE"
 
 # ── 1. System update & base packages ────────────────────────────────────────
 log "Updating system"
@@ -336,22 +412,25 @@ run systemctl enable fail2ban
 run systemctl restart fail2ban
 
 # ── 6. Docker ───────────────────────────────────────────────────────────────
-log "Installing Docker"
+if [[ "$INSTALL_DOCKER" != "true" ]]; then
+  log "Skipping Docker (INSTALL_DOCKER=false)"
+else
+  log "Installing Docker"
 
-# shellcheck source=/dev/null
-. /etc/os-release
-REPO_URL="https://download.docker.com/linux/${ID}"
+  # shellcheck source=/dev/null
+  . /etc/os-release
+  REPO_URL="https://download.docker.com/linux/${ID}"
 
-# Drop the one-line list and dearmored key a legacy setup may have left behind.
-run rm -f /etc/apt/sources.list.d/docker.list /etc/apt/keyrings/docker.gpg
-run install -m 0755 -d /etc/apt/keyrings
+  # Drop the one-line list and dearmored key a legacy setup may have left behind.
+  run rm -f /etc/apt/sources.list.d/docker.list /etc/apt/keyrings/docker.gpg
+  run install -m 0755 -d /etc/apt/keyrings
 
-if [[ ! -f /etc/apt/keyrings/docker.asc ]]; then
-  run curl -fsSL "$REPO_URL/gpg" -o /etc/apt/keyrings/docker.asc
-  run chmod a+r /etc/apt/keyrings/docker.asc
-fi
+  if [[ ! -f /etc/apt/keyrings/docker.asc ]]; then
+    run curl -fsSL "$REPO_URL/gpg" -o /etc/apt/keyrings/docker.asc
+    run chmod a+r /etc/apt/keyrings/docker.asc
+  fi
 
-write_file /etc/apt/sources.list.d/docker.sources <<EOF
+  write_file /etc/apt/sources.list.d/docker.sources <<EOF
 Types: deb
 URIs: ${REPO_URL}
 Suites: ${VERSION_CODENAME}
@@ -360,26 +439,26 @@ Architectures: $(dpkg --print-architecture)
 Signed-By: /etc/apt/keyrings/docker.asc
 EOF
 
-run apt update -y
-run apt install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
+  run apt update -y
+  run apt install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
 
-run usermod -aG docker "$USERNAME"
+  run usermod -aG docker "$USERNAME"
 
-# ── 6b. Docker daemon config ────────────────────────────────────────────────
-# Unbounded json-file logs fill the disk, so every host gets log rotation. Without an IPv4 default
-# route the default bridge leaves containers no egress, so IPv6-only hosts get IPv6 networking.
-# New (Compose) networks drop IPv4 entirely: RFC 6724 selection would prefer a dead IPv4 over a ULA
-# source for dual-stack targets. See guides/ipv6-only-vps.md.
-# host-audit.sh expects exactly these rotation values.
-LOG_KEYS='"log-driver": "json-file",
+  # ── 6b. Docker daemon config ────────────────────────────────────────────────
+  # Unbounded json-file logs fill the disk, so every host gets log rotation. Without an IPv4 default
+  # route the default bridge leaves containers no egress, so IPv6-only hosts get IPv6 networking.
+  # New (Compose) networks drop IPv4 entirely: RFC 6724 selection would prefer a dead IPv4 over a ULA
+  # source for dual-stack targets. See guides/ipv6-only-vps.md.
+  # host-audit.sh expects exactly these rotation values.
+  LOG_KEYS='"log-driver": "json-file",
   "log-opts": { "max-size": "10m", "max-file": "3" }'
-if [[ -f /etc/docker/daemon.json ]]; then
-  echo "  /etc/docker/daemon.json already exists — merge these log-rotation keys manually:"
-  echo "  $LOG_KEYS"
-  echo "  On an IPv6-only host, also merge the IPv6 keys of step 6b in setup-server.sh."
-elif ! ip -4 route get 1.1.1.1 &>/dev/null; then
-  log "No IPv4 route — enabling IPv6-only container networking + log rotation"
-  write_file /etc/docker/daemon.json <<EOF
+  if [[ -f /etc/docker/daemon.json ]]; then
+    echo "  /etc/docker/daemon.json already exists — merge these log-rotation keys manually:"
+    echo "  $LOG_KEYS"
+    echo "  On an IPv6-only host, also merge the IPv6 keys of step 6b in setup-server.sh."
+  elif ! ip -4 route get 1.1.1.1 &>/dev/null; then
+    log "No IPv4 route — enabling IPv6-only container networking + log rotation"
+    write_file /etc/docker/daemon.json <<EOF
 {
   "ipv6": true,
   "fixed-cidr-v6": "fd00:d0c:1::/64",
@@ -392,15 +471,16 @@ elif ! ip -4 route get 1.1.1.1 &>/dev/null; then
   $LOG_KEYS
 }
 EOF
-  run systemctl restart docker
-else
-  log "Configuring Docker log rotation"
-  write_file /etc/docker/daemon.json <<EOF
+    run systemctl restart docker
+  else
+    log "Configuring Docker log rotation"
+    write_file /etc/docker/daemon.json <<EOF
 {
   $LOG_KEYS
 }
 EOF
-  run systemctl restart docker
+    run systemctl restart docker
+  fi
 fi
 
 # ── 7. Unattended upgrades & health ping ─────────────────────────────────────
@@ -443,6 +523,7 @@ run chmod 644 /etc/cron.d/report-health
 log "Setup complete"
 echo ""
 echo "  Role:     $HOST_ROLE (in /etc/handbook-role)"
+echo "  Config:   recorded in $HOST_CONFIG_FILE; a rerun reuses it"
 echo "  User:     $USERNAME"
 if [[ "$PASSWORDLESS_SUDO" == "true" ]]; then
   echo "  Sudo:     passwordless (NOPASSWD)"
@@ -458,7 +539,11 @@ else
 fi
 echo "  Firewall: UFW active (ssh + ${EXTRA_UFW_PORTS:-no extra ports})"
 echo "  fail2ban: active"
-echo "  Docker:   $(docker --version 2>/dev/null || echo 'not installed (dry-run)')"
+if [[ "$INSTALL_DOCKER" == "true" ]]; then
+  echo "  Docker:   $(docker --version 2>/dev/null || echo 'not installed (dry-run)')"
+else
+  echo "  Docker:   skipped (INSTALL_DOCKER=false)"
+fi
 echo "  Upgrades: unattended (distro stock origins, no auto-reboot)"
 if [[ -n "$HEALTH_PING_URL" || -f /etc/default/report-health ]]; then
   echo "  Health:   hourly ping (URL in /etc/default/report-health)"

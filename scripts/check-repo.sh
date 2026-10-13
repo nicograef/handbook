@@ -323,7 +323,7 @@ server_audit_contract() {
   v6_filter="$(audit_fact "^\\s*v6=\"\\\$\\(jq -r '([^']*)'")"
   v6_want="$(audit_fact '\[\[ "\$v6" == "([^"]*)" \]\]')"
   probe="$(audit_fact '^\s*if ! (ip -4 route get \S+)')"
-  log_keys="$(sed -n "/^LOG_KEYS='/,/'\$/p" "$s" | sed "1s/^LOG_KEYS='//; \$s/'\$//")"
+  log_keys="$(sed -n "/^ *LOG_KEYS='/,/'\$/p" "$s" | sed "1s/^ *LOG_KEYS='//; \$s/'\$//")"
   if [[ -z "$rot_filter" || -z "$rot_want" || -z "$v6_filter" || -z "$v6_want" || -z "$probe" || -z "$log_keys" ]]; then
     log "host-audit.sh docker checks or setup-server.sh LOG_KEYS not read; contract unchecked"
   else
@@ -336,7 +336,7 @@ server_audit_contract() {
       v6="$(jq -r "$v6_filter" <<<"$body" 2>&1 || true)"
       [[ "$v6" == "$v6_want" ]] || log "setup-server.sh's IPv6-only daemon.json reads as '$v6' to host-audit.sh, not '$v6_want'"
     done < <(awk -v probe="! $probe" '
-      /^(if |elif |else$)/ { kind = index($0, probe) ? "v6" : "v4" }
+      /^ *(if |elif |else$)/ { kind = index($0, probe) ? "v6" : "v4" }
       /^ *write_file \/etc\/docker\/daemon\.json <</ { on = 1; body = ""; next }
       on && /^EOF$/ { print kind "\t" body; on = 0; next }
       on { body = body " " $0 }' "$s")
