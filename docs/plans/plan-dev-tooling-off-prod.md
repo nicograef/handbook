@@ -95,4 +95,4 @@ Nico reruns `setup-server.sh` on both hosts after Phase 1 lands: default role on
 
 - [ ] `ssh jotti cat /etc/handbook-role; ssh gyva-staging cat /etc/handbook-role` prints `prod` then `dev`.
 - [ ] `ssh jotti 'bash -s' < scripts/host-audit.sh | sed -n '/== role/,/== summary/p'` shows no FAIL.
-- [ ] `ssh jotti 'ls ~/.claude/.credentials.json ~/.npmrc ~/.local/lib/node_modules ~/.local/share/pipx 2>&1'` reports every path missing.
+- [x] `ssh jotti 'ls ~/.claude/.credentials.json ~/.npmrc ~/.local/lib/node_modules ~/.local/share/pipx 2>&1'` reports every path missing.
