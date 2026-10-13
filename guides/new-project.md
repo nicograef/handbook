@@ -18,7 +18,7 @@ Take an empty directory to a repository whose `make check` passes. Index: [READM
 | `<project-python-version>` | Python minor: `uv init`, the `Dockerfile.python` base tag | `3.12` |
 | `<uv-version>` | uv floor: `pyproject.toml`, the `Dockerfile.python` base tag, `setup-dev-tools.sh` | `0.13.0` |
 | `<pytest-marker>` | Opt-in pytest marker for integration tests | `integration` |
-| `<node-major>` | Node major: `.node-version`, the `Dockerfile.spa` base tag, the devcontainer Node feature | `26` |
+| `<node-major>` | Node major: `.node-version`, the `Dockerfile.spa` base tag, the devcontainer Node feature, the dev Compose image | `26` |
 
 ## Pick the stack
 
@@ -72,18 +72,17 @@ A React repository skips [Copy the production files](#copy-the-production-files)
    mkdir -p .devcontainer .github/workflows && cp "$HANDBOOK/templates/devcontainer.json" .devcontainer/devcontainer.json
    cp "$HANDBOOK/templates/ci.yml" .github/workflows/ci.yml && cp "$HANDBOOK/templates/dependabot.yml" .github/dependabot.yml
    ```
-2. Scaffold each tier your row names and copy its Dockerfile template. Expected: `backend/Dockerfile` or `frontend/Dockerfile` exists per tier.
+2. Scaffold each tier your row names and copy its Dockerfile template. A backend row writes the first migration, which CI applies. Expected: each tier has its `Dockerfile`, a backend row `database/migrations/000001_init.up.sql`.
    ```bash
    uv init --package --python <project-python-version> backend && cp "$HANDBOOK/templates/Dockerfile.python" backend/Dockerfile   # Python
    (mkdir -p backend && cd backend && go mod init github.com/<github-owner>/<project-name> && go mod edit -go=<project-go-version>) && cp "$HANDBOOK/templates/Dockerfile.go" backend/Dockerfile   # Go
    pnpm create vite frontend --template react-ts --no-interactive && cp "$HANDBOOK/templates/Dockerfile.spa" frontend/Dockerfile && cp "$HANDBOOK/templates/nginx-spa.conf" frontend/nginx.conf   # React
-   for d in backend frontend; do cp "$HANDBOOK/templates/.dockerignore" "$d"/; done
+   mkdir -p database/migrations && printf 'CREATE TABLE app_meta (key text PRIMARY KEY, value text NOT NULL);\n' > database/migrations/000001_init.up.sql && printf 'DROP TABLE app_meta;\n' > database/migrations/000001_init.down.sql   # Python or Go
+   for d in $(ls -d backend frontend 2>/dev/null); do cp "$HANDBOOK/templates/.dockerignore" "$d"/; done
    ```
 3. A Go backend adds its linter config, tools and a first sqlc query, and uncomments the Makefile's Go blocks. Expected: `go tool sqlc diff` in `backend/` exits 0.
    ```bash
-   cp "$HANDBOOK/templates/golangci.yml" backend/.golangci.yml && mkdir -p database/migrations backend/sqlc/queries
-   printf 'CREATE TABLE app_meta (key text PRIMARY KEY, value text NOT NULL);\n' > database/migrations/000001_init.up.sql && printf 'DROP TABLE app_meta;\n' > database/migrations/000001_init.down.sql
-   printf -- '-- name: GetMeta :one\nSELECT value FROM app_meta WHERE key = $1;\n' > backend/sqlc/queries/meta.sql
+   cp "$HANDBOOK/templates/golangci.yml" backend/.golangci.yml && mkdir -p backend/sqlc/queries && printf -- '-- name: GetMeta :one\nSELECT value FROM app_meta WHERE key = $1;\n' > backend/sqlc/queries/meta.sql
    printf 'version: "2"\nsql:\n  - engine: postgresql\n    schema: ../database/migrations\n    queries: sqlc/queries\n    gen:\n      go: {package: db, out: internal/db}\n' > backend/sqlc.yaml
    (cd backend && go get -tool golang.org/x/tools/cmd/goimports github.com/sqlc-dev/sqlc/cmd/sqlc golang.org/x/vuln/cmd/govulncheck && go tool sqlc generate)
    sed -i '/^# >>> stack: go$/,/^# <<< stack: go$/{/stack: go$/!s/^# //}' Makefile
@@ -98,11 +97,14 @@ A React repository skips [Copy the production files](#copy-the-production-files)
    printf 'pnpm-lock.yaml\n' > .prettierignore     # pnpm owns the lockfile format
    printf "import { expect, test } from 'vitest'\nimport App from './App'\n\ntest('App is a component', () => {\n  expect(typeof App).toBe('function')\n})\n" > src/App.test.tsx && pnpm run format && cd ..
    ```
-2. Set the Python backend's uv floor, add uvicorn, its dev tools, the app factory and a smoke test. Expected: `backend/.python-version` holds `<project-python-version>`, and `backend/uv.lock` names `pytest` and `uvicorn`.
+2. Set the Python backend's uv floor and pytest table, and add uvicorn and its dev tools. Write the app factory, a smoke test and an integration test. Expected: `backend/.python-version` holds `<project-python-version>`, and `backend/uv.lock` names `psycopg`, `pytest` and `uvicorn`.
    ```bash
-   printf '\n[tool.uv]\nrequired-version = ">=<uv-version>"\n' >> backend/pyproject.toml && uv add --directory backend uvicorn && uv add --directory backend --dev pytest ruff ty
+   printf '\n[tool.uv]\nrequired-version = ">=<uv-version>"\n' >> backend/pyproject.toml
+   # append the [tool.pytest] block from stack-conventions.md#python here, <marker> = <pytest-marker>
+   uv add --directory backend uvicorn && uv add --directory backend --dev pytest ruff ty 'psycopg[binary]'
    printf 'def app():\n    async def asgi(scope, receive, send):\n        if scope["type"] != "http":\n            return\n        status = 200 if scope["path"] == "/api/health" else 404\n        await send({"type": "http.response.start", "status": status, "headers": []})\n        await send({"type": "http.response.body", "body": b"ok"})\n\n    return asgi\n' > backend/src/backend/api.py
    mkdir -p backend/tests && printf 'from backend import main\n\n\ndef test_main_prints(capsys):\n    main()\n    assert capsys.readouterr().out\n' > backend/tests/test_smoke.py
+   printf 'import os\n\nimport psycopg\nimport pytest\n\n\n@pytest.mark.<pytest-marker>\ndef test_first_migration_applied():\n    env = os.environ\n    with psycopg.connect(\n        host=env["DB_HOST"],\n        user=env["POSTGRES_USER"],\n        password=env["POSTGRES_PASSWORD"],\n        dbname=env["POSTGRES_DB"],\n    ) as conn:\n        assert conn.execute("SELECT count(*) FROM app_meta").fetchone() == (0,)\n' > backend/tests/test_database.py
    ```
 
 ## Copy the production files

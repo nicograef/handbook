@@ -4,7 +4,7 @@ name: myapp-dev
 
 services:
   app:
-    image: node:26-slim
+    image: node:<node-major>-slim
     # build: .
     # replace with your dev server command, e.g. "npm run dev"
     command: sleep infinity
