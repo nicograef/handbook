@@ -21,6 +21,16 @@ updates:
       gomod:
         patterns:
           - "*"
+
+  # ── Docker base images (backend/Dockerfile) ──
+  - package-ecosystem: "docker"
+    directory: "/backend"
+    schedule:
+      interval: "monthly"
+    groups:
+      docker-backend:
+        patterns:
+          - "*"
   # <<< stack: go
 
   # >>> stack: frontend
@@ -31,6 +41,16 @@ updates:
       interval: "monthly"
     groups:
       npm:
+        patterns:
+          - "*"
+
+  # ── Docker base images (frontend/Dockerfile) ──
+  - package-ecosystem: "docker"
+    directory: "/frontend"
+    schedule:
+      interval: "monthly"
+    groups:
+      docker-frontend:
         patterns:
           - "*"
   # <<< stack: frontend
@@ -45,6 +65,16 @@ updates:
       uv:
         patterns:
           - "*"
+
+  # ── Docker base images (backend/Dockerfile) ──
+  - package-ecosystem: "docker"
+    directory: "/backend"
+    schedule:
+      interval: "monthly"
+    groups:
+      docker-backend:
+        patterns:
+          - "*"
   # <<< stack: python
 
   # ── Docker Compose service images ──
@@ -57,14 +87,3 @@ updates:
       docker-compose:
         patterns:
           - "*"
-
-  # ── Docker base images ──
-  # Covers Dockerfiles and Kubernetes manifests; enable when a Dockerfile pins a base image.
-  # - package-ecosystem: "docker"
-  #   directory: "/backend" # one entry per directory containing a Dockerfile
-  #   schedule:
-  #     interval: "monthly"
-  #   groups:
-  #     docker:
-  #       patterns:
-  #         - "*"
