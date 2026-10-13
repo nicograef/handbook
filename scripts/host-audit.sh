@@ -167,10 +167,10 @@ if needs_root "ufw"; then
 fi
 
 section "listening TCP sockets"
-# The reverse proxy publishes 80 and 443 through Docker, which bypasses UFW.
-allowed=" 22 80 443 "
+# Docker-published ports bypass UFW, so EXTRA_UFW_PORTS, not the ufw rules, says what may listen publicly.
+allowed=" 22 "
 for port in $EXTRA_UFW_PORTS; do
-  [[ "$allowed" == *" ${port%%/*} "* ]] || allowed+="${port%%/*} "
+  [[ "$port" == */udp || "$allowed" == *" ${port%%/*} "* ]] || allowed+="${port%%/*} "
 done
 ss_flags=(-Htln)
 is_root && ss_flags+=(-p)

@@ -121,7 +121,7 @@ cd /opt/<project>                                        # each comment states t
 docker compose ps --format '{{.Service}}: {{.Status}}'   # every service Up, each healthcheck (healthy)
 curl -sI https://<domain> | head -1                      # HTTP/2 200
 curl -sI http://<domain> | head -1                       # 301 or 308, redirect to HTTPS
-cat .deploy-state                                        # deployed=v<X.Y.Z> and an empty attempted=
+cat .deploy-state                                        # deployed=v<X.Y.Z>, empty attempted= and predump=
 echo | openssl s_client -connect <domain>:443 -servername <domain> 2>/dev/null | openssl x509 -noout -issuer -enddate   # issuer Let's Encrypt, notAfter ahead
 ```
 

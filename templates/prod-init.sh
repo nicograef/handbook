@@ -22,7 +22,8 @@ APP_SERVICE="${APP_SERVICE:-backend}"       # its image tag is the release versi
 HEALTH_TIMEOUT="${HEALTH_TIMEOUT:-180}"     # seconds `up --wait` polls the healthchecks
 
 PROD_FILE="docker-compose.prod.yml"
-# Last healthy tag and the tag of an unfinished attempt. Written by this script only; gitignore it.
+# Last healthy tag, the tag of an unfinished attempt and the dump taken before it.
+# Written by this script only; gitignore it.
 STATE_FILE=".deploy-state"
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -49,9 +50,9 @@ read_state() {
   grep -E "^$1=" "$STATE_FILE" | tail -n1 | cut -d= -f2- || true
 }
 
-# write_state DEPLOYED ATTEMPTED — the rename keeps the record whole if the script dies mid-write.
+# write_state DEPLOYED ATTEMPTED PREDUMP — the rename keeps the record whole if the script dies mid-write.
 write_state() {
-  printf 'deployed=%s\nattempted=%s\n' "$1" "$2" > "$STATE_FILE.tmp"
+  printf 'deployed=%s\nattempted=%s\npredump=%s\n' "$1" "$2" "$3" > "$STATE_FILE.tmp"
   mv "$STATE_FILE.tmp" "$STATE_FILE"
 }
 
@@ -103,6 +104,7 @@ echo ""
 # stack or a failed update still counts.
 DEPLOYED_TAG="$(read_state deployed)"
 ATTEMPTED_TAG="$(read_state attempted)"
+RECORDED_DUMP="$(read_state predump)"
 DATA_VOLUME="$(jq -r '.volumes["postgres-data"].name // empty' <<<"$CONFIG")"
 PRE_UPDATE_DUMP=""
 
@@ -137,9 +139,19 @@ else
   trap 'rm -f "$BACKUP_RESULT"' EXIT
   BACKUP_PING_URL="" BACKUP_RESULT_FILE="$BACKUP_RESULT" COMPOSE_FILE="$PROD_FILE" COMPOSE_DIR="$PWD" \
     "$SCRIPT_DIR/backup-postgres.sh"
-  PRE_UPDATE_DUMP="$(cat "$BACKUP_RESULT")"
-  [[ -n "$PRE_UPDATE_DUMP" ]] || error "backup-postgres.sh reported no dump. Nothing was changed."
-  log "Pre-update backup: $PRE_UPDATE_DUMP"
+  BACKUP_DUMP="$(cat "$BACKUP_RESULT")"
+  [[ -n "$BACKUP_DUMP" ]] || error "backup-postgres.sh reported no dump. Nothing was changed."
+  log "Backup: $BACKUP_DUMP"
+
+  # An unfinished attempt may have migrated the schema, so only the dump taken before it fits DEPLOYED_TAG.
+  if [[ -z "$ATTEMPTED_TAG" ]]; then
+    PRE_UPDATE_DUMP="$BACKUP_DUMP"
+  elif [[ -n "$RECORDED_DUMP" && -f "$RECORDED_DUMP" ]]; then
+    PRE_UPDATE_DUMP="$RECORDED_DUMP"
+    log "Unfinished attempt at $ATTEMPTED_TAG: the rollback point stays $PRE_UPDATE_DUMP"
+  elif [[ -n "$DEPLOYED_TAG" ]]; then
+    warn "Unfinished attempt at $ATTEMPTED_TAG and no dump from before it: no rollback point to $DEPLOYED_TAG."
+  fi
 fi
 
 # ── Start and health polling ──
@@ -155,7 +167,7 @@ log "Pulling the pinned images…"
 "${COMPOSE_PROD[@]}" pull || error "Pull failed. Nothing was changed."
 
 # From here on the new release may migrate the schema, so the attempt counts for the guard.
-write_state "$DEPLOYED_TAG" "$TARGET_TAG"
+write_state "$DEPLOYED_TAG" "$TARGET_TAG" "$PRE_UPDATE_DUMP"
 
 log "Starting the stack and waiting up to ${HEALTH_TIMEOUT}s for every healthcheck…"
 if ! "${COMPOSE_PROD[@]}" up -d --wait --wait-timeout "$HEALTH_TIMEOUT"; then
@@ -176,7 +188,7 @@ for i in {1..10}; do
   sleep 3
 done
 
-write_state "$TARGET_TAG" ""
+write_state "$TARGET_TAG" "" ""
 
 echo ""
 log "Deployed $TARGET_TAG — https://$DOMAIN"

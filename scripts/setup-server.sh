@@ -107,6 +107,9 @@ elif ! ssh-keygen -lf "$SSH_DIR/authorized_keys" >/dev/null 2>&1; then
   die "SSH_PUBLIC_KEY is not set and $SSH_DIR/authorized_keys holds no valid key. Export it or edit the script."
 fi
 
+SUDOERS_FILE="/etc/sudoers.d/$USERNAME"
+SUDOERS_LINE="$USERNAME ALL=(ALL) NOPASSWD:ALL"
+
 # passwd -S prints P for a usable password; a missing user or a non-root dry-run reads as none.
 HAS_PASSWORD=false
 if [[ "$(passwd -S "$USERNAME" 2>/dev/null | awk '{print $2}' || true)" == P ]]; then HAS_PASSWORD=true; fi
@@ -123,6 +126,12 @@ if [[ "$PASSWORDLESS_SUDO" != "true" ]]; then
   # chpasswd -e stores the value verbatim, so plaintext would leave an unusable password.
   if [[ -n "$USER_PASSWORD_HASH" && "$USER_PASSWORD_HASH" != \$* ]]; then
     die "USER_PASSWORD_HASH is not a crypt hash. Generate it with: mkpasswd -m yescrypt"
+  fi
+  # Only a non-root dry-run cannot read the 440 root file, so it skips the check instead of failing it.
+  if [[ -f "$SUDOERS_FILE" && ! -r "$SUDOERS_FILE" ]]; then
+    dry "cannot read $SUDOERS_FILE without root; a real run checks it holds only '$SUDOERS_LINE'"
+  elif [[ -f "$SUDOERS_FILE" && "$(cat "$SUDOERS_FILE")" != "$SUDOERS_LINE" ]]; then
+    die "$SUDOERS_FILE holds rules this script did not write. Review it, then rerun."
   fi
 fi
 
@@ -215,13 +224,17 @@ run passwd -l root
 run loginctl enable-linger "$USERNAME"
 
 if [[ "$PASSWORDLESS_SUDO" == "true" ]]; then
-  write_file "/etc/sudoers.d/$USERNAME" <<< "$USERNAME ALL=(ALL) NOPASSWD:ALL"
-  run chmod 440 "/etc/sudoers.d/$USERNAME"
-elif [[ -z "$USER_PASSWORD_HASH" ]]; then
-  echo "  No USER_PASSWORD_HASH — keeping the password of '$USERNAME'."
+  write_file "$SUDOERS_FILE" <<< "$SUDOERS_LINE"
+  run chmod 440 "$SUDOERS_FILE"
 else
-  # adduser --disabled-password leaves the password unset, which locks prompted sudo out.
-  run chpasswd -e <<<"$USERNAME:$USER_PASSWORD_HASH"
+  if [[ -z "$USER_PASSWORD_HASH" ]]; then
+    echo "  No USER_PASSWORD_HASH — keeping the password of '$USERNAME'."
+  else
+    # adduser --disabled-password leaves the password unset, which locks prompted sudo out.
+    run chpasswd -e <<<"$USERNAME:$USER_PASSWORD_HASH"
+  fi
+  # A run with PASSWORDLESS_SUDO=true left this file; the pre-flight checked it holds only that line.
+  if [[ -f "$SUDOERS_FILE" ]]; then run rm -f "$SUDOERS_FILE"; fi
 fi
 
 # ── 3. SSH hardening ────────────────────────────────────────────────────────
