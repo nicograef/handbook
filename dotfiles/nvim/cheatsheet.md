@@ -1,16 +1,50 @@
-- `w` `b` `e`     next word, back, word end
-- `f` `t` + `;`   to / before a char, repeat
-- `%`             matching bracket
-- `*`             search word under cursor
-- `Ctrl-d` `-u`   half page down, up
-- `Ctrl-o` `-i`   jump back, forward
-- `ciw` `ci"`     change word, in quotes
-- `dap`           delete paragraph
-- `.`             repeat last change
-- `o` `O`         open line below, above
-- `gcc`           toggle comment
-- `>>`            indent line
-- `]b` `[b`       next, previous buffer
-- `Ctrl-w hjkl`   move between windows
-- `Ctrl-l`        clear search highlight
-- `:m +1`         move line down
+# Move
+- `w`       next word
+- `b`       word back
+- `e`       word end
+- `^`       line start
+- `$`       line end
+- `{`       paragraph up
+- `}`       paragraph down
+- `Ctrl-d`  half page down
+- `Ctrl-u`  half page up
+- `Ctrl-o`  jump back
+- `Ctrl-i`  jump forward
+# Find
+- `f`       to char
+- `t`       before char
+- `;`       repeat f / t
+- `,`       repeat backwards
+- `%`       matching bracket
+- `*`       word, forward
+- `#`       word, backward
+- `Ctrl-l`  clear highlight
+# Edit
+- `I`       insert at start
+- `A`       append at end
+- `o`       open line below
+- `O`       open line above
+- `r`       replace char
+- `c`       change …
+- `d`       delete …
+- `y`       yank …
+- `>`       indent …
+- `<`       outdent …
+- `.`       repeat change
+- `J`       join lines
+- `~`       toggle case
+- `Ctrl-a`  increment number
+- `Ctrl-r`  redo
+- `Ctrl-v`  block select
+# Menus
+- `Space`   leader …
+- `g`       go, comment …
+- `z`       fold, scroll …
+- `]`       next …
+- `[`       previous …
+- `Ctrl-w`  windows …
+- `"`       registers …
+- `'`       jump to mark …
+- `m`       set mark …
+- `q`       record macro …
+- `@`       play macro …

@@ -108,7 +108,7 @@ Plugin management: [`:help vim.pack`](https://neovim.io/doc/user/pack.html).
 | `]f` / `[f`, `]c` / `[c` | Next / previous function, class (`]c` is the next change in diff mode) |
 | `Ctrl-Y` / `Ctrl-E` | Accept / dismiss a completion |
 
-The cheat sheet in the top-right corner is [dotfiles/nvim/cheatsheet.md](../dotfiles/nvim/cheatsheet.md).
+The cheat sheet down the right edge is [dotfiles/nvim/cheatsheet.md](../dotfiles/nvim/cheatsheet.md).
 Replace a line once its key sticks; the float picks the change up on the next start.
 `:Hardtime report` lists the habits hardtime blocked most.
 

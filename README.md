@@ -33,7 +33,7 @@ A web app on a fresh server chains Fresh server, Deploy (which schedules the bac
 | [dotfiles/.tmux.conf](dotfiles/.tmux.conf) | tmux defaults for remote work (mouse, scrollback, escape-time); Catppuccin Mocha colours |
 | [dotfiles/nvim/init.lua](dotfiles/nvim/init.lua) | Neovim config on vim.pack: catppuccin, snacks picker and explorer, which-key, lualine; LSP, completion, format on save, treesitter and text objects; gitsigns, mini.icons; hardtime for learning; German keyboard remaps |
 | [dotfiles/ptyxis/catppuccin-mocha-grey.palette](dotfiles/ptyxis/catppuccin-mocha-grey.palette) | Ptyxis palette: Catppuccin Mocha with a darker, less blue background, as in Neovim and tmux |
-| [dotfiles/nvim/cheatsheet.md](dotfiles/nvim/cheatsheet.md) | Keys being learned, shown in a Neovim corner float |
+| [dotfiles/nvim/cheatsheet.md](dotfiles/nvim/cheatsheet.md) | Keys being learned, shown in a Neovim side float |
 | [dotfiles/nvim/nvim-pack-lock.json](dotfiles/nvim/nvim-pack-lock.json) | Neovim plugin revisions `vim.pack` installs and pins |
 | [dotfiles/nvim/parsers.txt](dotfiles/nvim/parsers.txt) | Tree-sitter parsers init.lua and setup-dev-machine.sh install |
 | [templates/ssh_config](templates/ssh_config) | `~/.ssh/config` defaults: agent, keep-alive, hashed known_hosts |

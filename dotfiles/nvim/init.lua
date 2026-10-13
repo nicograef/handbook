@@ -240,8 +240,8 @@ Snacks.toggle.new({
   set = function(on) require('hardtime')[on and 'enable' or 'disable']() end,
 }):map('<leader>uH')
 
--- The keys being learned (cheatsheet.md) stay in a float in the top-right corner.
--- It takes no focus and hides below 100 columns.
+-- The keys being learned (cheatsheet.md) stay in a float down the right edge, cut at the
+-- status line. It takes no focus and hides below 100 columns. A key ending in … opens which-key.
 local sheet = { path = vim.fn.stdpath('config') .. '/cheatsheet.md', on = true }
 local function sheet_update()
   local valid = sheet.win and vim.api.nvim_win_is_valid(sheet.win)
@@ -258,7 +258,7 @@ local function sheet_update()
   local width = math.max(unpack(vim.tbl_map(vim.fn.strdisplaywidth, lines)))
   local config = {
     relative = 'editor', anchor = 'NE', row = 0, col = vim.o.columns, zindex = 10,
-    width = width, height = #lines, style = 'minimal', focusable = false,
+    width = width, height = math.max(1, math.min(#lines, vim.o.lines - vim.o.cmdheight - 3)), style = 'minimal', focusable = false,
     border = 'rounded', title = ' Learning ',
   }
   -- A float lives in one tab page; follow the user into a new one.
