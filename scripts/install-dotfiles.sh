@@ -76,8 +76,8 @@ LINKS=(
   "claude/global.md .claude/CLAUDE.md"
   "claude/settings.json .claude/settings.json"
   "claude/statusline.sh .claude/statusline.sh"
-  "scripts/agent-bus.sh .claude/agent-bus.sh"
-  "scripts/check-agents.sh .claude/check-agents.sh"
+  "plugin/scripts/agent-bus.sh .claude/agent-bus.sh"
+  "plugin/scripts/check-agents.sh .claude/check-agents.sh"
   "plugin/skills .agents/skills"
 )
 

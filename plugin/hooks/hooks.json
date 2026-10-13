@@ -28,7 +28,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "b=\"$HOME/.claude/agent-bus.sh\"; [ -x \"$b\" ] || { echo \"agent-bus: $b is missing; peers are not listed\" >&2; exit 1; }; exec \"$b\" hook session-start"
+            "command": "b=\"${CLAUDE_PLUGIN_ROOT}/scripts/agent-bus.sh\"; [ -x \"$b\" ] || { echo \"agent-bus: $b is missing or not executable; peers are not listed\" >&2; exit 1; }; exec \"$b\" hook session-start"
           }
         ]
       }

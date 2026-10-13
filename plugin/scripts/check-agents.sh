@@ -2,8 +2,8 @@
 # check-agents.sh – last activity of background Claude Code agents, read off their transcripts
 #
 # Usage:
-#   scripts/check-agents.sh <tasks-dir> <id>=<label> [<id>=<label> ...]
-#   N=8 scripts/check-agents.sh /tmp/claude-1000/<slug>/<session>/tasks a8a5=w2-two-step
+#   plugin/scripts/check-agents.sh <tasks-dir> <id>=<label> [<id>=<label> ...]
+#   N=8 plugin/scripts/check-agents.sh /tmp/claude-1000/<slug>/<session>/tasks a8a5=w2-two-step
 #
 # What it does:
 #   1. Reads <tasks-dir>/<id>.output, the JSONL transcript of each agent.

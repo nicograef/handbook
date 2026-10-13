@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# test-agent-bus.sh – fixture test for scripts/agent-bus.sh
+# test-agent-bus.sh – fixture test for plugin/scripts/agent-bus.sh
 #
 # Usage:
 #   scripts/test-agent-bus.sh        # or: make test-agent-bus
@@ -22,7 +22,7 @@ unset CLAUDE_CODE_SESSION_ID AGENT_BUS_SESSION_ID
 # shellcheck source=scripts/lib/test-harness.sh
 . "$(dirname "${BASH_SOURCE[0]}")/lib/test-harness.sh"
 
-BUS_SCRIPT="$REPO_ROOT/scripts/agent-bus.sh"
+BUS_SCRIPT="$REPO_ROOT/plugin/scripts/agent-bus.sh"
 FAKE_PID=""
 cleanup() {
   [[ -z "$FAKE_PID" ]] || kill "$FAKE_PID" 2>/dev/null || true

@@ -26,7 +26,7 @@ A web app on a fresh server chains Fresh server, Deploy, Monitoring, then Backup
 | [guides/dev-machine.md](guides/dev-machine.md) | Set up a dev machine with `setup-dev-machine.sh`: clone, run, prompts, update, verify |
 | [scripts/setup-dev-machine.sh](scripts/setup-dev-machine.sh) | Check a dev machine against the handbook, then install, update and configure what differs; `--check` reports only |
 | [install.sh](install.sh) | Dotfiles entrypoint; runs `scripts/install-dotfiles.sh` |
-| [scripts/install-dotfiles.sh](scripts/install-dotfiles.sh) | Symlink shell and Claude config on a dev machine; `--check` lists the links |
+| [scripts/install-dotfiles.sh](scripts/install-dotfiles.sh) | Symlink shell and Claude config on a dev machine; `--check` lists the links, `--status` what a run would change |
 | [dotfiles/.bash_aliases](dotfiles/.bash_aliases) | Shell aliases (git, make, pnpm), editor, history tuning, git prompt |
 | [dotfiles/.inputrc](dotfiles/.inputrc) | Readline: prefix history search on Up/Down, case-insensitive completion |
 | [dotfiles/gitignore-global](dotfiles/gitignore-global) | Global git ignore: OS, editor and tooling junk |
@@ -108,8 +108,8 @@ A web app on a fresh server chains Fresh server, Deploy, Monitoring, then Backup
 | [plugin/themes/catppuccin.json](plugin/themes/catppuccin.json) | Claude Code theme `custom:nico:catppuccin`: `dark-ansi` with a selection that keeps every palette colour readable |
 | [plugin/scripts/git-guard.sh](plugin/scripts/git-guard.sh) | PreToolUse hook that blocks force pushes, skipped hooks and commits gitleaks flags |
 | [plugin/scripts/plan-run-guard.sh](plugin/scripts/plan-run-guard.sh) | Stop hook the implement-plan skill registers; keeps a live plan run from yielding the turn |
-| [scripts/agent-bus.sh](scripts/agent-bus.sh) | Coordination bus for concurrent Claude Code sessions in one repo |
-| [scripts/check-agents.sh](scripts/check-agents.sh) | Last activity of background agents, read off their task transcripts |
+| [plugin/scripts/agent-bus.sh](plugin/scripts/agent-bus.sh) | Coordination bus for concurrent Claude Code sessions in one repo |
+| [plugin/scripts/check-agents.sh](plugin/scripts/check-agents.sh) | Last activity of background agents, read off their task transcripts |
 
 ## Handbook upkeep
 

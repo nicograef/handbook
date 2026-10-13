@@ -51,7 +51,7 @@ Expected: `claude auto-mode config` lists your entries, as Verify checks.
 ## Add Claude Code to the dev container
 
 The template's base image has no Claude Code, no settings and no login.
-Add the Claude Code feature, a config volume, and read-only mounts of this repo's settings and plugin.
+Add the Claude Code feature, a config volume, a read-only mount of this repo, and its `~/.claude` links.
 Source: [Development containers](https://code.claude.com/docs/en/devcontainer).
 
 ```diff
@@ -62,8 +62,11 @@ Source: [Development containers](https://code.claude.com/docs/en/devcontainer).
    "postCreateCommand": "bash scripts/setup-dev-tools.sh",
 +  "mounts": [
 +    "source=claude-code-config-${devcontainerId},target=/home/vscode/.claude,type=volume",
-+    "source=<handbook>/claude/settings.json,target=/etc/handbook/settings.json,type=bind,readonly",
-+    "source=<handbook>/plugin,target=<handbook>/plugin,type=bind,readonly"
++    "source=<handbook>,target=<handbook>,type=bind,readonly",
++    "source=<handbook>/claude/global.md,target=/home/vscode/.claude/CLAUDE.md,type=bind,readonly",
++    "source=<handbook>/claude/statusline.sh,target=/home/vscode/.claude/statusline.sh,type=bind,readonly",
++    "source=<handbook>/plugin/scripts/agent-bus.sh,target=/home/vscode/.claude/agent-bus.sh,type=bind,readonly",
++    "source=<handbook>/plugin/scripts/check-agents.sh,target=/home/vscode/.claude/check-agents.sh,type=bind,readonly"
 +  ],
 +  "containerEnv": { "CLAUDE_CONFIG_DIR": "/home/vscode/.claude" },
 ```
@@ -72,8 +75,9 @@ Source: [Development containers](https://code.claude.com/docs/en/devcontainer).
 Expected: `devcontainer up --workspace-folder .` builds the container without errors.
 
 - The volume keeps the login and the bypass acceptance across rebuilds; `CLAUDE_CONFIG_DIR` puts `.claude.json` in it too.
-- The settings and the plugin stay read-only in the container; `--settings` loads the settings on every start.
-- The plugin mounts at its host path, the marketplace path the settings name.
+- The handbook mounts at its host path, the marketplace path the settings name. The skills' links into `claude/` resolve there.
+- The four file mounts are the `.claude` rows of `scripts/install-dotfiles.sh --check`, except `settings.json`.
+- `--settings` loads the settings from the read-only handbook on every start.
 - The plugin's PreToolUse hook blocks every Bash command while its git guard is missing or failing.
 
 ## Start the run in the container
@@ -84,7 +88,7 @@ Expected: `devcontainer up --workspace-folder .` builds the container without er
 cd <repo>
 devcontainer up --workspace-folder .
 devcontainer exec --workspace-folder . env CLAUDE_CODE_RETRY_WATCHDOG=1 \
-  claude --settings /etc/handbook/settings.json --permission-mode bypassPermissions
+  claude --settings <handbook>/claude/settings.json --permission-mode bypassPermissions
 ```
 
 On the first start, sign in and accept the responsibility dialog. The volume keeps both.
