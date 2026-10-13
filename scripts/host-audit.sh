@@ -365,8 +365,8 @@ residue() {
 }
 # present <path> — yes or no, for residue.
 present() { [[ -e "$1" ]] && echo yes || echo no; }
-gcc_pkg="$(dpkg-query -W -f='${Status}' gcc 2>/dev/null)"
-[[ "$gcc_pkg" == "install ok installed" ]] && v=yes || v=no
+gcc_pkg="$(dpkg-query -W -f='${db:Status-Status}' gcc 2>/dev/null)"
+[[ "$gcc_pkg" == installed ]] && v=yes || v=no
 residue "gcc" "$v" "the gcc package installed"
 for path in /usr/local/go /usr/local/bin/node; do
   residue "$path" "$(present "$path")" "$path"
@@ -381,7 +381,7 @@ else
     residue "$rel" "$(present "$home/$rel")" "$home/$rel"
   done
   # Deploy keys (<project>-deploy) are not id_*, so they stay allowed.
-  keys="$(find "$home/.ssh" -maxdepth 1 -name 'id_*' ! -name '*.pub' 2>/dev/null | sort | paste -sd ' ')"
+  keys="$(find "$home/.ssh/" -maxdepth 1 -name 'id_*' ! -name '*.pub' 2>/dev/null | sort | paste -sd ' ')"
   [[ -n "$keys" ]] && v=yes || v=no
   residue ".ssh/id_* private keys" "$v" "$keys"
 fi
