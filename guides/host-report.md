@@ -81,8 +81,8 @@ Parse the lines, not the exit status: a failing check and a refused `sudo` both 
 | `ControlPath=~/.ssh/cm-<key>-%C` | A shared control path would carry the request over your open login, or leave a report-key master for later logins |
 | `ConnectTimeout=8` | An unreachable host fails within 8 s instead of hanging the reader |
 
-[templates/ssh_config](../templates/ssh_config) multiplexes a host over `~/.ssh/cm-%C`.
-The report key's own path keeps the two apart and still reuses one connection across reads.
+The opt-in block in [templates/ssh_config](../templates/ssh_config) multiplexes a host over `~/.ssh/cm-%C`.
+With that block on, the report key's own path keeps the two masters apart and reuses its own.
 Command-line options do not reach a `ProxyJump` hop: the hop logs in with your client config and only forwards.
 
 ## Verify

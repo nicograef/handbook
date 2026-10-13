@@ -1,7 +1,7 @@
 # Provision a New Debian / Ubuntu VPS
 
 Provision and harden a fresh VPS with [`scripts/setup-server.sh`](../scripts/setup-server.sh).
-An IPv6-only server continues with [ipv6-only-vps.md](ipv6-only-vps.md).
+An IPv6-only server runs [Set DNS64 resolvers](ipv6-only-vps.md#set-dns64-resolvers) before [Link the handbook dotfiles](#link-the-handbook-dotfiles), and the rest of [ipv6-only-vps.md](ipv6-only-vps.md) after [Verify](#verify).
 Apps then ship through [deploy.md](deploy.md).
 
 ## Prerequisites
@@ -57,6 +57,7 @@ Without bat, eza, fd-find or fzf, their aliases in
 ## Link the handbook dotfiles
 
 A read-only https clone supplies the aliases, prompt and tmux config; the [install-dotfiles.sh](../scripts/install-dotfiles.sh) header lists the rest.
+github.com has no IPv6 address, so an IPv6-only server sets the [DNS64 resolvers](ipv6-only-vps.md#set-dns64-resolvers) first.
 
 1. **Clone the handbook and run install.sh:**
 

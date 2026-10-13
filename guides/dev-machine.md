@@ -39,15 +39,15 @@ Have your git name and email ready, and a browser logged in to GitHub.
    | `git user.name:` / `git user.email:` | Your git identity |
    | `Enter passphrase` | A passphrase for `~/.ssh/id_ed25519`, or empty |
    | `gh auth login` | Log in with a web browser |
-   | `Key title on GitHub` | This machine's name; Enter takes the hostname |
    | `gh auth refresh`, only for an older login | Approve the key scopes in the browser |
+   | `Key title on GitHub` | This machine's name; Enter takes the hostname |
 
 3. **New login** — log out and back in. The session then has the `docker` group, and the terminal finds the Nerd Font.
 
 ## Update
 
 Rerun the script whenever you like. It updates the tools it installs and leaves everything else alone.
-Unattended upgrades update the rest of the system. `--yes` applies every fix without asking:
+Unattended upgrades update the rest of the system. `--yes` applies every fix without asking, except the prompts above and removing an apt neovim or nodejs:
 
 ```bash
 sudo ~/r/handbook/scripts/setup-dev-machine.sh --yes

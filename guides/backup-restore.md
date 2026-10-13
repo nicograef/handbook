@@ -6,7 +6,7 @@ Set up the verified daily backup of a deployed stack, restore a dump, and prove 
 
 - The stack passes [deploy.md#verify](deploy.md#verify): a clone under `/opt/<project>`, owned by the deploy user.
 - Its `.env` sets `COMPOSE_FILE`, so plain `docker compose` targets the production stack.
-- The backup heartbeat `BACKUP_PING_URL` is set in `.env`, as [monitoring.md](monitoring.md) describes.
+- The backup runs without `BACKUP_PING_URL`; [monitoring.md](monitoring.md) adds that heartbeat later.
 - Every command runs as the deploy user in the clone:
 
 ```bash

@@ -10,14 +10,14 @@ Start here when you (or an agent) are told "follow the handbook to set up X".
 | --- | --- | --- |
 | New dev machine | [dev-machine.md](guides/dev-machine.md) | [Verify](guides/dev-machine.md#verify) passes |
 | New project | [new-project.md](guides/new-project.md) | [Verify](guides/new-project.md#verify) passes |
-| Fresh server | [provision-server.md](guides/provision-server.md), then [ipv6-only-vps.md](guides/ipv6-only-vps.md) on an IPv6-only box | [Verify](guides/provision-server.md#verify) passes |
+| Fresh server | [provision-server.md](guides/provision-server.md); an IPv6-only box runs [Set DNS64 resolvers](guides/ipv6-only-vps.md#set-dns64-resolvers) before its dotfiles clone, then the rest of [ipv6-only-vps.md](guides/ipv6-only-vps.md) | [Verify](guides/provision-server.md#verify) passes |
 | Deploy | [deploy.md](guides/deploy.md): deploy, then [Update](guides/deploy.md#update) or [Roll back](guides/deploy.md#roll-back) | [Verify](guides/deploy.md#verify) passes |
 | Backup and restore | [backup-restore.md](guides/backup-restore.md): the [Daily backup](guides/backup-restore.md#daily-backup), and [Restore](guides/backup-restore.md#restore) on data loss | The quarterly [Restore drill](guides/backup-restore.md#restore-drill) passes |
 | Postgres upgrade | [postgres-upgrade.md](guides/postgres-upgrade.md) | The app runs on the new major version |
 | Maintenance | [maintenance.md](guides/maintenance.md), monthly | Every check shows its expected result |
 | Monitoring | [monitoring.md](guides/monitoring.md) | [Verify](guides/monitoring.md#verify) passes |
 
-A web app on a fresh server chains Fresh server, Deploy, Monitoring, then Backup and restore.
+A web app on a fresh server chains Fresh server, Deploy (which schedules the backup), then Monitoring.
 
 ## Dev machine
 
@@ -87,8 +87,8 @@ A web app on a fresh server chains Fresh server, Deploy, Monitoring, then Backup
 | [scripts/host-audit.sh](scripts/host-audit.sh) | Read-only audit of the state `setup-server.sh` leaves: one ok/FAIL/note line per check |
 | [scripts/report-health.sh](scripts/report-health.sh) | Hourly dead-man health ping: built-in and drop-in checks, `--check-only` prints one line per check |
 | [scripts/netcup.sh](scripts/netcup.sh) | netcup server API from the laptop: login, servers, firewall policies, snapshots |
-| [templates/netcup-firewall-web.json](templates/netcup-firewall-web.json) | netcup firewall policy for a web server: inbound SSH, HTTP, HTTPS, HTTP/3, NTP replies |
-| [templates/netcup-firewall-ssh.json](templates/netcup-firewall-ssh.json) | netcup firewall policy for an SSH-only host: inbound SSH and NTP replies |
+| [templates/netcup-firewall-web.json](templates/netcup-firewall-web.json) | netcup firewall policy for a web server: inbound SSH, HTTP, HTTPS, HTTP/3, NTP and DNS64 replies |
+| [templates/netcup-firewall-ssh.json](templates/netcup-firewall-ssh.json) | netcup firewall policy for an SSH-only host: inbound SSH, NTP and DNS64 replies |
 | [templates/docker-compose.prod.yml](templates/docker-compose.prod.yml) | Production Compose with Caddy: automatic TLS, pinned registry images, healthchecks, resource limits |
 | [templates/Caddyfile](templates/Caddyfile) | Caddy site config: www redirect, security headers, API and SPA routes |
 
@@ -122,6 +122,7 @@ A web app on a fresh server chains Fresh server, Deploy, Monitoring, then Backup
 | [scripts/test-plan-run-guard.sh](scripts/test-plan-run-guard.sh) | Fixture test for `plan-run-guard.sh`; `make test-plan-run-guard` |
 | [scripts/test-git-guard.sh](scripts/test-git-guard.sh) | Fixture test for `git-guard.sh`; `make test-git-guard` |
 | [scripts/test-report-health.sh](scripts/test-report-health.sh) | Fixture test for `report-health.sh`; `make test-report-health` |
+| [scripts/test-report-repo-status.sh](scripts/test-report-repo-status.sh) | Fixture test for `report-repo-status.sh`; `make test-report-repo-status` |
 | [scripts/test-setup-dev-machine.sh](scripts/test-setup-dev-machine.sh) | Fixture test for `setup-dev-machine.sh`; `make test-setup-dev-machine` |
 | [scripts/test-dockerfiles.sh](scripts/test-dockerfiles.sh) | Builds the Dockerfile templates against stub apps until healthy; `make test-dockerfiles` |
 | [scripts/lib/test-harness.sh](scripts/lib/test-harness.sh) | Shared setup and verdict the fixture tests source; `make test` runs them |

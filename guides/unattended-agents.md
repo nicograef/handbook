@@ -80,14 +80,38 @@ Expected: `devcontainer up --workspace-folder .` builds the container without er
 - `--settings` loads the settings from the read-only handbook on every start.
 - The plugin's PreToolUse hook blocks every Bash command while its git guard is missing or failing.
 
-## Start the run in the container
+## Snapshot what the host runs
 
-`bypassPermissions` skips the classifier, so run it only where a mistake cannot reach the host.
+The repo is a read-write bind mount, `.git/` and `.devcontainer/` included.
+The host runs some files there: `core.fsmonitor` or a hook on its next `git status`, `initializeCommand` on `devcontainer up`.
+`repo-status` runs `git status` in every repo under `~/r`.
+
+Define the snapshot in the host shell and record it outside the repo; it reads the files without running `git`:
 
 ```bash
-cd <repo>
-devcontainer up --workspace-folder .
-devcontainer exec --workspace-folder . env CLAUDE_CODE_RETRY_WATCHDOG=1 \
+hostrun() {
+  { find .git -type f \( -name config -o -name config.worktree -o -path '*/hooks/*' \) -exec sha256sum {} +
+    find .devcontainer "$@" -type f -exec sha256sum {} +
+    find . -path ./.git -prune -o -name .git -print; } | sort
+}
+(cd <repo> && hostrun) > ~/.cache/hostrun-<name>.txt
+```
+
+`<repo>` is the repo's path, `<name>` its directory name.
+The subshell keeps the host shell outside the repo: the handbook prompt runs `git diff` in any directory inside it.
+Expected: one hash line per config and hook of the repo, its submodules and worktrees, and per `.devcontainer` file.
+
+- `find .git` covers `.git/modules` and `.git/worktrees`, which host `git status` reads too.
+- Pass each in-repo `core.hooksPath` or `include.path` target as an argument, such as `hostrun .husky`, on both calls.
+- `grep -riA1 -e hookspath -e '\[include' .git --include='config*'` lists them.
+
+## Start the run in the container
+
+`bypassPermissions` skips the classifier, so its commands must run in the container.
+
+```bash
+devcontainer up --workspace-folder <repo>
+devcontainer exec --workspace-folder <repo> env CLAUDE_CODE_RETRY_WATCHDOG=1 \
   claude --settings <handbook>/claude/settings.json --permission-mode bypassPermissions
 ```
 
@@ -102,7 +126,19 @@ Expected: Claude Code starts as `vscode` in bypass-permissions mode, with this r
 - A `429` that reports a spend limit or exhausted usage credits still fails at once.
   Source: [Environment variables](https://code.claude.com/docs/en/env-vars).
 - Set it on the command line, not in settings, so attended sessions keep failing fast.
-- Rules match the usual command form only: `Bash(git push *)` misses `git -C . push`. The container is the security boundary.
+- Rules match the usual command form only: `Bash(git push *)` misses `git -C . push`.
+- The container and the host-run check are the security boundary, not the rules.
+
+## Check what the host will run
+
+After the run, and before any host `git`, `repo-status` or `devcontainer up` in the repo, compare the snapshot:
+
+```bash
+(cd <repo> && hostrun) | diff ~/.cache/hostrun-<name>.txt - && echo unchanged
+```
+
+Expected: `unchanged`. Read each file a differing line names before the host runs `git` there.
+Keep the host shell outside the repo until then, so its prompt runs no `git` there.
 
 ## Let an open session wait out a usage limit
 
