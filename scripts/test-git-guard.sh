@@ -11,6 +11,7 @@
 #   2. Feeds synthetic PreToolUse payloads and asserts block (exit 2) vs allow.
 #   3. Asserts which repo and which diff each commit scan covers.
 #   4. Runs the plugin hook command against a missing and a crashing guard; both block.
+#   5. Runs the guard without jq and with a failing jq; both block.
 
 set -euo pipefail
 
@@ -208,5 +209,24 @@ wrap 2 "hook wrapper, force push" "$REPO_ROOT/plugin" 'git push -f'
 wrap 2 "hook wrapper, guard missing" "$FIX/root-empty" 'ls'
 grep -q 'is missing' "$ERR" || fail "guard missing: no reason on stderr: $(cat "$ERR")"
 wrap 2 "hook wrapper, guard crashes" "$FIX/root-crash" 'ls'
+
+# 12. The guard fails closed when jq is missing or fails on the payload.
+mkdir -p "$FIX/nojq" "$FIX/badjq"
+for tool in cat rm; do ln -s "$(command -v "$tool")" "$FIX/nojq/$tool"; done
+printf '#!/usr/bin/env bash\nexit 5\n' > "$FIX/badjq/jq"
+chmod +x "$FIX/badjq/jq"
+BASH_BIN="$(command -v bash)"
+PUSH="$(jq -n '{tool_input: {command: "git push -f"}, cwd: "/tmp"}')"
+nojq() { # nojq <expected stderr> <label> <PATH>
+  rc=0
+  printf '%s' "$PUSH" | PATH="$3" "$BASH_BIN" "$GUARD" 2> "$ERR" || rc=$?
+  if [[ "$rc" -eq 2 ]] && grep -q "$1" "$ERR"; then
+    log "$2 -> exit 2"
+  else
+    fail "$2: expected exit 2 with '$1', got $rc: $(cat "$ERR")"
+  fi
+}
+nojq 'jq not found' "jq missing" "$FIX/nojq"
+nojq 'jq failed' "jq fails" "$FIX/badjq:$PATH"
 
 finish

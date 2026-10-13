@@ -5,7 +5,7 @@
 #   plugin/scripts/git-guard.sh < payload.json   # a PreToolUse Bash hook; exit 2 blocks with a reason on stderr
 #
 # What it does:
-#   1. Allows at once when the payload cannot hold a git call.
+#   1. Allows at once when the payload cannot hold a git call. Blocks when jq is missing or fails.
 #   2. Unwraps sh/bash/zsh -c payloads and eval arguments, then folds each quoted string into one word.
 #      A command substitution inside double quotes or a heredoc is checked like a top-level command.
 #      A heredoc body is data unless a shell reads it or its line pipes it into one.
@@ -22,6 +22,7 @@ GITLEAKS="${GITLEAKS:-gitleaks}"
 
 payload="$(cat)"
 [[ "$payload" == *git* ]] || exit 0
+command -v jq >/dev/null 2>&1 || { echo 'git-guard: jq not found; Bash is blocked until it is installed.' >&2; exit 2; }
 
 # Prints the payload cwd, then one command segment per line. A payload that is not JSON is
 # taken as the command itself. A quoted string becomes one word: separators, blanks and %
@@ -172,7 +173,9 @@ def segs:
 | ($j.cwd // ""),
   ((if $j == null then $raw else ($j.tool_input.command // "") end) | segs)
 JQ
-mapfile -t lines < <(printf '%s' "$payload" | jq -Rrs "$JQ_PROG" 2>/dev/null) || exit 0
+parsed="$(printf '%s' "$payload" | jq -Rrs "$JQ_PROG")" ||
+  { echo 'git-guard: jq failed on the payload; Bash is blocked.' >&2; exit 2; }
+mapfile -t lines <<< "$parsed"
 
 cwd="${lines[0]:-}"
 [[ -n "$cwd" ]] || cwd="$PWD"
