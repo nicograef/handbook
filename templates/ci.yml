@@ -66,6 +66,7 @@ jobs:
           filters: |
             backend:
               - 'backend/**'
+              - 'scripts/setup-dev-tools.sh'  # pins the lint and tool versions
             frontend:
               - 'frontend/**'
             database:
@@ -157,10 +158,19 @@ jobs:
         with:
           go-version-file: backend/go.mod
 
+      # scripts/setup-dev-tools.sh holds the pin, so CI and a dev machine run one golangci-lint.
+      - name: Read the golangci-lint version
+        id: lint-version
+        working-directory: .
+        run: |
+          VERSION="$(sed -n 's/^GOLANGCI_LINT_VERSION="\(.*\)"$/\1/p' scripts/setup-dev-tools.sh)"
+          [ -n "$VERSION" ] || { echo "No GOLANGCI_LINT_VERSION in scripts/setup-dev-tools.sh."; exit 1; }
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+
       - name: golangci-lint
         uses: golangci/golangci-lint-action@ba0d7d2ec06a0ea1cb5fa41b2e4a3ab91d21278a # v9.3.0
         with:
-          version: v2.13.2  # keep in sync with scripts/setup-dev-tools.sh
+          version: ${{ steps.lint-version.outputs.version }}
           working-directory: ./backend
   # <<< stack: go
 
@@ -357,13 +367,13 @@ jobs:
           --health-interval 10s
           --health-timeout 5s
           --health-retries 5
-    # Read by the tests of either stack.
+    # Read by the tests of either stack. The names match the backend's environment in
+    # docker-compose.prod.yml, so code that passes here reads the same variables in prod.
     env:
-      POSTGRES_HOST: localhost
-      POSTGRES_PORT: "5432"
+      DB_HOST: localhost
       POSTGRES_USER: admin
       POSTGRES_PASSWORD: admin
-      POSTGRES_DBNAME: <database-name>  # match POSTGRES_DB above
+      POSTGRES_DB: <database-name>  # match the service's POSTGRES_DB above
       # JWT_SECRET: test-secret  # uncomment and add secrets your app needs
     defaults:
       run:
