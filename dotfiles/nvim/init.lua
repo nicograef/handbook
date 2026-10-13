@@ -23,6 +23,8 @@ vim.o.jumpoptions = 'view'       -- Ctrl-o restores the scroll position too
 vim.o.virtualedit = 'block'      -- Ctrl-v selects past the end of short lines
 vim.o.smoothscroll = true
 vim.o.spelllang = 'en,de'
+-- A missing spell file downloads without the y/N prompt; a dismissed prompt left :q stuck.
+require('nvim.spellfile').config({ confirm = false })
 vim.o.foldlevel = 99             -- folds start open
 vim.o.foldtext = ''              -- a fold shows its first line, highlighted
 vim.o.foldmethod = 'expr'
