@@ -9,12 +9,14 @@
 #
 # Rerun on a set-up host, as USERNAME in its handbook clone; root has no login by then.
 # The keys in authorized_keys and the user's password stay, so neither value is needed.
-# Repeat every other Configuration value the first run set, such as EXTRA_UFW_PORTS=.
+# Repeat every other Configuration value the first run set, such as EXTRA_UFW_PORTS= or HOST_ROLE=dev.
+# Every run writes HOST_ROLE to /etc/handbook-role; a dev or agent server declares itself with HOST_ROLE=dev.
 # The rerun upgrades every package and restarts ssh, fail2ban and an upgraded Docker: run it in a maintenance window.
 #   git -C ~/r/handbook pull --ff-only && cd ~/r/handbook
 #   sudo HANDBOOK_REF="$(git rev-parse HEAD)" scripts/setup-server.sh
 #
 # What it does:
+#   0. Write HOST_ROLE to /etc/handbook-role, which setup-dev-machine.sh refuses unless it says dev
 #   1. System update & base packages
 #   1b. Swapfile (auto-sized from RAM, capped at 8G); appends it to /etc/fstab
 #   1c. Locales: the system's LANG and those the operator's SSH client forwards
@@ -39,11 +41,16 @@ SWAP_SIZE_GB="${SWAP_SIZE_GB:-auto}"             # swapfile size in GB; "auto" =
 SYSTEM_LOCALE="${SYSTEM_LOCALE:-en_US.UTF-8}"     # the system's LANG, for cron, services and sessions that send none
 EXTRA_LOCALES="${EXTRA_LOCALES:-en_GB.UTF-8}"     # space-separated; the other LANG/LC_* your SSH client sends
 HANDBOOK_REF="${HANDBOOK_REF:-}"                 # required: the 40-hex handbook commit this script came from
+HOST_ROLE="${HOST_ROLE:-prod}"                   # "prod" or "dev"; only a dev server takes setup-dev-machine.sh
 DRY_RUN="${DRY_RUN:-false}"                      # set to "true" or pass --dry-run
 # ─────────────────────────────────────────────────────────────────────────────
 
 # sha256 of scripts/report-health.sh in the same commit; check-repo's contracts stage keeps it in sync.
 REPORT_HEALTH_SHA256="c30cabb5055830d10cf87d08a50655778c9ad28d12da7ce58e341a51f843b51d"
+
+usage() {
+  printf 'usage: [HOST_ROLE=prod|dev] %s [--dry-run]; the header lists every Configuration value\n' "$0" >&2
+}
 
 log() { printf '\n\033[1;34m▸ %s\033[0m\n' "$1"; }
 die() { printf 'ERROR: %s\n' "$1" >&2; exit 1; }
@@ -82,9 +89,14 @@ append_line() {
 for arg in "$@"; do
   case "$arg" in
     --dry-run) DRY_RUN="true" ;;
-    *) echo "Unknown flag: $arg" >&2; exit 1 ;;
+    *) echo "Unknown flag: $arg" >&2; usage; exit 2 ;;
   esac
 done
+
+case "$HOST_ROLE" in
+  prod|dev) ;;
+  *) printf 'ERROR: HOST_ROLE is %s, not prod or dev\n' "${HOST_ROLE:-empty}" >&2; usage; exit 2 ;;
+esac
 
 if [[ "$DRY_RUN" == "true" ]]; then
   printf '\n\033[1;33m⚠ DRY-RUN MODE — no changes will be made\033[0m\n'
@@ -134,6 +146,12 @@ if [[ "$PASSWORDLESS_SUDO" != "true" ]]; then
     die "$SUDOERS_FILE holds rules this script did not write. Review it, then rerun."
   fi
 fi
+
+# ── 0. Host role ────────────────────────────────────────────────────────────
+# Written first, so an interrupted first run never leaves the sshd drop-in without it.
+log "Recording host role '$HOST_ROLE'"
+write_file /etc/handbook-role <<< "$HOST_ROLE"
+run chmod 644 /etc/handbook-role
 
 # ── 1. System update & base packages ────────────────────────────────────────
 log "Updating system"
@@ -412,6 +430,7 @@ run chmod 644 /etc/cron.d/report-health
 # ── Done ─────────────────────────────────────────────────────────────────────
 log "Setup complete"
 echo ""
+echo "  Role:     $HOST_ROLE (in /etc/handbook-role)"
 echo "  User:     $USERNAME"
 if [[ "$PASSWORDLESS_SUDO" == "true" ]]; then
   echo "  Sudo:     passwordless (NOPASSWD)"
