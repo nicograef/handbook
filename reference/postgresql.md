@@ -63,20 +63,18 @@ migrate() {
   docker run --rm \
     --network <project>_db-network \
     -v "$PWD/database/migrations:/migrations" \
-    migrate/migrate:v4.20.1 \
+    migrate/migrate:<MIGRATE_VERSION> \
     -path /migrations -database "$DB_URL" "$@"
 }
 
 migrate up                 # apply all pending
 ```
 
-**Published-port form.** If `postgres` publishes `5432` to the host, install `migrate` and use `@localhost:5432` in `DB_URL` instead of the `docker run` wrapper.
+`<MIGRATE_VERSION>` is the `MIGRATE_VERSION` pin in [templates/ci.yml](../templates/ci.yml), so CI and the server run one release.
 
-```bash
-curl -fsSLo migrate.tar.gz "https://github.com/golang-migrate/migrate/releases/download/v4.20.1/migrate.linux-amd64.tar.gz"
-echo "b1e13121d4178b7804a9fb29dca62d57b732390f7e5ae33f2cd65e9b192e1bd4  migrate.tar.gz" | sha256sum -c -   # the release's sha256sum.txt entry
-sudo tar -xzf migrate.tar.gz -C /usr/local/bin migrate
-```
+**Published-port form.** If `postgres` publishes `5432` to the host, use `@localhost:5432` in `DB_URL` instead of the wrapper.
+Install `migrate` with the `Install golang-migrate` step of [templates/ci.yml](../templates/ci.yml).
+Export its `MIGRATE_VERSION` and `MIGRATE_SHA256` env values first; the step checks the download against the digest.
 
 ### Recover a dirty database
 
