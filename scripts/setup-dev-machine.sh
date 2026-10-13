@@ -534,16 +534,20 @@ check_claude() { if ! user_has claude; then flag MISSING claude; fi; }
 fix_claude() { as_user bash -c 'curl -fsSL https://claude.ai/install.sh | bash'; }
 
 check_dotfiles() {
-  local origin dest wrong=()
+  local origin dest plugins wrong=()
   while read -r origin dest; do
     if [[ "$(readlink -f "$TARGET_HOME/$dest")" != "$(readlink -f "$HANDBOOK_DIR/$origin")" ]]; then
       wrong+=("$dest")
     fi
   done < <("$HANDBOOK_DIR/scripts/install-dotfiles.sh" --check)
   if ((${#wrong[@]})); then flag WRONG "unlinked in home: ${wrong[*]}"; fi
-  if user_has claude && ! as_user claude plugin list --json 2>/dev/null \
-    | jq -e 'any(.id == "nico@handbook" and .enabled)' >/dev/null; then
-    flag MISSING "plugin nico@handbook"
+  # A disabled plugin is the user's choice: reported, never re-enabled.
+  if user_has claude; then
+    plugins="$(as_user claude plugin list --json 2>/dev/null || true)"
+    if ! jq -e 'any(.id == "nico@handbook")' >/dev/null 2>&1 <<<"$plugins"; then flag MISSING "plugin nico@handbook"
+    elif ! jq -e 'any(.id == "nico@handbook" and .enabled)' >/dev/null <<<"$plugins"; then
+      note "plugin nico@handbook disabled; enable it with /plugin"
+    fi
   fi
   if [[ -f "$KEY.pub" && "$(as_user git config --global commit.gpgsign || true)" != true ]]; then
     flag MISSING "commit signing"

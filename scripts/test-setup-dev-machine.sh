@@ -174,8 +174,8 @@ case "$name" in
     esac ;;
   claude)
     case "$1 $2" in
-      "plugin list") [[ -f "$S/plugin" ]] && echo '[{"id":"nico@handbook","enabled":true}]' || echo '[]' ;;
-      "plugin install") touch "$S/plugin" ;;
+      "plugin list") [[ -f "$S/plugin" ]] && printf '[{"id":"nico@handbook","enabled":%s}]\n' "$(cat "$S/plugin")" || echo '[]' ;;
+      "plugin install") echo true > "$S/plugin" ;;
     esac ;;
   fc-list) compgen -G "$FIX/home/.local/share/fonts/nerd/*" >/dev/null && echo 'Symbols Nerd Font' ;;
   nvim)
@@ -337,6 +337,14 @@ if grep -qF 'docker group' "$OUT" && grep -qF 'Log out and back in' "$OUT"; then
 check_run fixed
 if [[ "$rc" -eq 0 && "$(rows ok)" -eq 18 ]]; then log "fixed --check -> 18 rows ok"
 else fail "fixed --check: rc $rc: $(cat "$OUT")"; fi
+
+# A disabled plugin is reported on an ok row and never re-enabled.
+echo false > "$STATE/plugin"
+run '' --yes
+if [[ "$rc" -eq 0 ]] && grep -qE '^ok +dotfiles and config +plugin nico@handbook disabled' "$OUT" \
+  && ! grep -qE "$WRITES" "$CALLS"; then log "disabled plugin -> ok with a note, left disabled"
+else fail "disabled plugin: rc $rc: $(cat "$OUT")"; fi
+echo true > "$STATE/plugin"
 
 # 5. A login without the key scopes, the authentication key already on GitHub, the font gone.
 grep -F authentication "$STATE/keys" > "$STATE/keys.auth" && mv "$STATE/keys.auth" "$STATE/keys"
