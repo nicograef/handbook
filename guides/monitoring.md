@@ -116,8 +116,8 @@ Fire every heartbeat once by hand, as the deploy user:
 
 ```bash
 cd /opt/<project>
-# backup: sends the stored URL a plain GET
-curl -fsS -m 10 "$(grep -E '^BACKUP_PING_URL=' .env | tail -n 1 | cut -d= -f2-)" >/dev/null && echo "backup ping sent"
+# backup: a full verified backup, then the ping
+scripts/backup-postgres.sh
 # health checks: one line per check, no ping
 sudo report-health --check-only && echo "health checks pass"
 # health: runs the hourly check, see the report-health.sh header
@@ -126,8 +126,10 @@ sudo grep -q '^HEALTH_PING_URL=.' /etc/default/report-health && sudo report-heal
 crontab -l | grep -- '-checkend' | cut -d' ' -f6- | sh && echo "tls ping sent"
 ```
 
-Expected: the check run prints one `ok` line per check and `health checks pass`.
+Expected: the backup run logs `Pinging BACKUP_PING_URL…`, then `Backup complete`.
+The check run prints one `ok` line per check and `health checks pass`.
 Every other command prints its `... ping sent` line.
+
 The Better Stack dashboard then shows all four monitors **Up**: Uptime, Backup, Health and TLS expiry.
 
 To prove alerting end to end, withhold the health ping for one cycle, then restore it:
