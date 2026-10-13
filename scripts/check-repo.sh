@@ -621,11 +621,13 @@ prose_scan() {
       return (n > 8) ? out " ..." : out
     }
 
-    # flushpara reports a finished run of column-0 paragraph lines.
+    # flushpara reports a finished paragraph run; run is "para", "quote", or "item" or "qlist"
+    # (a list item, outside or inside a blockquote, never counted).
     function flushpara() {
       if (para > maxpara)
         printf "%s:%d: paragraph of %d lines (cap %d)\n", file, parastart, para, maxpara
       para = 0
+      run = ""
     }
 
     # checkblock reports every over-long sentence in the accumulated block.
@@ -641,14 +643,14 @@ prose_scan() {
       block = ""
     }
 
-    BEGIN { fm = 0; fence = 0; comment = 0; para = 0; parastart = 0; block = ""; blockline = 0; prevtype = "" }
+    BEGIN { fm = 0; fence = 0; comment = 0; para = 0; run = ""; parastart = 0; block = ""; blockline = 0 }
 
     { raw = $0 }
 
     NR == 1 && raw ~ /^---[ \t]*$/ { fm = 1; next }
     fm { if (raw ~ /^---[ \t]*$/) fm = 0; next }
 
-    raw ~ /^[ \t]*(```|~~~)/ { flushpara(); checkblock(); prevtype = ""; fence = !fence; next }
+    raw ~ /^[ \t]*(```|~~~)/ { flushpara(); checkblock(); fence = !fence; next }
     fence { next }
 
     # Inline code spans go first: a backticked `<!--` read as a comment opener would mute the
@@ -668,10 +670,10 @@ prose_scan() {
       }
     }
 
-    raw ~ /^[ \t]*$/ { flushpara(); checkblock(); prevtype = ""; next }
-    raw ~ /^#{1,6} / { flushpara(); checkblock(); prevtype = ""; next }
-    raw ~ /^[ \t]*\|/ { flushpara(); checkblock(); prevtype = ""; next }
-    raw ~ /^[ \t]*(-{3,}|\*{3,}|_{3,})[ \t]*$/ { flushpara(); checkblock(); prevtype = ""; next }
+    raw ~ /^[ \t]*$/ { flushpara(); checkblock(); next }
+    raw ~ /^#{1,6} / { flushpara(); checkblock(); next }
+    raw ~ /^[ \t]*\|/ { flushpara(); checkblock(); next }
+    raw ~ /^[ \t]*(-{3,}|\*{3,}|_{3,})[ \t]*$/ { flushpara(); checkblock(); next }
 
     {
       body = raw
@@ -690,14 +692,20 @@ prose_scan() {
       text = clean(body)
 
       # Paragraph runs count rendered lines, so a line left wordless by stripping still
-      # counts. Blockquotes and indented lines continue the block they wrap.
-      if (type == "para") {
-        if (prevtype != "para") { flushpara(); checkblock(); parastart = NR }
-        para++
-      } else if (type != "cont" && !(type == "quote" && prevtype == "quote")) {
+      # counts. Indented and lazy lines continue the paragraph or list item they follow.
+      inrun = (run == "para" || run == "quote")
+      inlist = (run == "item" || run == "qlist")
+      qlist = (type == "quote" && body ~ /^([-*+]|[0-9]+[.)])[ \t]/)
+      if (qlist || type == "quote" && (body == "" || body ~ /^#{1,6} / || body ~ /^\|/)) {
         flushpara(); checkblock()
+        if (qlist) run = "qlist"
+      } else if (type == "bullet") {
+        flushpara(); checkblock(); run = "item"
+      } else if (type == "cont" || type == "para" && (inrun || inlist) || type == "quote" && (run == "quote" || run == "qlist")) {
+        if (inrun) para++
+      } else {
+        flushpara(); checkblock(); run = type; parastart = NR; para = 1
       }
-      prevtype = type
 
       if (text !~ /[A-Za-z]/) next
       if (block == "") blockline = NR
