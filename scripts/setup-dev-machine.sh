@@ -634,21 +634,30 @@ fix_font() {
 }
 
 check_nvim() {
-  local name rev actual missing=()
+  local name rev actual dir locked missing=() stray=()
   if ! user_has nvim; then flag MISSING "nvim not installed"; return; fi
   while read -r name rev; do
     actual="$(as_user git -C "$NVIM_DATA/pack/core/opt/$name" rev-parse HEAD 2>/dev/null || true)"
     if [[ -z "$actual" ]]; then flag MISSING "$name"; elif [[ "$actual" != "$rev" ]]; then flag WRONG "$name off the lockfile"; fi
   done < <(jq -r '.plugins | to_entries[] | "\(.key) \(.value.rev)"' "$NVIM_LOCK")
+  # A plugin init.lua dropped stays on disk, and nvim's next start writes it back into the lockfile.
+  locked="$(jq -r '.plugins | keys[]' "$NVIM_LOCK" | tr '\n' ' ')"
+  for dir in "$NVIM_DATA"/pack/core/opt/*/; do
+    if [[ -d "$dir" ]] && ! in_list "$(basename "$dir")" "$locked"; then stray+=("$(basename "$dir")"); fi
+  done
+  if ((${#stray[@]})); then flag WRONG "not in the lockfile: ${stray[*]}"; fi
   for name in "${PARSERS[@]}"; do
     if [[ ! -f "$NVIM_DATA/parser/$name.so" ]]; then missing+=("$name"); fi
   done
   if ((${#missing[@]})); then flag MISSING "parsers: ${missing[*]}"; fi
 }
 fix_nvim() {
-  local langs
+  local langs stray
   langs="$(printf "'%s'," "${PARSERS[@]}")"
-  as_user nvim --headless "+lua vim.pack.update(nil, { target = 'lockfile', force = true })" \
+  # init.lua's vim.pack.add marks its plugins active; the rest go before the update.
+  stray='local s = vim.iter(vim.pack.get(nil, { info = false })):filter(function(p) return not p.active end)'
+  stray+=':map(function(p) return p.spec.name end):totable(); if #s > 0 then vim.pack.del(s) end'
+  as_user nvim --headless "+lua $stray" "+lua vim.pack.update(nil, { target = 'lockfile', force = true })" \
     "+lua require('nvim-treesitter').install({ ${langs%,} }):wait(600000)" +qa
 }
 

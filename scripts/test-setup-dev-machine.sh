@@ -181,6 +181,9 @@ case "$name" in
   nvim)
     [[ "$1" == --version ]] && { echo 'NVIM v0.99.0'; exit 0; }
     touch "$S/nvim"; mkdir -p "$FIX/home/.local/share/nvim/site/parser"
+    for d in "$FIX/home/.local/share/nvim/site/pack/core/opt"/*/; do
+      [[ -d "$d" ]] && ! jq -e --arg n "$(basename "$d")" '.plugins | has($n)' "$LOCK" >/dev/null && rm -r "$d"
+    done
     while IFS= read -r p; do touch "$FIX/home/.local/share/nvim/site/parser/$p.so"; done < "$PARSERS" ;;
 esac
 exit 0
@@ -400,6 +403,15 @@ for down in listdown signingdown; do
   else fail "$down --yes: rc $rc: $(cat "$OUT")"; fi
   rm "$STATE/$down"
 done
+
+# 5f. A plugin init.lua dropped stays on disk: WRONG by name, and the fix deletes it.
+mkdir -p "$HOME_DIR/.local/share/nvim/site/pack/core/opt/stale.nvim"
+run '' --check
+if grep -qE '^WRONG +Neovim plugins +not in the lockfile: stale.nvim' "$OUT"; then log "stray plugin --check -> WRONG by name"
+else fail "stray plugin --check: $(cat "$OUT")"; fi
+run '' --yes
+if [[ "$rc" -eq 0 && ! -e "$HOME_DIR/.local/share/nvim/site/pack/core/opt/stale.nvim" ]]; then log "stray plugin --yes -> deleted"
+else fail "stray plugin --yes: rc $rc: $(cat "$OUT")"; fi
 
 # 6. A broken snap probe stops the run with its name, never silently.
 touch "$STATE/nosnap"
