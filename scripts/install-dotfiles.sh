@@ -173,11 +173,12 @@ fi
 if ! command -v claude >/dev/null 2>&1; then
   log "SKIP: claude not installed; rerun install.sh after installing Claude Code"
 else
-  plugins="$(claude plugin list --json)"
+  # claude sets terminal modes when stdin is a tty; under sudo's pty a captured call then stops on SIGTTOU.
+  plugins="$(claude plugin list --json </dev/null)"
   if ! jq -e --arg id "$PLUGIN_ID" 'any(.id == $id)' >/dev/null <<<"$plugins"; then
     if differs MISSING "plugin $PLUGIN_ID"; then
-      claude plugin marketplace add "$DOTFILES_DIR/plugin"
-      claude plugin install "$PLUGIN_ID"
+      claude plugin marketplace add "$DOTFILES_DIR/plugin" </dev/null
+      claude plugin install "$PLUGIN_ID" </dev/null
       log "Installed plugin $PLUGIN_ID"
     fi
   elif jq -e --arg id "$PLUGIN_ID" 'any(.id == $id and .enabled)' >/dev/null <<<"$plugins"; then
