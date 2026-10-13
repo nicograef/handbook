@@ -7,8 +7,7 @@
   "plugins": [
     {
       "name": "nico",
-      "source": "./",
-      "description": "Nico's shared skills, the web-researcher agent and the git and plan-run guard hooks"
+      "source": "./"
     }
   ]
 }
