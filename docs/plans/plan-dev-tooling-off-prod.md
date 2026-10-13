@@ -11,7 +11,7 @@ A production host never receives the laptop toolchain or developer credentials b
 - **No strip script.** Prevention in `setup-dev-machine.sh`, detection in `host-audit.sh`; a cleanup stays a one-off.
 - **Role file:** `/etc/handbook-role` holds `prod` or `dev`. `setup-server.sh` gets `HOST_ROLE="${HOST_ROLE:-prod}"` in its Configuration block and writes the file on every run; a rerun with `HOST_ROLE=dev` changes it. `host-audit.sh` shares the same default line, so `check-repo.sh — server_audit_contract` holds.
 - **Role readers:** `setup-dev-machine.sh` reads `$ETC_DIR/handbook-role`. A file that says `prod`, or a server marker `$ETC_DIR/ssh/sshd_config.d/00-hardening.conf` without the file, refuses every mode, `--check` included, with exit 1 before any item row. `dev`, or neither file (a laptop), runs as today. `host-audit.sh` expects the role it is given (default `prod`) and FAILs when the file says otherwise.
-- **Invalid role:** any value other than `prod` or `dev`, in the env or the file, exits 2 with usage in all three scripts.
+- **Invalid role:** an env value other than `prod` or `dev` exits 2 with usage in all three scripts; an invalid file value is a FAIL in `host-audit.sh` and a refusal in `setup-dev-machine.sh`.
 - **Dev residue** (paths under the home `getent passwd "$USERNAME"` names): credentials `.config/gh/hosts.yml` and `.claude/.credentials.json`; private keys `.ssh/id_*` without `.pub`; toolchains `gcc` (dpkg), `/usr/local/go`, `/usr/local/bin/node`, `.local/bin/nvim`, `.local/lib/node_modules`. Present under `prod` is FAIL, under `dev` a note; absent is ok under both. Deploy keys (`.ssh/<project>-deploy`) are not `id_*` and stay allowed.
 - **Remotes:** the handbook clone on a server stays https; project repos use the read-only deploy keys of `guides/deploy.md`.
 
@@ -73,10 +73,10 @@ Section `role` FAILs when `/etc/handbook-role` is missing or differs from `HOST_
 
 ### Acceptance criteria
 
-- [ ] `shellcheck scripts/host-audit.sh` is clean.
-- [ ] `ssh gyva-staging 'HOST_ROLE=prod bash -s' < scripts/host-audit.sh | sed -n '/== dev residue/,/== summary/p'` shows FAIL rows for its gh token and private key.
+- [x] `shellcheck scripts/host-audit.sh` is clean.
+- [x] `ssh gyva-staging 'HOST_ROLE=prod bash -s' < scripts/host-audit.sh | sed -n '/== dev residue/,/== summary/p'` shows FAIL rows for its gh token and private key.
 - [ ] `ssh gyva-staging 'HOST_ROLE=dev bash -s' < scripts/host-audit.sh | sed -n '/== role/,/== summary/p'` shows no FAIL once Phase 3 wrote its role file.
-- [ ] `make check` passes.
+- [x] `make check` passes.
 
 ## Phase 3: Declare the roles on jotti and gyva-staging
 
