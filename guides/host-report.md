@@ -68,7 +68,7 @@ ssh -i ~/.ssh/<key> -o IdentitiesOnly=yes -o IdentityAgent=none -o BatchMode=yes
   -o ControlPath=~/.ssh/cm-<key>-%C -o ConnectTimeout=8 <host> checks
 ```
 
-Expected: one tab-separated line per check, as [Add a health check](monitoring.md#add-a-health-check) defines it.
+Expected: one tab-separated line per check, in the format the header of [report-health.sh](../scripts/report-health.sh) defines.
 Parse the lines, not the exit status: a failing check and a refused `sudo` both exit 1.
 
 ### Why each client option
