@@ -45,9 +45,10 @@ Netcup supports only SSH-key injection at image install, so the script runs as r
 Without bat, eza, fd-find or fzf, their aliases in
 [dotfiles/.bash_aliases](../dotfiles/.bash_aliases) stay inactive. All ship in Debian 13 `main`.
 
-1. **Install them:**
+1. **Log in as `<username>` and install them:**
 
    ```bash
+   ssh <username>@<host>
    sudo apt install -y tmux bat eza fzf fd-find ripgrep git-delta
    ```
 
