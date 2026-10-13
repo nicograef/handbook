@@ -76,6 +76,9 @@ Without bat, eza, fd-find or fzf, their aliases in
 A read-only https clone supplies the aliases, prompt and tmux config; the [install-dotfiles.sh](../scripts/install-dotfiles.sh) header lists the rest.
 github.com has no IPv6 address, so an IPv6-only server sets the [DNS64 resolvers](ipv6-only-vps.md#set-dns64-resolvers) first.
 
+A server gets these dotfiles, never [setup-dev-machine.sh](../scripts/setup-dev-machine.sh), unless its `HOST_ROLE` is `dev`.
+The handbook clone stays https; project repos clone with the read-only deploy keys of [deploy.md](deploy.md#first-deploy).
+
 1. **Clone the handbook and run install.sh:**
 
    ```bash
@@ -93,7 +96,7 @@ It keeps the authorized keys and the password. It upgrades every package, so run
 ## Verify
 
 [`scripts/host-audit.sh`](../scripts/host-audit.sh) reads every setting the steps above apply, and changes nothing.
-Prefix `bash` with any Configuration value the setup ran with other than its default, such as `EXTRA_UFW_PORTS=`.
+Prefix `bash` with any Configuration value the setup ran with other than its default, such as `EXTRA_UFW_PORTS=` or `HOST_ROLE=dev`.
 Keep the output: each [maintenance pass](maintenance.md#verify) compares against it.
 
 ```bash
