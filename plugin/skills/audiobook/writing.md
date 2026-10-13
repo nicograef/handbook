@@ -43,4 +43,4 @@ One dimension per round. A round that edits outside its dimension is a defect.
 
 Round A reads the code as well as `sources.md`; sources cover theory, not this repo. Round B fixes every `check-terms.sh` hit by moving the explanation earlier or moving the chapter, then re-runs the check after renumbering. Round C never cuts for length; repetition that serves the listener stays.
 
-Step 12 verifies only the changed sentences that carry a claim. Drift guards: a term explained twice means B added instead of moving; delete the later gloss. Chapters shrinking each round means reviewers compressing by habit; revert.
+The Round C re-check verifies only the changed sentences that carry a claim. Drift guards: a term explained twice means B added instead of moving; delete the later gloss. Chapters shrinking each round means reviewers compressing by habit; revert.

@@ -60,7 +60,7 @@ pandoc audiobook/[0-9][0-9]-*.md --from gfm --to plain \
   --lua-filter <skill-dir>/strip-visuals.lua | less
 
 # 2. The split worked: one xhtml file per chapter.
-unzip -l book.epub | grep -c 'text/ch'
+unzip -l audiobook/book.epub | grep -c 'text/ch'
 ls audiobook/[0-9][0-9]-*.md | wc -l          # must match
 ```
 
