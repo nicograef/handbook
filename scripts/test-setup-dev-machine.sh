@@ -15,7 +15,8 @@
 #   4. Reruns --yes on a gh login that lacks the key scopes and a deleted font, then with both keys present,
 #      with an inactive account holding the scopes or an invalid token, and with a key list that fails whole
 #      or for one type.
-#   5. Asserts a broken snap probe names itself and another distro is refused.
+#   5. Asserts a broken snap probe names itself and another distro is refused. A server whose
+#      /etc/handbook-role says prod, or that lacks the file, is refused; dev runs; an unknown role exits 2.
 #   6. Repeats the fresh and fixed runs on a headless Debian: no snap, the Node, Go and Neovim tarballs,
 #      no font or xclip. A rerun changes nothing; a Node upgrade drops the old files; a wrong signature or
 #      digest leaves the old trees; a NodeSource host moves to the tarball; a host with docker-ce keeps it
@@ -499,6 +500,38 @@ if [[ "$rc" -ne 0 && "$rc" -ne 1 ]] && grep -qE '^ERROR: .*snap refresh --list.*
   log "broken snap probe -> named, exit $rc"
 else fail "broken snap probe: rc $rc: $(cat "$OUT")"; fi
 rm "$STATE/nosnap"
+
+# 6a. The host role: prod or a server marker without the role file refuses every mode before any probe;
+#     dev, or neither file, checks the machine as before; any other role exits 2 with usage.
+ROLE_FILE="$FIX/etc/handbook-role"
+MARKER="$FIX/etc/ssh/sshd_config.d/00-hardening.conf"
+mkdir -p "${MARKER%/*}"
+touch "$MARKER"
+for refused in prod missing; do
+  if [[ "$refused" == prod ]]; then echo prod > "$ROLE_FILE"; else rm -f "$ROLE_FILE"; fi
+  ok=true
+  for mode in --check --yes; do
+    run '' "$mode"
+    if [[ "$rc" -ne 1 ]] || ! grep -qE '^ERROR: .*handbook-role.*HOST_ROLE=dev' "$OUT" || grep -q . "$CALLS"; then
+      ok=false; fail "role $refused $mode: rc $rc: $(cat "$OUT")"
+    fi
+  done
+  if [[ "$ok" == true ]]; then log "role $refused refuses --check and --yes before any probe"; fi
+done
+echo dev > "$ROLE_FILE"
+run '' --check
+if [[ "$rc" -eq 0 && "$(rows ok)" -eq 18 ]]; then log "role dev runs --check -> 18 rows ok"
+else fail "role dev --check: rc $rc: $(cat "$OUT")"; fi
+rm "$ROLE_FILE" "$MARKER"
+run '' --check
+if [[ "$rc" -eq 0 && "$(rows ok)" -eq 18 ]]; then log "role absent runs --check -> 18 rows ok"
+else fail "role absent --check: rc $rc: $(cat "$OUT")"; fi
+echo staging > "$ROLE_FILE"
+run '' --check
+if [[ "$rc" -eq 2 ]] && grep -qF 'not prod or dev' "$OUT" && grep -q '^usage:' "$OUT" && ! grep -q . "$CALLS"; then
+  log "role invalid exits 2 with usage"
+else fail "role staging --check: rc $rc: $(cat "$OUT")"; fi
+rm "$ROLE_FILE"
 
 # 7. Another distro is refused before any probe.
 printf 'ID=fedora\n' > "$FIX/etc/os-release"

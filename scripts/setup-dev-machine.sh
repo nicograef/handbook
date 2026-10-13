@@ -8,10 +8,12 @@
 #
 # What it does:
 #   1. Reads the distro from /etc/os-release and refuses any but Ubuntu and Debian
-#   2. Prints one line per item: ok, MISSING, OUTDATED or WRONG, with the reason
-#   3. Walks the items that differ in the order of ITEMS and fixes each after a [Y/n/q] prompt
-#   4. Runs apt, snap, usermod and the /usr/local install as root; everything in $HOME runs as the user who ran sudo
-#   5. Updates only the tools listed here; unattended-upgrades handles the rest of the system
+#   2. Refuses a production server in every mode: /etc/handbook-role says prod, or setup-server.sh's
+#      sshd drop-in marks a server without that file. A laptop has neither; a dev server's file says dev.
+#   3. Prints one line per item: ok, MISSING, OUTDATED or WRONG, with the reason
+#   4. Walks the items that differ in the order of ITEMS and fixes each after a [Y/n/q] prompt
+#   5. Runs apt, snap, usermod and the /usr/local install as root; everything in $HOME runs as the user who ran sudo
+#   6. Updates only the tools listed here; unattended-upgrades handles the rest of the system
 #
 # Node, Go and Neovim: snaps on Ubuntu. Debian has no snap, so Node comes from the nodejs.org tarball in
 # /usr/local, Go from go.dev's tarball in /usr/local/go, and Neovim from the release tarball in ~/.local.
@@ -69,6 +71,21 @@ case "$DISTRO" in
   ubuntu|debian) ;;
   *) die "this script supports Ubuntu and Debian; $ETC_DIR/os-release names '${DISTRO:-nothing}'" ;;
 esac
+
+# setup-server.sh writes both files; a dev or agent server declares itself with its HOST_ROLE=dev rerun.
+ROLE_FILE="$ETC_DIR/handbook-role"
+SERVER_MARKER="$ETC_DIR/ssh/sshd_config.d/00-hardening.conf"
+DEV_RERUN="on a dev server, rerun setup-server.sh with HOST_ROLE=dev"
+if [[ -f "$ROLE_FILE" ]]; then
+  ROLE="$(tr -d '[:space:]' < "$ROLE_FILE")"
+  case "$ROLE" in
+    dev) ;;
+    prod) die "$ROLE_FILE says prod: a production server gets no dev toolchain; $DEV_RERUN" ;;
+    *) printf 'ERROR: %s says %s, not prod or dev\n' "$ROLE_FILE" "${ROLE:-nothing}" >&2; usage; exit 2 ;;
+  esac
+elif [[ -f "$SERVER_MARKER" ]]; then
+  die "$SERVER_MARKER marks a server, but $ROLE_FILE is missing; $DEV_RERUN"
+fi
 
 HANDBOOK_DIR="$(cd "$(dirname "$0")/.." && pwd)"
 HANDBOOK_SSH_URL="git@github.com:nicograef/handbook.git"
