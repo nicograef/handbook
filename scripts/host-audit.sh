@@ -5,12 +5,15 @@
 #   curl -fsSL https://raw.githubusercontent.com/nicograef/handbook/main/scripts/host-audit.sh -o host-audit.sh
 #   sudo bash host-audit.sh | tee "audit-$(hostname)-$(date +%F).txt"
 #   sudo USERNAME=deploy EXTRA_UFW_PORTS= bash host-audit.sh   # an SSH-only host
+#   sudo HOST_ROLE=dev bash host-audit.sh                       # a dev or agent server
 #
 # What it does:
 #   1. Prints one verdict per check: ok, FAIL or note, with what was expected and what was read.
 #   2. Prints the raw reading beneath where a human judges it: authorized keys, login users, listeners.
 #   3. Exits 1 if any check FAILs. Changes nothing. Prints key fingerprints and forced
 #      commands, never a key blob or a secret value.
+#   4. Expects /etc/handbook-role to say HOST_ROLE. On a prod host, credentials, private keys
+#      and toolchains in USERNAME's home or /usr/local FAIL; on a dev host they are notes.
 #   Without root, the checks that need it print "needs root" notes instead of verdicts.
 
 # No -e: a failing reading is a verdict, not a reason to stop the audit.
@@ -22,7 +25,17 @@ EXTRA_UFW_PORTS="${EXTRA_UFW_PORTS-80/tcp 443/tcp}"  # space-separated; empty ex
 SWAP_SIZE_GB="${SWAP_SIZE_GB:-auto}"                # "0" expects no swap
 SYSTEM_LOCALE="${SYSTEM_LOCALE:-en_US.UTF-8}"       # the system's LANG
 EXTRA_LOCALES="${EXTRA_LOCALES:-en_GB.UTF-8}"       # space-separated; each expected generated
+HOST_ROLE="${HOST_ROLE:-prod}"                      # "prod" or "dev"; expected in /etc/handbook-role
 # ─────────────────────────────────────────────────────────────────────────────
+
+usage() {
+  printf 'usage: [HOST_ROLE=prod|dev] bash %s; the header lists every Configuration value\n' "$0" >&2
+}
+
+case "$HOST_ROLE" in
+  prod|dev) ;;
+  *) printf 'ERROR: HOST_ROLE is %s, not prod or dev\n' "${HOST_ROLE:-empty}" >&2; usage; exit 2 ;;
+esac
 
 fails=0
 
@@ -62,7 +75,7 @@ elide_keys() {
 section "host"
 echo "$(hostname) $(date -u +%FT%TZ) $(awk -F= '$1 == "PRETTY_NAME" { gsub(/"/, "", $2); print $2 }' /etc/os-release)"
 is_root && echo "running as root" || echo "running as $(id -un), not root: root-only checks print notes"
-echo "expected: USERNAME=$USERNAME EXTRA_UFW_PORTS='$EXTRA_UFW_PORTS' SWAP_SIZE_GB=$SWAP_SIZE_GB SYSTEM_LOCALE=$SYSTEM_LOCALE EXTRA_LOCALES='$EXTRA_LOCALES'"
+echo "expected: USERNAME=$USERNAME EXTRA_UFW_PORTS='$EXTRA_UFW_PORTS' SWAP_SIZE_GB=$SWAP_SIZE_GB SYSTEM_LOCALE=$SYSTEM_LOCALE EXTRA_LOCALES='$EXTRA_LOCALES' HOST_ROLE=$HOST_ROLE"
 
 section "sshd effective config"
 if needs_root "sshd -T"; then
@@ -328,6 +341,50 @@ fi
 section "lingering"
 [[ -f "/var/lib/systemd/linger/$USERNAME" ]] && v=ok || v=FAIL
 verdict "$v" "linger for $USERNAME" "expected Linger=yes, read $([[ $v == ok ]] && echo yes || echo no)"
+
+section "role"
+role_file=/etc/handbook-role
+if [[ ! -f "$role_file" ]]; then
+  verdict FAIL "host role" "expected $HOST_ROLE in $role_file, read no file: rerun setup-server.sh with HOST_ROLE=$HOST_ROLE"
+else
+  role="$(tr -d '[:space:]' <"$role_file")"
+  [[ "$role" == "$HOST_ROLE" ]] && v=ok || v=FAIL
+  verdict "$v" "host role" "expected $HOST_ROLE in $role_file, read ${role:-nothing}"
+fi
+
+section "dev residue"
+# residue <check> <present?> <reading>: a prod host FAILs on it, a dev host notes it.
+residue() {
+  if [[ "$2" == no ]]; then
+    verdict ok "$1" "expected absent, read absent"
+  elif [[ "$HOST_ROLE" == prod ]]; then
+    verdict FAIL "$1" "expected absent on a prod host, read $3"
+  else
+    verdict note "$1" "present on a dev host: $3"
+  fi
+}
+# present <path> — yes or no, for residue.
+present() { [[ -e "$1" ]] && echo yes || echo no; }
+gcc_pkg="$(dpkg-query -W -f='${Status}' gcc 2>/dev/null)"
+[[ "$gcc_pkg" == "install ok installed" ]] && v=yes || v=no
+residue "gcc" "$v" "the gcc package installed"
+for path in /usr/local/go /usr/local/bin/node; do
+  residue "$path" "$(present "$path")" "$path"
+done
+home="$(getent passwd "$USERNAME" | cut -d: -f6)"
+if [[ -z "$home" ]]; then
+  verdict FAIL "home of $USERNAME" "expected a passwd entry, read none"
+elif ! is_root && [[ "$(id -un)" != "$USERNAME" ]]; then
+  verdict note "home of $USERNAME" "needs root or $USERNAME: the home is 0750 and its secrets 0600"
+else
+  for rel in .config/gh/hosts.yml .claude/.credentials.json .local/bin/nvim .local/lib/node_modules; do
+    residue "$rel" "$(present "$home/$rel")" "$home/$rel"
+  done
+  # Deploy keys (<project>-deploy) are not id_*, so they stay allowed.
+  keys="$(find "$home/.ssh" -maxdepth 1 -name 'id_*' ! -name '*.pub' 2>/dev/null | sort | paste -sd ' ')"
+  [[ -n "$keys" ]] && v=yes || v=no
+  residue ".ssh/id_* private keys" "$v" "$keys"
+fi
 
 section "summary"
 if (( fails > 0 )); then
