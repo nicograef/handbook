@@ -296,6 +296,11 @@ server_audit_contract() {
   done < <(sed -nE 's/^([A-Z_]+="\$\{[A-Z_]+:?-[^}]*\}").*/\1/p' scripts/host-audit.sh)
   (( got )) || log "host-audit.sh: no VAR=\"\${VAR:-default}\" Configuration line read"
 
+  # Both read the recorded configuration with the same copied parser.
+  want="$(sed -n '/^declare -A HOST_CONFIG_PATTERN=/,/^}/p' "$s")"
+  got="$(sed -n '/^declare -A HOST_CONFIG_PATTERN=/,/^}/p' scripts/host-audit.sh)"
+  [[ -n "$want" && "$want" == "$got" ]] || log "host-audit.sh's HOST_CONFIG_PATTERN and read_host_config differ from setup-server.sh's"
+
   # sshd: the audited key:value pairs are the drop-in's lines.
   want="$(audit_fact '^\s*for pair in ([^;]*); do' | words)"
   got="$(heredoc_body '^write_file "\$SSHD_DROPIN" <<' | awk 'NF { print tolower($1) ":" $2 }' | words)"

@@ -1,11 +1,10 @@
 #!/usr/bin/env bash
 # host-audit.sh – read-only audit of the state setup-server.sh leaves on a host
 #
-# Usage (on the server; pass the Configuration values setup-server.sh ran with):
+# Usage (on the server; it expects the Configuration setup-server.sh recorded in /etc/handbook-host.env):
 #   curl -fsSL https://raw.githubusercontent.com/nicograef/handbook/main/scripts/host-audit.sh -o host-audit.sh
 #   sudo bash host-audit.sh | tee "audit-$(hostname)-$(date +%F).txt"
-#   sudo USERNAME=deploy EXTRA_UFW_PORTS= bash host-audit.sh   # an SSH-only host
-#   sudo HOST_ROLE=dev bash host-audit.sh                       # a dev or agent server
+#   sudo EXTRA_UFW_PORTS= bash host-audit.sh   # a passed value overrides the recorded one
 #
 # What it does:
 #   1. Prints one verdict per check: ok, FAIL or note, with what was expected and what was read.
@@ -19,13 +18,60 @@
 # No -e: a failing reading is a verdict, not a reason to stop the audit.
 set -u
 
+# ── Recorded configuration ──────────────────────────────────────────────────
+# setup-server.sh holds an identical copy from HOST_CONFIG_PATTERN to the function's end; check-repo compares them.
+# Each Configuration key setup-server.sh records, and the pattern its value must match.
+declare -A HOST_CONFIG_PATTERN=(
+  [USERNAME]='^[a-z_][a-z0-9_-]*$'
+  [EXTRA_UFW_PORTS]='^[A-Za-z0-9/: ]*$'
+  [HOST_ROLE]='^(prod|dev)$'
+  [SWAP_SIZE_GB]='^(auto|[0-9]+)$'
+  [SYSTEM_LOCALE]='^[A-Za-z0-9_.@-]+$'
+  [EXTRA_LOCALES]='^[A-Za-z0-9_.@ -]*$'
+  [PASSWORDLESS_SUDO]='^(true|false)$'
+  [INSTALL_DOCKER]='^(true|false)$'
+)
+# read_host_config <file> — give each value <file> records to its variable unless the environment set it.
+# Parsed, never sourced: every line is KEY=<printf %q value> with a known KEY and a value its pattern takes.
+read_host_config() {
+  local file="$1" line key value
+  local -a order=()
+  local -A found=()
+  HOST_CONFIG_USED="" HOST_CONFIG_ERROR=""
+  [[ -e "$file" ]] || return 0
+  if [[ ! -r "$file" ]]; then HOST_CONFIG_ERROR="cannot read $file"; return 1; fi
+  while IFS= read -r line || [[ -n "$line" ]]; do
+    [[ -z "$line" || "$line" == \#* ]] && continue
+    key="" value=""
+    if [[ "$line" =~ ^([A-Z_]+)=(.*)$ ]]; then key="${BASH_REMATCH[1]}" value="${BASH_REMATCH[2]}"; fi
+    if [[ "$value" == "''" ]]; then value=""; else value="${value//\\ / }"; fi
+    if [[ -z "$key" || ! -v "HOST_CONFIG_PATTERN[$key]" || "$(printf '%s=%q' "$key" "$value")" != "$line" \
+          || ! "$value" =~ ${HOST_CONFIG_PATTERN[$key]} ]]; then
+      HOST_CONFIG_ERROR="$file: $(printf '%q' "$line") is not a recorded Configuration value; fix or delete the file"
+      return 1
+    fi
+    [[ -v "found[$key]" ]] || order+=("$key")
+    found[$key]="$value"
+  done <"$file"
+  for key in "${order[@]}"; do
+    # EXTRA_UFW_PORTS alone counts a set empty value as set, as its ${VAR-default} does.
+    [[ -n "${!key-}" || ( "$key" == EXTRA_UFW_PORTS && -v EXTRA_UFW_PORTS ) ]] && continue
+    printf -v "$key" '%s' "${found[$key]}"
+    HOST_CONFIG_USED+="${HOST_CONFIG_USED:+ }$key=$(printf '%q' "${found[$key]}")"
+  done
+}
+HOST_CONFIG_FILE="${HOST_CONFIG_FILE:-/etc/handbook-host.env}"  # where a run records the keys above; a fixture dry run points it elsewhere
+read_host_config "$HOST_CONFIG_FILE"
+
 # ── Configuration ────────────────────────────────────────────────────────────
+# A value the environment leaves unset comes from the recorded configuration, then from the default here.
 USERNAME="${USERNAME:-nico}"
 EXTRA_UFW_PORTS="${EXTRA_UFW_PORTS-80/tcp 443/tcp}"  # space-separated; empty expects only SSH
 SWAP_SIZE_GB="${SWAP_SIZE_GB:-auto}"                # "0" expects no swap
 SYSTEM_LOCALE="${SYSTEM_LOCALE:-en_US.UTF-8}"       # the system's LANG
 EXTRA_LOCALES="${EXTRA_LOCALES:-en_GB.UTF-8}"       # space-separated; each expected generated
 HOST_ROLE="${HOST_ROLE:-prod}"                      # "prod" or "dev"; expected in /etc/handbook-role
+INSTALL_DOCKER="${INSTALL_DOCKER:-true}"           # "false" expects no running Docker
 # ─────────────────────────────────────────────────────────────────────────────
 
 usage() {
@@ -75,7 +121,14 @@ elide_keys() {
 section "host"
 echo "$(hostname) $(date -u +%FT%TZ) $(awk -F= '$1 == "PRETTY_NAME" { gsub(/"/, "", $2); print $2 }' /etc/os-release)"
 is_root && echo "running as root" || echo "running as $(id -un), not root: root-only checks print notes"
-echo "expected: USERNAME=$USERNAME EXTRA_UFW_PORTS='$EXTRA_UFW_PORTS' SWAP_SIZE_GB=$SWAP_SIZE_GB SYSTEM_LOCALE=$SYSTEM_LOCALE EXTRA_LOCALES='$EXTRA_LOCALES' HOST_ROLE=$HOST_ROLE"
+if [[ -n "$HOST_CONFIG_ERROR" ]]; then
+  verdict FAIL "recorded configuration" "$HOST_CONFIG_ERROR"
+elif [[ ! -e "$HOST_CONFIG_FILE" ]]; then
+  verdict FAIL "recorded configuration" "expected $HOST_CONFIG_FILE, read no file: rerun setup-server.sh to record it"
+else
+  verdict ok "recorded configuration" "expected $HOST_CONFIG_FILE, read it; used ${HOST_CONFIG_USED:-no value, the environment set each}"
+fi
+echo "expected: USERNAME=$USERNAME EXTRA_UFW_PORTS='$EXTRA_UFW_PORTS' SWAP_SIZE_GB=$SWAP_SIZE_GB SYSTEM_LOCALE=$SYSTEM_LOCALE EXTRA_LOCALES='$EXTRA_LOCALES' HOST_ROLE=$HOST_ROLE INSTALL_DOCKER=$INSTALL_DOCKER"
 
 section "sshd effective config"
 if needs_root "sshd -T"; then
@@ -105,11 +158,13 @@ section "login users"
 if id "$USERNAME" >/dev/null 2>&1; then
   groups=" $(id -nG "$USERNAME" | xargs) "
   missing=""
-  for g in sudo docker; do [[ "$groups" == *" $g "* ]] || missing+=" $g"; done
+  want_groups="sudo"
+  [[ "$INSTALL_DOCKER" == true ]] && want_groups+=" docker"
+  for g in $want_groups; do [[ "$groups" == *" $g "* ]] || missing+=" $g"; done
   if [[ -z "$missing" ]]; then
-    verdict ok "user $USERNAME" "expected to exist in groups sudo and docker, read${groups% }"
+    verdict ok "user $USERNAME" "expected to exist in groups $want_groups, read${groups% }"
   else
-    verdict FAIL "user $USERNAME" "expected groups sudo and docker, missing$missing"
+    verdict FAIL "user $USERNAME" "expected groups $want_groups, missing$missing"
   fi
 else
   verdict FAIL "user $USERNAME" "expected to exist, read no such user"
@@ -223,7 +278,17 @@ if needs_root "fail2ban sshd jail"; then
 fi
 
 section "docker"
-if ! command -v docker >/dev/null; then
+if [[ "$INSTALL_DOCKER" != true ]]; then
+  # Docker-published ports bypass ufw, so a daemon nobody asked for is a FAIL, not a note.
+  state="$(systemctl is-active docker 2>/dev/null)"
+  if ! command -v docker >/dev/null; then
+    verdict ok "docker" "expected absent (INSTALL_DOCKER=false), read no docker binary"
+  elif [[ "$state" == active ]]; then
+    verdict FAIL "docker" "expected absent or inactive (INSTALL_DOCKER=false), read active"
+  else
+    verdict ok "docker" "expected absent or inactive (INSTALL_DOCKER=false), read installed and ${state:-unknown}"
+  fi
+elif ! command -v docker >/dev/null; then
   verdict FAIL "docker" "expected installed, read no docker binary"
 else
   state="$(systemctl is-active docker 2>/dev/null)"
