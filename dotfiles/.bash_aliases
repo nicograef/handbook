@@ -38,24 +38,31 @@ alias glg="git log --graph --all --pretty=format:'%C(yellow)%h%C(reset) %C(auto)
 
 alias p='pnpm'
 alias m='make'
-# pnpm ships no bash-completion file; this calls its completion server for p and pnpm.
-_pnpm_complete() {
-  mapfile -t COMPREPLY < <(COMP_LINE="$COMP_LINE" COMP_POINT="$COMP_POINT" SHELL=bash \
-    pnpm completion-server -- "${COMP_WORDS[@]}")
-}
-complete -F _pnpm_complete p pnpm
+# pnpm's generated completer rejoins words bash split at ':', so `pnpm run test:u<Tab>` completes.
+# Its completion server answers only when the first word is pnpm, so p rewrites it.
+if command -v pnpm >/dev/null; then
+  eval "$(pnpm completion bash 2>/dev/null)"
+  if declare -F _pnpm_completion >/dev/null; then
+    _p_complete() {
+      COMP_WORDS[0]=pnpm COMP_LINE=${COMP_LINE/p/pnpm} COMP_POINT=$((COMP_POINT + 3))
+      _pnpm_completion "$@"
+    }
+    complete -F _p_complete p
+  fi
+fi
 # make's completer runs its first argument to list targets, so it must get make, not m.
 if declare -F _comp_load >/dev/null && _comp_load make; then
   _m_complete() { _comp_cmd_make make "${@:2}"; }
   complete -F _m_complete m
 fi
 alias puli='pnpm update --latest --interactive'
-# Trial upgrade of every dependency to its latest version; git restores the lockfile.
+# Trial upgrade of every dependency, workspace packages included, to its latest version.
+# It rewrites every package.json and the lockfile; `git restore` on them plus `pnpm install` undo it.
 pci() {
   [ -f package.json ] || { echo 'pci: no package.json here' >&2; return 1; }
   find . -name node_modules -type d -prune -exec rm -rf {} + &&
     rm -f pnpm-lock.yaml &&
-    pnpm update --latest --ignore-scripts &&
+    pnpm update -r --latest --ignore-scripts &&
     pnpm audit
 }
 
@@ -64,11 +71,17 @@ alias update='sudo apt update && sudo apt full-upgrade -y && sudo apt autoremove
 # bat as a colorized cat (apt binary: batcat, cargo binary: bat)
 # The ansi theme takes the terminal's palette; delta reads BAT_THEME too.
 export BAT_THEME=ansi
-if command -v batcat >/dev/null; then
-  alias cat='batcat --paging=never --style=plain'
-  alias bat='batcat'
-elif command -v bat >/dev/null; then
-  alias cat='bat --paging=never --style=plain'
+command -v batcat >/dev/null && alias bat='batcat'
+unalias cat 2>/dev/null
+if command -v batcat >/dev/null || command -v bat >/dev/null; then
+  # bat drops -n off a terminal and rejects -v, -b and -E, so flags and pipes get GNU cat.
+  cat() {
+    local a b=bat
+    for a; do case $a in -?*) command cat "$@"; return ;; esac; done
+    [ -t 1 ] || { command cat "$@"; return; }
+    command -v batcat >/dev/null && b=batcat
+    command "$b" --paging=never --style=plain "$@"
+  }
 fi
 # eza for ll/la only: plain ls keeps GNU flags (eza's -t takes a field, -h is header).
 if command -v eza >/dev/null; then
@@ -87,8 +100,22 @@ if command -v delta >/dev/null; then
 else
   alias diffi='diff --side-by-side --suppress-common-lines --color=always'
 fi
-# fzf: Ctrl-R history, Ctrl-T files, ** completion. fzf < 0.48 lacks --bash and skips.
-command -v fzf >/dev/null && eval "$(fzf --bash 2>/dev/null)"
+# fzf (>= 0.48 for --bash) adds Ctrl-R, Ctrl-T and **, set up at the first prompt.
+# The stock .bashrc re-sources bash-completion after this file, which resets ** on cat, ls and rm.
+if command -v fzf >/dev/null; then
+  # Later calls return at once: VS Code and bash-preexec eval a copy of PROMPT_COMMAND that still names it.
+  unset _fzf_done
+  _fzf_init() {
+    [ -n "${_fzf_done-}" ] && return
+    _fzf_done=1
+    eval "$(fzf --bash 2>/dev/null)"
+    PROMPT_COMMAND=${PROMPT_COMMAND/_fzf_init/}
+  }
+  case "${PROMPT_COMMAND:-}" in
+    *_fzf_init*) ;;
+    *) PROMPT_COMMAND="_fzf_init${PROMPT_COMMAND:+$'\n'$PROMPT_COMMAND}" ;;
+  esac
+fi
 
 # The stock .bashrc sets HISTFILESIZE=2000 before sourcing this file, and bash
 # truncates HISTFILE on that assignment. A separate file escapes the cut.
