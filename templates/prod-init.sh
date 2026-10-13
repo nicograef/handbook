@@ -20,7 +20,6 @@ DOMAIN="${DOMAIN:-}"
 ROLLBACK="${ROLLBACK:-}"                    # 1: the operator restored a backup that fits the older tag
 APP_SERVICE="${APP_SERVICE:-backend}"       # its image tag is the release version
 HEALTH_TIMEOUT="${HEALTH_TIMEOUT:-180}"     # seconds `up --wait` polls the healthchecks
-BACKUP_DIR="${BACKUP_DIR:-/opt/backups/postgres}"
 
 PROD_FILE="docker-compose.prod.yml"
 # Last healthy tag and the tag of an unfinished attempt. Written by this script only; gitignore it.
@@ -134,11 +133,12 @@ else
   fi
   log "Taking a pre-update backup…"
   # The empty ping URL keeps the heartbeat for the cron run; a failed ping must not abort a deploy.
-  BACKUP_PING_URL="" COMPOSE_FILE="$PROD_FILE" COMPOSE_DIR="$PWD" BACKUP_DIR="$BACKUP_DIR" \
+  BACKUP_RESULT="$(mktemp)"
+  trap 'rm -f "$BACKUP_RESULT"' EXIT
+  BACKUP_PING_URL="" BACKUP_RESULT_FILE="$BACKUP_RESULT" COMPOSE_FILE="$PROD_FILE" COMPOSE_DIR="$PWD" \
     "$SCRIPT_DIR/backup-postgres.sh"
-  PRE_UPDATE_DUMP="$(find "$BACKUP_DIR" -maxdepth 1 -name 'backup-*.dump' -printf '%f\n' | sort | tail -n1)"
-  [[ -n "$PRE_UPDATE_DUMP" ]] || error "No backup found in $BACKUP_DIR. Nothing was changed."
-  PRE_UPDATE_DUMP="$BACKUP_DIR/$PRE_UPDATE_DUMP"
+  PRE_UPDATE_DUMP="$(cat "$BACKUP_RESULT")"
+  [[ -n "$PRE_UPDATE_DUMP" ]] || error "backup-postgres.sh reported no dump. Nothing was changed."
   log "Pre-update backup: $PRE_UPDATE_DUMP"
 fi
 

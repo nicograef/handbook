@@ -14,7 +14,8 @@
 #   3. Verifies the fresh dump by restoring it to /dev/null with `pg_restore`
 #      (run in the container — the host is not assumed to have postgresql-client).
 #   4. Renames the temp file to the final timestamped name ONLY after verification,
-#      so BACKUP_DIR never holds an unverified dump.
+#      so BACKUP_DIR never holds an unverified dump. With BACKUP_RESULT_FILE set,
+#      writes that final path to it (prod-init.sh reads its pre-update dump from there).
 #   5. Prunes dumps older than RETENTION_DAYS.
 #   6. Pings BACKUP_PING_URL (dead-man's switch) only after everything succeeds;
 #      skips with a notice when unset. Any failure → non-zero exit, no ping.
@@ -26,6 +27,7 @@ umask 077
 # ── Configuration (env-var overridable) ──
 BACKUP_DIR="${BACKUP_DIR:-/opt/backups/postgres}"
 RETENTION_DAYS="${RETENTION_DAYS:-14}"
+BACKUP_RESULT_FILE="${BACKUP_RESULT_FILE:-}"   # set: receives the verified dump's path
 # The clone root: this script lives in its scripts/ directory.
 COMPOSE_DIR="${COMPOSE_DIR:-$(CDPATH='' cd -- "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)}"
 
@@ -81,6 +83,7 @@ fi
 # ── Promote to the final name ──
 mv "$temp_file" "$final_file"
 log "Verified backup written: $final_file"
+[[ -z "$BACKUP_RESULT_FILE" ]] || printf '%s\n' "$final_file" > "$BACKUP_RESULT_FILE"
 
 log "Pruning backups older than $RETENTION_DAYS days…"
 find "$BACKUP_DIR" -maxdepth 1 -name 'backup-*.dump' -mtime +"$RETENTION_DAYS" -delete
