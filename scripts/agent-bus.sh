@@ -9,7 +9,7 @@
 #   agent-bus.sh hook <event>                hook body; reads hook JSON on stdin
 #
 # What it does:
-#   1. Registers each session's branch, task, paths, resources, needs and provides under the shared git dir.
+#   1. Registers each session's branch, task, paths and resources under the shared git dir.
 #   2. Predicts merge conflicts, path overlap and resource collisions between those sessions.
 #   3. Tells each new session which peers share the repo, from its SessionStart hook.
 #
@@ -94,7 +94,7 @@ csv_to_json() {
 
 # register writes or refreshes this session's entry. An empty argument keeps the
 # previous value, so SessionStart can register without erasing an earlier announce.
-# Usage: register <task> <paths-csv> <resources-csv> <needs-csv> <provides-csv>
+# Usage: register <task> <paths-csv> <resources-csv>
 register() {
   local bus sid file prev
   sid="$(session_id)"
@@ -116,8 +116,6 @@ register() {
     --arg task "${1:-}" \
     --argjson paths "$(csv_to_json "${2:-}")" \
     --argjson resources "$(csv_to_json "${3:-}")" \
-    --argjson needs "$(csv_to_json "${4:-}")" \
-    --argjson provides "$(csv_to_json "${5:-}")" \
     --arg at "$(now_ms)" \
     '
     def keep(new; old): if (new | length) == 0 then (old // null) else new end;
@@ -129,8 +127,6 @@ register() {
       task:      (keep($task;      $prev.task)      // ""),
       paths:     (keep($paths;     $prev.paths)     // []),
       resources: (keep($resources; $prev.resources) // []),
-      needs:     (keep($needs;     $prev.needs)     // []),
-      provides:  (keep($provides;  $prev.provides)  // []),
       updatedAt: ($at | tonumber)
     }' | write_json "$file"
 }
@@ -198,20 +194,18 @@ cmd_peers() {
 
 cmd_announce() {
   need_jq
-  local task paths='' resources='' needs='' provides=''
+  local task paths='' resources=''
   [[ $# -gt 0 ]] || die "announce needs a task description"
   task="$1"; shift
   while [[ $# -gt 0 ]]; do
     case "$1" in
       --paths)     paths="${2:-}"; shift 2 ;;
       --resources) resources="${2:-}"; shift 2 ;;
-      --needs)     needs="${2:-}"; shift 2 ;;
-      --provides)  provides="${2:-}"; shift 2 ;;
       *) die "unknown flag: $1" ;;
     esac
   done
   [[ -n "$(session_id)" ]] || die "no session id (CLAUDE_CODE_SESSION_ID unset)"
-  register "$task" "$paths" "$resources" "$needs" "$provides"
+  register "$task" "$paths" "$resources"
   log "announced on $(current_branch): $task"
 }
 
@@ -322,7 +316,7 @@ hook_session_start() {
   local peers ctx
   # Without a session id this session cannot tell itself apart from its peers.
   [[ -n "$(session_id)" ]] || return 0
-  register '' '' '' '' ''
+  register '' '' ''
   peers="$(peer_summary)"
   [[ -n "$peers" ]] || return 0
   # Command substitution stripped peer_summary's trailing newline; restore it.

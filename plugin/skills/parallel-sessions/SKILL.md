@@ -24,7 +24,7 @@ Messages: native SendMessage. ListAgents lists every session on the machine; `ag
 ## Workflow
 
 1. `agent-bus.sh peers`. Alone you work normally.
-2. `agent-bus.sh announce "<task>" --paths a,b --resources 127.0.0.1:5433,db-1 --needs phase-3 --provides phase-6` before the first edit. Re-announce when the claim changes; omitted flags keep their value. Resources are what git cannot see: ports, containers, volumes, fixture data.
+2. `agent-bus.sh announce "<task>" --paths a,b --resources 127.0.0.1:5433,db-1` before the first edit. Re-announce when the claim changes; omitted flags keep their value. Resources are what git cannot see: ports, containers, volumes, fixture data.
 3. `agent-bus.sh radar` before the first edit, before every rebase, fold or landing, after a peer lands, and after resolving a conflict.
 
    | Radar result | Action |
@@ -32,8 +32,10 @@ Messages: native SendMessage. ListAgents lists every session on the machine; `ag
    | `OVERLAP 0`, `MERGE clean` | Proceed |
    | `OVERLAP > 0`, `MERGE clean` | Proceed; re-run before landing |
    | `MERGE CONFLICT` | Send `conflict`, settle the order before touching anything |
+   | `MERGE no-base` | Treat as `MERGE CONFLICT`; settle which base both branches land on |
    | A lockfile or index in `SHARED PATHS` | Treat as a conflict even when clean |
    | `RESOURCES` non-empty | Settle ownership before running tests |
+   | A declared `paths:` line | Send `claim`; settle who owns each file before editing it |
 
 4. SendMessage the peer by name as soon as you learn what changes its next action. Never route it through the user. Open the first line with the kind.
 

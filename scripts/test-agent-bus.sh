@@ -97,11 +97,10 @@ hook() { hookjson "$1" | CLAUDE_PID="$FAKE_PID" "$BUS_SCRIPT" hook "$2"; }
 # ── Registry ────────────────────────────────────────────────────────────────
 
 log "announce records and retains fields"
-as_a announce "phase 6" --paths "shared.txt" --resources "127.0.0.1:5433" --provides "p6" 2>/dev/null
+as_a announce "phase 6" --paths "shared.txt" --resources "127.0.0.1:5433" 2>/dev/null
 ok "task"      "$(jq -r .task "$BUS/peers/$A.json")"      "phase 6"
 ok "paths"     "$(jq -c .paths "$BUS/peers/$A.json")"     "shared.txt"
 ok "resources" "$(jq -c .resources "$BUS/peers/$A.json")" "127.0.0.1:5433"
-ok "provides"  "$(jq -c .provides "$BUS/peers/$A.json")"  "p6"
 
 as_a announce "phase 6 continued" 2>/dev/null
 ok "arrays survive a task-only re-announce" "$(jq -c .paths "$BUS/peers/$A.json")" "shared.txt"
@@ -118,11 +117,17 @@ echo '{{{ not json' > "$BUS/peers/0-corrupt.json"
 ok "peer listed past a corrupt entry" "$(hook "$A" session-start)" "branch-b"
 rm -f "$BUS/peers/0-corrupt.json"
 
-log "messaging commands are gone"
+log "announce rejects an unknown flag"
+FLAG_RC=0
+FLAG="$(as_a announce "phase 6" --nonsense x 2>&1)" || FLAG_RC=$?
+if [[ "$FLAG_RC" -eq 1 ]]; then PASS=$((PASS + 1)); else fail "unknown flag exits $FLAG_RC, not 1"; fi
+ok "unknown flag named" "$FLAG" "unknown flag: --nonsense"
+
+log "an unknown subcommand prints the usage and exits 2"
 USAGE_RC=0
-USAGE="$("$BUS_SCRIPT" send x y 2>&1)" || USAGE_RC=$?
-if [[ "$USAGE_RC" -ne 0 ]]; then PASS=$((PASS + 1)); else fail "send exits 0"; fi
-ok "send prints the usage" "$USAGE" "Usage:"
+USAGE="$("$BUS_SCRIPT" nonsense 2>&1)" || USAGE_RC=$?
+if [[ "$USAGE_RC" -eq 2 ]]; then PASS=$((PASS + 1)); else fail "unknown subcommand exits $USAGE_RC, not 2"; fi
+ok "usage printed" "$USAGE" "Usage:"
 
 # ── Radar ───────────────────────────────────────────────────────────────────
 
@@ -143,19 +148,19 @@ quiet "garbage stdin"  bash -c "printf 'not json' | '$BUS_SCRIPT' hook session-s
 quiet "empty stdin"    bash -c "printf '' | '$BUS_SCRIPT' hook session-start"
 quiet "missing cwd"    bash -c "printf '{\"session_id\":\"x\",\"cwd\":\"/no/such/dir\"}' | '$BUS_SCRIPT' hook session-start"
 quiet "no session id"  bash -c "printf '{\"cwd\":\"$REPO\"}' | '$BUS_SCRIPT' hook session-start"
-quiet "unknown event"  bash -c "printf '{}' | '$BUS_SCRIPT' hook nonsense"
 quiet "outside a repo" bash -c "printf '{\"session_id\":\"x\",\"cwd\":\"$FIX\"}' | '$BUS_SCRIPT' hook session-start"
 
 log "events without a body stay silent for a live peer"
-quiet "stop event"               bash -c "printf '%s' '$(hookjson "$B")' | '$BUS_SCRIPT' hook stop"
-quiet "user-prompt-submit event" bash -c "printf '%s' '$(hookjson "$B")' | '$BUS_SCRIPT' hook user-prompt-submit"
+for ev in nonsense stop user-prompt-submit; do
+  quiet "event $ev" bash -c "printf '%s' '$(hookjson "$B")' | '$BUS_SCRIPT' hook $ev"
+done
 
 # ── Sweep ───────────────────────────────────────────────────────────────────
 
 log "sweep drops dead sessions and keeps live ones"
 DEAD="dddddddd-0000-0000-0000-000000000003"
 jq -n --arg s "$DEAD" '{sessionId:$s,pid:2147483000,worktree:"/tmp",branch:"gone",
-  task:"",paths:[],resources:[],needs:[],provides:[],updatedAt:0}' > "$BUS/peers/$DEAD.json"
+  task:"",paths:[],resources:[],updatedAt:0}' > "$BUS/peers/$DEAD.json"
 as_a sweep 2>/dev/null
 if [[ -f "$BUS/peers/$DEAD.json" ]]; then fail "dead entry survived sweep"; else PASS=$((PASS + 1)); fi
 if [[ -f "$BUS/peers/$A.json" ]]; then PASS=$((PASS + 1)); else fail "live entry was swept"; fi
