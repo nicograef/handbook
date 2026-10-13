@@ -1,0 +1,33 @@
+# Copy to reverse-proxy/Dockerfile, the file release.yml builds with the repo root as context.
+# Copy edge.dockerignore to reverse-proxy/Dockerfile.dockerignore; BuildKit reads it before a root .dockerignore.
+# Fill <node-major>: the Node major in .node-version.
+# The image bakes in reverse-proxy/Caddyfile and the SPA build; Caddy answers on port 80, which its healthcheck probes.
+
+# >>> stack: frontend
+# ── Build ──
+FROM node:<node-major>-alpine AS build
+WORKDIR /app
+
+# npm installs the packageManager pin CI runs; Node 25+ images ship without Corepack.
+# The cache mount keeps the pnpm store across builds and out of the image.
+COPY frontend/package.json frontend/pnpm-lock.yaml ./
+RUN npm install -g "$(node -p "require('./package.json').packageManager.split('+')[0]")"
+RUN --mount=type=cache,id=pnpm,target=/pnpm/store \
+    pnpm install --frozen-lockfile --store-dir /pnpm/store
+
+COPY frontend/ .
+RUN pnpm build
+# <<< stack: frontend
+
+# ── Runtime ──
+# The base image's CMD runs /etc/caddy/Caddyfile; its WORKDIR /srv is the site root.
+FROM caddy:2.11.4-alpine
+COPY reverse-proxy/Caddyfile /etc/caddy/Caddyfile
+# >>> stack: frontend
+COPY --from=build /app/dist /srv
+# <<< stack: frontend
+
+# Any 2xx or 3xx on port 80 proves Caddy answers; the HTTPS redirect is a 308.
+# busybox wget ships in the Alpine base.
+HEALTHCHECK --interval=10s --timeout=3s --start-period=10s --retries=5 \
+  CMD wget -S -O /dev/null http://127.0.0.1:80/ 2>&1 | grep -qE 'HTTP/1.[01] [23][0-9][0-9]'

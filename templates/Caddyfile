@@ -1,4 +1,5 @@
-# Replace example.com with your domain.
+# Copy to reverse-proxy/Caddyfile and put your domain in place of the example one.
+# The edge image (Dockerfile.edge) bakes this file in, so a change ships with the next release.
 
 # ── Global options ──
 # {
@@ -26,7 +27,39 @@ example.com {
 		reverse_proxy backend:8080
 	}
 
+	# >>> stack: frontend
+	# The SPA build the edge image bakes into /srv.
 	handle {
-		reverse_proxy frontend:80
+		root * /srv
+		encode zstd gzip
+
+		# Build output under /assets/ has content-hashed names, so a file never changes.
+		# A missing one is a 404, never index.html, and `match` keeps a 404 out of caches.
+		handle /assets/* {
+			header {
+				Cache-Control "public, max-age=31536000, immutable"
+				match status 2xx 3xx
+			}
+			file_server
+		}
+
+		# Unhashed files from public/: icons, fonts and the manifest.
+		# The base image's /etc/mime.types serves .webmanifest as application/manifest+json.
+		@public path *.ico *.png *.svg *.webp *.woff *.woff2 *.webmanifest
+		handle @public {
+			header {
+				Cache-Control "public, max-age=3600"
+				match status 2xx 3xx
+			}
+			file_server
+		}
+
+		# Every route falls back to index.html; revalidating it lets a deploy reach clients at once.
+		handle {
+			header Cache-Control "no-cache"
+			try_files {path} /index.html
+			file_server
+		}
 	}
+	# <<< stack: frontend
 }

@@ -1,0 +1,12 @@
+# The edge image builds from the repo root, so this allowlist sends only what its Dockerfile COPYs.
+*
+!reverse-proxy/Caddyfile
+!frontend/
+
+# ── Host builds and caches: the image installs and builds its own ──
+frontend/**/node_modules/
+frontend/dist/
+
+# ── Secrets ──
+frontend/.env
+frontend/.env.*

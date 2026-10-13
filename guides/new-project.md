@@ -19,21 +19,22 @@ Take an empty directory to a repository whose `make check` passes. Index: [READM
 | `<project-python-version>` | Python minor: `uv init`, the `Dockerfile.python` base tag | `3.12` |
 | `<uv-version>` | uv floor: `pyproject.toml`, the `Dockerfile.python` base tag, `setup-dev-tools.sh` | `0.13.0` |
 | `<pytest-marker>` | Opt-in pytest marker for integration tests | `integration` |
-| `<node-major>` | Node major: `.node-version`, the `Dockerfile.spa` base tag, the devcontainer Node feature, the dev Compose image | `26` |
+| `<node-major>` | Node major: `.node-version`, the `Dockerfile.edge` build-stage tag, the devcontainer Node feature, the dev Compose image | `26` |
+| `<domain>` | Production domain; the edge image bakes it into the Caddyfile | `orders.example.org` |
 
 ## Pick the stack
 
 | Stack | Dockerfile templates | devcontainer features | Stack sections | `<other-stacks>` |
 |-------|----------------------|-----------------------|----------------|------------------|
-| Python + React | [`Dockerfile.python`](../templates/Dockerfile.python), [`Dockerfile.spa`](../templates/Dockerfile.spa) | Node, Docker-in-Docker | [Python](../reference/stack-conventions.md#python), [Node/TypeScript](../reference/stack-conventions.md#nodetypescript), [React](../reference/stack-conventions.md#react) | `go` |
-| Python | [`Dockerfile.python`](../templates/Dockerfile.python) | Docker-in-Docker | [Python](../reference/stack-conventions.md#python) | `go frontend` |
-| Go + React | [`Dockerfile.go`](../templates/Dockerfile.go), [`Dockerfile.spa`](../templates/Dockerfile.spa) | Go, Node, Docker-in-Docker | [Go](../reference/stack-conventions.md#go), [Node/TypeScript](../reference/stack-conventions.md#nodetypescript), [React](../reference/stack-conventions.md#react) | `python` |
-| Go | [`Dockerfile.go`](../templates/Dockerfile.go) | Go, Docker-in-Docker | [Go](../reference/stack-conventions.md#go) | `python frontend` |
-| React | [`Dockerfile.spa`](../templates/Dockerfile.spa) | Node | [Node/TypeScript](../reference/stack-conventions.md#nodetypescript), [React](../reference/stack-conventions.md#react) | `go python database` |
+| Python + React | [`Dockerfile.python`](../templates/Dockerfile.python), [`Dockerfile.edge`](../templates/Dockerfile.edge) | Node, Docker-in-Docker | [Python](../reference/stack-conventions.md#python), [Node/TypeScript](../reference/stack-conventions.md#nodetypescript), [React](../reference/stack-conventions.md#react) | `go` |
+| Python | [`Dockerfile.python`](../templates/Dockerfile.python), [`Dockerfile.edge`](../templates/Dockerfile.edge) | Docker-in-Docker | [Python](../reference/stack-conventions.md#python) | `go frontend` |
+| Go + React | [`Dockerfile.go`](../templates/Dockerfile.go), [`Dockerfile.edge`](../templates/Dockerfile.edge) | Go, Node, Docker-in-Docker | [Go](../reference/stack-conventions.md#go), [Node/TypeScript](../reference/stack-conventions.md#nodetypescript), [React](../reference/stack-conventions.md#react) | `python` |
+| Go | [`Dockerfile.go`](../templates/Dockerfile.go), [`Dockerfile.edge`](../templates/Dockerfile.edge) | Go, Docker-in-Docker | [Go](../reference/stack-conventions.md#go) | `python frontend` |
+| React | — | Node | [Node/TypeScript](../reference/stack-conventions.md#nodetypescript), [React](../reference/stack-conventions.md#react) | `go python database` |
 | Docs | — | — | — | `go python frontend database` |
 
 A Docs repository runs [Create the repository](#create-the-repository), [Copy the base files](#copy-the-base-files) and [Set up the agent files](#set-up-the-agent-files). Of [Fill the templates](#fill-the-templates), it runs only the block deletion.
-A React repository skips [Copy the production files](#copy-the-production-files): `prod-init.sh` does not deploy it. A static SPA goes to static hosting or behind an existing proxy.
+A React repository skips [Copy the production files](#copy-the-production-files): `prod-init.sh` does not deploy it. Its `dist/` goes to static hosting or an existing Caddy.
 
 ## Create the repository
 
@@ -73,13 +74,12 @@ A React repository skips [Copy the production files](#copy-the-production-files)
    mkdir -p .devcontainer .github/workflows && cp "$HANDBOOK/templates/devcontainer.json" .devcontainer/devcontainer.json
    cp "$HANDBOOK/templates/ci.yml" .github/workflows/ci.yml && cp "$HANDBOOK/templates/dependabot.yml" .github/dependabot.yml
    ```
-2. Scaffold each tier your row names and copy its Dockerfile template. A backend row writes the first migration, which CI applies. Expected: each tier has its `Dockerfile`, a backend row `database/migrations/000001_init.up.sql`.
+2. Scaffold each tier your row names and copy the backend's Dockerfile template. A backend row writes the first migration, which CI applies. Expected: `backend/Dockerfile` and `database/migrations/000001_init.up.sql` on a backend row, `frontend/package.json` on a React row.
    ```bash
-   uv init --package --python <project-python-version> backend && cp "$HANDBOOK/templates/Dockerfile.python" backend/Dockerfile   # Python
-   (mkdir -p backend && cd backend && go mod init github.com/<github-owner>/<project-name> && go mod edit -go=<project-go-version>) && cp "$HANDBOOK/templates/Dockerfile.go" backend/Dockerfile   # Go
-   pnpm create vite frontend --template react-ts --no-interactive && cp "$HANDBOOK/templates/Dockerfile.spa" frontend/Dockerfile && cp "$HANDBOOK/templates/nginx-spa.conf" frontend/nginx.conf   # React
+   uv init --package --python <project-python-version> backend && cp "$HANDBOOK/templates/Dockerfile.python" backend/Dockerfile && cp "$HANDBOOK/templates/.dockerignore" backend/   # Python
+   (mkdir -p backend && cd backend && go mod init github.com/<github-owner>/<project-name> && go mod edit -go=<project-go-version>) && cp "$HANDBOOK/templates/Dockerfile.go" backend/Dockerfile && cp "$HANDBOOK/templates/.dockerignore" backend/   # Go
+   pnpm create vite frontend --template react-ts --no-interactive   # React
    mkdir -p database/migrations && printf 'CREATE TABLE app_meta (key text PRIMARY KEY, value text NOT NULL);\n' > database/migrations/000001_init.up.sql   # Python or Go
-   for d in $(ls -d backend frontend 2>/dev/null); do cp "$HANDBOOK/templates/.dockerignore" "$d"/; done
    ```
 3. A Go backend adds its health server, linter config, tools and first sqlc query, and uncomments the Makefile's Go blocks. Expected: `go tool sqlc diff` and `go build -o /dev/null ./cmd/<project-name>` in `backend/` exit 0.
    ```bash
@@ -111,25 +111,26 @@ A React repository skips [Copy the production files](#copy-the-production-files)
 
 ## Copy the production files
 
-1. Copy the Caddy production stack, the env template and the deploy scripts. Expected: `docker-compose.prod.yml` and `reverse-proxy/Caddyfile` exist.
+1. Copy the Caddy production stack, the env template and the deploy scripts, and set your domain. The edge image bakes in the Caddyfile and the SPA build. Expected: `grep -c example.com reverse-proxy/Caddyfile` prints `0`.
    ```bash
    cp "$HANDBOOK"/templates/{docker-compose.prod.yml,.env.example} . && cp "$HANDBOOK"/templates/{prod-init.sh,backup-postgres.sh} scripts/
-   mkdir -p reverse-proxy && cp "$HANDBOOK/templates/Caddyfile" reverse-proxy/Caddyfile
+   mkdir -p reverse-proxy && cp "$HANDBOOK/templates/Caddyfile" reverse-proxy/Caddyfile && sed -i 's/example\.com/<domain>/g' reverse-proxy/Caddyfile
+   cp "$HANDBOOK/templates/Dockerfile.edge" reverse-proxy/Dockerfile && cp "$HANDBOOK/templates/edge.dockerignore" reverse-proxy/Dockerfile.dockerignore
    cp "$HANDBOOK/templates/release.yml" .github/workflows/release.yml
    ```
-2. Delete the tiers your row lacks from `docker-compose.prod.yml`, the `release.yml` matrix and the Caddyfile. Expected: `docker compose -f docker-compose.prod.yml config --services` lists only your tiers, `postgres` and `reverse-proxy`.
+2. Check the production services. Expected: `docker compose -f docker-compose.prod.yml config --services` lists `postgres`, `backend` and `reverse-proxy`.
    The production Compose template pins the app images at `v0.1.0`. Push that as the first release tag, or bump the pins to it first, as [deploy.md#update](deploy.md#update) does.
 
 ## Fill the templates
 
 1. Delete the blocks of your row's `<other-stacks>`. Expected: `grep -c 'stack: go$' Makefile` prints `0` on a Python row.
    ```bash
-   for s in <other-stacks>; do sed -i "/# >>> stack: $s\$/,/# <<< stack: $s\$/d" $(ls Makefile .github/workflows/ci.yml .github/dependabot.yml scripts/setup-dev-tools.sh 2>/dev/null); done
+   for s in <other-stacks>; do sed -i "/# >>> stack: $s\$/,/# <<< stack: $s\$/d" $(ls Makefile .github/workflows/ci.yml .github/dependabot.yml scripts/setup-dev-tools.sh reverse-proxy/Dockerfile reverse-proxy/Caddyfile 2>/dev/null); done
    ```
 2. Fill the names and versions. Expected: the `grep` prints nothing.
    ```bash
    PROJECT=<project-name> OWNER=<github-owner> DB=<database-name> MARKER=<pytest-marker> GOV=<project-go-version> GOMINOR=<go-minor> UV=<uv-version> PY=<project-python-version> NODE=<node-major>
-   FILES=$(ls Makefile docker-compose*.yml .devcontainer/* scripts/setup-dev-tools.sh .github/*.yml .github/workflows/*.yml */Dockerfile frontend/nginx.conf 2>/dev/null)
+   FILES=$(ls Makefile docker-compose*.yml .devcontainer/* scripts/setup-dev-tools.sh .github/*.yml .github/workflows/*.yml */Dockerfile 2>/dev/null)
    sed -i -e "s|<owner>|$OWNER|g; s|<project>|$PROJECT|g; s|<name>|$PROJECT|g; s|<package>|backend|g; s|<database-name>|$DB|g; s|<marker>|$MARKER|g" \
      -e "s|<project-go-version>|$GOV|g; s|<go-minor>|$GOMINOR|g; s|<uv-version>|$UV|g; s|<project-python-version>|$PY|g; s|<node-major>|$NODE|g; s|my-project-dev|$PROJECT-dev|" $FILES
    sed -i "s|^name: [a-z]*|name: $PROJECT|" docker-compose*.yml

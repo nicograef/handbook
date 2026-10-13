@@ -56,10 +56,8 @@ A web app on a fresh server chains Fresh server, Deploy (which schedules the bac
 | [templates/docker-compose.yml](templates/docker-compose.yml) | Compose starter (local dev, no TLS) |
 | [templates/Dockerfile.python](templates/Dockerfile.python) | Python (uv) backend image with a HEALTHCHECK; copied as `backend/Dockerfile` |
 | [templates/Dockerfile.go](templates/Dockerfile.go) | Go backend image: static binary on Alpine with a HEALTHCHECK; copied as `backend/Dockerfile` |
-| [templates/Dockerfile.spa](templates/Dockerfile.spa) | React SPA image: pnpm build served by nginx with a HEALTHCHECK; copied as `frontend/Dockerfile` |
 | [templates/.dockerignore](templates/.dockerignore) | Build-context excludes: VCS, secrets, host toolchains, tests, docs |
 | [templates/.env.example](templates/.env.example) | Standard env vars for Docker Compose templates |
-| [templates/nginx-spa.conf](templates/nginx-spa.conf) | SPA container nginx server block: client-side routing + asset caching; copied as `frontend/nginx.conf` |
 | [templates/ci.yml](templates/ci.yml) | GitHub Actions CI workflow (Go, Node, Python, integration, security scans, upgrade path, restore drill) |
 | [templates/release.yml](templates/release.yml) | GitHub Actions release workflow: a vX.Y.Z tag pushes the app images to GHCR |
 | [templates/golangci.yml](templates/golangci.yml) | golangci-lint v2 config: security linters, layer guard, goimports |
@@ -89,8 +87,10 @@ A web app on a fresh server chains Fresh server, Deploy (which schedules the bac
 | [scripts/netcup.sh](scripts/netcup.sh) | netcup server API from the laptop: login, servers, firewall policies, snapshots |
 | [templates/netcup-firewall-web.json](templates/netcup-firewall-web.json) | netcup firewall policy for a web server: inbound SSH, HTTP, HTTPS, HTTP/3, NTP and DNS64 replies |
 | [templates/netcup-firewall-ssh.json](templates/netcup-firewall-ssh.json) | netcup firewall policy for an SSH-only host: inbound SSH, NTP and DNS64 replies |
-| [templates/docker-compose.prod.yml](templates/docker-compose.prod.yml) | Production Compose with Caddy: automatic TLS, pinned registry images, healthchecks, resource limits |
-| [templates/Caddyfile](templates/Caddyfile) | Caddy site config: www redirect, security headers, API and SPA routes |
+| [templates/docker-compose.prod.yml](templates/docker-compose.prod.yml) | Production Compose with the Caddy edge image: automatic TLS, pinned registry images, healthchecks, resource limits |
+| [templates/Caddyfile](templates/Caddyfile) | Caddy site config: www redirect, security headers, API proxy, SPA fallback and cache headers; copied as `reverse-proxy/Caddyfile` |
+| [templates/Dockerfile.edge](templates/Dockerfile.edge) | Edge image: Caddy with the Caddyfile and the pnpm-built SPA baked in, with a HEALTHCHECK; copied as `reverse-proxy/Dockerfile` |
+| [templates/edge.dockerignore](templates/edge.dockerignore) | Allowlist for the edge image's repo-root build context; copied as `reverse-proxy/Dockerfile.dockerignore` |
 
 ## Agents
 
@@ -124,7 +124,7 @@ A web app on a fresh server chains Fresh server, Deploy (which schedules the bac
 | [scripts/test-report-health.sh](scripts/test-report-health.sh) | Fixture test for `report-health.sh`; `make test-report-health` |
 | [scripts/test-report-repo-status.sh](scripts/test-report-repo-status.sh) | Fixture test for `report-repo-status.sh`; `make test-report-repo-status` |
 | [scripts/test-setup-dev-machine.sh](scripts/test-setup-dev-machine.sh) | Fixture test for `setup-dev-machine.sh`; `make test-setup-dev-machine` |
-| [scripts/test-dockerfiles.sh](scripts/test-dockerfiles.sh) | Builds the Dockerfile templates against stub apps until healthy; `make test-dockerfiles` |
+| [scripts/test-dockerfiles.sh](scripts/test-dockerfiles.sh) | Builds the Dockerfile templates against stub apps until healthy, then probes the edge image's SPA routes; `make test-dockerfiles` |
 | [scripts/lib/test-harness.sh](scripts/lib/test-harness.sh) | Shared setup and verdict the fixture tests source; `make test` runs them |
 | [scripts/lib/skill-hooks.sh](scripts/lib/skill-hooks.sh) | Reads a SKILL.md's frontmatter hook commands; `check-repo.sh` and `test-plan-run-guard.sh` source it |
 

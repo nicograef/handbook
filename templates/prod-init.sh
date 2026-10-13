@@ -71,8 +71,6 @@ docker compose version >/dev/null 2>&1 || error "docker compose plugin is not in
 command -v curl >/dev/null 2>&1        || error "curl is not installed."
 command -v jq >/dev/null 2>&1          || error "jq is not installed (setup-server.sh installs it)."
 [[ -f "$PROD_FILE" ]]                  || error "$PROD_FILE not found. Copy the docker-compose.prod.yml template."
-# A missing bind source becomes an empty directory inside the container, and the proxy fails.
-[[ -f reverse-proxy/Caddyfile ]]       || error "reverse-proxy/Caddyfile not found. Copy the Caddyfile template there and set your domain."
 
 [[ -n "$DOMAIN" ]] || error "DOMAIN is required. Set it via 'DOMAIN=example.com make prod-deploy'."
 

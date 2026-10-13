@@ -8,8 +8,8 @@ Take a provisioned server to a running app with TLS, update it, and roll it back
 - DNS for `<domain>` and `www.<domain>` on a dual-stack server: an A record, and an AAAA record or none. Any AAAA record must point at this server too, since Let's Encrypt prefers IPv6.
 - DNS on an IPv6-only server: an AAAA record only. IPv4-only clients cannot reach it.
 - A release tag `v<X.Y.Z>` pushed with `make prod-release`, and its [release.yml](../templates/release.yml) run green.
-- `docker-compose.prod.yml` in git pins the backend and frontend images to that `v<X.Y.Z>`, bumped as in [Update](#update).
-- The project repo holds [docker-compose.prod.yml](../templates/docker-compose.prod.yml) and `reverse-proxy/Caddyfile` from the [Caddyfile](../templates/Caddyfile) template, as [new-project.md](new-project.md#copy-the-production-files) copies them.
+- `docker-compose.prod.yml` in git pins the backend and edge images to that `v<X.Y.Z>`, bumped as in [Update](#update).
+- The project repo holds [docker-compose.prod.yml](../templates/docker-compose.prod.yml) and `reverse-proxy/`, as [new-project.md](new-project.md#copy-the-production-files) copies them. The edge image bakes in its Caddyfile.
 - Placeholders: `<username>` and `<host>` from provisioning, `<owner>/<project>` the GitHub repo, `<github-user>` your GitHub login.
 
 ## First deploy
@@ -56,12 +56,12 @@ Run every step on the server as `<username>`, logged in with `ssh <username>@<ho
    +COMPOSE_FILE=docker-compose.prod.yml
    ```
 
-6. **Confirm the Compose and proxy files** name your project and domain. Expected: each comment's result.
-   Fix a mismatch in git on your machine, then `git pull` here; the server edits no tracked file.
+6. **Confirm the Compose file and the edge image** name your project and domain. Expected: each comment's result.
+   Fix a mismatch in git on your machine; a Caddyfile fix needs a new release. The server edits no tracked file.
 
    ```bash
    docker compose config | head -1                  # name: <project>
-   grep -c '<domain>' reverse-proxy/Caddyfile       # 3 or more
+   docker compose run --rm --no-deps reverse-proxy grep -c '<domain>' /etc/caddy/Caddyfile   # 3 or more
    ```
 
 7. **Deploy the release.** The [prod-init.sh](../templates/prod-init.sh) header lists every check and step it runs. Expected: the last lines read `Deployed v<X.Y.Z> — https://<domain>`, exit 0.
@@ -75,7 +75,7 @@ Run every step on the server as `<username>`, logged in with `ssh <username>@<ho
 ## Update
 
 The server builds nothing and never pulls on a schedule; a deploy is the only moment images change.
-`postgres` uses a major-series tag; `caddy` is pinned exactly.
+`postgres` uses a major-series tag; the edge image's `caddy` base is pinned exactly.
 
 **Distributed self-hosted product run by third parties:** the version lives in the operator's `.env`.
 Images are exact pins, including `postgres`, bumped by Dependabot.

@@ -12,13 +12,17 @@
 #      go      standard library only, answers GET /api/health on port 8080
 #      python  `uv init --package` output plus a bare ASGI factory on uvicorn,
 #              the only dependency, same endpoint
-#      spa     no dependencies, pnpm pinned through packageManager; its build
-#              script writes dist/index.html
+#      edge    a frontend/ SPA with no dependencies, pnpm pinned through
+#              packageManager, whose build writes index.html, a hashed asset,
+#              an icon and a manifest; beside it reverse-proxy/ with the
+#              Caddyfile template, its site addresses swapped for http://localhost
 #   3. Scaffolds and locks each stub inside the first FROM image of its filled
 #      Dockerfile, the build image, with the Go and Python versions it names.
-#   4. Copies .dockerignore (and nginx-spa.conf for the SPA) beside the
-#      Dockerfile, and builds the image.
+#   4. Copies the stack's dockerignore template beside the Dockerfile, and
+#      builds the image with the stub as context.
 #   5. Runs each image and waits until `docker inspect` reports it healthy.
+#      The edge image must also answer with the SPA fallback, cache headers
+#      and manifest type the Caddyfile sets.
 #   6. Removes every container and image it created; exits 1 on any failure.
 #
 # Needs only Docker. It pulls base images and resolves lockfiles over the
@@ -38,7 +42,7 @@ NODE_MAJOR="${NODE_MAJOR:-26}"
 . "$(dirname "${BASH_SOURCE[0]}")/lib/test-harness.sh"
 
 TEMPLATES="$REPO_ROOT/templates"
-STACKS=(go python spa)
+STACKS=(go python edge)
 
 cleanup() {
   local s
@@ -62,6 +66,9 @@ fill() {
     return 1
   fi
 }
+
+# dockerfile prints where stack $1's Dockerfile sits in its stub, the build context.
+dockerfile() { if [[ "$1" == edge ]]; then echo reverse-proxy/Dockerfile; else echo Dockerfile; fi; }
 
 # build_image prints the image of Dockerfile $1's first FROM, its build stage.
 build_image() { awk '/^FROM / { print $2; exit }' "$1"; }
@@ -100,6 +107,7 @@ func main() {
 	log.Fatal(http.ListenAndServe(":8080", nil))
 }
 GO
+  cp "$TEMPLATES/.dockerignore" "$d/"
 }
 
 # stub_python scaffolds with `uv init --package` and adds uvicorn and the api.py factory,
@@ -120,24 +128,56 @@ def app():
 
     return asgi
 PY
+  cp "$TEMPLATES/.dockerignore" "$d/"
 }
 
-# stub_spa pins the newest pnpm through packageManager, as the new-project runbook pins the host's.
-stub_spa() {
-  local d="$FIX/spa"
-  cat >"$d/package.json" <<'JSON'
+# stub_edge pins the newest pnpm through packageManager, as the new-project runbook pins the host's.
+# The http:// site addresses keep Caddy off ACME, so the probes below speak plain HTTP.
+stub_edge() {
+  local d="$FIX/edge"
+  mkdir -p "$d/frontend"
+  cat >"$d/frontend/package.json" <<'JSON'
 {
   "name": "stub",
   "private": true,
   "scripts": {
-    "build": "mkdir -p dist && echo '<!doctype html><title>stub</title>' > dist/index.html"
+    "build": "mkdir -p dist/assets && echo '<!doctype html><title>stub</title>' > dist/index.html && echo 'x' > dist/assets/app-0123abcd.js && echo '<svg/>' > dist/icon.svg && echo '{}' > dist/manifest.webmanifest"
   }
 }
 JSON
   # shellcheck disable=SC2016 # $(pnpm --version) expands in the container
-  lock "$d" "$1" 'npm install -g pnpm && npm pkg set packageManager="pnpm@$(pnpm --version)" && pnpm install --lockfile-only' \
+  lock "$d/frontend" "$1" 'npm install -g pnpm && npm pkg set packageManager="pnpm@$(pnpm --version)" && pnpm install --lockfile-only' \
     package.json pnpm-lock.yaml
-  cp "$TEMPLATES/nginx-spa.conf" "$d/nginx.conf"
+  sed -e 's|^www\.example\.com {|http://www.localhost {|' -e 's|^example\.com {|http://localhost {|' \
+    "$TEMPLATES/Caddyfile" >"$d/reverse-proxy/Caddyfile"
+  cp "$TEMPLATES/edge.dockerignore" "$d/reverse-proxy/Dockerfile.dockerignore"
+}
+
+# expect fails unless GET path $2 in container $1 answers with status $3 and a header line
+# matching ERE $4, and with no header line matching ERE $5 if given. Busybox nc shows the
+# headers of an error response too, which busybox wget hides.
+expect() {
+  local head want="'$4'"
+  [[ -z "${5:-}" ]] || want+=" without '$5'"
+  head="$(docker exec "$1" sh -c "printf 'GET $2 HTTP/1.1\r\nHost: localhost\r\nConnection: close\r\n\r\n' | nc localhost 80" |
+    tr -d '\r' | sed '/^$/q')"
+  if ! grep -qE "^HTTP/1\.1 $3 " <<<"$head" || ! grep -qiE "^$4" <<<"$head" ||
+    { [[ -n "${5:-}" ]] && grep -qiE "^$5" <<<"$head"; }; then
+    fail "$2: want $3 with $want, got:"
+    printf '%s\n' "$head" >&2
+    return 1
+  fi
+}
+
+# check_edge probes the SPA routing and caching the Caddyfile sets.
+check_edge() {
+  local c="$PREFIX-edge"
+  expect "$c" /some/route 200 'Cache-Control: no-cache'
+  expect "$c" /some/route 200 'Content-Type: text/html'
+  expect "$c" /assets/app-0123abcd.js 200 'Cache-Control: public, max-age=31536000, immutable'
+  expect "$c" /assets/missing.js 404 'Content-Length: 0' 'Cache-Control'
+  expect "$c" /icon.svg 200 'Cache-Control: public, max-age=3600'
+  expect "$c" /manifest.webmanifest 200 'Content-Type: application/manifest\+json'
 }
 
 # health waits until container $1 reports healthy; fails on unhealthy, exit or timeout.
@@ -159,17 +199,18 @@ health() {
 
 # check_stack builds, runs and health-checks one template.
 check_stack() {
-  local s="$1" d="$FIX/$1"
-  mkdir -p "$d"
-  fill "$TEMPLATES/Dockerfile.$s" "$d/Dockerfile"
+  local s="$1" d="$FIX/$1" f
+  f="$d/$(dockerfile "$s")"
+  mkdir -p "$(dirname "$f")"
+  fill "$TEMPLATES/Dockerfile.$s" "$f"
   log "$s: stub"
-  "stub_$s" "$(build_image "$d/Dockerfile")"
-  cp "$TEMPLATES/.dockerignore" "$d/.dockerignore"
+  "stub_$s" "$(build_image "$f")"
   log "$s: build"
-  docker build --pull --progress=plain -t "$PREFIX-$s:test" "$d"
+  docker build --pull --progress=plain -f "$f" -t "$PREFIX-$s:test" "$d"
   log "$s: run"
   docker run -d --name "$PREFIX-$s" "$PREFIX-$s:test" >/dev/null
   health "$PREFIX-$s"
+  if [[ "$s" == edge ]]; then check_edge; fi
 }
 
 # Each stack runs in a subshell outside any condition, so errexit stops it at the

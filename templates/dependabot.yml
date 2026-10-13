@@ -47,20 +47,6 @@ updates:
       npm:
         patterns:
           - "*"
-
-  # ── Docker base images (frontend/Dockerfile) ──
-  - package-ecosystem: "docker"
-    directory: "/frontend"
-    schedule:
-      interval: "monthly"
-    groups:
-      docker-frontend:
-        patterns:
-          - "*"
-    # The Node major follows .node-version, the version CI and dev run.
-    ignore:
-      - dependency-name: "node"
-        update-types: ["version-update:semver-major"]
   # <<< stack: frontend
 
   # >>> stack: python
@@ -86,6 +72,20 @@ updates:
     # The uv tag repeats the [tool.uv] required-version floor in pyproject.toml.
     # A PR that bumps the tag raises that floor too.
   # <<< stack: python
+
+  # ── Docker base images (reverse-proxy/Dockerfile: caddy, and node for the SPA build) ──
+  - package-ecosystem: "docker"
+    directory: "/reverse-proxy"
+    schedule:
+      interval: "monthly"
+    groups:
+      docker-edge:
+        patterns:
+          - "*"
+    # The Node major follows .node-version, the version CI and dev run.
+    ignore:
+      - dependency-name: "node"
+        update-types: ["version-update:semver-major"]
 
   # ── Docker Compose service images ──
   # The docker ecosystem parses Dockerfiles only, so compose image tags need this entry.
