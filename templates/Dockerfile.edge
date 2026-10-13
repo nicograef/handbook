@@ -21,7 +21,7 @@ RUN pnpm build
 
 # ── Runtime ──
 # The base image's CMD runs /etc/caddy/Caddyfile; its WORKDIR /srv is the site root.
-FROM caddy:2.11.4-alpine
+FROM caddy:2.11.7-alpine
 COPY reverse-proxy/Caddyfile /etc/caddy/Caddyfile
 # >>> stack: frontend
 COPY --from=build /app/dist /srv
