@@ -66,7 +66,7 @@ pci() {
     pnpm audit
 }
 
-alias update='sudo apt update && sudo apt full-upgrade -y && sudo apt autoremove -y && sudo apt autoclean -y'
+alias update='sudo apt update && sudo apt full-upgrade -y && sudo apt autoremove --purge -y && sudo apt clean'
 
 # bat as a colorized cat (apt binary: batcat, cargo binary: bat)
 # The ansi theme takes the terminal's palette; delta reads BAT_THEME too.
