@@ -10,11 +10,14 @@
 #      so a guard reading the wrong one fails the assertion.
 #   3. Feeds synthetic Stop payloads and asserts block vs allow.
 #   4. Runs the implement-plan skill's hook command with and without the guard.
+#   5. Commits a docs/plans/programme.md and asserts block while a Status row is running.
 
 set -euo pipefail
 
 # shellcheck source=scripts/lib/test-harness.sh
 . "$(dirname "${BASH_SOURCE[0]}")/lib/test-harness.sh"
+# shellcheck source=scripts/lib/skill-hooks.sh
+. "$(dirname "${BASH_SOURCE[0]}")/lib/skill-hooks.sh"
 
 GUARD="$REPO_ROOT/plugin/scripts/plan-run-guard.sh"
 # An empty config dir, so the guard never reads the real session transcripts.
@@ -149,10 +152,39 @@ git -C "$REPO" branch plan/orphan
 out="$(run false sessE)"
 if [[ -n "$out" ]]; then fail "orphan branch: expected allow, got: $out"; else log "branch without a plan file -> allow"; fi
 
-# 10. The skill's hook command warns without blocking when the guard is missing.
-HOOK="$(awk 'NR == 1 && /^---/ { fm = 1; next } fm && /^---/ { exit }
-  fm && sub(/^[ \t]*command:[ \t]*/, "") { print }' "$REPO_ROOT/plugin/skills/implement-plan/SKILL.md" \
-  | sed -E "s/^'(.*)'$/\1/; s/''/'/g")"
+# 10. A programme with a phase not landed blocks once per HEAD; other tables never count.
+cat > "$REPO/docs/plans/programme.md" <<'EOF'
+# Programme
+
+## Spend
+
+| Leg | Projection | Who buys | Status |
+| --- | --- | --- | --- |
+| tts | 4 EUR | owner | running |
+
+## Status
+
+| Phase | Lane | Wave | Status | Landed sha |
+| --- | --- | --- | --- | --- |
+| plan-a phase 1 | a | 1 | `landed` | abc1234 |
+| plan-b phase 1 | b | 1 | running | |
+EOF
+git -C "$REPO" add -A && git -C "$REPO" commit -q -m programme
+out="$(run false sessP)"
+if [[ "$(jq -r '.reason' <<< "$out" 2>/dev/null)" == *"plan-b phase 1 (running)"* ]]; then
+  log "programme phase running -> block"
+else
+  fail "programme running: expected block naming plan-b phase 1, got: $out"
+fi
+out="$(run false sessP)"
+if [[ -n "$out" ]]; then fail "programme same HEAD: expected allow, got: $out"; else log "programme same HEAD -> allow"; fi
+sed -i 's/| b | 1 | running | |/| b | 1 | landed | def5678 |/' "$REPO/docs/plans/programme.md"
+git -C "$REPO" commit -q -am "plan-b landed"
+out="$(run false sessP)"
+if [[ -n "$out" ]]; then fail "programme landed: expected allow, got: $out"; else log "every phase landed -> allow"; fi
+
+# 11. The skill's hook command warns without blocking when the guard is missing.
+HOOK="$(skill_hook_commands "$REPO_ROOT/plugin/skills/implement-plan/SKILL.md")"
 hook() { # hook <plugin root>; sets rc and out
   rc=0
   out="$(printf '{"cwd":"%s","stop_hook_active":false,"session_id":"sessHook"}' "$REPO" |

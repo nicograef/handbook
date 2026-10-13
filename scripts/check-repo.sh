@@ -19,6 +19,9 @@ STAGE="${1:-all}"
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$REPO_ROOT"
 
+# shellcheck source=scripts/lib/skill-hooks.sh
+. scripts/lib/skill-hooks.sh
+
 FAILED=0
 
 log() {
@@ -257,7 +260,103 @@ resolve_home_claude() {
   done
 }
 
-## contracts: verify handbook raw URLs name tracked paths, setup-server.sh pins report-health.sh's digest, install-dotfiles.sh --check passes, the settings enable the plugin and its theme, plugin paths name the marketplace, every hook script path exists, and neovim.md installs setup-dev-machine.sh's tool lists
+# audit_fact prints capture group 1 of the first line of host-audit.sh that matches Perl regex $1.
+audit_fact() {
+  perl -ne 'BEGIN { $re = shift } if (/$re/) { print $1; exit }' "$1" scripts/host-audit.sh
+}
+
+# heredoc_body prints the lines of setup-server.sh between the heredoc opener matching Perl
+# regex $1 and its EOF.
+heredoc_body() {
+  perl -ne 'BEGIN { $re = shift } if (/$re/) { $on = 1; next } exit if $on && /^EOF$/; print if $on' \
+    "$1" scripts/setup-server.sh
+}
+
+# server_audit_contract keeps host-audit.sh's expectations equal to what setup-server.sh
+# configures; both are fetched standalone, so they cannot source one shared file.
+# shellcheck disable=SC2016 # the patterns match a literal $VAR in the scripts' source
+server_audit_contract() {
+  local s=scripts/setup-server.sh line var want got keys key log_keys probe kind body rot v6
+  local rot_filter rot_want v6_filter v6_want v6_seen=0
+  local -A setup_defaults=() jail=()
+
+  # Configuration defaults host-audit.sh shares with setup-server.sh are identical.
+  while IFS= read -r line; do
+    setup_defaults[${line%%=*}]="$line"
+  done < <(sed -nE 's/^([A-Z_]+="\$\{[A-Z_]+:?-[^}]*\}").*/\1/p' "$s")
+  got=0
+  while IFS= read -r line; do
+    got=1
+    var="${line%%=*}"
+    if [[ ! -v "setup_defaults[$var]" ]]; then
+      log "host-audit.sh defaults $var, which setup-server.sh does not configure"
+    elif [[ "${setup_defaults[$var]}" != "$line" ]]; then
+      log "host-audit.sh has $line; setup-server.sh has ${setup_defaults[$var]}"
+    fi
+  done < <(sed -nE 's/^([A-Z_]+="\$\{[A-Z_]+:?-[^}]*\}").*/\1/p' scripts/host-audit.sh)
+  (( got )) || log "host-audit.sh: no VAR=\"\${VAR:-default}\" Configuration line read"
+
+  # sshd: the audited key:value pairs are the drop-in's lines.
+  want="$(audit_fact '^\s*for pair in ([^;]*); do' | words)"
+  got="$(heredoc_body '^write_file "\$SSHD_DROPIN" <<' | awk 'NF { print tolower($1) ":" $2 }' | words)"
+  [[ -n "$want" && "$want" == "$got" ]] || log "host-audit.sh audits sshd '$want'; setup-server.sh's drop-in sets '$got'"
+
+  # fail2ban: the audited journalmatch tokens and limits are the jail's values.
+  while IFS='=' read -r key line; do
+    key="${key//[[:space:]]/}"
+    if [[ -n "$key" ]]; then jail[$key]="$(xargs <<<"$line")"; fi
+  done < <(heredoc_body '^write_file /etc/fail2ban/jail\.local <<')
+  want="$(audit_fact '^\s*for token in ([^;]*); do' | words)"
+  line="${jail[journalmatch]:-}"
+  got="$(words <<<"${line// + / }")"
+  [[ -n "$want" && "$want" == "$got" ]] || log "host-audit.sh audits sshd journalmatch '$want'; setup-server.sh sets '$got'"
+  keys="$(grep -m1 '^ *limits=' scripts/host-audit.sh | grep -oP 'get sshd \K\w+' | paste -sd ' ' || true)"
+  want="$(audit_fact '\[\[ "\$limits" == "([^"]*)" \]\]')"
+  got=""
+  for key in $keys; do got+="${got:+ }${jail[$key]:-unset}"; done
+  [[ -n "$keys" && -n "$want" && "$want" == "$got" ]] \
+    || log "host-audit.sh expects sshd '${keys:-?}' as '$want'; setup-server.sh's jail sets '$got'"
+
+  # Docker: host-audit.sh's own jq filters, run on each daemon.json setup-server.sh writes.
+  rot_filter="$(audit_fact "^\\s*rot=\"\\\$\\(jq -r '([^']*)'")"
+  rot_want="$(audit_fact '^\s*"([^"]*)"\)\s*verdict ok "docker log rotation"')"
+  v6_filter="$(audit_fact "^\\s*v6=\"\\\$\\(jq -r '([^']*)'")"
+  v6_want="$(audit_fact '\[\[ "\$v6" == "([^"]*)" \]\]')"
+  probe="$(audit_fact '^\s*if ! (ip -4 route get \S+)')"
+  log_keys="$(sed -n "/^LOG_KEYS='/,/'\$/p" "$s" | sed "1s/^LOG_KEYS='//; \$s/'\$//")"
+  if [[ -z "$rot_filter" || -z "$rot_want" || -z "$v6_filter" || -z "$v6_want" || -z "$probe" || -z "$log_keys" ]]; then
+    log "host-audit.sh docker checks or setup-server.sh LOG_KEYS not read; contract unchecked"
+  else
+    while IFS=$'\t' read -r kind body; do
+      body="${body//\$LOG_KEYS/$log_keys}"
+      rot="$(jq -r "$rot_filter" <<<"$body" 2>&1 || true)"
+      [[ "$rot" == "$rot_want" ]] || log "setup-server.sh writes a daemon.json host-audit.sh reads as '$rot', not '$rot_want'"
+      [[ "$kind" == v6 ]] || continue
+      v6_seen=1
+      v6="$(jq -r "$v6_filter" <<<"$body" 2>&1 || true)"
+      [[ "$v6" == "$v6_want" ]] || log "setup-server.sh's IPv6-only daemon.json reads as '$v6' to host-audit.sh, not '$v6_want'"
+    done < <(awk -v probe="! $probe" '
+      /^(if |elif |else$)/ { kind = index($0, probe) ? "v6" : "v4" }
+      /^ *write_file \/etc\/docker\/daemon\.json <</ { on = 1; body = ""; next }
+      on && /^EOF$/ { print kind "\t" body; on = 0; next }
+      on { body = body " " $0 }' "$s")
+    (( v6_seen )) || log "setup-server.sh writes no daemon.json under host-audit.sh's IPv6-only probe '$probe'"
+  fi
+
+  # The audited cron line is the one setup-server.sh installs.
+  want="$(audit_fact '^\s*cron_line="([^"]*)"')"
+  if [[ -z "$want" ]] || ! grep -qxF -- "$want" "$s"; then
+    log "setup-server.sh installs no cron line '$want' that host-audit.sh expects"
+  fi
+
+  # host-audit.sh expects lingering exactly when setup-server.sh enables it.
+  want=no got=no
+  grep -qF '/var/lib/systemd/linger/$USERNAME' scripts/host-audit.sh && want=yes
+  grep -qx 'run loginctl enable-linger "$USERNAME"' "$s" && got=yes
+  [[ "$want" == "$got" ]] || log "host-audit.sh audits lingering: $want; setup-server.sh enables it: $got"
+}
+
+## contracts: verify handbook raw URLs name tracked paths, setup-server.sh pins report-health.sh's digest and applies what host-audit.sh expects, install-dotfiles.sh --check passes, the settings enable the plugin and its theme, plugin paths name the marketplace, every hook script path exists, and neovim.md installs setup-dev-machine.sh's tool lists
 check_contracts() {
   local hit file path table line pinned actual name market entry mpath default theme slug
   local candidate resolved want got
@@ -285,7 +384,10 @@ check_contracts() {
     log "REPORT_HEALTH_SHA256 in scripts/setup-server.sh is '$pinned'; scripts/report-health.sh hashes to $actual"
   fi
 
-  # 3. The install table's pre-flight passes.
+  # 3. host-audit.sh expects the defaults and values setup-server.sh applies.
+  server_audit_contract
+
+  # 4. The install table's pre-flight passes.
   if ! table="$(scripts/install-dotfiles.sh --check 2>/dev/null)"; then
     table=""
     log "install-dotfiles.sh --check failed; ~/.claude script paths not resolved"
@@ -294,7 +396,7 @@ check_contracts() {
     done < <(scripts/install-dotfiles.sh --check 2>&1 >/dev/null)
   fi
 
-  # 4. The marketplace lists the plugin at its own root, and the global settings register
+  # 5. The marketplace lists the plugin at its own root, and the global settings register
   #    that marketplace by directory and enable the plugin from it.
   name="$(jq -r '.name // ""' "$PLUGIN_MANIFEST")"
   market="$(jq -r '.name // ""' "$PLUGIN_MARKETPLACE")"
@@ -320,7 +422,7 @@ check_contracts() {
   [[ "$mpath" == /*/plugin ]] \
     || log "claude/settings.json: marketplace '$market' needs a directory source whose path ends in /plugin, got '$mpath'"
 
-  # 5. A CLAUDE_PLUGIN_ROOT default and every absolute plugin path in a Bash allow rule name
+  # 6. A CLAUDE_PLUGIN_ROOT default and every absolute plugin path in a Bash allow rule name
   #    the marketplace path.
   while IFS= read -r hit; do
     default="${hit#*:-}"
@@ -332,7 +434,7 @@ check_contracts() {
     done < <(jq -r '.permissions.allow[]? | capture("^Bash\\((?<p>/[^:)]*/plugin/[^:)]*)").p' "$file")
   done
 
-  # 6. Every script a hook command or a Bash allow rule names exists.
+  # 7. Every script a hook command or a Bash allow rule names exists.
   for file in "${files[@]}"; do
     while IFS= read -r candidate; do
       [[ -z "$candidate" ]] && continue
@@ -353,7 +455,7 @@ check_contracts() {
       [[ -e "$resolved" ]] || log "script path in $file names a missing file: $candidate -> $resolved"
     done < <(script_candidates "$file")
   done
-  # 7. guides/neovim.md installs the servers and uv tools that setup-dev-machine.sh installs.
+  # 8. guides/neovim.md installs the servers and uv tools that setup-dev-machine.sh installs.
   want="$(sed -n 's/^\(NPM_SERVERS\|UV_TOOLS\)=(\(.*\))$/\2/p' scripts/setup-dev-machine.sh | words)"
   got="$(awk '/npm install -g|uv tool install/ {on = 1} on {cont = sub(/\\$/, ""); print; if (!cont) on = 0}' guides/neovim.md \
     | sed -E 's/npm install -g|uv tool install|&&|--[a-z-]+=[^ ]*//g' | words)"
@@ -369,8 +471,7 @@ words() { tr -s '[:space:]' '\n' | sed '/^$/d' | sort | tr '\n' ' '; }
 script_candidates() {
   {
     if [[ "$1" == *.md ]]; then
-      awk 'NR == 1 && /^---/ { fm = 1; next } fm && /^---/ { exit }
-        fm && sub(/^[ \t]*command:[ \t]*/, "") { print }' "$1" | sed -E "s/^'(.*)'$/\1/; s/''/'/g"
+      skill_hook_commands "$1"
     else
       jq -r '[.hooks[]?[]?.hooks[]?.command, .statusLine.command?] | .[] | select(. != null)' "$1"
     fi

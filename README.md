@@ -125,6 +125,7 @@ A web app on a fresh server chains Fresh server, Deploy, Monitoring, then Backup
 | [scripts/test-setup-dev-machine.sh](scripts/test-setup-dev-machine.sh) | Fixture test for `setup-dev-machine.sh`; `make test-setup-dev-machine` |
 | [scripts/test-dockerfiles.sh](scripts/test-dockerfiles.sh) | Builds the Dockerfile templates against stub apps until healthy; `make test-dockerfiles` |
 | [scripts/lib/test-harness.sh](scripts/lib/test-harness.sh) | Shared setup and verdict the fixture tests source; `make test` runs them |
+| [scripts/lib/skill-hooks.sh](scripts/lib/skill-hooks.sh) | Reads a SKILL.md's frontmatter hook commands; `check-repo.sh` and `test-plan-run-guard.sh` source it |
 
 ## License
 
