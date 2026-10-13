@@ -107,6 +107,41 @@ expect 2 "nested quotes in \$(...)" $'echo "$(echo "a"; git push -f)"'
 expect 2 "nested quotes in a commit message \$(...)" $'git commit -m "$(printf "%s" x && git push --force)"'
 expect 2 "nested quotes in backticks" $'echo "`echo "a"; git push -f`"'
 expect 2 "\$(...) in an unquoted cat heredoc" $'git commit -m "$(cat <<EOF\nrun $(git push -f)\nEOF\n)"'
+expect 2 "empty quotes inside the git word" "gi''t push -f"
+expect 2 "backslash inside the git word" 'g\it push -f'
+expect 2 "double quotes inside the git word" 'g"i"t push -f'
+expect 2 "quoted end of the git word" 'gi"t" commit -n -m x'
+expect 2 "line continuation inside the git word" $'g\\\nit push -f'
+expect 2 "ANSI-C quoted git word" "\$'git' push -f"
+expect 2 "ANSI-C hex escape in the git word" "\$'\\x67it' push -f"
+expect 2 "ANSI-C octal escapes in the git word" "\$'\\147\\151\\164' push -f"
+expect 2 "locale-quoted git word" '$"git" push -f'
+expect 2 "--git-dir before push" 'git --git-dir .git push -f'
+expect 2 "--work-tree before push" 'git --work-tree . push --force'
+expect 2 "--namespace before push" 'git --namespace foo push --force'
+expect 2 "--attr-source before push" 'git --attr-source HEAD push -f'
+expect 2 "--git-dir before commit -n" 'git --git-dir .git commit -n -m x'
+expect 2 "--config-env core.hooksPath" 'HP=/dev/null git --config-env core.hooksPath=HP commit -m x'
+expect 2 "abbreviated --no-verify on commit" 'git commit --no-veri -m x'
+expect 2 "longer abbreviated --no-verify on commit" 'git commit --no-verif -m x'
+expect 2 "abbreviated --no-verify on push" 'git push --no-veri origin main'
+expect 2 "abbreviated --mirror" 'git push --mirro origin'
+expect 2 "shortest --mirror prefix" 'git push --m origin'
+expect 2 "core.hooksPath in GIT_CONFIG_PARAMETERS" "GIT_CONFIG_PARAMETERS=\"'core.hooksPath=/dev/null'\" git commit -m x"
+expect 2 "exported GIT_CONFIG_PARAMETERS" "export GIT_CONFIG_PARAMETERS=\"'core.hooksPath=/dev/null'\"; git commit -m x"
+expect 2 "+refspec in GIT_CONFIG_VALUE_n" \
+  'GIT_CONFIG_COUNT=1 GIT_CONFIG_KEY_0=remote.origin.push GIT_CONFIG_VALUE_0=+HEAD:main git push origin'
+expect 2 "+refspec through -c" 'git -c remote.origin.push=+HEAD:refs/heads/main push origin'
+expect 2 "mirror through -c" 'git -c remote.origin.mirror=true push origin'
+expect 2 "alias through -c" 'git -c alias.p="push --force" p origin main'
+expect 2 "alias through --config-env" 'P="push -f" git --config-env=alias.p=P p origin main'
+expect 2 "alias in GIT_CONFIG_KEY_n" 'GIT_CONFIG_COUNT=1 GIT_CONFIG_KEY_0=alias.p GIT_CONFIG_VALUE_0="push -f" git p'
+expect 2 "alias in GIT_CONFIG_PARAMETERS" "GIT_CONFIG_PARAMETERS=\"'core.x=1' 'alias.p=push -f'\" git p"
+expect 2 "mirror in GIT_CONFIG_KEY_n" 'GIT_CONFIG_COUNT=1 GIT_CONFIG_KEY_0=remote.origin.mirror GIT_CONFIG_VALUE_0=true git push origin'
+expect 2 "git config writes core.hooksPath" 'git config core.hooksPath /dev/null && git commit -m x'
+expect 2 "git config set core.hooksPath" 'git config set core.hooksPath /dev/null'
+expect 2 "git config writes an alias" 'git config alias.pf "push -f"; git pf origin main'
+expect 2 "git config writes a push refspec" 'git -C x config --add remote.origin.push +HEAD:main'
 
 # 2. Calls the guard lets through.
 expect 0 "quoted -f in a commit message" 'git commit -m "drop the -f flag"'
@@ -122,6 +157,16 @@ expect 0 "quoted cat heredoc as a commit message" $'git commit -m "$(cat <<\'EOF
 expect 0 "quotes and backticks in a quoted cat heredoc" \
   $'git commit -m "$(cat <<\'EOF\'\ndon\'t "x" `git push -f`\nEOF\n)"'
 expect 0 "unquoted cat heredoc as a commit message" $'git commit -m "$(cat <<EOF\nnever run git push -f\nEOF\n)"'
+expect 0 "push --no-verbose" 'git push --no-verbose origin main'
+expect 0 "push refspec override without +" 'git -c remote.origin.push=HEAD:main push origin'
+expect 0 "alias.<x>= in a commit message" 'git commit -m "alias.co=checkout is handy"'
+expect 0 "core.hooksPath= in a commit message" 'git commit -m "core.hooksPath=/dev/null skips hooks"'
+expect 0 "remote mirror key in a push option" 'git push -o "remote.origin.mirror=true" origin main'
+expect 0 "git config reads core.hooksPath" 'git config core.hooksPath'
+expect 0 "git config --get core.hooksPath" 'git config --get core.hooksPath'
+expect 0 "git config --unset core.hooksPath" 'git config --unset core.hooksPath'
+expect 0 "git config reads an alias" 'git config --get alias.pf'
+expect 0 "git config writes another key" 'git config user.name x'
 
 # 3. A command without git never reaches jq or gitleaks.
 expect 0 "no git" 'ls -la'
@@ -156,6 +201,13 @@ for cmd in 'git add untracked.txt && git commit -m x' 'bash -c "git add -A; git 
     fail "$cmd: unexpected scans: $(cat "$CALLS")"
   fi
 done
+# A forced add in the same call also stages an ignored file; the scratch index replays it.
+run 'git add -f ignored.txt && git commit -m x'
+if [[ "$(sed -n 2p "$CALLS")" == "index protect --source $WORK "*"| ignored.txt tracked.txt untracked.txt " ]]; then
+  log "git add -f -> scratch index holds the ignored file"
+else
+  fail "git add -f: unexpected scans: $(cat "$CALLS")"
+fi
 
 # 7. The scan follows -C and cd to the repo the commit runs in, quoted or not.
 run 'git -C sub commit -m x'
@@ -166,6 +218,27 @@ run "git -C \"$FIX/my repo\" commit -m x" /
 if grep -q -- "--source $FIX/my repo " "$CALLS"; then log "quoted -C -> scans it"; else fail "quoted -C: $(cat "$CALLS")"; fi
 run "cd '$FIX/my repo' && git commit -m x" /
 if grep -q -- "--source $FIX/my repo " "$CALLS"; then log "quoted cd -> scans it"; else fail "quoted cd: $(cat "$CALLS")"; fi
+run "git --git-dir $FIX/other/.git commit -m x"
+if grep -q -- "--source $FIX/other " "$CALLS"; then log "--git-dir -> scans its repo"; else fail "--git-dir: $(cat "$CALLS")"; fi
+run 'git --work-tree sub commit -m x'
+if grep -q -- "--source $WORK/sub " "$CALLS"; then log "--work-tree -> scans it"; else fail "--work-tree: $(cat "$CALLS")"; fi
+run "pushd $FIX/other && git commit -m x"
+if grep -q -- "--source $FIX/other " "$CALLS"; then log "pushd -> scans it"; else fail "pushd: $(cat "$CALLS")"; fi
+run "pushd $FIX/other; popd; git commit -m x"
+if grep -q -- "--source $WORK " "$CALLS"; then log "popd -> scans the cwd"; else fail "popd: $(cat "$CALLS")"; fi
+run "(cd $FIX/other && git commit -m x)"
+if grep -q -- "--source $FIX/other " "$CALLS"; then log "cd in a subshell -> scans it there"; else fail "subshell cd: $(cat "$CALLS")"; fi
+
+# 7b. A cd inside a subshell or a substitution leaves the commit after it in the cwd.
+for cmd in "(cd $FIX/other && ls) && git commit -m x" "x=\$(cd $FIX/other && pwd); git commit -m x" \
+  "x=\`cd $FIX/other\`; git commit -m x" "echo \"\$(cd $FIX/other)\"; git commit -m x"; do
+  run "$cmd"
+  if grep -q -- "--source $WORK " "$CALLS" && ! grep -q -- "--source $FIX/other " "$CALLS"; then
+    log "$cmd -> scans the cwd"
+  else
+    fail "$cmd: unexpected scans: $(cat "$CALLS")"
+  fi
+done
 
 # 8. A finding blocks, and stderr carries the gitleaks summary.
 touch "$LEAK"

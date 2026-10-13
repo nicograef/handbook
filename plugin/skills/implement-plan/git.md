@@ -73,7 +73,7 @@ List with `git diff --name-only --diff-filter=U`; classify by porcelain code. Ab
 
 ## Hazards in a multi-worktree repo
 
-[claude/settings.json](../../../claude/settings.json) denies these commands. Use the alternative instead:
+[claude/settings.json](../../../claude/settings.json) denies only the plain spelling of these commands. `git -C <wt>`, reordered flags and other spellings pass that rule, so use the alternative in every spelling:
 
 | Denied | Use instead |
 | --- | --- |
