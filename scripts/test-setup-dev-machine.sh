@@ -8,7 +8,9 @@
 #   1. Copies the working tree to a temp clone with an HTTPS origin and an empty home.
 #   2. Puts one logging stub first on PATH for apt, snap, gh, npm, uv, nvim and the rest;
 #      marker files hold the fake machine state, and a tool appears when its fix installs it.
-#   3. Asserts the root guard, --check on the fresh machine, --yes on it, then --check again.
+#   3. Asserts the root guard, --check on the fresh machine, --yes on it, then --check again; drift only
+#      install.sh fixes shows in install-dotfiles.sh --status and the dotfiles row, and --yes clears it;
+#      Ptyxis waits for its default profile, and a failing --status probe stops --check.
 #   4. Reruns --yes on a gh login that lacks the key scopes and a deleted font, then with both keys present,
 #      with an inactive account holding the scopes or an invalid token, and with a key list that fails whole
 #      or for one type.
@@ -173,9 +175,18 @@ case "$name" in
       "install -g "*) shift 2; printf '%s\n' "${@%@latest}" >> "$S/npm" ;;
     esac ;;
   claude)
+    [[ -f "$S/pluginbroken" ]] && { echo boom >&2; exit 3; }
     case "$1 $2" in
       "plugin list") [[ -f "$S/plugin" ]] && printf '[{"id":"nico@handbook","enabled":%s}]\n' "$(cat "$S/plugin")" || echo '[]' ;;
       "plugin install") echo true > "$S/plugin" ;;
+    esac ;;
+  # Ptyxis: $S/ptyxisuuid holds the default profile's uuid, absent before its first start; $S/palette its palette.
+  gsettings)
+    case "$1 ${3:-}" in
+      "list-schemas ") echo org.gnome.Ptyxis ;;
+      "get default-profile-uuid") echo "'$(cat "$S/ptyxisuuid" 2>/dev/null)'" ;;
+      "get palette") echo "'$(cat "$S/palette")'" ;;
+      "set palette") echo "$4" > "$S/palette" ;;
     esac ;;
   fc-list) compgen -G "$FIX/home/.local/share/fonts/nerd/*" >/dev/null && echo 'Symbols Nerd Font' ;;
   nvim)
@@ -254,9 +265,9 @@ export USER_PATH="$HOME_DIR/.local/bin:$FIX/usr-local/bin:$FIX/bin:$FIX/sysbin"
 SCRIPT="$CLONE/scripts/setup-dev-machine.sh"
 # What a --check on a fresh machine may call: reads only.
 READS='^(dpkg-query .*|apt list .*|snap (list|refresh --list).*|id .*|curl .*(pypi|go\.dev/dl/\?mode|api\.github|nodejs\.org/dist/index)[^ ]*'
-READS+='|git (-C [^ ]+ (rev-parse HEAD|remote get-url origin)|config --global [a-zA-Z.]+)|fc-list .*|gh auth status( .*)?|pipx list --short)$'
+READS+='|git (-C [^ ]+ (rev-parse HEAD|remote get-url origin)|config --global [a-zA-Z.-]+)|fc-list .*|gh auth status( .*)?|pipx list --short)$'
 # What a fix calls: a rerun on a matching machine must call none of them.
-WRITES='^(apt-get (install|remove)|snap (install|refresh [a-z])|usermod|ssh-keygen|gh (auth (login|refresh)|ssh-key add)|pipx (install|upgrade)|npm (config set|install)|uv tool (install|upgrade)|claude plugin (install|marketplace)|curl -fsSL|nvim --headless|git (config --global [a-zA-Z.]+ .|remote set-url)|fc-cache)'
+WRITES='^(apt-get (install|remove)|snap (install|refresh [a-z])|usermod|ssh-keygen|gh (auth (login|refresh)|ssh-key add)|pipx (install|upgrade)|npm (config set|install)|uv tool (install|upgrade)|claude plugin (install|marketplace)|curl -fsSL|nvim --headless|git (config --global [a-zA-Z.-]+ .|remote set-url)|fc-cache)'
 
 run() { # run <stdin> [args...]; sets rc, stdout in $OUT
   local input="$1"
@@ -327,10 +338,14 @@ in_order "apt-get install -y git" "xz-utils xclip" "apt-get install -y --no-upgr
 log "--yes -> fixes run in item order"
 if grep -q '^gh auth refresh' "$CALLS"; then fail "--yes asked for a second gh approval"
 else log "--yes -> the gh login carries the key scopes"; fi
+# The script's default USER_PATH is what .bash_aliases makes of Ubuntu's PATH; /usr/local/go/bin joins only where it exists.
 # shellcheck disable=SC2016 # the new shell expands $PATH
-path="$(env -i HOME="$HOME_DIR" PATH=/usr/bin:/bin bash -c '. ~/.bash_aliases >/dev/null 2>&1; echo "$PATH"')"
-if [[ ":$path:" == *":$HOME_DIR/.local/bin:"* ]]; then log "--yes -> a new terminal has ~/.local/bin"
-else fail "a new terminal lacks ~/.local/bin: $path"; fi
+path="$(env -i HOME="$HOME_DIR" PATH=/usr/local/bin:/usr/bin:/bin:/snap/bin bash -c '. ~/.bash_aliases >/dev/null 2>&1; echo "$PATH"')"
+want="$(sed -n 's/^USER_PATH="[$]{USER_PATH:-\(.*\)}"$/\1/p' "$SCRIPT")"
+want="${want//\$TARGET_HOME/$HOME_DIR}"
+if [[ ! -d /usr/local/go/bin ]]; then want="${want%:/usr/local/go/bin}"; fi
+if [[ -n "$want" && "$path" == "$want" ]]; then log "--yes -> a new terminal's PATH is USER_PATH"
+else fail "a new terminal's PATH $path is not USER_PATH $want"; fi
 if [[ "$(git -C "$CLONE" remote get-url origin)" == git@github.com:nicograef/handbook.git ]]; then
   log "--yes -> origin over SSH"; else fail "origin not switched to SSH"; fi
 if grep -qF 'docker group' "$OUT" && grep -qF 'Log out and back in' "$OUT"; then
@@ -340,6 +355,59 @@ if grep -qF 'docker group' "$OUT" && grep -qF 'Log out and back in' "$OUT"; then
 check_run fixed
 if [[ "$rc" -eq 0 && "$(rows ok)" -eq 18 ]]; then log "fixed --check -> 18 rows ok"
 else fail "fixed --check: rc $rc: $(cat "$OUT")"; fi
+
+# 4b. Drift only install.sh fixes: a git default, the /config pref, a stale link into the clone.
+#     install-dotfiles.sh --status names each, the row flags them, and --yes clears them.
+status() { rc=0; env -i HOME="$HOME_DIR" PATH="$USER_PATH" "$CLONE/scripts/install-dotfiles.sh" --status > "$OUT" 2>&1 || rc=$?; }
+status
+if [[ "$rc" -eq 0 && ! -s "$OUT" ]]; then log "fixed --status -> exit 0, silent"; else fail "fixed --status: rc $rc: $(cat "$OUT")"; fi
+/usr/bin/git config --file "$HOME_DIR/.gitconfig" pull.rebase false
+jq '.leftArrowOpensAgents = true' "$HOME_DIR/.claude.json" > "$FIX/claude.json" && mv "$FIX/claude.json" "$HOME_DIR/.claude.json"
+ln -s "$CLONE/claude/gone.md" "$HOME_DIR/.claude/gone.md"
+status
+if [[ "$rc" -eq 1 && "$(cat "$OUT")" == $'WRONG stale link ~/.claude/gone.md\nWRONG /config prefs in ~/.claude.json\nWRONG git pull.rebase' ]]; then
+  log "drift --status -> exit 1, one line per item"
+else fail "drift --status: rc $rc: $(cat "$OUT")"; fi
+check_run drift
+if [[ "$rc" -eq 1 ]] && grep -qE '^WRONG +dotfiles and config +stale link .*; /config prefs .*; git pull.rebase$' "$OUT"; then
+  log "drift --check -> the dotfiles row names each item"
+else fail "drift --check: rc $rc: $(cat "$OUT")"; fi
+run '' --yes
+status
+if [[ "$rc" -eq 0 && ! -s "$OUT" && ! -L "$HOME_DIR/.claude/gone.md" ]]; then log "drift --yes -> install.sh cleared it"
+else fail "drift --yes: rc $rc: $(cat "$OUT")"; fi
+cp "$HOME_DIR/.claude.json" "$FIX/claude.json"
+jq 'del(.leftArrowOpensAgents)' "$FIX/claude.json" > "$HOME_DIR/.claude.json"
+status
+if [[ "$rc" -eq 1 && "$(cat "$OUT")" == 'MISSING /config prefs in ~/.claude.json' ]]; then log "absent pref --status -> MISSING"
+else fail "absent pref --status: rc $rc: $(cat "$OUT")"; fi
+mv "$FIX/claude.json" "$HOME_DIR/.claude.json"
+
+# Ptyxis without a default profile is skipped; a profile with another palette is WRONG, and --yes selects ours.
+ln -s "$FIX/stub" "$FIX/bin/gsettings"
+status
+if [[ "$rc" -eq 0 && ! -s "$OUT" ]]; then log "Ptyxis without a profile --status -> silent"
+else fail "Ptyxis without a profile --status: rc $rc: $(cat "$OUT")"; fi
+echo fixture-uuid > "$STATE/ptyxisuuid"
+echo builtin-dark > "$STATE/palette"
+status
+if [[ "$rc" -eq 1 && "$(cat "$OUT")" == 'WRONG Ptyxis palette' ]]; then log "other Ptyxis palette --status -> WRONG"
+else fail "other Ptyxis palette --status: rc $rc: $(cat "$OUT")"; fi
+run '' --yes
+if [[ "$rc" -eq 0 && "$(cat "$STATE/palette")" == catppuccin-mocha-grey ]] \
+  && grep -qx "gsettings set org.gnome.Ptyxis.Profile:/org/gnome/Ptyxis/Profiles/fixture-uuid/ palette catppuccin-mocha-grey" "$CALLS"; then
+  log "other Ptyxis palette --yes -> catppuccin-mocha-grey"
+else fail "other Ptyxis palette --yes: rc $rc: $(cat "$OUT")"; fi
+rm "$FIX/bin/gsettings"
+
+# A failing probe inside install-dotfiles.sh --status stops --check with an ERROR line, not a row.
+touch "$STATE/pluginbroken"
+run '' --check
+if [[ "$rc" -eq 1 ]] && grep -q '^ERROR: install-dotfiles.sh --status failed (exit 2)' "$OUT" \
+  && grep -qF 'failed (exit 3' "$OUT" && ! grep -qE '^[A-Z]+ +dotfiles and config' "$OUT"; then
+  log "broken plugin probe --check -> ERROR names the exit code, no dotfiles row"
+else fail "broken plugin probe --check: rc $rc: $(cat "$OUT")"; fi
+rm "$STATE/pluginbroken"
 
 # A disabled plugin is reported on an ok row and never re-enabled.
 echo false > "$STATE/plugin"
@@ -363,35 +431,29 @@ else fail "scopeless login: rc $rc, $refreshes refreshes, adds: $adds: $(cat "$O
 if grep -qF 'terminal finds the new font' "$OUT"; then log "font fix -> asks for a new login"
 else fail "no new-login notice after the font fix: $(cat "$OUT")"; fi
 
-# 5b. A login without the key scopes, both keys already on GitHub: the row names the scopes, no title is asked.
-printf 'repo\n' > "$STATE/scopes"
-run '' --check
-if grep -qE '^WRONG .*lacks admin:public_key admin:ssh_signing_key' "$OUT"; then log "scopeless login, keys present --check -> names the scopes"
-else fail "scopeless login, keys present --check: $(cat "$OUT")"; fi
-run '' --yes
-if [[ "$rc" -eq 0 ]] && ! grep -qE '^(gh ssh-key add|hostname)' "$CALLS"; then
-  log "scopeless login, keys present --yes -> no title asked, nothing added"
-else fail "scopeless login, keys present --yes: rc $rc: $(cat "$OUT")"; fi
+# 5b. A login without the key scopes, both keys already on GitHub, with or without an inactive account
+#     holding them: the row names the scopes, and --yes asks no title and adds nothing.
+for other in none scoped; do
+  printf 'repo\n' > "$STATE/scopes"
+  if [[ "$other" == scoped ]]; then printf 'admin:public_key\nadmin:ssh_signing_key\n' > "$STATE/otherscopes"; fi
+  run '' --check
+  if grep -qE '^WRONG .*lacks admin:public_key admin:ssh_signing_key' "$OUT"; then log "scopeless login, other account $other --check -> names the scopes"
+  else fail "scopeless login, other account $other --check: $(cat "$OUT")"; fi
+  run 'ne\n' --yes
+  if [[ "$rc" -eq 0 ]] && ! grep -qE '^(gh ssh-key add|hostname)' "$CALLS"; then
+    log "scopeless login, other account $other --yes -> no title asked, nothing added"
+  else fail "scopeless login, other account $other --yes: rc $rc: $(cat "$OUT")"; fi
+  rm -f "$STATE/otherscopes"
+done
 
-# 5c. An inactive account holds the key scopes the active login lacks: the row still names the scopes.
-printf 'repo\n' > "$STATE/scopes"
-printf 'admin:public_key\nadmin:ssh_signing_key\n' > "$STATE/otherscopes"
-run '' --check
-if grep -qE '^WRONG .*lacks admin:public_key admin:ssh_signing_key' "$OUT"; then log "inactive account's scopes --check -> names the scopes"
-else fail "inactive account's scopes --check: $(cat "$OUT")"; fi
-run 'ne\n' --yes
-if [[ "$rc" -eq 0 ]] && ! grep -qE '^(gh ssh-key add|hostname)' "$CALLS"; then log "inactive account's scopes --yes -> no title asked, nothing added"
-else fail "inactive account's scopes --yes: rc $rc: $(cat "$OUT")"; fi
-rm "$STATE/otherscopes"
-
-# 5d. An inactive account with an invalid token leaves the active login and the keys ok.
+# 5c. An inactive account with an invalid token leaves the active login and the keys ok.
 touch "$STATE/otherbad"
 run '' --check
 if grep -qE '^ok +gh login' "$OUT" && grep -qE '^ok +GitHub keys' "$OUT"; then log "invalid inactive account --check -> login and keys ok"
 else fail "invalid inactive account --check: $(cat "$OUT")"; fi
 rm "$STATE/otherbad"
 
-# 5e. Both keys on GitHub, but the list fails whole or for one type: WRONG with gh's error, nothing added.
+# 5d. Both keys on GitHub, but the list fails whole or for one type: WRONG with gh's error, nothing added.
 for down in listdown signingdown; do
   touch "$STATE/$down"
   run '' --check
@@ -404,7 +466,7 @@ for down in listdown signingdown; do
   rm "$STATE/$down"
 done
 
-# 5f. A plugin init.lua dropped stays on disk: WRONG by name, and the fix deletes it.
+# 5e. A plugin init.lua dropped stays on disk: WRONG by name, and the fix deletes it.
 mkdir -p "$HOME_DIR/.local/share/nvim/site/pack/core/opt/stale.nvim"
 run '' --check
 if grep -qE '^WRONG +Neovim plugins +not in the lockfile: stale.nvim' "$OUT"; then log "stray plugin --check -> WRONG by name"
@@ -424,7 +486,7 @@ rm "$STATE/nosnap"
 # 7. Another distro is refused before any probe.
 printf 'ID=fedora\n' > "$FIX/etc/os-release"
 run '' --check
-if [[ "$rc" -eq 1 ]] && grep -qF "supports Ubuntu and Debian; $FIX/etc/os-release names 'fedora'" "$OUT" && ! grep -q . "$CALLS"; then
+if [[ "$rc" -eq 1 ]] && grep -qE '^ERROR: .*fedora' "$OUT" && ! grep -q . "$CALLS"; then
   log "fedora -> refused"
 else fail "fedora: rc $rc: $(cat "$OUT")"; fi
 

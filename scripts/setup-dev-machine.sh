@@ -49,7 +49,8 @@ trap 'on_err "$LINENO"' ERR
 NODE_CHANNEL="${NODE_CHANNEL:-26/stable}"           # Node's snap channel; on Debian, its major picks the tarball
 TARGET_USER="${TARGET_USER:-${SUDO_USER:-$(id -un)}}"
 TARGET_HOME="${TARGET_HOME:-$(getent passwd "$TARGET_USER" | cut -d: -f6)}"
-USER_PATH="${USER_PATH:-$TARGET_HOME/.local/bin:$TARGET_HOME/go/bin:/usr/local/go/bin:/snap/bin:/usr/local/bin:/usr/bin:/bin}"
+# A new terminal's order: .bash_aliases puts ~/go/bin and ~/.local/bin before Ubuntu's PATH and /usr/local/go/bin after it.
+USER_PATH="${USER_PATH:-$TARGET_HOME/go/bin:$TARGET_HOME/.local/bin:/usr/local/bin:/usr/bin:/bin:/snap/bin:/usr/local/go/bin}"
 ETC_DIR="${ETC_DIR:-/etc}"                          # the fixture test points this at a temp dir
 GO_ROOT="${GO_ROOT:-/usr/local/go}"                 # Debian: go.dev's install path; the tarball unpacks a go/ dir
 NODE_PREFIX="${NODE_PREFIX:-/usr/local}"            # Debian: the Node tarball's bin, include, lib and share land here
@@ -533,25 +534,15 @@ fix_uvtools() {
 check_claude() { if ! user_has claude; then flag MISSING claude; fi; }
 fix_claude() { as_user bash -c 'curl -fsSL https://claude.ai/install.sh | bash'; }
 
+# install.sh's own probe: one "<status> <item>" line per item it would change, ok lines carrying a note.
 check_dotfiles() {
-  local origin dest plugins wrong=()
-  while read -r origin dest; do
-    if [[ "$(readlink -f "$TARGET_HOME/$dest")" != "$(readlink -f "$HANDBOOK_DIR/$origin")" ]]; then
-      wrong+=("$dest")
-    fi
-  done < <("$HANDBOOK_DIR/scripts/install-dotfiles.sh" --check)
-  if ((${#wrong[@]})); then flag WRONG "unlinked in home: ${wrong[*]}"; fi
-  # A disabled plugin is the user's choice: reported, never re-enabled.
-  if user_has claude; then
-    plugins="$(as_user claude plugin list --json 2>/dev/null || true)"
-    if ! jq -e 'any(.id == "nico@handbook")' >/dev/null 2>&1 <<<"$plugins"; then flag MISSING "plugin nico@handbook"
-    elif ! jq -e 'any(.id == "nico@handbook" and .enabled)' >/dev/null <<<"$plugins"; then
-      note "plugin nico@handbook disabled; enable it with /plugin"
-    fi
-  fi
-  if [[ -f "$KEY.pub" && "$(as_user git config --global commit.gpgsign || true)" != true ]]; then
-    flag MISSING "commit signing"
-  fi
+  local out status item rc=0
+  out="$(as_user "$HANDBOOK_DIR/scripts/install-dotfiles.sh" --status)" || rc=$?
+  if ((rc > 1)); then die "install-dotfiles.sh --status failed (exit $rc)"; fi
+  while read -r status item; do
+    if [[ -z "$status" ]]; then continue; fi
+    if [[ "$status" == ok ]]; then note "$item"; else flag "$status" "$item"; fi
+  done <<<"$out"
 }
 fix_dotfiles() { as_user "$HANDBOOK_DIR/install.sh"; }
 
