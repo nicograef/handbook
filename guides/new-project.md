@@ -14,7 +14,8 @@ Take an empty directory to a repository whose `make check` passes. Index: [READM
 | `<visibility>` | Repo visibility | `public` or `private` |
 | `<handbook>` | Path to your local handbook clone | `~/r/handbook` |
 | `<database-name>` | Postgres database name | `orders` |
-| `<project-go-version>` | Go release: the `go` directive of `go.mod`, the devcontainer Go feature | `1.26.5` |
+| `<project-go-version>` | Go release: the `go` directive of `go.mod`, the devcontainer Go feature, `setup-dev-tools.sh` | `1.27.1` |
+| `<go-minor>` | Go minor of that release: the `Dockerfile.go` base tag | `1.27` |
 | `<project-python-version>` | Python minor: `uv init`, the `Dockerfile.python` base tag | `3.12` |
 | `<uv-version>` | uv floor: `pyproject.toml`, the `Dockerfile.python` base tag, `setup-dev-tools.sh` | `0.13.0` |
 | `<pytest-marker>` | Opt-in pytest marker for integration tests | `integration` |
@@ -77,11 +78,12 @@ A React repository skips [Copy the production files](#copy-the-production-files)
    uv init --package --python <project-python-version> backend && cp "$HANDBOOK/templates/Dockerfile.python" backend/Dockerfile   # Python
    (mkdir -p backend && cd backend && go mod init github.com/<github-owner>/<project-name> && go mod edit -go=<project-go-version>) && cp "$HANDBOOK/templates/Dockerfile.go" backend/Dockerfile   # Go
    pnpm create vite frontend --template react-ts --no-interactive && cp "$HANDBOOK/templates/Dockerfile.spa" frontend/Dockerfile && cp "$HANDBOOK/templates/nginx-spa.conf" frontend/nginx.conf   # React
-   mkdir -p database/migrations && printf 'CREATE TABLE app_meta (key text PRIMARY KEY, value text NOT NULL);\n' > database/migrations/000001_init.up.sql && printf 'DROP TABLE app_meta;\n' > database/migrations/000001_init.down.sql   # Python or Go
+   mkdir -p database/migrations && printf 'CREATE TABLE app_meta (key text PRIMARY KEY, value text NOT NULL);\n' > database/migrations/000001_init.up.sql   # Python or Go
    for d in $(ls -d backend frontend 2>/dev/null); do cp "$HANDBOOK/templates/.dockerignore" "$d"/; done
    ```
-3. A Go backend adds its linter config, tools and a first sqlc query, and uncomments the Makefile's Go blocks. Expected: `go tool sqlc diff` in `backend/` exits 0.
+3. A Go backend adds its health server, linter config, tools and first sqlc query, and uncomments the Makefile's Go blocks. Expected: `go tool sqlc diff` and `go build -o /dev/null ./cmd/<project-name>` in `backend/` exit 0.
    ```bash
+   mkdir -p backend/cmd/<project-name> && printf 'package main\n\nimport (\n\t"log"\n\t"net/http"\n\t"time"\n)\n\nfunc main() {\n\tmux := http.NewServeMux()\n\tmux.HandleFunc("GET /api/health", func(w http.ResponseWriter, _ *http.Request) {\n\t\t_, _ = w.Write([]byte("ok"))\n\t})\n\tsrv := &http.Server{Addr: ":8080", Handler: mux, ReadHeaderTimeout: 5 * time.Second}\n\tlog.Fatal(srv.ListenAndServe())\n}\n' > backend/cmd/<project-name>/main.go
    cp "$HANDBOOK/templates/golangci.yml" backend/.golangci.yml && mkdir -p backend/sqlc/queries && printf -- '-- name: GetMeta :one\nSELECT value FROM app_meta WHERE key = $1;\n' > backend/sqlc/queries/meta.sql
    printf 'version: "2"\nsql:\n  - engine: postgresql\n    schema: ../database/migrations\n    queries: sqlc/queries\n    gen:\n      go: {package: db, out: internal/db}\n' > backend/sqlc.yaml
    (cd backend && go get -tool golang.org/x/tools/cmd/goimports github.com/sqlc-dev/sqlc/cmd/sqlc golang.org/x/vuln/cmd/govulncheck && go tool sqlc generate)
@@ -126,10 +128,10 @@ A React repository skips [Copy the production files](#copy-the-production-files)
    ```
 2. Fill the names and versions. Expected: the `grep` prints nothing.
    ```bash
-   PROJECT=<project-name> OWNER=<github-owner> DB=<database-name> MARKER=<pytest-marker> GOV=<project-go-version> UV=<uv-version> PY=<project-python-version> NODE=<node-major>
+   PROJECT=<project-name> OWNER=<github-owner> DB=<database-name> MARKER=<pytest-marker> GOV=<project-go-version> GOMINOR=<go-minor> UV=<uv-version> PY=<project-python-version> NODE=<node-major>
    FILES=$(ls Makefile docker-compose*.yml .devcontainer/* scripts/setup-dev-tools.sh .github/*.yml .github/workflows/*.yml */Dockerfile frontend/nginx.conf 2>/dev/null)
    sed -i -e "s|<owner>|$OWNER|g; s|<project>|$PROJECT|g; s|<name>|$PROJECT|g; s|<package>|backend|g; s|<database-name>|$DB|g; s|<marker>|$MARKER|g" \
-     -e "s|<project-go-version>|$GOV|g; s|<uv-version>|$UV|g; s|<project-python-version>|$PY|g; s|<node-major>|$NODE|g; s|my-project-dev|$PROJECT-dev|" $FILES
+     -e "s|<project-go-version>|$GOV|g; s|<go-minor>|$GOMINOR|g; s|<uv-version>|$UV|g; s|<project-python-version>|$PY|g; s|<node-major>|$NODE|g; s|my-project-dev|$PROJECT-dev|" $FILES
    sed -i "s|^name: [a-z]*|name: $PROJECT|" docker-compose*.yml
    grep -n '^[^#]*<[a-z][a-z-]\+>' $FILES    # placeholders outside comments
    ```
@@ -148,5 +150,5 @@ A React repository skips [Copy the production files](#copy-the-production-files)
 ```bash
 make help                                             # DEVELOPER and PRODUCTION sections list the targets
 make check                                            # every check of the stack passes
-docker compose -f docker-compose.prod.yml --env-file .env.example config --quiet && echo ok   # -> ok
+docker compose -f docker-compose.prod.yml --env-file .env.example config --quiet && echo ok   # backend rows -> ok
 ```

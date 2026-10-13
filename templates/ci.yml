@@ -59,6 +59,9 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
+          # Full history puts the push's base commit and origin/main on disk, so paths-filter
+          # never runs its own `git fetch`, which has no credentials in a private repo.
+          fetch-depth: 0
       - name: Check for changes
         uses: dorny/paths-filter@ceb8a2b8f2d89434be7ff52d3de7ec3738c5cc9d # v4.0.3
         id: changes
@@ -67,10 +70,14 @@ jobs:
             backend:
               - 'backend/**'
               - 'scripts/setup-dev-tools.sh'  # pins the lint and tool versions
+              - '.github/workflows/ci.yml'
             frontend:
               - 'frontend/**'
+              - '.github/workflows/ci.yml'
             database:
               - 'database/**'
+              - 'docker-compose.prod.yml'  # the postgres image the restore drill runs
+              - '.github/workflows/ci.yml'
 
   # >>> stack: go
   # ── Go Backend ─────────────────────────────────────────────────────────────
@@ -94,6 +101,7 @@ jobs:
       - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
         with:
           go-version-file: backend/go.mod  # relative to the repo root
+          cache-dependency-path: backend/go.sum
 
       - name: Download dependencies
         run: go mod download
@@ -157,6 +165,7 @@ jobs:
       - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
         with:
           go-version-file: backend/go.mod
+          cache-dependency-path: backend/go.sum
 
       # scripts/setup-dev-tools.sh holds the pin, so CI and a dev machine run one golangci-lint.
       - name: Read the golangci-lint version
@@ -387,6 +396,7 @@ jobs:
       - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
         with:
           go-version-file: backend/go.mod
+          cache-dependency-path: backend/go.sum
 
       - name: Download dependencies
         run: go mod download

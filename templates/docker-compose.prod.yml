@@ -31,8 +31,10 @@ services:
       - postgres-data:/var/lib/postgresql
     networks:
       - db-network
+    # TCP, not the socket: the image's init server listens on the socket only and
+    # restarts, so a socket probe reports ready before the real server is up.
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      test: ["CMD-SHELL", "pg_isready -h 127.0.0.1 -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
       interval: 5s
       timeout: 3s
       retries: 10
@@ -123,6 +125,8 @@ services:
 networks:
   app-network:
     driver: bridge
+    # Dual-stack, so IPv6 clients reach Caddy directly, not through docker-proxy, which hides their address.
+    enable_ipv6: true
   db-network:
     driver: bridge
     internal: true

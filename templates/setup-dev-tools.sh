@@ -42,7 +42,7 @@ export PATH="$GO_BIN_PATH:$PATH"
 # CI's golangci-lint step reads GOLANGCI_LINT_VERSION from this file. Built from source: a prebuilt
 # binary lags the Go version it can analyze, and some proxies block GitHub release downloads.
 GOLANGCI_LINT_VERSION="v2.13.2"
-GO_TOOLCHAIN="go<project-go-version>" # the `go` directive from backend/go.mod, e.g. 1.26.5
+GO_TOOLCHAIN="go<project-go-version>" # the `go` directive from backend/go.mod, e.g. 1.27.1
 
 info "Ensuring golangci-lint ($GOLANGCI_LINT_VERSION)..."
 if [ "v$(golangci-lint version --short 2>/dev/null | sed 's/^v//')" = "$GOLANGCI_LINT_VERSION" ]; then

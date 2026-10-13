@@ -1,10 +1,12 @@
 # Copy to backend/Dockerfile, the name release.yml builds, and copy .dockerignore beside it.
 # Fill <name>: the command directory under cmd/ that holds main.go.
+# Fill <go-minor>; the base tag below says what it repeats.
 # The app answers GET /api/health on port 8080; the production Compose files poll its healthcheck.
 
 # ── Build ──
-# The Go version repeats the minor of the `go` directive in go.mod.
-FROM golang:1.26-alpine AS build
+# The tag repeats the minor of the `go` directive in go.mod and carries that minor's newest patch.
+# The image sets GOTOOLCHAIN=local, so a patch tag would refuse the module once `go get` raises the directive.
+FROM golang:<go-minor>-alpine AS build
 WORKDIR /src
 
 # Dependencies alone, keyed on the two files that pin them: a source edit rebuilds nothing here.

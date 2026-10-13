@@ -127,11 +127,18 @@ prod-logs:     ## Follow production logs
 
 .PHONY: prod-release
 
+# The tag goes only on origin/main's tip with a green CI push run: release.yml runs no tests,
+# and a tag push would otherwise upload unpushed commits CI never saw.
 prod-release:  ## Push tag v$(VERSION); .github/workflows/release.yml builds the images (VERSION=X.Y.Z)
 	@echo "$(VERSION)" | grep -Eq '^[0-9]+\.[0-9]+\.[0-9]+$$' \
 	  || { echo "Error: set VERSION=X.Y.Z (got '$(VERSION)')" >&2; exit 1; }
 	@BRANCH=$$(git rev-parse --abbrev-ref HEAD); \
 	if [ "$$BRANCH" != "main" ]; then echo "Error: must be on main (currently on $$BRANCH)" >&2; exit 1; fi
+	@git fetch --quiet origin main
+	@SHA=$$(git rev-parse HEAD); \
+	if [ "$$SHA" != "$$(git rev-parse origin/main)" ]; then echo "Error: main differs from origin/main; push or pull first" >&2; exit 1; fi; \
+	CI=$$(gh run list --workflow ci.yml --branch main --event push --commit "$$SHA" --json conclusion --jq '.[0].conclusion'); \
+	if [ "$$CI" != "success" ]; then echo "Error: CI on $$SHA is '$$CI', not success" >&2; exit 1; fi
 	git tag v$(VERSION) && git push origin v$(VERSION)
 
 # ── Utilities ──

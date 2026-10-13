@@ -31,6 +31,10 @@ updates:
       docker-backend:
         patterns:
           - "*"
+    # The golang minor follows the `go` directive in go.mod, as CI's setup-go does.
+    ignore:
+      - dependency-name: "golang"
+        update-types: ["version-update:semver-minor"]
   # <<< stack: go
 
   # >>> stack: frontend
@@ -53,6 +57,10 @@ updates:
       docker-frontend:
         patterns:
           - "*"
+    # The Node major follows .node-version, the version CI and dev run.
+    ignore:
+      - dependency-name: "node"
+        update-types: ["version-update:semver-major"]
   # <<< stack: frontend
 
   # >>> stack: python
@@ -75,6 +83,8 @@ updates:
       docker-backend:
         patterns:
           - "*"
+    # The uv tag repeats the [tool.uv] required-version floor in pyproject.toml.
+    # A PR that bumps the tag raises that floor too.
   # <<< stack: python
 
   # ── Docker Compose service images ──
@@ -87,3 +97,10 @@ updates:
       docker-compose:
         patterns:
           - "*"
+    ignore:
+      # A new major cannot read the old data directory: guides/postgres-upgrade.md is the only path.
+      - dependency-name: "postgres"
+        update-types: ["version-update:semver-major"]
+      # The dev image's Node major follows .node-version.
+      - dependency-name: "node"
+        update-types: ["version-update:semver-major"]

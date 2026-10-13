@@ -171,4 +171,4 @@ Lint with golangci-lint v2 from [templates/golangci.yml](../templates/golangci.y
 shows how to guard a layer boundary.
 
 The `go` directive in `go.mod` is the pin. CI reads it through `go-version-file`; the `Dockerfile.go` base tag
-repeats its minor.
+repeats its minor. That tag carries the newest patch, so the image's `GOTOOLCHAIN=local` accepts any patch directive.

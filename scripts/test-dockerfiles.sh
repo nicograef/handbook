@@ -4,7 +4,7 @@
 # Usage:
 #   scripts/test-dockerfiles.sh        # or: make test-dockerfiles
 #   PREFIX=<name> scripts/test-dockerfiles.sh   # prefix for every image and container
-#   NODE_MAJOR=<n> scripts/test-dockerfiles.sh   # test a version bump; also UV_VERSION, PYTHON_VERSION
+#   NODE_MAJOR=<n> scripts/test-dockerfiles.sh   # test a version bump; also UV_VERSION, PYTHON_VERSION, GO_MINOR
 #
 # What it does:
 #   1. Fills each template's placeholders with the versions below and the stub's names.
@@ -31,6 +31,7 @@ HEALTH_TIMEOUT="${HEALTH_TIMEOUT:-90}" # seconds per image
 # The tested values of the templates' version placeholders, as guides/new-project.md fills them.
 UV_VERSION="${UV_VERSION:-0.13.0}"
 PYTHON_VERSION="${PYTHON_VERSION:-3.12}"
+GO_MINOR="${GO_MINOR:-1.27}"
 NODE_MAJOR="${NODE_MAJOR:-26}"
 
 # shellcheck source=scripts/lib/test-harness.sh
@@ -54,7 +55,8 @@ docker info >/dev/null 2>&1 || { fail "docker daemon not reachable"; exit 1; }
 # if any <angle-bracket> placeholder is left outside a comment.
 fill() {
   sed -e 's/<name>/stub/g' -e 's/<package>/stub/g' -e "s/<uv-version>/$UV_VERSION/g" \
-    -e "s/<project-python-version>/$PYTHON_VERSION/g" -e "s/<node-major>/$NODE_MAJOR/g" "$1" >"$2"
+    -e "s/<project-python-version>/$PYTHON_VERSION/g" -e "s/<node-major>/$NODE_MAJOR/g" \
+    -e "s/<go-minor>/$GO_MINOR/g" "$1" >"$2"
   if grep -vE '^[[:space:]]*#' "$2" | grep -E '<[a-z][a-z-]*>'; then
     fail "unfilled placeholder in $(basename "$1")"
     return 1
@@ -75,11 +77,13 @@ lock() {
   tar -xf "$FIX/lock.tar" -C "$d"
 }
 
-# stub_go writes the go directive from the build image's golang:<major>.<minor> tag.
+# stub_go writes the build image's own Go release as the go directive: the newest patch
+# a `go get` can raise it to, which the image's GOTOOLCHAIN=local must still accept.
 stub_go() {
-  local d="$FIX/go" go="${1#golang:}"
+  local d="$FIX/go" go
+  go="$(docker run --rm --pull always --name "$PREFIX-scaffold" "$1" go env GOVERSION)"
   mkdir -p "$d/cmd/stub"
-  printf 'module stub\n\ngo %s\n' "${go%%-*}" >"$d/go.mod"
+  printf 'module stub\n\ngo %s\n' "${go#go}" >"$d/go.mod"
   : >"$d/go.sum" # a real module with dependencies commits one
   cat >"$d/cmd/stub/main.go" <<'GO'
 package main
