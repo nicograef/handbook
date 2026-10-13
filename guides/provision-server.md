@@ -13,6 +13,7 @@ also use placeholders not in that block:
 - A handbook clone on your laptop, at a commit pushed to GitHub
 - `<host>` — server IP or hostname (SSH target)
 - `<username>` — the `USERNAME` the script creates
+- `<name>` and `<fqdn>` — the host's short name and domain, such as `staging` and `staging.example.com`
 - netcup path only: `<server>` — the server's id or name in the SCP, for [`scripts/netcup.sh`](../scripts/netcup.sh)
 
 ## Provision over SSH
@@ -39,6 +40,22 @@ Netcup supports only SSH-key injection at image install, so the script runs as r
    ```
 
    Expected: the firewall JSON lists `web-server` under `userPolicies`, with `"ingressImplicitRule": "DROP_ALL"`.
+
+## Name the host
+
+netcup images ship a generated name such as `v2202510308862394466`, which the prompt and the health pings show.
+
+1. **Set the name and its `/etc/hosts` lines:**
+
+   ```bash
+   ssh <username>@<host>
+   old=$(hostname)
+   sudo hostnamectl set-hostname <name>
+   sudo sed -i "s/$old\.\S* $old\$/<fqdn> <name>/" /etc/hosts
+   echo <fqdn> | sudo tee /etc/mailname
+   ```
+
+   Expected: `hostname` prints `<name>`, and a new login shows it in the prompt.
 
 ## Install tmux and the CLI tools
 
