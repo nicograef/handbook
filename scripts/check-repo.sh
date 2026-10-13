@@ -26,10 +26,12 @@ log() {
   FAILED=1
 }
 
-# Content directories the README indexes as its file index. Plugin skills describe themselves
-# in their frontmatter, so the README links only their folder.
-INDEX_DIRS=(guides reference templates dotfiles scripts claude
-  plugin/.claude-plugin plugin/hooks plugin/agents plugin/scripts)
+# Content directories the README indexes as its file index.
+INDEX_DIRS=(guides reference templates dotfiles scripts claude plugin)
+
+# Subtrees of INDEX_DIRS the README links as one folder. Plugin skills describe themselves
+# in their frontmatter.
+INDEX_FOLDERS=(plugin/skills)
 
 # Tracked top-level folders the README does not index, as "<dir>|<reason>".
 INDEX_EXCLUDE=(
@@ -197,12 +199,18 @@ check_readme() {
     linked[$target]=1
   done < <(md_links "$readme")
 
-  # Every tracked file in an index dir must appear in the README.
+  # Every tracked file in an index dir must appear in the README, or its folder for INDEX_FOLDERS.
   local index_globs=()
   for d in "${INDEX_DIRS[@]}"; do index_globs+=("$d/*"); done
   while IFS= read -r file; do
+    for d in "${INDEX_FOLDERS[@]}"; do
+      [[ "$file" == "$d/"* ]] && continue 2
+    done
     [[ -v "linked[$file]" ]] || log "not indexed in README.md: $file"
   done < <(tracked "${index_globs[@]}")
+  for d in "${INDEX_FOLDERS[@]}"; do
+    [[ -v "linked[$d/]" ]] || log "not indexed in README.md: $d/"
+  done
 
   # Every tracked top-level folder is indexed or excluded with a reason.
   local -A folders=()
@@ -249,9 +257,9 @@ resolve_home_claude() {
   done
 }
 
-## contracts: verify handbook raw URLs name tracked paths, setup-server.sh pins report-health.sh's digest, install-dotfiles.sh --check passes, the settings enable the plugin, every hook script path exists, and neovim.md installs setup-dev-machine.sh's tool lists
+## contracts: verify handbook raw URLs name tracked paths, setup-server.sh pins report-health.sh's digest, install-dotfiles.sh --check passes, the settings enable the plugin and its theme, plugin paths name the marketplace, every hook script path exists, and neovim.md installs setup-dev-machine.sh's tool lists
 check_contracts() {
-  local hit file path table line pinned actual name market entry mpath default
+  local hit file path table line pinned actual name market entry mpath default theme slug
   local candidate resolved want got
   local -a files=("${HOOK_FILES[@]}")
   mapfile -t -O "${#files[@]}" files < <(tracked 'plugin/skills/*/SKILL.md')
@@ -299,16 +307,30 @@ check_contracts() {
   if ! jq -e --arg id "$name@$market" '.enabledPlugins[$id] == true' claude/settings.json >/dev/null; then
     log "claude/settings.json does not enable $name@$market"
   fi
+  # A plugin theme id is custom:<plugin>:<slug>, the slug being its file name under plugin/themes/.
+  theme="$(jq -r '.theme // ""' claude/settings.json)"
+  if [[ "$theme" == custom:*:* ]]; then
+    slug="${theme#"custom:$name:"}"
+    if [[ "$slug" == "$theme" || ! -f "plugin/themes/$slug.json" ]]; then
+      log "claude/settings.json theme $theme names no plugin/themes/<slug>.json of plugin $name"
+    fi
+  fi
   mpath="$(jq -r --arg m "$market" \
     '.extraKnownMarketplaces[$m].source | select(.source == "directory") | .path // ""' claude/settings.json)"
   [[ "$mpath" == /*/plugin ]] \
     || log "claude/settings.json: marketplace '$market' needs a directory source whose path ends in /plugin, got '$mpath'"
 
-  # 5. A CLAUDE_PLUGIN_ROOT default names the marketplace path.
+  # 5. A CLAUDE_PLUGIN_ROOT default and every absolute plugin path in a Bash allow rule name
+  #    the marketplace path.
   while IFS= read -r hit; do
     default="${hit#*:-}"
     [[ "$default" == "$mpath" ]] || log "CLAUDE_PLUGIN_ROOT default in ${hit%%:*} is $default; the marketplace path is $mpath"
   done < <(git grep -oE 'CLAUDE_PLUGIN_ROOT:-[^}]*' -- plugin claude || true)
+  for file in "${HOOK_FILES[@]}"; do
+    while IFS= read -r path; do
+      [[ "$path" == "$mpath"/* ]] || log "Bash allow rule in $file names $path outside the marketplace path $mpath"
+    done < <(jq -r '.permissions.allow[]? | capture("^Bash\\((?<p>/[^:)]*/plugin/[^:)]*)").p' "$file")
+  done
 
   # 6. Every script a hook command or a Bash allow rule names exists.
   for file in "${files[@]}"; do
