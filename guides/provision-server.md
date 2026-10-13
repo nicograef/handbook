@@ -45,13 +45,13 @@ Netcup supports only SSH-key injection at image install, so the script runs as r
 
 netcup images ship a generated name such as `v2202510308862394466`, which the prompt and the health pings show.
 
-1. **Set the name and its `/etc/hosts` lines:**
+1. **Set the `/etc/hosts` lines first, then the name**, so sudo still resolves the host:
 
    ```bash
    ssh <username>@<host>
    old=$(hostname)
-   sudo hostnamectl set-hostname <name>
    sudo sed -i "s/$old\.\S* $old\$/<fqdn> <name>/" /etc/hosts
+   sudo hostnamectl set-hostname <name>
    echo <fqdn> | sudo tee /etc/mailname
    ```
 
