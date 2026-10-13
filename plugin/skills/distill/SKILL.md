@@ -1,7 +1,7 @@
 ---
 name: distill
 description: "Shrinks a repo's prose (Markdown, comments) by re-deriving it from a blank slate and splitting survivors; applies after approval. \"verify\" fact-checks docs against code, commands and upstream. Triggers: distill, too much documentation, verify docs."
-argument-hint: "[verify] [path ...] [plan-only | since <ref> | report-only]"
+argument-hint: "[verify] [path ...] [plan-only] [since <ref>] [report-only]"
 ---
 
 # Distill
@@ -36,7 +36,7 @@ With `verify` as the first argument, follow [verify.md](verify.md) instead of th
    | FLAG | Cannot be verified from this session |
 
 3. Cross-file pass, yourself, after all workers return. Cluster identical and near-identical claims. Pick one canonical home per cluster, the file nearest the thing described; delete or link the rest. Two files that disagree are the highest-value finding; report both locations and let the user pick.
-4. Ask three questions in one round, grounded in the files found. Who reads which files: present the inferred audience map for correction; the audience sets the keep-bar. What is off-limits: a multi-select seeded with the DELETE candidates and entry points; excluded paths leave the plan entirely. Plan-only, or plan-then-apply.
+4. Ask three questions in one round, grounded in the files found. Who reads which files: present the inferred audience map for correction; the audience sets the keep-bar. What is off-limits: a multi-select seeded with the DELETE candidates and entry points; excluded paths leave the plan entirely. Plan-only, or plan-then-apply; skip this question when `plan-only` was passed.
 5. Plan: apply the confirmed keep-bar to every `audience_sensitive` disposition and drop exclusions. Design the target files for every SPLIT and MERGE (see below). List every index and inbound link each action invalidates. Plan-then-apply keeps the plan in memory. Plan-only writes `docs/plans/plan-distill-<scope>.md` with the plan skill's template and stops after committing it.
 6. Present the budget (`3,180 → 1,240 lines (-61%)`, files deleted, split, merged) and the roughly ten major changes. Major: whole-file deletes, splits, merges, anything touching an entry point. Then every conflict and every FLAG. Ask for approval as a multi-select grouped by disposition; approving nothing is valid.
 7. Apply in order: TRIM and GUT, `git rm` for DELETE, MERGE then SPLIT, indexes and inbound links last. Fan out stages 1–3 over a disjoint file partition. The lead owns indexes, entry points and any file receiving merged content.
