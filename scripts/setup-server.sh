@@ -226,11 +226,11 @@ log "Setting up SSH key for '$USERNAME'"
 run mkdir -p "$SSH_DIR"
 if [[ -z "$SSH_PUBLIC_KEY" ]]; then
   echo "  No SSH_PUBLIC_KEY — keeping the keys in $SSH_DIR/authorized_keys."
-elif [[ "$DRY_RUN" == "true" ]]; then
-  dry "append SSH_PUBLIC_KEY to $SSH_DIR/authorized_keys (deduplicated)"
 else
-  echo "$SSH_PUBLIC_KEY" >> "$SSH_DIR/authorized_keys"
-  sort -u "$SSH_DIR/authorized_keys" -o "$SSH_DIR/authorized_keys"
+  # Appending only absent lines keeps the file's order and each comment above its key.
+  while IFS= read -r key; do
+    if [[ -n "$key" ]]; then append_line "$SSH_DIR/authorized_keys" "$key"; fi
+  done <<<"$SSH_PUBLIC_KEY"
 fi
 run chmod 700 "$SSH_DIR"
 run chmod 600 "$SSH_DIR/authorized_keys"
