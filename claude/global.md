@@ -38,6 +38,7 @@ Lead with the answer or the problem. Sentences ≤ 20 words, one claim each. Par
 - Other sessions may share the repo. `~/.claude/agent-bus.sh peers` lists them; with a peer present, follow the parallel-sessions skill.
 - No autonomous outbound actions: no emails, posts or external submissions; drafts stay drafts. Committing and pushing are exempt.
 - Add an integration test only where a unit test cannot cover the boundary, and keep it fast.
+- Scratch fixtures use absolute paths and `git -C <path>`. Join steps that need an earlier `cd` with `&&`, so a failed `cd` cannot write to the working repo.
 
 ## Models and subagents
 
