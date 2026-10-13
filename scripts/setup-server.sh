@@ -19,7 +19,7 @@
 #   1b. Swapfile (auto-sized from RAM, capped at 8G); appends it to /etc/fstab
 #   1c. Locales: the system's LANG and those the operator's SSH client forwards
 #   1d. Fetch report-health.sh at HANDBOOK_REF; abort unless its sha256 matches REPORT_HEALTH_SHA256
-#   2. Create non-root user with sudo
+#   2. Create non-root user with sudo and lingering
 #   3. SSH hardening (pubkey only, no root login) via a drop-in
 #   4. UFW firewall
 #   5. fail2ban
@@ -210,6 +210,9 @@ fi
 run usermod -aG sudo "$USERNAME"
 # The provider's image ships a root password; locked, root has no login of any kind.
 run passwd -l root
+# Lingering keeps the user manager, and every tmux session under it, alive past the last logout.
+# Why that matters: guides/maintenance.md#after-an-oom-kill.
+run loginctl enable-linger "$USERNAME"
 
 if [[ "$PASSWORDLESS_SUDO" == "true" ]]; then
   write_file "/etc/sudoers.d/$USERNAME" <<< "$USERNAME ALL=(ALL) NOPASSWD:ALL"
@@ -324,11 +327,16 @@ run usermod -aG docker "$USERNAME"
 # route the default bridge leaves containers no egress, so IPv6-only hosts get IPv6 networking.
 # New (Compose) networks drop IPv4 entirely: RFC 6724 selection would prefer a dead IPv4 over a ULA
 # source for dual-stack targets. See guides/ipv6-only-vps.md.
+# host-audit.sh expects exactly these rotation values.
+LOG_KEYS='"log-driver": "json-file",
+  "log-opts": { "max-size": "10m", "max-file": "3" }'
 if [[ -f /etc/docker/daemon.json ]]; then
-  echo "  /etc/docker/daemon.json already exists — merge the log-rotation (and on IPv6-only hosts the IPv6) keys manually (the keys are in the daemon.json block below)."
+  echo "  /etc/docker/daemon.json already exists — merge these log-rotation keys manually:"
+  echo "  $LOG_KEYS"
+  echo "  On an IPv6-only host, also merge the IPv6 keys of step 6b in setup-server.sh."
 elif ! ip -4 route get 1.1.1.1 &>/dev/null; then
   log "No IPv4 route — enabling IPv6-only container networking + log rotation"
-  write_file /etc/docker/daemon.json <<'EOF'
+  write_file /etc/docker/daemon.json <<EOF
 {
   "ipv6": true,
   "fixed-cidr-v6": "fd00:d0c:1::/64",
@@ -338,17 +346,15 @@ elif ! ip -4 route get 1.1.1.1 &>/dev/null; then
       "com.docker.network.enable_ipv4": "false"
     }
   },
-  "log-driver": "json-file",
-  "log-opts": { "max-size": "10m", "max-file": "3" }
+  $LOG_KEYS
 }
 EOF
   run systemctl restart docker
 else
   log "Configuring Docker log rotation"
-  write_file /etc/docker/daemon.json <<'EOF'
+  write_file /etc/docker/daemon.json <<EOF
 {
-  "log-driver": "json-file",
-  "log-opts": { "max-size": "10m", "max-file": "3" }
+  $LOG_KEYS
 }
 EOF
   run systemctl restart docker

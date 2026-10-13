@@ -142,4 +142,4 @@ Lingering covers the other path. tmux runs each pane in a `tmux-spawn-*.scope` u
 Without lingering, the last logout stops that unit and every pane, whatever `KillUserProcesses=` says.
 An OOM kill that ends your SSH sessions then takes tmux with it.
 
-[provision-server.md](provision-server.md#turn-on-lingering) turns lingering on.
+[`setup-server.sh`](../scripts/setup-server.sh) turns lingering on.

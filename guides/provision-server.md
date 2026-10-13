@@ -40,20 +40,6 @@ Netcup supports only SSH-key injection at image install, so the script runs as r
 
    Expected: the firewall JSON lists `web-server` under `userPolicies`, with `"ingressImplicitRule": "DROP_ALL"`.
 
-## Turn on lingering
-
-Lingering keeps the user manager, and every tmux session under it, alive after the last logout.
-Why that matters: [maintenance.md](maintenance.md#after-an-oom-kill).
-
-1. **Log in as `<username>` and enable it:**
-
-   ```bash
-   ssh <username>@<host>
-   sudo loginctl enable-linger "$USER"
-   ```
-
-   Expected: no output; the audit's `linger` line in [Verify](#verify) confirms it.
-
 ## Install tmux and the CLI tools
 
 Without bat, eza, fd-find or fzf, their aliases in
@@ -62,7 +48,7 @@ Without bat, eza, fd-find or fzf, their aliases in
 1. **Install them:**
 
    ```bash
-   sudo apt install -y git jq tmux bat eza fzf fd-find ripgrep git-delta
+   sudo apt install -y tmux bat eza fzf fd-find ripgrep git-delta
    ```
 
    Expected: apt ends without errors. Long work runs in a named session, `tmux new -A -s <project>`.
