@@ -172,17 +172,18 @@ dropin a-first 'exit 0'
 export HEALTH_PING_URL="$URL"
 run --check-only
 expect_no_ping 1 "--check-only with a failing drop-in"
-expected="$(printf '%s\n' \
-  "reboot	ok	no reboot required" \
-  "upgrades	ok	last unattended-upgrades run logged no error" \
-  "oom	ok	the journal records no OOM kill within '65 minutes ago'" \
-  "a-first	ok	" \
-  "disk-free	ok	12% used" \
-  "queue-depth	fail	queue at 900")"
-if [[ "$(cat "$OUT")" == "$expected" ]]; then
+# The built-ins' reason wording is no contract; a drop-in's first stdout line is.
+expected="$(printf '%s\n' "reboot	ok" "upgrades	ok" "oom	ok" "a-first	ok" "disk-free	ok" "queue-depth	fail")"
+if [[ "$(cut -f1,2 "$OUT")" == "$expected" ]]; then
   log "--check-only -> one tab line per built-in and drop-in"
 else
   fail "--check-only: expected:"$'\n'"$expected"$'\n'"got:"$'\n'"$(cat "$OUT")"
+fi
+expected="$(printf '%s\n' "a-first	ok	" "disk-free	ok	12% used" "queue-depth	fail	queue at 900")"
+if [[ "$(tail -n 3 "$OUT")" == "$expected" ]]; then
+  log "--check-only -> a drop-in's first stdout line as its reason"
+else
+  fail "--check-only drop-in reasons: expected:"$'\n'"$expected"$'\n'"got:"$'\n'"$(cat "$OUT")"
 fi
 if grep -qF "$URL" "$OUT" "$ERR"; then fail "--check-only printed the URL"; else log "--check-only -> no URL"; fi
 
