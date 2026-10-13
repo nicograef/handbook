@@ -7,15 +7,17 @@
 #   plugin/scripts/plan-run-guard.sh < payload.json
 #
 # What it does:
-#   1. Allows the stop unless a plan run is live in the payload's cwd. The hook outlives
-#      the run in its session, so a landed or absent run never blocks.
-#   2. Live means a plan/<slug> branch exists whose own copy of
+#   1. Allows the stop unless a plan run or a programme is live in the payload's cwd.
+#      The hook outlives the run in its session, so a landed or absent run never blocks.
+#   2. A plan run is live while a plan/<slug> branch exists whose own copy of
 #      docs/plans/plan-<slug>.md still holds an unticked criterion.
 #   3. Reads that copy from the branch, never from the calling checkout — the
 #      base-branch copy stays stale by design until the run lands.
-#   4. Nudges once per branch tip. A run that stops committing goes quiet, so an
-#      abandoned branch can never trap the session.
-#   5. Never nudges while a top-level subagent, a workflow run, or a /tmp task
+#   4. A programme is live while the Status section of docs/plans/programme.md at
+#      HEAD holds a waiting or running phase.
+#   5. Nudges once per branch or HEAD tip. A run that stops committing goes quiet, so an
+#      abandoned run can never trap the session.
+#   6. Never nudges while a top-level subagent, a workflow run, or a /tmp task
 #      is live — the harness re-invokes on completion, so that stop is safe.
 
 set -euo pipefail
@@ -48,7 +50,8 @@ common="$(git -C "$cwd" rev-parse --path-format=absolute --git-common-dir 2>/dev
 
 state="$common/plan-run-guard"
 branches="$(git -C "$cwd" for-each-ref --format='%(refname:short)' 'refs/heads/plan/*' 2>/dev/null || true)"
-[[ -n "$branches" ]] || allow
+programme="$(git -C "$cwd" show HEAD:docs/plans/programme.md 2>/dev/null || true)"
+[[ -n "$branches" || -n "$programme" ]] || allow
 
 # A transcript touched inside the window is work still running.
 CONFIG_DIR="${CLAUDE_CONFIG_DIR:-$HOME/.claude}"
@@ -94,4 +97,26 @@ while IFS= read -r branch; do
   exit 0
 done <<< "$branches"
 
-allow
+# Prints the first Status row holding a waiting or running cell, as "<phase> (<status>)".
+pending="$(printf '%s\n' "$programme" | awk -F'|' '
+  /^## / { on = ($0 ~ /^## Status[[:space:]]*$/); next }
+  on && /^\|/ {
+    for (i = 2; i < NF; i++) {
+      c = $i; gsub(/[[:space:]`]/, "", c)
+      if (c == "waiting" || c == "running") {
+        p = $2; gsub(/^[[:space:]]+|[[:space:]]+$/, "", p); print p " (" c ")"; exit
+      }
+    }
+  }')"
+[[ -n "$pending" ]] || allow
+
+tip="$(git -C "$cwd" rev-parse HEAD 2>/dev/null || echo unknown)"
+marker="$state/programme-$session-$tip"
+[[ -e "$marker" ]] && allow
+: > "$marker"
+
+jq -nc --arg p "$pending" '{
+  decision: "block",
+  reason: ("Programme phase " + $p + " has not landed. Continue it."
+    + " If it is genuinely blocked, commit the handoff first, then stop.")
+}'

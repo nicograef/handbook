@@ -11,7 +11,7 @@ hooks:
 
 # Implement Plan
 
-Progress is durable only once committed and ticked. The run owns the turn: no human turn between phases, folds and landing. Invoking this skill arms a session-long Stop hook. It blocks a stop once per commit while `plan/<slug>` holds an unticked criterion.
+Progress is durable only once committed and ticked. The run owns the turn: no human turn between phases, folds and landing. Invoking this skill arms a session-long Stop hook. It blocks a stop once per commit while `plan/<slug>` holds an unticked criterion. In a programme it blocks while a Status row of `docs/plans/programme.md` is `waiting` or `running`.
 
 Open [lead.md](lead.md) before the first dispatch, on a stop and before landing.
 
@@ -31,7 +31,7 @@ With two or more plan paths, follow [programme.md](programme.md) instead of the 
 3. Review every unmet phase in one pass: ambiguous criteria, missing files, criteria no command verifies, shell commands the allowlist lacks.
 4. Choose the shape. Run the concurrency test in [git.md](git.md) on every phase pair. Each pair that passes becomes a lane, up to the [writer cap](lead.md#dispatch); sequential is the fallback. Set each phase's [review tier](lead.md#verification-budget).
 5. Present the run contract once: plan, base and sha, phases with grouping and tiers, worktrees and branches. Also the verify command, stop conditions, open questions and missing allowlist commands. This is the run's only planned human turn.
-6. Create `../<repo>-wt/plan-<slug>` on branch `plan/<slug>` from `$BASE`. Confirm the verify command passes on unchanged code.
+6. Create `../<repo>-wt/plan/<slug>` on branch `plan/<slug>` from `$BASE`. Confirm the verify command passes on unchanged code.
 7. Execute phases in order. Sequential phases run in the run worktree; a concurrent group gets one worktree, branch and agent per phase. No two agents write one file; only the lead writes the plan file.
 8. Commit per criterion that names its own change, then tick. Workers batch verification: one targeted test run per criterion, the full gate once per phase, scoped to the languages touched. No gate, build or review after a single edit. Tick a phase's criteria in one commit when it closes, and only what a tool result proves. Verification failing twice for one reason: debug root-cause first, then stop.
 9. Fold each group into `plan/<slug>` in phase order with the fold sequence in [git.md](git.md). Re-verify after each fold.

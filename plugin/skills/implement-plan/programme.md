@@ -25,7 +25,7 @@ One file, `docs/plans/programme.md`, with these sections and nothing about a pha
 | Stores and lanes | how a lane's worktree, store and data are made |
 | Migrations | number, phase, lane, what, status; reserved in landing order |
 | Spend | leg, projection, who buys, status |
-| Status | one row per phase: lane, wave, status, landed sha |
+| Status | one row per phase: phase, lane, wave, status (`waiting`, `running`, `landed` or `dropped`), landed sha; the Stop hook reads it |
 
 Cut waves by file ownership: a phase waits only for phases it depends on. Lanes of one wave land smallest surface first so the largest rebase happens once.
 
@@ -37,7 +37,7 @@ Cut waves by file ownership: a phase waits only for phases it depends on. Lanes 
 4. Write the wave's `common.md` and one `brief.md` per lane, laid out as [Lane briefs](#lane-briefs) says. Keep lane logs, reports and reviews under the same directory for the user's read.
 5. Arm the [lead jobs](lead.md#lead-upkeep). Spawn one `general-purpose` agent per lane on `opus` in one message. The whole prompt is: read common.md, read the brief, do the work, return the report. Announce the lanes on the bus with paths and ports.
 6. When a lane reports, review it as [lead.md](lead.md#verification-budget) says. Confirmed findings go back to the lane's own agent, as [lead.md](lead.md#dispatch) says.
-7. Land in the wave's order as [lead.md](lead.md#landing) says. The gate runs detached, against the lane's own store, under the host-wide lock. A rebase that brings a lower migration number re-initialises the lane's store. Flip the lane's status rows with the landed sha and the migration numbers taken, and stop its store. A lane that waits for another is created from the new base at that landing, with its own brief.
+7. Land in the wave's order as [lead.md](lead.md#landing) says. The gate runs detached, against the lane's own store, under the host-wide lock. A rebase that brings a lower migration number re-initialises the lane's store. Flip the lane's status rows with the landed sha and the migration numbers taken, and stop its store. In the same commit, tick the plan criteria the reviewed report proves. A lane that waits for another is created from the new base at that landing, with its own brief.
 8. A spend leg follows the [global irreversible-work rule](../../../claude/global.md#models-and-subagents). A diff the owner must read stays in its own commit until read.
 9. After the wave: every lane's worktree, branch and store gone. Delete both jobs after the last wave. Run `prog compact` before the next wave so the next session starts from a resume file.
 
@@ -52,7 +52,7 @@ Two files per wave under `../<repo>-wt/w<wave>/`: `common.md` for every lane and
 | Where you work | the worktree path and branch; every command runs there; a command run without the lane's ports and env reaches the main checkout's store; the data directory's symlinks and real directories; the repo's own rules bind, plus staging by path |
 | Spend | nothing reaches a paid provider unless the brief names the row; the paid targets by name; the free instruments that prove a criterion instead; a needed paid run goes under "for the owner" with its list-price projection |
 | Long work | every job over a few minutes runs as a `systemd-run --user` unit with its log under the wave directory; the gate runs under the host-wide `flock` with capped workers; one gate per lane at a time |
-| Commits | one per phase or coherent step; every figure the plan wants goes in the body verbatim; tick the plan's boxes in the commit that meets them; lint and targeted tests before each commit, the full gate once at the end |
+| Commits | one per phase or coherent step; every figure the plan wants goes in the body verbatim; the plan file stays untouched, the report carries each criterion; lint and targeted tests before each commit, the full gate once at the end |
 | Migrations | the reserved numbers by phase; every registry the repo keeps beside the migration files; a number nobody reserved is taken as the next free one and reported |
 | Ownership | the wave's ownership rows; a needed change in another lane's file goes in its own `<phase>: needs <file>` commit |
 | What you do not do | no rebase, merge, landing or push; no questions to the user; no bus; no subagents unless the brief names an agent type; no stopping after one phase, the group is the unit |
