@@ -146,9 +146,9 @@ as_user() {
   fi
   if [[ -n "${DISPLAY:-}" ]]; then envs+=(DISPLAY="$DISPLAY"); fi
   if [[ "$(id -u)" == "$TARGET_UID" ]]; then
-    env -i "${envs[@]}" "$@"
+    env -i -C "$TARGET_HOME" "${envs[@]}" "$@"
   else
-    sudo -u "$TARGET_USER" env -i "${envs[@]}" "$@"
+    sudo -u "$TARGET_USER" env -i -C "$TARGET_HOME" "${envs[@]}" "$@"
   fi
 }
 
@@ -463,6 +463,7 @@ fix_gitid() {
 
 check_sshkey() { if [[ ! -f "$KEY.pub" ]]; then flag MISSING "$KEY.pub"; fi; }
 fix_sshkey() {
+  interactive || { printf 'The SSH key needs a terminal for its passphrase.\n'; return 1; }
   as_user mkdir -p -m 700 "$TARGET_HOME/.ssh"
   as_user ssh-keygen -t ed25519 -C "$(as_user git config --global user.email)" -f "$KEY"
 }
@@ -472,7 +473,10 @@ check_ghauth() {
   if ! gh_logged_in; then flag MISSING "not logged in"; fi
 }
 # The GitHub keys item uploads the key; the scopes it needs come with this login.
-fix_ghauth() { as_user gh auth login -h github.com -p ssh --skip-ssh-key -s "$GH_KEY_SCOPES"; }
+fix_ghauth() {
+  interactive || { printf 'The gh login needs a terminal for the browser approval.\n'; return 1; }
+  as_user gh auth login -h github.com -p ssh --skip-ssh-key -s "$GH_KEY_SCOPES"
+}
 
 # The dev machine runs pipx's uv at PyPI's latest; a project's required-version is only a floor.
 pipx_has_uv() { user_has pipx && in_list uv "$(as_user pipx list --short 2>/dev/null | awk '{print $1}' | tr '\n' ' ' || true)"; }

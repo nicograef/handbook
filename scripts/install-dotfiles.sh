@@ -199,10 +199,13 @@ if [[ -f "$CLAUDE_JSON" ]] && jq -e '.leftArrowOpensAgents == false' "$CLAUDE_JS
   log "/config prefs already in $CLAUDE_JSON"
 elif differs "$pref" "/config prefs in ~/.claude.json"; then
   [[ -f "$CLAUDE_JSON" ]] || echo '{}' > "$CLAUDE_JSON"
-  tmp="$(mktemp)"
+  # The temp file sits beside the target so mv is an atomic rename; a failed merge must not leave it in $HOME.
+  tmp="$(mktemp "$CLAUDE_JSON.XXXXXX")"
+  trap 'rm -f "$tmp"' EXIT
   jq '. + {leftArrowOpensAgents: false}' "$CLAUDE_JSON" > "$tmp"
   chmod --reference="$CLAUDE_JSON" "$tmp"
   mv "$tmp" "$CLAUDE_JSON"
+  trap - EXIT
   log "Merged /config prefs into $CLAUDE_JSON"
 fi
 

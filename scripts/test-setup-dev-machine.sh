@@ -8,7 +8,8 @@
 #   1. Copies the working tree to a temp clone with an HTTPS origin and an empty home.
 #   2. Puts one logging stub first on PATH for apt, snap, gh, npm, uv, nvim and the rest;
 #      marker files hold the fake machine state, and a tool appears when its fix installs it.
-#   3. Asserts the root guard, --check on the fresh machine, --yes on it, then --check again; drift only
+#   3. Asserts the root guard, --check on the fresh machine, --yes on it, then --check again, also from a
+#      directory whose .npmrc differs; drift only
 #      install.sh fixes shows in install-dotfiles.sh --status and the dotfiles row, and --yes clears it;
 #      Ptyxis waits for its default profile, and a failing --status probe stops --check.
 #   4. Reruns --yes on a gh login that lacks the key scopes and a deleted font, then with both keys present,
@@ -19,7 +20,7 @@
 #      no font or xclip. A rerun changes nothing; a Node upgrade drops the old files; a wrong signature or
 #      digest leaves the old trees; a NodeSource host moves to the tarball; a host with docker-ce keeps it
 #      and never upgrades it; a --yes without a terminal skips the human steps.
-#   Every --check leaves the fixture's files as they were.
+#   Every --check leaves the fixture's files as they were, and every claude call reads /dev/null.
 
 set -euo pipefail
 
@@ -168,13 +169,16 @@ case "$name" in
     case "$1 $2 $3" in
       "config get prefix") cat "$S/npmprefix" 2>/dev/null || echo /usr ;;
       "config set prefix") echo "$4" > "$S/npmprefix" ;;
-      "config get allow-scripts") cat "$S/npmallow" 2>/dev/null ;;
+      # A project .npmrc in the working directory overrides the user config, as npm's project level does.
+      "config get allow-scripts") sed -n 's/^allow-scripts=//p' .npmrc 2>/dev/null | grep . || cat "$S/npmallow" 2>/dev/null ;;
       "config set allow-scripts="*) echo "${3#allow-scripts=}" > "$S/npmallow" ;;
       "ls -g --depth=0") jq -Rn '{dependencies: ([inputs | {(.): {}}] | add // {})}' "$S/npm" 2>/dev/null || echo '{}' ;;
       "outdated -g --json") echo '{}' ;;
       "install -g "*) shift 2; printf '%s\n' "${@%@latest}" >> "$S/npm" ;;
     esac ;;
   claude)
+    # Outside the snapshot dirs, so a --check may write it: the stdin of every call, which must be /dev/null.
+    readlink /proc/self/fd/0 >> "$FIX/claude-stdin"
     [[ -f "$S/pluginbroken" ]] && { echo boom >&2; exit 3; }
     case "$1 $2" in
       "plugin list") [[ -f "$S/plugin" ]] && printf '[{"id":"nico@handbook","enabled":%s}]\n' "$(cat "$S/plugin")" || echo '[]' ;;
@@ -356,6 +360,15 @@ check_run fixed
 if [[ "$rc" -eq 0 && "$(rows ok)" -eq 18 ]]; then log "fixed --check -> 18 rows ok"
 else fail "fixed --check: rc $rc: $(cat "$OUT")"; fi
 
+# 4a. A project .npmrc in the caller's working directory leaves the user's npm config ok.
+mkdir -p "$FIX/project"
+printf 'allow-scripts=esbuild\n' > "$FIX/project/.npmrc"
+cd "$FIX/project"
+run '' --check
+cd - >/dev/null
+if [[ "$rc" -eq 0 ]] && grep -qE '^ok +npm tools' "$OUT"; then log "--check from a project dir -> runs in the user's home"
+else fail "--check from a project dir: rc $rc: $(cat "$OUT")"; fi
+
 # 4b. Drift only install.sh fixes: a git default, the /config pref, a stale link into the clone.
 #     install-dotfiles.sh --status names each, the row flags them, and --yes clears them.
 status() { rc=0; env -i HOME="$HOME_DIR" PATH="$USER_PATH" "$CLONE/scripts/install-dotfiles.sh" --status > "$OUT" 2>&1 || rc=$?; }
@@ -381,6 +394,10 @@ jq 'del(.leftArrowOpensAgents)' "$FIX/claude.json" > "$HOME_DIR/.claude.json"
 status
 if [[ "$rc" -eq 1 && "$(cat "$OUT")" == 'MISSING /config prefs in ~/.claude.json' ]]; then log "absent pref --status -> MISSING"
 else fail "absent pref --status: rc $rc: $(cat "$OUT")"; fi
+echo '{' > "$HOME_DIR/.claude.json"
+rc=0; env -i HOME="$HOME_DIR" PATH="$USER_PATH" "$CLONE/scripts/install-dotfiles.sh" > "$OUT" 2>&1 || rc=$?
+if [[ "$rc" -eq 2 ]] && ! compgen -G "$HOME_DIR/.claude.json.*" >/dev/null; then log "corrupt ~/.claude.json -> exit 2, no temp file left"
+else fail "corrupt ~/.claude.json: rc $rc, left $(compgen -G "$HOME_DIR/.claude.json.*" || true): $(cat "$OUT")"; fi
 mv "$FIX/claude.json" "$HOME_DIR/.claude.json"
 
 # Ptyxis without a default profile is skipped; a profile with another palette is WRONG, and --yes selects ours.
@@ -667,12 +684,18 @@ if [[ "$rc" -eq 0 && -z "$leftover" && ! -f "$STATE/nodejs" ]] && node_kept; the
   log "nodesource --yes -> apt Node and NodeSource removed after the prompt"
 else fail "nodesource --yes: rc $rc, left: $leftover: $(cat "$OUT")"; fi
 
-# 13. A --yes without a terminal: no git identity or GitHub key from an empty pipe.
+# 13. A --yes without a terminal: no git identity, SSH key, gh login or GitHub key from an empty pipe.
 fresh_machine debian
 SETUP_ASSUME_TTY=false run '' --yes
-if [[ "$rc" -eq 1 ]] && ! grep -qE '^git config --global user\.(name|email) ' "$CALLS" && ! grep -q '^gh ssh-key add' "$CALLS" \
-  && grep -qF 'git identity needs a terminal' "$OUT" && grep -qF 'GitHub keys need a terminal' "$OUT"; then
+human='^(git config --global user\.(name|email) |ssh-keygen|gh auth login|gh ssh-key add)'
+if [[ "$rc" -eq 1 ]] && ! grep -qE "$human" "$CALLS" \
+  && grep -qF 'git identity needs a terminal' "$OUT" && grep -qF 'SSH key needs a terminal' "$OUT" \
+  && grep -qF 'gh login needs a terminal' "$OUT" && grep -qF 'GitHub keys need a terminal' "$OUT"; then
   log "piped --yes -> human steps skipped"
-else fail "piped --yes: rc $rc: $(grep -E '^(git config --global user|gh ssh-key add)' "$CALLS")"; fi
+else fail "piped --yes: rc $rc: $(grep -E "$human" "$CALLS")"; fi
+
+# Every claude call ran with stdin from /dev/null: under sudo's pty a tty stdin stops it on SIGTTOU.
+if [[ -s "$FIX/claude-stdin" ]] && ! grep -qvx /dev/null "$FIX/claude-stdin"; then log "claude calls -> stdin /dev/null"
+else fail "claude calls with another stdin: $(sort -u "$FIX/claude-stdin" 2>/dev/null)"; fi
 
 finish
