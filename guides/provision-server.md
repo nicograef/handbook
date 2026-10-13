@@ -92,11 +92,12 @@ The handbook clone stays https; project repos clone with the read-only deploy ke
 
 The script reruns on a set-up host as maintenance; the rerun invocation is in its header comment.
 It keeps the authorized keys and the password. It upgrades every package, so run it in a maintenance window.
+Every run records its Configuration in `/etc/handbook-host.env`, and a rerun reuses it. A passed value replaces the recorded one.
 
 ## Verify
 
 [`scripts/host-audit.sh`](../scripts/host-audit.sh) reads every setting the steps above apply, and changes nothing.
-Prefix `bash` with any Configuration value the setup ran with other than its default, such as `EXTRA_UFW_PORTS=` or `HOST_ROLE=dev`.
+It expects the Configuration recorded in `/etc/handbook-host.env`, and FAILs without that file.
 Keep the output: each [maintenance pass](maintenance.md#verify) compares against it.
 
 ```bash
@@ -116,7 +117,7 @@ scripts/netcup.sh firewall-get <server>
 | --- | --- |
 | `host-audit.sh` | Ends with `no FAIL`; read every `note` and raw list once |
 | `readlink` | `<home>/r/handbook/dotfiles/.bash_aliases` |
-| `hello-world` | Prints the Docker confirmation message |
+| `hello-world` | Prints the Docker confirmation message; a host with `INSTALL_DOCKER=false` skips it |
 | `ssh root@<host>` | `Permission denied (publickey)` |
 | netcup `firewall-get` | The netcup default policies, then the user policy; `"consistent": true` |
 

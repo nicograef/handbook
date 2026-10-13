@@ -14,8 +14,8 @@ sudo apt install -y git jq
 Have your git name and email ready, and a browser logged in to GitHub.
 
 The script refuses a server that setup-server.sh provisioned unless `/etc/handbook-role` says `dev`.
-A dev or agent server declares it with `HOST_ROLE=dev`, added to every rerun in the [setup-server.sh](../scripts/setup-server.sh) header.
-The rerun repeats every other Configuration value the first run set and belongs in a maintenance window.
+A dev or agent server declares it with one [setup-server.sh](../scripts/setup-server.sh) rerun with `HOST_ROLE=dev`.
+That rerun records the role for later reruns, reuses every other recorded value and belongs in a maintenance window.
 
 ## Set up
 
