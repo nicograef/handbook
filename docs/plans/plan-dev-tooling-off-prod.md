@@ -26,7 +26,7 @@ A production host never receives the laptop toolchain or developer credentials b
 
 ## Resolved decisions
 
-- The role persists in a file, so gyva-staging's reruns need no flag; an env-only role was rejected because a forgotten flag refuses or misaudits.
+- The role persists in a file, so `setup-dev-machine.sh` and `host-audit.sh` need no flag; a `setup-server.sh` rerun on a dev server repeats `HOST_ROLE=dev`, and a forgotten flag resets to `prod`, which refuses rather than leaks.
 - No GitHub API check for registered keys: the audit stays offline; the private-key check covers the same risk.
 - No fixture test for `host-audit.sh`: it reads live system paths; Phase 2 verifies on two real hosts by piping the working-tree script over ssh.
 - The gh binary that `install.sh` places in `~/.local/bin` is not residue: without `hosts.yml` it holds no credential.
@@ -52,10 +52,10 @@ A production host never receives the laptop toolchain or developer credentials b
 
 ### Acceptance criteria
 
-- [ ] `make test-setup-dev-machine 2>&1 | rg -c 'role (prod refuses|missing refuses|dev runs|absent runs|invalid exits 2)'` prints 5, from five named `log` lines in the test.
-- [ ] `sudo HANDBOOK_REF=$(git rev-parse HEAD) bash scripts/setup-server.sh --dry-run 2>&1 | rg 'handbook-role'` shows the write.
-- [ ] `rg -c 'HOST_ROLE=dev' guides/dev-machine.md` prints at least 1.
-- [ ] `make check` passes.
+- [x] `make test-setup-dev-machine 2>&1 | rg -c 'role (prod refuses|missing refuses|dev runs|absent runs|invalid exits 2)'` prints 5, from five named `log` lines in the test.
+- [x] `sudo HANDBOOK_REF=$(git rev-parse HEAD) bash scripts/setup-server.sh --dry-run 2>&1 | rg 'handbook-role'` shows the write.
+- [x] `rg -c 'HOST_ROLE=dev' guides/dev-machine.md` prints at least 1.
+- [x] `make check` passes.
 
 ## Phase 2: Role and dev-residue sections in host-audit.sh
 
