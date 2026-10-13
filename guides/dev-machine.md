@@ -1,6 +1,6 @@
 # New Dev Machine
 
-Take a fresh Ubuntu laptop or Debian host to a working toolchain with [scripts/setup-dev-machine.sh](../scripts/setup-dev-machine.sh).
+Take a fresh Ubuntu laptop or a Debian dev server to a working toolchain with [scripts/setup-dev-machine.sh](../scripts/setup-dev-machine.sh).
 Its header says where Node, Go and Neovim come from on each distro.
 
 ## Prerequisites
@@ -12,6 +12,14 @@ sudo apt install -y git jq
 ```
 
 Have your git name and email ready, and a browser logged in to GitHub.
+
+The script refuses a server unless `/etc/handbook-role` says `dev`.
+A dev or agent server declares it with `HOST_ROLE=dev`, on this and every later setup-server.sh rerun:
+
+```bash
+git -C ~/r/handbook pull --ff-only && cd ~/r/handbook
+sudo HOST_ROLE=dev HANDBOOK_REF="$(git rev-parse HEAD)" scripts/setup-server.sh
+```
 
 ## Set up
 
