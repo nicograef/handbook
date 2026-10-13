@@ -8,6 +8,7 @@ Run the current Active LTS, and move within a month of a new LTS. Node executes 
 [type stripping](https://nodejs.org/api/typescript.html) is on by default.
 
 Pin the Node major in `.node-version`. CI reads it through `node-version-file`, and the image's `node:` tag repeats it.
+A repo with several Node packages may use one root `.node-version` that every package and CI reads.
 
 Type stripping erases types and nothing else. Enums, runtime namespaces, parameter properties and
 decorators fail at load; `erasableSyntaxOnly` makes `tsc` reject them first:
@@ -31,6 +32,7 @@ Vite's solution-style tsconfig.
 
 Pin TypeScript to `~7.0`, the Go-native compiler. Its `tsc -b` builds project references as before
 ([TypeScript 7.0](https://devblogs.microsoft.com/typescript/announcing-typescript-7-0/)).
+An Astro site stays on TypeScript 6: `astro check` needs the TS compiler API, which TS 7.0 lacks.
 
 Lint with oxlint in type-aware mode. create-vite's React template ships oxlint
 ([vite#22638](https://github.com/vitejs/vite/pull/22638)).
@@ -138,7 +140,7 @@ so new strictness options arrive only with a bump.
 
 ## Go
 
-Organise code by domain, not by layer:
+Organise new projects by domain, not by layer; an existing repo with a documented layered layout keeps it:
 
 ```
 backend/

@@ -77,6 +77,10 @@ Run every step on the server as `<username>`, logged in with `ssh <username>@<ho
 The server builds nothing and never pulls on a schedule; a deploy is the only moment images change.
 `postgres` uses a major-series tag; `caddy` is pinned exactly.
 
+**Distributed self-hosted product run by third parties:** the version lives in the operator's `.env`.
+Images are exact pins, including `postgres`, bumped by Dependabot.
+The product ships its own update script with a downgrade guard, replacing `make prod-deploy`.
+
 1. **Bump the app image tags** in `docker-compose.prod.yml` on your machine, then commit and push.
    Expected: `git log -1 --stat` names `docker-compose.prod.yml`.
 

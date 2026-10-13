@@ -92,7 +92,7 @@ A React repository skips [Copy the production files](#copy-the-production-files)
 
 ## Set up the toolchain
 
-1. Pin Node and pnpm, then add the frontend checks: run the [Package scripts](../reference/stack-conventions.md#package-scripts) block where the comment marks it. Expected: `pnpm --dir frontend test` passes.
+1. Pin Node and pnpm, then add the frontend checks: run the [Package scripts](../reference/stack-conventions.md#package-scripts) block where the comment marks it. Several Node packages share one root `.node-version`. Expected: `pnpm --dir frontend test` passes.
    ```bash
    echo <node-major> > frontend/.node-version && cd frontend && npm pkg set packageManager="pnpm@$(pnpm --version)"
    # run the Package scripts block from stack-conventions.md here

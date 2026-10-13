@@ -20,6 +20,10 @@ indent_size = 4
 [Makefile]
 indent_style = tab
 
+# Caddyfile – tabs, as caddy fmt writes them
+[Caddyfile*]
+indent_style = tab
+
 # Markdown – trailing spaces can be intentional (line breaks)
 [*.md]
 trim_trailing_whitespace = false
