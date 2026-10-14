@@ -332,7 +332,7 @@ end
 -- tsc is TypeScript 7's native server. Biome and the oxc tools attach only where the project
 -- configures them; lspconfig would start the oxc ones rootless everywhere else.
 for _, name in ipairs({ 'oxlint', 'oxfmt' }) do vim.lsp.config(name, { workspace_required = true }) end
-vim.lsp.enable({ 'tsc', 'ty', 'ruff', 'biome', 'oxlint', 'oxfmt', 'bashls', 'yamlls', 'jsonls' })
+vim.lsp.enable({ 'tsc', 'ty', 'ruff', 'biome', 'oxlint', 'oxfmt', 'bashls', 'yamlls', 'jsonls', 'marksman' })
 
 -- Formatting leaves import order alone; ruff and Biome sort imports through this code action.
 local function organize_imports(client, buf)

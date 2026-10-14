@@ -27,6 +27,7 @@ Eleven plugins on the built-in `vim.pack`; everything else is a Neovim built-in.
 | TypeScript, JavaScript | `tsc` (TypeScript 7), Biome, oxlint, oxfmt |
 | Python | ruff, ty |
 | Shell, YAML, JSON | bashls, yamlls, jsonls |
+| Markdown | marksman |
 
 Completion is `vim.lsp.completion` with autotrigger. ruff, Biome and oxfmt format on save; ruff and Biome also sort imports.
 Diagnostic messages show at the end of their line.
@@ -67,6 +68,12 @@ Neovim is the snap on Ubuntu and Step 1's tarball on Debian. The steps below are
    ```
 
    tree-sitter-cli's install script fetches its binary, so npm must allow it.
+   marksman has no package; take its release binary, not the snap, which cannot read `~/.config/marksman`.
+
+   ```bash
+   curl -fsSL https://github.com/artempyanykh/marksman/releases/latest/download/marksman-linux-x64 \
+     -o ~/.local/bin/marksman && chmod +x ~/.local/bin/marksman
+   ```
 
 3. **Start Neovim once.** `vim.pack` clones the plugins at the lockfile's revisions,
    then nvim-treesitter builds the parsers in `parsers.txt` in the background.

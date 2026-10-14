@@ -118,6 +118,7 @@ ITEMS+=(
   "uv|uv"
   "npm|npm tools"
   "uvtools|uv tools"
+  "marksman|marksman"
   "claude|Claude Code"
   "dotfiles|dotfiles and config"
   "sshconfig|SSH config"
@@ -150,6 +151,8 @@ NVIM_LINK="$TARGET_HOME/.local/bin/nvim"
 UV_BIN="$TARGET_HOME/.local/bin/uv"
 NVIM_DATA="$TARGET_HOME/.local/share/nvim/site"
 NVIM_LOCK="$HANDBOOK_DIR/dotfiles/nvim/nvim-pack-lock.json"
+MARKSMAN_BIN="$TARGET_HOME/.local/bin/marksman"
+MARKSMAN_API="https://api.github.com/repos/artempyanykh/marksman/releases/latest"
 FONT_URL="https://github.com/ryanoasis/nerd-fonts/releases/latest/download/NerdFontsSymbolsOnly.tar.xz"
 mapfile -t PARSERS < "$HANDBOOK_DIR/dotfiles/nvim/parsers.txt"
 
@@ -643,6 +646,24 @@ fix_font() {
   # shellcheck disable=SC2016 # $1 and $2 expand in the inner shell
   as_user bash -c 'curl -fsSL "$1" | tar -C "$2" -xJf -' _ "$FONT_URL" "$TARGET_HOME/.local/share/fonts/nerd"
   as_user fc-cache -f
+}
+
+# The release binary, not the snap: the snap cannot read ~/.config/marksman. A release is not re-fetched once installed.
+check_marksman() { if [[ ! -x "$MARKSMAN_BIN" ]]; then flag MISSING "$MARKSMAN_BIN"; fi; }
+# guides/neovim.md's marksman step; the digest GitHub publishes for the asset verifies it.
+fix_marksman() {
+  local file="marksman-linux-x64" json sha
+  [[ "$ARCH" == amd64 ]] || file="marksman-linux-$ARCH"
+  json="$(curl -fsS --compressed --max-time 10 "$MARKSMAN_API" 2>/dev/null || true)"
+  sha="$(jq -r --arg n "$file" '.assets[] | select(.name == $n) | .digest | ltrimstr("sha256:")' <<<"$json" 2>/dev/null || true)"
+  [[ -n "$sha" ]] || { printf 'The GitHub releases API did not answer.\n'; return 1; }
+  TMP_DIR="$(as_user mktemp -d)"
+  trap 'rm -rf "$TMP_DIR"' EXIT
+  as_user curl -fsSL "https://github.com/artempyanykh/marksman/releases/latest/download/$file" -o "$TMP_DIR/$file"
+  sha256sum --quiet -c <<<"$sha  $TMP_DIR/$file"
+  as_user mkdir -p "$(dirname "$MARKSMAN_BIN")"
+  as_user cp "$TMP_DIR/$file" "$MARKSMAN_BIN"
+  as_user chmod 755 "$MARKSMAN_BIN"
 }
 
 check_nvim() {

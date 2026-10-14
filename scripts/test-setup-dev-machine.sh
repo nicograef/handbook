@@ -102,6 +102,8 @@ case "$name" in
       *go.dev/dl/?mode=json*) cat "$FIX/go.json" ;;
       *go.dev/dl/go1.99.*) cp "$FIX/go.tar.gz" "${*: -1}" ;;
       *api.github.com/repos/neovim*) cat "$FIX/nvim.json" ;;
+      *api.github.com/repos/artempyanykh*) cat "$FIX/marksman.json" ;;
+      *releases/latest/download/marksman-*) cp "$FIX/marksman" "${*: -1}" ;;
       *releases/download/v0.99.*) cp "$FIX/nvim.tar.gz" "${*: -1}" ;;
       *claude.ai*) echo "ln -sf $FIX/stub $FIX/bin/claude" ;;
       *nerd-fonts*) cat "$FIX/font.tar.xz" ;;
@@ -221,6 +223,11 @@ jq -n --arg a "$ARCH" --arg s "$(sha256sum "$FIX/go.tar.gz" | cut -d' ' -f1)" \
   '[{version: "go1.99.0", files: [{os: "linux", arch: $a, kind: "archive", sha256: $s}]}]' > "$FIX/go.json"
 jq -n --arg n "nvim-linux-$NVIM_ARCH.tar.gz" --arg d "sha256:$(sha256sum "$FIX/nvim.tar.gz" | cut -d' ' -f1)" \
   '{tag_name: "v0.99.0", assets: [{name: $n, digest: $d}]}' > "$FIX/nvim.json"
+cp "$FIX/stub" "$FIX/marksman"
+MARKSMAN_FILE="marksman-linux-x64"
+[[ "$ARCH" == amd64 ]] || MARKSMAN_FILE="marksman-linux-$ARCH"
+jq -n --arg n "$MARKSMAN_FILE" --arg d "sha256:$(sha256sum "$FIX/marksman" | cut -d' ' -f1)" \
+  '{tag_name: "2026-02-08", assets: [{name: $n, digest: $d}]}' > "$FIX/marksman.json"
 export GNUPGHOME="$FIX/gnupg"
 mkdir -m 700 "$GNUPGHOME"
 # Two releaser keys: the pinned one and one in the keyring that NODE_KEYS leaves out.
@@ -323,7 +330,7 @@ export SETUP_ALLOW_NONROOT=true SETUP_ASSUME_TTY=true
 
 # 2. A fresh machine: everything but the absent apt neovim differs, and nothing changes.
 check_run fresh
-if [[ "$rc" -eq 1 && "$(rows ok)" -eq 1 ]]; then log "fresh --check -> exit 1, 17 rows differ"
+if [[ "$rc" -eq 1 && "$(rows ok)" -eq 1 ]]; then log "fresh --check -> exit 1, 18 rows differ"
 else fail "fresh --check: rc $rc, ok rows $(rows ok): $(cat "$OUT")"; fi
 if grep -vE "$READS" "$CALLS" | grep -q .; then fail "fresh --check changed something: $(grep -vE "$READS" "$CALLS")"
 else log "fresh --check -> read-only"; fi
@@ -337,7 +344,7 @@ in_order "apt-get install -y git" "xz-utils xclip" "apt-get install -y --no-upgr
   "usermod -aG docker" "ssh-keygen -t ed25519 -C fixture@example.com" \
   "gh auth login -h github.com -p ssh --skip-ssh-key -s admin:public_key,admin:ssh_signing_key" "pipx install --force uv" \
   "npm config set prefix $HOME_DIR/.local" \
-  "npm config set allow-scripts=pnpm,tree-sitter-cli --location=user" "uv tool install ruff" "claude plugin install" \
+  "npm config set allow-scripts=pnpm,tree-sitter-cli --location=user" "uv tool install ruff" "curl -fsSL https://github.com/artempyanykh/marksman" "claude plugin install" \
   "gh ssh-key add $HOME_DIR/.ssh/id_ed25519.pub --type authentication" \
   "gh ssh-key add $HOME_DIR/.ssh/id_ed25519.pub --type signing" "nvim --headless"
 log "--yes -> fixes run in item order"
@@ -358,7 +365,7 @@ if grep -qF 'docker group' "$OUT" && grep -qF 'Log out and back in' "$OUT"; then
 
 # 4. The fixed machine matches.
 check_run fixed
-if [[ "$rc" -eq 0 && "$(rows ok)" -eq 18 ]]; then log "fixed --check -> 18 rows ok"
+if [[ "$rc" -eq 0 && "$(rows ok)" -eq 19 ]]; then log "fixed --check -> 19 rows ok"
 else fail "fixed --check: rc $rc: $(cat "$OUT")"; fi
 
 # 4a. A project .npmrc in the caller's working directory leaves the user's npm config ok.
@@ -520,11 +527,11 @@ for refused in prod missing; do
 done
 echo dev > "$ROLE_FILE"
 run '' --check
-if [[ "$rc" -eq 0 && "$(rows ok)" -eq 18 ]]; then log "role dev runs --check -> 18 rows ok"
+if [[ "$rc" -eq 0 && "$(rows ok)" -eq 19 ]]; then log "role dev runs --check -> 19 rows ok"
 else fail "role dev --check: rc $rc: $(cat "$OUT")"; fi
 rm "$ROLE_FILE" "$MARKER"
 run '' --check
-if [[ "$rc" -eq 0 && "$(rows ok)" -eq 18 ]]; then log "role absent runs --check -> 18 rows ok"
+if [[ "$rc" -eq 0 && "$(rows ok)" -eq 19 ]]; then log "role absent runs --check -> 19 rows ok"
 else fail "role absent --check: rc $rc: $(cat "$OUT")"; fi
 echo staging > "$ROLE_FILE"
 run '' --check
@@ -545,7 +552,7 @@ fresh_machine debian
 touch "$STATE/nosnap"
 check_run "debian fresh"
 if [[ "$rc" -eq 1 && "$(rows ok)" -eq 3 ]] && grep -qE '^MISSING +Go ' "$OUT" && grep -qE '^MISSING +Node ' "$OUT" \
-  && grep -qE '^ok +Nerd Font +not needed: no display server' "$OUT"; then log "debian fresh --check -> exit 1, 18 rows differ, no font"
+  && grep -qE '^ok +Nerd Font +not needed: no display server' "$OUT"; then log "debian fresh --check -> exit 1, 19 rows differ, no font"
 else fail "debian fresh --check: rc $rc, ok rows $(rows ok): $(cat "$OUT")"; fi
 if grep -vE "$READS" "$CALLS" | grep -q .; then fail "debian fresh --check called more than reads: $(grep -vE "$READS" "$CALLS")"
 else log "debian fresh --check -> reads only"; fi
@@ -570,12 +577,12 @@ if node_kept && [[ ! -e "$FIX/usr-local/README.md" ]] && grep -qx 'bin/npx' "$FI
 else fail "debian --yes: node install: $(find "$FIX/usr-local" -maxdepth 3 | head -20)"; fi
 
 check_run "debian fixed"
-if [[ "$rc" -eq 0 && "$(rows ok)" -eq 21 ]]; then log "debian fixed --check -> 21 rows ok"
+if [[ "$rc" -eq 0 && "$(rows ok)" -eq 22 ]]; then log "debian fixed --check -> 22 rows ok"
 else fail "debian fixed --check: rc $rc: $(cat "$OUT")"; fi
 
 # A rerun on the fixed machine reports every row ok and runs no fix.
 run '' --yes
-if [[ "$rc" -eq 0 && "$(rows ok)" -eq 21 ]] && ! grep -qE "$WRITES" "$CALLS"; then log "debian rerun --yes -> changes nothing"
+if [[ "$rc" -eq 0 && "$(rows ok)" -eq 22 ]] && ! grep -qE "$WRITES" "$CALLS"; then log "debian rerun --yes -> changes nothing"
 else fail "debian rerun --yes: rc $rc: $(grep -E "$WRITES" "$CALLS")"; fi
 
 # 9. Newer Go and Neovim releases whose digests do not match: both fixes fail, the old trees stay.
