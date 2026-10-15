@@ -29,9 +29,11 @@ Eleven plugins on the built-in `vim.pack`; everything else is a Neovim built-in.
 | Shell, YAML, JSON | bashls, yamlls, jsonls |
 | Markdown | marksman |
 
-Completion is `vim.lsp.completion` with autotrigger. ruff, Biome and oxfmt format on save; ruff and Biome also sort imports.
-Diagnostic messages show at the end of their line.
-Biome, oxlint and oxfmt come from the project's `node_modules` and attach only where it configures them.
+- Completion is `vim.lsp.completion` with autotrigger.
+- Diagnostic messages show at the end of their line.
+- `<leader>cf` and every save format the buffer. ruff, Biome and oxfmt format where they attach; ruff and Biome also sort imports.
+- Elsewhere prettier formats JSON, YAML, Markdown, CSS, HTML, TypeScript and JavaScript, unsaved buffers included.
+- Biome, oxlint and oxfmt come from the project's `node_modules` and attach only where it configures them.
 
 On a dev machine, [setup-dev-machine.sh](../scripts/setup-dev-machine.sh) does Steps 1–3.
 It installs Neovim, the servers, the tree-sitter CLI, `xclip`, a Nerd Font and the parsers.
@@ -64,7 +66,7 @@ Neovim is the snap on Ubuntu and Step 1's tarball on Debian. The steps below are
    ```bash
    uv tool install ruff && uv tool install ty
    npm install -g --allow-scripts=tree-sitter-cli typescript bash-language-server \
-     yaml-language-server vscode-langservers-extracted tree-sitter-cli
+     yaml-language-server vscode-langservers-extracted prettier tree-sitter-cli
    ```
 
    tree-sitter-cli's install script fetches its binary, so npm must allow it.

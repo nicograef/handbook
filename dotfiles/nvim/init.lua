@@ -159,7 +159,7 @@ require('snacks').setup({
 require('which-key').setup({
   spec = {
     { '<leader>f', group = 'file' }, { '<leader>s', group = 'search' }, { '<leader>u', group = 'ui' },
-    { '<leader>g', group = 'git' }, { '<leader>gh', group = 'hunks' },
+    { '<leader>g', group = 'git' }, { '<leader>gh', group = 'hunks' }, { '<leader>c', group = 'code' },
   },
 })
 require('lualine').setup()
@@ -351,23 +351,60 @@ local function organize_imports(client, buf)
   end
 end
 
+-- The formatting servers win where they attach: ruff everywhere, Biome and oxfmt in projects that
+-- configure them. Elsewhere prettier formats these filetypes, unsaved buffers included.
+local formatters = { 'ruff', 'biome', 'oxfmt' }
+local prettier_parser = {
+  json = 'json', jsonc = 'jsonc', yaml = 'yaml', markdown = 'markdown', css = 'css', html = 'html',
+  typescript = 'typescript', typescriptreact = 'typescript', javascript = 'babel', javascriptreact = 'babel',
+}
+
+local function prettier(buf)
+  local name = vim.api.nvim_buf_get_name(buf)
+  -- With a path prettier reads .prettierrc and .editorconfig; an unsaved buffer gets the bare parser.
+  local args = name ~= '' and { '--stdin-filepath', name } or { '--parser', prettier_parser[vim.bo[buf].filetype] }
+  local lines = vim.api.nvim_buf_get_lines(buf, 0, -1, false)
+  local res = vim.system({ 'prettier', unpack(args) }, { stdin = table.concat(lines, '\n') .. '\n' }):wait()
+  if res.code ~= 0 then return vim.notify('prettier: ' .. vim.trim(res.stderr), vim.log.levels.ERROR) end
+  local out = vim.split(res.stdout, '\n', { plain = true })
+  if out[#out] == '' then table.remove(out) end
+  if vim.deep_equal(out, lines) then return end
+  local view = vim.fn.winsaveview()
+  vim.api.nvim_buf_set_lines(buf, 0, -1, false, out)
+  vim.fn.winrestview(view)
+end
+
+-- Save calls this quietly: a filetype nothing formats, or a missing prettier, is not an error there.
+local function format(buf, quiet)
+  for _, client in ipairs(vim.lsp.get_clients({ bufnr = buf })) do
+    if vim.list_contains(formatters, client.name) then
+      organize_imports(client, buf)
+      return vim.lsp.buf.format({ bufnr = buf, id = client.id })
+    end
+  end
+  local ft = vim.bo[buf].filetype
+  if not prettier_parser[ft] then
+    if not quiet then vim.notify('No formatter for filetype "' .. ft .. '"', vim.log.levels.WARN) end
+  elseif vim.fn.executable('prettier') == 0 then
+    if not quiet then vim.notify('prettier is not installed', vim.log.levels.ERROR) end
+  else
+    prettier(buf)
+  end
+end
+
+vim.keymap.set('n', '<leader>cf', function() format(0) end, { desc = 'Format buffer' })
+autocmd('BufWritePre', {
+  callback = function(ev)
+    if vim.b[ev.buf].autoformat == false or vim.g.autoformat == false then return end
+    format(ev.buf, true)
+  end,
+})
+
 autocmd('LspAttach', {
   callback = function(ev)
     local client = assert(vim.lsp.get_client_by_id(ev.data.client_id))
     if client:supports_method('textDocument/completion') then
       vim.lsp.completion.enable(true, client.id, ev.buf, { autotrigger = true })
-    end
-    -- Only the formatters format; tsc and the others would fight them.
-    if vim.list_contains({ 'ruff', 'biome', 'oxfmt' }, client.name) then
-      vim.api.nvim_create_autocmd('BufWritePre', {
-        group = vim.api.nvim_create_augroup('format.' .. ev.buf, {}),
-        buffer = ev.buf,
-        callback = function()
-          if vim.b[ev.buf].autoformat == false or vim.g.autoformat == false then return end
-          organize_imports(client, ev.buf)
-          vim.lsp.buf.format({ bufnr = ev.buf, id = client.id })
-        end,
-      })
     end
   end,
 })

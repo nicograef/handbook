@@ -97,7 +97,7 @@ DOCKER_PACKAGES=()
 SNAPS=("node $NODE_CHANNEL" "go latest/stable" "nvim latest/stable")
 NPM_TOOLS=(pnpm)
 # guides/neovim.md repeats these two lists for servers; check-repo's contracts stage compares them.
-NPM_SERVERS=(typescript bash-language-server yaml-language-server vscode-langservers-extracted tree-sitter-cli)
+NPM_SERVERS=(typescript bash-language-server yaml-language-server vscode-langservers-extracted prettier tree-sitter-cli)
 UV_TOOLS=(ruff ty)
 NPM_ALLOW_SCRIPTS="pnpm,tree-sitter-cli" # their install scripts put the native binary in place
 
