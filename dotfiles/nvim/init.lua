@@ -91,6 +91,19 @@ autocmd('BufReadPost', {
     end
   end,
 })
+-- A pasted buffer has no name, so Neovim detects nothing. Detect from the content once, while the
+-- filetype is empty; any later :set ft= sticks.
+autocmd({ 'TextChanged', 'TextChangedI' }, {
+  callback = function(ev)
+    local buf = ev.buf
+    if vim.bo[buf].filetype ~= '' or vim.bo[buf].buftype ~= '' or vim.api.nvim_buf_get_name(buf) ~= '' then return end
+    local lines = vim.api.nvim_buf_get_lines(buf, 0, 5000, false)
+    local text = vim.trim(table.concat(lines, '\n'))
+    local ft = vim.filetype.match({ contents = lines })
+    if not ft and text:find('^[%[{]') and pcall(vim.json.decode, text) then ft = 'json' end
+    if ft then vim.bo[buf].filetype = ft end
+  end,
+})
 autocmd('FileType', {
   pattern = { 'help', 'qf', 'man', 'checkhealth' },
   callback = function(ev)
