@@ -299,6 +299,8 @@ autocmd('FileType', {
     local lang = vim.treesitter.language.get_lang(ev.match)
     if lang and vim.treesitter.language.add(lang) then
       vim.treesitter.start(ev.buf, lang)
+      -- Folds computed before the parser ran stay empty; setting the method again recomputes them.
+      for _, win in ipairs(vim.fn.win_findbuf(ev.buf)) do vim.wo[win].foldmethod = 'expr' end
       if vim.treesitter.query.get(lang, 'indents') then
         vim.bo[ev.buf].indentexpr = "v:lua.require'nvim-treesitter'.indentexpr()"
       end
