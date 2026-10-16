@@ -92,7 +92,7 @@ HANDBOOK_SSH_URL="git@github.com:nicograef/handbook.git"
 ARCH="$(dpkg --print-architecture)"
 
 # xclip and the docker packages join once dpkg can be asked about the display server and the Docker in use.
-APT_PACKAGES=(git jq curl gcc make shellcheck tmux bat eza fzf fd-find ripgrep git-delta gitleaks lazygit pipx gpgv xz-utils)
+APT_PACKAGES=(git jq curl gcc make shellcheck tmux bat eza fzf fd-find ripgrep git-delta gitleaks lazygit pipx gpgv zip xz-utils)
 DOCKER_PACKAGES=()
 SNAPS=("node $NODE_CHANNEL" "go latest/stable" "nvim latest/stable")
 NPM_TOOLS=(pnpm)
