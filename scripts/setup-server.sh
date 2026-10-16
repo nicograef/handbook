@@ -241,7 +241,7 @@ run apt full-upgrade -y
 run apt install -y \
   curl wget git make vim unzip \
   ca-certificates \
-  jq lsof cron locales \
+  jq lsof cron locales rsync bind9-dnsutils \
   ufw fail2ban
 
 # ── 1b. Swap ────────────────────────────────────────────────────────────────
