@@ -17,8 +17,8 @@
 #      A symlink, or a file or directory not owned by the running user or writable
 #      by group or other, is skipped.
 #   4. All pass → ping the URL once (curl). A failure → log
-#      "UNHEALTHY: <name>: <reason>", ping nothing, exit 1. URL unset → run the
-#      checks, skip the ping.
+#      "UNHEALTHY: <name>: <reason>", post those lines to <URL>/fail, exit 1.
+#      URL unset → run the checks, ping nothing.
 #
 # --check-only runs every check and prints "<name>\t<ok|fail>\t<reason>" per check.
 # It exits 0 when all pass and 1 otherwise, reads no defaults file and pings nothing.
@@ -29,7 +29,7 @@ set -euo pipefail
 # ── Configuration (env-var defaults; production paths are the real ones) ──────
 DEFAULTS_FILE="${DEFAULTS_FILE:-/etc/default/report-health}"
 REBOOT_REQUIRED_FILE="${REBOOT_REQUIRED_FILE:-/var/run/reboot-required}"
-REBOOT_GRACE_DAYS="${REBOOT_GRACE_DAYS:-7}"  # a pending reboot fails the check only once its marker is older
+REBOOT_GRACE_DAYS="${REBOOT_GRACE_DAYS:-14}"  # a pending reboot fails the check only once its marker is older
 UNATTENDED_UPGRADES_LOG="${UNATTENDED_UPGRADES_LOG:-/var/log/unattended-upgrades/unattended-upgrades.log}"
 OOM_WINDOW="${OOM_WINDOW:-65 minutes ago}"  # slightly over the hourly cron interval, so no kill falls between runs
 CHECKS_DIR="${CHECKS_DIR:-/etc/report-health.d}"
@@ -117,12 +117,14 @@ check_oom() {
 }
 
 failed=0
+failures=""
 report() { # report <name> <ok|fail> <reason>
   local why="${3//$'\t'/ }"
   if [[ "$mode" == check ]]; then
     printf '%s\t%s\t%s\n' "$1" "$2" "$why"
   elif [[ "$2" == fail ]]; then
     log "UNHEALTHY: $1: $why"
+    failures+="UNHEALTHY: $1: $why"$'\n'
   fi
   [[ "$2" == ok ]] || failed=1
 }
@@ -177,14 +179,16 @@ if [[ "$mode" == check ]]; then
 fi
 
 # ── Ping ──────────────────────────────────────────────────────────────────────
-if [[ "$failed" -ne 0 ]]; then
-  log "Unhealthy — sending no ping."
-  exit 1
+if [[ -z "$HEALTH_PING_URL" ]]; then
+  log "HEALTH_PING_URL is unset — no ping attempted."
+  exit "$failed"
 fi
 
-if [[ -z "$HEALTH_PING_URL" ]]; then
-  log "Healthy, but HEALTH_PING_URL is unset — no ping attempted."
-  exit 0
+# A /fail alerts at once with the reasons, where a withheld ping alerts only after the missed window.
+if [[ "$failed" -ne 0 ]]; then
+  log "Unhealthy — reporting the failure to the heartbeat URL"
+  curl -fsS --max-time 10 --retry 3 --data-binary "$failures" "$HEALTH_PING_URL/fail" >/dev/null || true
+  exit 1
 fi
 
 log "Healthy — pinging the heartbeat URL"

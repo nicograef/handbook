@@ -8,7 +8,7 @@
 #   1. Puts journalctl and curl stubs first on PATH: journalctl prints a fixture
 #      file, curl logs its arguments and pings nothing.
 #   2. Points every path report-health reads at a temp dir through its env overrides.
-#   3. Asserts the hourly form's ping, exit code and log, without and with drop-ins.
+#   3. Asserts the hourly form's ping or /fail, exit code and log, without and with drop-ins.
 #   4. Asserts --check-only's lines, its silence on the URL and its exit codes.
 
 set -euo pipefail
@@ -71,6 +71,14 @@ expect_no_ping() { # expect_no_ping <rc> <label>
   fi
 }
 
+expect_fail_ping() { # expect_fail_ping <label> <reason>: exit 1, one curl to <URL>/fail carrying the reason
+  if [[ "$rc" -eq 1 && "$(grep -cF "$URL" "$CALLS")" -eq 1 ]] && grep -qF "$URL/fail" "$CALLS" && grep -qF "$2" "$CALLS"; then
+    log "$1 -> exit 1, /fail sent with '$2'"
+  else
+    fail "$1: expected exit 1 and one /fail carrying '$2', got rc $rc, curl calls: $(cat "$CALLS")"
+  fi
+}
+
 expect_log() { # expect_log <label> <text>
   if grep -qF "$2" "$OUT"; then log "$1 -> logs '$2'"; else fail "$1: no '$2' in: $(cat "$OUT")"; fi
 }
@@ -90,15 +98,14 @@ expect_ping "healthy, no directory"
 touch "$REBOOT_REQUIRED_FILE"
 run
 expect_ping "reboot required within the grace"
-touch -d "8 days ago" "$REBOOT_REQUIRED_FILE"
+touch -d "15 days ago" "$REBOOT_REQUIRED_FILE"
 run
-expect_no_ping 1 "reboot required past the grace"
-expect_log "reboot required past the grace" "UNHEALTHY: reboot: reboot required for 8 day(s)"
+expect_fail_ping "reboot required past the grace" "UNHEALTHY: reboot: reboot required for 15 day(s)"
 rm "$REBOOT_REQUIRED_FILE"
 
 echo "2026-01-01 06:00:02,000 ERROR Installing the upgrades failed!" >> "$UNATTENDED_UPGRADES_LOG"
 run
-expect_no_ping 1 "unattended-upgrades error"
+expect_fail_ping "unattended-upgrades error" "UNHEALTHY: upgrades:"
 expect_log "unattended-upgrades error" "UNHEALTHY: upgrades:"
 echo "2026-01-02 06:00:00,000 INFO Starting unattended upgrades script" >> "$UNATTENDED_UPGRADES_LOG"
 run
@@ -106,7 +113,7 @@ expect_ping "error in an earlier upgrades run only"
 
 echo "kernel: Out of memory: Killed process 1234 (node)" > "$JOURNAL"
 run
-expect_no_ping 1 "OOM kill in the journal"
+expect_fail_ping "OOM kill in the journal" "UNHEALTHY: oom:"
 expect_log "OOM kill in the journal" "UNHEALTHY: oom:"
 : > "$JOURNAL"
 
@@ -118,10 +125,10 @@ dropin disk-free 'echo "12% used"'
 run
 expect_ping "passing drop-in"
 
-# 3. A failing drop-in withholds the ping and logs its name and first stdout line.
+# 3. A failing drop-in sends /fail and logs its name and first stdout line.
 dropin queue-depth 'echo "queue at 900"; echo "second line"; exit 1'
 run
-expect_no_ping 1 "failing drop-in"
+expect_fail_ping "failing drop-in" "UNHEALTHY: queue-depth: queue at 900"
 expect_log "failing drop-in" "UNHEALTHY: queue-depth: queue at 900"
 if grep -qF "second line" "$OUT"; then fail "failing drop-in: reason holds more than the first line"; fi
 
@@ -195,7 +202,7 @@ echo "exit 3" > "$FIX/defaults-exits"
 DEFAULTS_FILE="$FIX/defaults-exits" run --check-only
 expect_no_ping 0 "--check-only, all pass, defaults file unread"
 
-touch -d "8 days ago" "$REBOOT_REQUIRED_FILE"
+touch -d "15 days ago" "$REBOOT_REQUIRED_FILE"
 run --check-only
 expect_no_ping 1 "--check-only, built-in fails"
 if grep -q $'^reboot\tfail\t' "$OUT"; then log "--check-only -> reboot fail line"; else fail "--check-only: no reboot fail line: $(cat "$OUT")"; fi
@@ -213,7 +220,7 @@ else
   fail "hung drop-in: rc $rc after ${elapsed}s: $(cat "$OUT")"
 fi
 run
-expect_no_ping 1 "hung drop-in, hourly"
+expect_fail_ping "hung drop-in, hourly" "timed out"
 expect_log "hung drop-in, hourly" "UNHEALTHY: hung: timed out after 1s"
 rm "$CHECKS_DIR/hung"
 

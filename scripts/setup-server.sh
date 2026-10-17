@@ -106,7 +106,7 @@ DRY_RUN="${DRY_RUN:-false}"                      # set to "true" or pass --dry-r
 # ─────────────────────────────────────────────────────────────────────────────
 
 # sha256 of scripts/report-health.sh in the same commit; check-repo's contracts stage keeps it in sync.
-REPORT_HEALTH_SHA256="502e33a8d9796933ba9a8849e1eb757b51f0f231db33d967058c935a471363d5"
+REPORT_HEALTH_SHA256="35ad64dd9501e5c4f90ce81119d3a7f2ad695fac52153acaec4062c1bb8ad2d7"
 # Run from a clone, the sibling report-health.sh is installed; a piped run (bash -s) has no file beside it.
 LOCAL_REPORT_HEALTH=""
 if [[ -n "${BASH_SOURCE[0]:-}" && -f "$(dirname "${BASH_SOURCE[0]}")/report-health.sh" ]]; then

@@ -5,7 +5,7 @@ Image updates and roll back happen at deploy time: [deploy.md#update](deploy.md#
 
 Unattended-upgrades installs patches but never reboots (see [`setup-server.sh`](../scripts/setup-server.sh)).
 Kernel and libc updates take effect only after a reboot, so the monthly reboot is unconditional.
-The health-ping heartbeat alerts once `/var/run/reboot-required` is 7 days old; the reboot clears it.
+The health-ping heartbeat alerts once `/var/run/reboot-required` is 14 days old; the reboot clears it.
 
 ## Prerequisites
 
