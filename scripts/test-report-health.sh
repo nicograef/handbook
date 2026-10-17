@@ -89,8 +89,11 @@ expect_ping "healthy, no directory"
 
 touch "$REBOOT_REQUIRED_FILE"
 run
-expect_no_ping 1 "reboot required"
-expect_log "reboot required" "UNHEALTHY: reboot: reboot required"
+expect_ping "reboot required within the grace"
+touch -d "8 days ago" "$REBOOT_REQUIRED_FILE"
+run
+expect_no_ping 1 "reboot required past the grace"
+expect_log "reboot required past the grace" "UNHEALTHY: reboot: reboot required for 8 day(s)"
 rm "$REBOOT_REQUIRED_FILE"
 
 echo "2026-01-01 06:00:02,000 ERROR Installing the upgrades failed!" >> "$UNATTENDED_UPGRADES_LOG"
@@ -192,7 +195,7 @@ echo "exit 3" > "$FIX/defaults-exits"
 DEFAULTS_FILE="$FIX/defaults-exits" run --check-only
 expect_no_ping 0 "--check-only, all pass, defaults file unread"
 
-touch "$REBOOT_REQUIRED_FILE"
+touch -d "8 days ago" "$REBOOT_REQUIRED_FILE"
 run --check-only
 expect_no_ping 1 "--check-only, built-in fails"
 if grep -q $'^reboot\tfail\t' "$OUT"; then log "--check-only -> reboot fail line"; else fail "--check-only: no reboot fail line: $(cat "$OUT")"; fi

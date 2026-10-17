@@ -8,9 +8,9 @@
 #
 # What it does:
 #   1. Reads HEALTH_PING_URL from /etc/default/report-health (env is the fallback).
-#   2. Runs the built-in checks: reboot (no /var/run/reboot-required), upgrades
-#      (the latest unattended-upgrades run logged no error) and oom (the journal
-#      records no OOM kill within OOM_WINDOW).
+#   2. Runs the built-in checks: reboot (no /var/run/reboot-required older than
+#      REBOOT_GRACE_DAYS), upgrades (the latest unattended-upgrades run logged no
+#      error) and oom (the journal records no OOM kill within OOM_WINDOW).
 #   3. Runs the drop-ins in /etc/report-health.d/: each executable regular file
 #      named ^[a-z0-9-]+$, in name order, under `timeout 30`. A non-zero exit or
 #      a timeout fails it; its first stdout line is the reason. No directory, no drop-ins.
@@ -29,6 +29,7 @@ set -euo pipefail
 # ── Configuration (env-var defaults; production paths are the real ones) ──────
 DEFAULTS_FILE="${DEFAULTS_FILE:-/etc/default/report-health}"
 REBOOT_REQUIRED_FILE="${REBOOT_REQUIRED_FILE:-/var/run/reboot-required}"
+REBOOT_GRACE_DAYS="${REBOOT_GRACE_DAYS:-7}"  # a pending reboot fails the check only once its marker is older
 UNATTENDED_UPGRADES_LOG="${UNATTENDED_UPGRADES_LOG:-/var/log/unattended-upgrades/unattended-upgrades.log}"
 OOM_WINDOW="${OOM_WINDOW:-65 minutes ago}"  # slightly over the hourly cron interval, so no kill falls between runs
 CHECKS_DIR="${CHECKS_DIR:-/etc/report-health.d}"
@@ -56,13 +57,19 @@ fi
 # Each check sets $reason and returns 0 when it passes.
 reason=""
 
-# A pending reboot means kernel/library updates are not yet live — not healthy.
+# A pending reboot leaves kernel/library updates not yet live; the host still serves, so it fails only past the grace.
+# The marker's mtime dates it: unattended-upgrades rewrites it with each update that needs a reboot.
 check_reboot() {
-  if [[ -e "$REBOOT_REQUIRED_FILE" ]]; then
-    reason="reboot required ($REBOOT_REQUIRED_FILE present)"
+  if [[ ! -e "$REBOOT_REQUIRED_FILE" ]]; then
+    reason="no reboot required"
+    return 0
+  fi
+  local age_days=$(( ($(date +%s) - $(stat -c %Y "$REBOOT_REQUIRED_FILE")) / 86400 ))
+  if (( age_days >= REBOOT_GRACE_DAYS )); then
+    reason="reboot required for $age_days day(s), grace $REBOOT_GRACE_DAYS ($REBOOT_REQUIRED_FILE)"
     return 1
   fi
-  reason="no reboot required"
+  reason="reboot required for $age_days day(s), within the $REBOOT_GRACE_DAYS-day grace"
 }
 
 # Inspect only the most recent unattended-upgrades run (the block after the last
