@@ -174,6 +174,6 @@ Committed work survives every stop; the session does not. The messages are liste
 | Symptom | Recovery |
 | --- | --- |
 | `You've hit your session limit` or `weekly limit`, session still open | [Wait out the limit](#let-an-open-session-wait-out-a-usage-limit) |
-| `Repeated 529 Overloaded errors` or `Request rejected (429)` ended the run | Restart it with `CLAUDE_CODE_RETRY_WATCHDOG=1`, then [resume from the last commit](../plugin/skills/implement-plan/git.md#pickup) |
+| `Repeated 529 Overloaded errors` or `Request rejected (429)` ended the run | Restart it with `CLAUDE_CODE_RETRY_WATCHDOG=1`, then [resume from the last commit](../plugin/skills/implement-plan/SKILL.md#resume) |
 | The run stalled on a denial | Read `~/.claude/denials.log`; add an allow rule or an `autoMode.environment` entry |
-| Any other limit or API error stopped the run | [Respond per error kind](../plugin/skills/implement-plan/lead.md#failures), then [resume from the last commit](../plugin/skills/implement-plan/git.md#pickup) |
+| Any other limit or API error stopped the run | [Respond per error kind](../plugin/skills/implement-plan/lead.md#failures), then [resume from the last commit](../plugin/skills/implement-plan/SKILL.md#resume) |

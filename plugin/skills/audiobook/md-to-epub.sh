@@ -17,7 +17,7 @@
 #   3. Splits one EPUB chapter per H1 and builds a depth-1 table of contents.
 #   4. Reports words and estimated listening time, per chapter and total.
 #
-# See plugin/skills/audiobook/pipeline.md.
+# See plugin/skills/audiobook/SKILL.md.
 
 set -euo pipefail
 

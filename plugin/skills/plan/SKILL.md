@@ -6,43 +6,35 @@ argument-hint: "[prd] <task, PRD path, or problem description>"
 
 # Plan
 
-Arguments: `$ARGUMENTS`. Output is a file, never code. `/nico:plan <task or PRD path>` writes `docs/plans/plan-<slug>.md`; `/nico:plan prd <problem>` writes `docs/prds/prd-<name>.md`.
+Arguments: `$ARGUMENTS`. The output is a file, never code. `/nico:plan <task or PRD path>` writes `docs/plans/plan-<slug>.md`; `/nico:plan prd <problem>` writes `docs/prds/prd-<name>.md`.
 
-## Rules the templates depend on
+## What implement-plan relies on
 
-- Every phase carries a `**Depends on**` line. implement-plan's concurrency test reads it pairwise.
+- The plan keeps the [skeleton](#plan-skeleton). implement-plan and the `plan-run-guard.sh` Stop hook parse `## Phase`, `**Depends on**` and `- [ ]` lines.
+- Paths go in each phase's Context and What to build. The concurrency test compares them pairwise.
+- Phases meant to run in parallel touch disjoint files. Choke files (indexes, lockfiles, migrations) stay in one phase.
+- Each criterion is verifiable by one targeted command. The full gate runs once per phase.
 - Reference code as `path — symbol()`, not line numbers; lines drift while phases land.
-- Durable decisions (routes, schema shapes, model names, auth approach, third-party boundaries) go in the header. Paths go in each phase's Context and What to build, where the concurrency test reads them.
-- Phase text holds what to build and how to verify it. No background, no restated PRD, no rationale the header already settled.
-- Decide the granularity yourself. The finished file is the review surface; the user merges or splits phases there.
 
-## Workflow
+## Plan mode
 
 1. Read the input in full: the PRD, or the task and the code it touches.
-2. Clarify only what the code, PRD and conventions do not settle, at most three rounds. Zero questions is the normal outcome; say so in one line.
-3. Fix the durable decisions.
-4. Slice into tracer-bullet phases: each a thin, complete path through every layer (schema, API, UI, tests), demoable on its own. Many thin slices beat few thick ones. A refactor or config change is one phase.
-5. Give phases disjoint files so implement-plan can run them as parallel lanes. Name a dependency only where a phase needs another's code. Put choke files (indexes, lockfiles, migrations) into one phase. Each criterion is verifiable by one targeted command; the full gate runs once per phase.
-6. Run the [self-review](#self-review). Flag names that appear in one phase only.
-7. Spawn a fresh-context `opus` subagent as plan critic on the file. It flags criteria no single command verifies, wrong `Depends on` lines and choke files shared across parallel phases. Route its findings through the decide skill.
+2. Ask only what code, PRD and conventions leave open, in at most three rounds. Zero questions is normal.
+3. Fix the durable decisions in the header: routes, schema, models, auth, third-party boundaries.
+4. Slice into tracer-bullet phases, each a thin path through every layer and demoable alone. Pick the granularity yourself.
+5. Self-review: fix placeholders such as TBD or "similar to phase N". Flag names used in one phase only. Propose KISS and YAGNI cuts.
+6. Spawn a fresh-context `opus` plan critic on the file. Apply its findings and your cuts; route only forks with no clear winner through the decide skill.
 
 ## PRD mode
 
-1. Split a request that bundles independently shippable features into separate PRDs before anything else.
-2. Explore the code to check the user's assertions, then clarify (≤ 3 rounds).
-3. Work out two or three approaches with effort, risk and reversibility; pick one and record why.
-4. Write the whole PRD in one pass. Problem Statement and User Stories are prose because their readers are non-technical; the rest follows the usual caps.
-5. Domain terms the PRD introduces go into the repo's existing glossary. Without one, they go into `docs/UBIQUITOUS_LANGUAGE.md`: one table per topic with term, one-sentence definition, aliases to avoid. Pick one word per concept; skip module and class names unless they carry domain meaning.
-6. Run the [self-review](#self-review).
+1. Split a request bundling independently shippable features into separate PRDs.
+2. Check the user's assertions against the code, then clarify in at most three rounds.
+3. Weigh two or three approaches by effort, risk and reversibility. Record the pick and why.
+4. Write the sections of the [PRD skeleton](#prd-skeleton) in one pass.
+5. New domain terms go into the repo's glossary, else `docs/UBIQUITOUS_LANGUAGE.md`: term, one-sentence definition, aliases to avoid.
+6. Self-review as in plan mode.
 
-## Self-review
-
-One pass over the written file, in both modes:
-
-- Fix placeholders inline: TBD, "add appropriate validation", "similar to phase N".
-- Find simplifications (KISS, YAGNI). Propose each change with its reason; the user decides through the decide skill.
-
-## Plan template
+## Plan skeleton
 
 ```markdown
 # Plan: <Title>
@@ -50,48 +42,30 @@ One pass over the written file, in both modes:
 > Source PRD: <path, or "n/a">
 
 ## Goal
-
 ## Architectural decisions
-
-- **Routes**: … · **Schema**: … · **Key models**: … (omit for small tasks)
-
-## Inventory
-
-- `path/file.go — symbolName()` — why relevant
-
-## Resolved decisions
-
+## Inventory                 (`path — symbol()` — why relevant)
 ## Open questions / Risks
 
 ## Phase 1: <Title>
 
-**User stories**: <from the PRD, or omit>
 **Depends on**: <phase numbers, or "none">
 
-### Context
-
-- `path/file.go — symbolName()` — why relevant
-
-### What to build
-
-End-to-end behaviour of this slice, not layer-by-layer steps.
-
+### Context                  (`path — symbol()` — why relevant)
+### What to build            (end-to-end behaviour of the slice)
 ### Acceptance criteria
-
 - [ ] …
 ```
 
-## PRD template
+## PRD skeleton
 
 ```markdown
 # PRD: <Feature>
 
-## Problem Statement      (prose, user's perspective)
-## Solution               (prose, user's perspective)
-## User Stories           (numbered; one per actor and per capability the Solution names)
-1. As an <actor>, I want <feature>, so that <benefit>
-## Implementation Decisions   (modules, interfaces, schema, API contracts; no file paths or code)
-## Testing Decisions          (external behaviour only; which modules; prior art in the repo)
+## Problem Statement         (prose, user's perspective)
+## Solution                  (prose, user's perspective)
+## User Stories              (As an <actor>, I want <feature>, so that <benefit>)
+## Implementation Decisions  (modules, interfaces, schema, contracts; no paths or code)
+## Testing Decisions         (external behaviour only; prior art in the repo)
 ## Out of Scope
 ## Further Notes
 ```

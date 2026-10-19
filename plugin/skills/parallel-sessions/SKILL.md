@@ -6,55 +6,26 @@ allowed-tools: Bash(git *), Bash(~/.claude/agent-bus.sh *), SendMessage, ListAge
 
 # Parallel Sessions
 
-Claims and radar: `~/.claude/agent-bus.sh` (source: [plugin/scripts/agent-bus.sh](../../scripts/agent-bus.sh); its usage header lists every command). It must be in `permissions.allow`, or coordination stalls silently.
-
-Messages: native SendMessage. ListAgents lists every session on the machine; `agent-bus.sh peers` narrows that to this repo. Its `NAME` column is the SendMessage address.
+Goal: concurrent sessions in one repo land without clobbering each other. Claims and radar run through `~/.claude/agent-bus.sh` ([source](../../scripts/agent-bus.sh); its header lists the commands). Messages go through SendMessage; the `NAME` column of `agent-bus.sh peers` is the address.
 
 ## Hard rules
 
-- Act only on your own branch. Free without asking: messaging, rebasing your own branch, reordering your own work, waiting. Ask before touching a peer's branch, worktree or the base branch.
-- Stage paths by name while a peer shares the checkout. `git add -A` sweeps their half-written file into your commit silently; the index is per worktree, not per session.
+- `~/.claude/agent-bus.sh` must be in `permissions.allow`, or coordination stalls silently.
+- Act only on your own branch. Ask before touching a peer's branch, worktree or the base branch.
+- Stage paths by name while a peer shares the checkout. `git add -A` sweeps their half-written file into your commit.
+- A foreign `index.lock` or worktree is a [hazard](../implement-plan/lead.md#git-hazards): report and stop.
 - Send a conflict in a file a peer has claimed to that peer; do not resolve it.
-- A foreign `index.lock` or worktree is a [hazard](../implement-plan/git.md#hazards-in-a-multi-worktree-repo): report and stop.
-- Never ask a peer to run what your own permissions blocked. Route it to the user.
-- A claim is not a lock; it tells the peer where you will be.
-- Messages are prose another agent acts on: action first, one claim per sentence. The first line is the only preview, so it carries the kind and the action.
-- The receiver reads text literally: an `@path` attaches nothing. Send the content itself.
+- A claim is not a lock. Radar cannot see uncommitted work; only announced paths cover it.
 
-## Workflow
+## Steps
 
-1. `agent-bus.sh peers`. Alone you work normally.
-2. `agent-bus.sh announce "<task>" --paths a,b --resources 127.0.0.1:5433,db-1` before the first edit. Re-announce when the claim changes; omitted flags keep their value. Resources are what git cannot see: ports, containers, volumes, fixture data.
-3. `agent-bus.sh radar` before the first edit, before every rebase, fold or landing, after a peer lands, and after resolving a conflict.
+1. `agent-bus.sh peers`. Alone, work normally.
+2. Before the first edit, `agent-bus.sh announce "<task>" --paths a,b --resources 127.0.0.1:5433,db-1`. Re-announce when the claim changes. Resources are what git cannot see: ports, containers, volumes, fixture data.
+3. Run `agent-bus.sh radar` before the first edit, before every rebase, fold or landing, and after a peer lands.
+4. Settle these radar results before acting: MERGE `CONFLICT` or `no-base`, a shared lockfile, shared `RESOURCES`, a declared `paths:` line.
+5. Message the peer as soon as you learn what changes its next action, never through the user. Open each message with its kind: `note`, `ask`, `answer`, `claim`, `conflict`, `correction`, `block`, `landed`.
+6. Collision: the session closer to landing keeps its base; the other rebases (tie-break: fewer commits ahead). If both must write one file, one session owns it for the whole run.
+7. Before landing, send `claim` on the base branch. Peers commit to the base only after your `landed`, then rebase.
+8. Answer every incoming message before ending your turn. Wait on a peer with `notify_when_idle`, never by polling.
 
-   | Radar result | Action |
-   | --- | --- |
-   | `OVERLAP 0`, `MERGE clean` | Proceed |
-   | `OVERLAP > 0`, `MERGE clean` | Proceed; re-run before landing |
-   | `MERGE CONFLICT` | Send `conflict`, settle the order before touching anything |
-   | `MERGE no-base` | Treat as `MERGE CONFLICT`; settle which base both branches land on |
-   | A lockfile or index in `SHARED PATHS` | Treat as a conflict even when clean |
-   | `RESOURCES` non-empty | Settle ownership before running tests |
-   | A declared `paths:` line | Send `claim`; settle who owns each file before editing it |
-
-4. SendMessage the peer by name as soon as you learn what changes its next action. Never route it through the user. Open the first line with the kind.
-
-   | Kind | Peer's response |
-   | --- | --- |
-   | `note` | none |
-   | `ask` / `answer` | answer, or say when |
-   | `claim` | route around it or object |
-   | `conflict` | agree who rebases onto whom |
-   | `correction` | confirm it is applied |
-   | `block` | unblock, or say it will not happen |
-   | `landed` | rebase before the next commit |
-
-5. A successful send reached the session, not its reader. A peer in another permission mode holds the message for its user. A `[Cross-session delivery notice]` reports a held or refused message; silence is never agreement.
-6. To wait for a peer, send with `notify_when_idle: true`; omit `message` for a pure subscription. One idle notice arrives. Never poll ListAgents or ask "are you done?".
-7. Answer what arrives before ending your turn, even with "no action needed". Reply to a `<cross-session-message>` by copying its `from` as your `to`.
-8. Collision: the session closer to landing keeps its base, the other rebases (tie-break: fewer commits ahead). The rebasing session confirms with `landed`. If both must write one file, one session owns it for the whole run.
-9. A session about to land a group sends `claim` on the base branch. A peer then commits to the base only after `landed`. A commit in between costs the lander a rebase and a re-gate.
-
-A subagent's send goes out under its parent session's address, and replies reach the parent. `notify_when_idle` works from the main conversation only.
-
-Liveness comes from the process table; `agent-bus.sh sweep` drops rows of crashed sessions. Uncommitted work is invisible to radar; only declared paths cover it.
+`agent-bus.sh sweep` drops rows of crashed sessions.

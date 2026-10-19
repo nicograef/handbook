@@ -1,6 +1,6 @@
 -- strip-visuals.lua - Pandoc filter that removes what a narrator cannot speak.
 --
--- Consumed by md-to-epub.sh beside it; see pipeline.md in the same skill directory.
+-- Consumed by md-to-epub.sh beside it; see SKILL.md in the same skill directory.
 --
 -- It is a safety net, not a converter: it deletes unspeakable elements rather
 -- than describing them. The prose has to carry the meaning already.

@@ -5,29 +5,11 @@ description: Sweeps the session for open questions, unstated assumptions and pen
 
 # Decide
 
-Everything the user needs lives inside the AskUserQuestion call. The chat gets no issue list, no options and no summary before the questions. Start without asking for permission.
+Everything the user needs lives inside the AskUserQuestion call. The chat gets no issue list or summary before it. Start without asking for permission.
 
-## Sweep
-
-1. Collect from the whole session, oldest to newest. Sources: questions the user left unanswered, assumptions you named, assumptions you made silently, deferred decisions. Also ambiguous requests, conflicting instructions, choices with no clear winner, and blockers only the user can lift.
-2. Drop items the session settled later, and items a stated constraint settles on its own.
-3. Order the rest. An item whose answer changes another item's options comes first. Group the remainder by topic.
-4. Nothing left: say so in one line and stop.
-
-## Ask
-
-One AskUserQuestion call per round, as many questions as the tool takes. Dependents wait for a later round.
-
-Per question:
-
-- The question text states what is undecided and where it came from: the message, file or step. It says why it matters now and what happens if it stays open. A reader who skipped the session must understand it from this field alone.
-- Each option's description gives what picking it means, its pros and cons, and its effect on other items. Same depth for every option.
-- A recommendation, if you have one, goes first, marked as recommended, with the reason in its description.
-
-Use multi-select only when the choices combine.
-
-## Follow up
-
-Each answer can open a new question. An "Other" needs detail; a pick makes its sub-choices live; a dependent item from the sweep is now askable. Ask those in the next round. Stop when no item remains.
-
-Then record every decision where the work is tracked: the plan file, the task, or memory when it crosses sessions. Continue the work.
+1. Sweep the whole session for unanswered questions, assumptions stated or silent, deferred decisions, and ambiguous or conflicting instructions. Include blockers only the user can lift.
+2. Drop items the session or a stated constraint already settles. Items with one clear winner: take it and record it. Nothing left: say so in one line and stop.
+3. Order by dependency: an item whose answer changes another's options goes first. Dependents wait for a later round.
+4. Ask one AskUserQuestion call per round, as many questions as it takes. Each question names where it came from and why it matters now. A reader who skipped the session must understand it alone. Give every option its consequences at equal depth, a recommendation first.
+5. Follow up on answers that open new questions, round by round, until none remain.
+6. Record every decision where the work is tracked: plan file, task, or memory across sessions. Continue the work.

@@ -44,7 +44,6 @@ INDEX_EXCLUDE=(
 )
 
 LANG_ALLOW=(
-  "plugin/skills/audiobook/writing.md"
   "claude/global.md"
   "guides/neovim.md"
 )
@@ -59,7 +58,6 @@ HISTORY_ALLOW=(
   "plugin/skills/architecture/SKILL.md|deprecated|deprecated code is a review lens"
   "plugin/skills/cleanup/SKILL.md|deprecated|deprecated code is a pass the skill removes"
   "plugin/skills/distill/SKILL.md|previously|the skill names the word as residue to cut"
-  "plugin/skills/distill/verify.md|deprecated|upstream deprecations are a claim class to check"
 )
 
 # Prose caps enforced by check_prose; stated in AGENTS.md and claude/global.md.

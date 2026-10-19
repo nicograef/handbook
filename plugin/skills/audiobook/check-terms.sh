@@ -12,7 +12,7 @@
 #
 # Matching is whole-word and case-insensitive: "API" matches "api", not
 # "Kapitel" or "APIs".
-# See plugin/skills/audiobook/writing.md.
+# See plugin/skills/audiobook/SKILL.md.
 
 set -euo pipefail
 
