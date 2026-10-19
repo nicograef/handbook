@@ -56,6 +56,7 @@ HISTORY_RE='\b(previously|formerly|deprecated|no longer|(?<!is )(?<!are )(?<!be 
 # Accepted history-word hits, as "<file>|<word>|<reason>". Every entry names its reason.
 HISTORY_ALLOW=(
   "claude/global.md|previously|the current-state rule names the banned word"
+  "plugin/skills/architecture/SKILL.md|deprecated|deprecated code is a review lens"
   "plugin/skills/cleanup/SKILL.md|deprecated|deprecated code is a pass the skill removes"
   "plugin/skills/distill/SKILL.md|previously|the skill names the word as residue to cut"
   "plugin/skills/distill/verify.md|deprecated|upstream deprecations are a claim class to check"
