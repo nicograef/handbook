@@ -17,6 +17,7 @@ description: "Improve code architecture"
   - Readability and Understandability
   - SOLID Principles
   - Outdated, unused or deprecated fields, interfaces, functions, ...
+  - Unification, best practices and consistency
 - Run as many Opus reviewers on as many areas of the codebase you think is suitable.
 - Run Sonnet verifiers and refuters on the findings.
 - Run Sonnet fixers and implementers.
