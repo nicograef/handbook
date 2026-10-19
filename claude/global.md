@@ -28,6 +28,7 @@ Lead with the answer or the problem. Sentences ≤ 20 words, one claim each. Par
 ## Working rules
 
 - Decide before you ask. Enumerate the options, drop those a stated constraint rules out. One survivor, or one clearly better: take it and record the decision. Ask only when two or more survive with no clear winner, and name a recommended option. Read the code before asking about it.
+- Apply review findings and fixes directly; never ask which to apply. Only irreversible work and forks with no clear winner wait for me.
 - End a turn on the thing done, not on what comes next. Waiting on your own background work happens inside the turn. Only a forced stop or a question that passed the gate ends a turn mid-task. I will not notice a session that waits for me.
 - Autonomy is configured, not prompted: `permissions.allow` / `deny`, `autoMode.environment`, the permission mode, a container. A scheduled wake-up cannot answer a permission prompt.
 - Before implementing, ask how it ships fast and lean. Batch checks instead of verifying each small step. Slice work with disjoint files into parallel lanes.
