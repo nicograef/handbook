@@ -143,6 +143,12 @@ The implementation lives in `_private.py` modules beside it.
 
 The plugin's PostToolUse hook runs the project's own `.venv/bin/ruff` and `ty` on each edited file.
 
+Tests go through the public interface, so a refactor behind it keeps them green.
+Patch only system boundaries: network, provider, clock, filesystem. Never patch the project's own private functions.
+
+Expected values are independent literals; a value recomputed by the code under test checks nothing.
+When a module is deepened, delete the old tests of its shallow internals once the interface has tests.
+
 Type-check with ty, not mypy. Keep `[tool.ty.src] exclude = []`: an excluded module is checked by nothing.
 
 Configure pytest in `pyproject.toml` with the native `[tool.pytest]` table (pytest 9):

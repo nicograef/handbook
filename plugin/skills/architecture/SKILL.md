@@ -18,6 +18,10 @@ description: "Improve code architecture"
   - SOLID Principles
   - Outdated, unused or deprecated fields, interfaces, functions, ...
   - Unification, best practices and consistency
+- Reviewers apply these decision tests:
+  - Deletion test: delete the module. Complexity that reappears in its callers means it earns its place.
+  - One adapter is a hypothetical seam; two make it real.
+  - The interface is the test surface.
 - Python thresholds: complexity ≤ 20, ≤ 50 statements per function, module ≤ 1,000 lines,
   names ≥ 3 characters, internals behind a package's `__init__`. Reviewers report each violation as a finding.
 - Run as many Opus reviewers on as many areas of the codebase you think is suitable.

@@ -13,6 +13,8 @@ Arguments: `$ARGUMENTS`. The output is a file, never code. `/nico:plan <task or 
 - The plan keeps the [skeleton](#plan-skeleton). implement-plan and the `plan-run-guard.sh` Stop hook parse `## Phase`, `**Depends on**` and `- [ ]` lines.
 - Paths go in each phase's Context and What to build. The concurrency test compares them pairwise.
 - Phases meant to run in parallel touch disjoint files. Choke files (indexes, lockfiles, migrations) stay in one phase.
+- A refactor that fans across the tree runs expand, migrate, contract. Expand adds the new form beside the old.
+  Migrate phases are batched per package, parallel on disjoint files. Contract removes the old form and depends on every migrate phase.
 - Each criterion is verifiable by one targeted command. The full gate runs once per phase.
 - Reference code as `path — symbol()`, not line numbers; lines drift while phases land.
 

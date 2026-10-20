@@ -29,6 +29,7 @@ Record the harness message verbatim in the handoff. Match it by kind, not by wor
 - Irreversible work follows the [global irreversible-work rule](../../../claude/global.md#models-and-subagents).
 - The gate runs once where the change is, and again only after a fold, rebase or unseen edit. Gate agents run at low effort.
 - Review a finished phase or lane once, over its whole diff. Auth, input handling, shell, SQL or dependency manifests add `/security-review`.
+- The phase reviewer gets the plan path. It reports criteria missing, partial or built wrong, and unrequested behaviour, apart from code-quality findings.
 - A defect goes back to the owning agent via SendMessage, with one re-review per fix round. Carry its class into that agent's next prompt.
 
 ## Landing
