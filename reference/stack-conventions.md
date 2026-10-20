@@ -116,8 +116,32 @@ line-length = 100
 
 [tool.ruff.lint]
 # extend-select adds to the default set; a bump that adds rules surfaces as a finding, not a silent pass.
-extend-select = ["I", "B", "UP", "N"]
+extend-select = ["I", "B", "UP", "N", "C4", "SIM", "PERF", "FURB", "PTH", "RET", "RUF021", "RUF043", "RUF100", "PLW2901", "C901", "PLR0915", "PLC2701"]
+# PLC2701 (private import across modules) is a preview rule; only explicitly selected preview rules run.
+preview = true
+explicit-preview-rules = true
+
+[tool.ruff.lint.mccabe]
+max-complexity = 20
+
+[tool.ruff.lint.per-file-ignores]
+"tests/**" = ["PLC2701"]
 ```
+
+- `I`, `UP`, `N`: sorted imports, current syntax and PEP 8 names.
+- `B`, `RUF021`, `RUF043`, `RUF100`, `PLW2901`: likely bugs, ambiguous precedence and regex, stale `noqa`, a reassigned loop variable.
+- `C4`, `SIM`, `PERF`, `FURB`, `PTH`, `RET`: simpler, faster idioms; `pathlib` over `os.path`.
+- `C901`, `PLR0915`, `PLC2701`: complexity ≤ 20, ≤ 50 statements per function, no private import across modules.
+
+A project test under `tests/` enforces what ruff cannot check:
+
+- A module holds at most 1,000 lines. The test lists each larger module with its size; it may only shrink.
+- A def or class name has at least 3 characters.
+
+A package's `__init__.py` is its public interface: re-exports and `__all__`.
+The implementation lives in `_private.py` modules beside it.
+
+The plugin's PostToolUse hook runs the project's own `.venv/bin/ruff` and `ty` on each edited file.
 
 Type-check with ty, not mypy. Keep `[tool.ty.src] exclude = []`: an excluded module is checked by nothing.
 

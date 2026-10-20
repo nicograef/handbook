@@ -102,12 +102,13 @@ A web app on a fresh server chains Fresh server, Deploy (which schedules the bac
 | [claude/statusline.sh](claude/statusline.sh)                                     | Status line script                                                                                                |
 | [plugin/.claude-plugin/plugin.json](plugin/.claude-plugin/plugin.json)           | Manifest of the `nico` plugin: skills, agent, hooks and theme                                                     |
 | [plugin/.claude-plugin/marketplace.json](plugin/.claude-plugin/marketplace.json) | Local marketplace listing the plugin, loaded in place                                                             |
-| [plugin/hooks/hooks.json](plugin/hooks/hooks.json)                               | Plugin hooks: git guard, denial log, peer list at session start                                                   |
+| [plugin/hooks/hooks.json](plugin/hooks/hooks.json)                               | Plugin hooks: git guard, Python check, denial log, peer list at session start                                     |
 | [plugin/skills/](plugin/skills/)                                                 | Shared skills, one folder each, described by its frontmatter                                                      |
 | [plugin/agents/web-researcher.md](plugin/agents/web-researcher.md)               | Web research agent, `nico:web-researcher`                                                                         |
 | [plugin/themes/catppuccin.json](plugin/themes/catppuccin.json)                   | Claude Code theme `custom:nico:catppuccin`: `dark-ansi` with a selection that keeps every palette colour readable |
 | [plugin/scripts/git-guard.sh](plugin/scripts/git-guard.sh)                       | PreToolUse hook that blocks force pushes, skipped hooks and commits gitleaks flags                                |
 | [plugin/scripts/plan-run-guard.sh](plugin/scripts/plan-run-guard.sh)             | Stop hook the implement-plan skill registers; keeps a live plan run from yielding the turn                        |
+| [plugin/scripts/py-check.sh](plugin/scripts/py-check.sh)                         | PostToolUse hook that runs the project's ruff and ty on an edited Python file                                     |
 | [plugin/scripts/agent-bus.sh](plugin/scripts/agent-bus.sh)                       | Coordination bus for concurrent Claude Code sessions in one repo                                                  |
 | [plugin/scripts/check-agents.sh](plugin/scripts/check-agents.sh)                 | Last activity of background agents, read off their task transcripts                                               |
 
@@ -121,6 +122,7 @@ A web app on a fresh server chains Fresh server, Deploy (which schedules the bac
 | [scripts/test-agent-bus.sh](scripts/test-agent-bus.sh)                   | Fixture test for `agent-bus.sh`; `make test-agent-bus`                                                                            |
 | [scripts/test-plan-run-guard.sh](scripts/test-plan-run-guard.sh)         | Fixture test for `plan-run-guard.sh`; `make test-plan-run-guard`                                                                  |
 | [scripts/test-git-guard.sh](scripts/test-git-guard.sh)                   | Fixture test for `git-guard.sh`; `make test-git-guard`                                                                            |
+| [scripts/test-py-check.sh](scripts/test-py-check.sh)                     | Fixture test for `py-check.sh`; `make test-py-check`                                                                              |
 | [scripts/test-report-health.sh](scripts/test-report-health.sh)           | Fixture test for `report-health.sh`; `make test-report-health`                                                                    |
 | [scripts/test-report-repo-status.sh](scripts/test-report-repo-status.sh) | Fixture test for `report-repo-status.sh`; `make test-report-repo-status`                                                          |
 | [scripts/test-setup-dev-machine.sh](scripts/test-setup-dev-machine.sh)   | Fixture test for `setup-dev-machine.sh`; `make test-setup-dev-machine`                                                            |

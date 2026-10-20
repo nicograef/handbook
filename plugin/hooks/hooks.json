@@ -1,5 +1,5 @@
 {
-  "description": "Fail closed: a missing or failing git guard blocks the Bash call (exit 2). SessionStart and the implement-plan skill's Stop hook warn instead (exit 1), since exit 2 on Stop would trap the session.",
+  "description": "Fail closed: a missing or failing git guard blocks the Bash call (exit 2). SessionStart, the Python check and the implement-plan skill's Stop hook warn instead (exit 1) when their script is missing, since exit 2 on Stop would trap the session.",
   "hooks": {
     "PreToolUse": [
       {
@@ -8,6 +8,17 @@
           {
             "type": "command",
             "command": "g=\"${CLAUDE_PLUGIN_ROOT}/scripts/git-guard.sh\"; [ -x \"$g\" ] || { echo \"git-guard: $g is missing or not executable; Bash is blocked until it is back\" >&2; exit 2; }; \"$g\" || exit 2"
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write|MultiEdit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "c=\"${CLAUDE_PLUGIN_ROOT}/scripts/py-check.sh\"; [ -x \"$c\" ] || { echo \"py-check: $c is missing or not executable; edited Python files are not checked\" >&2; exit 1; }; exec \"$c\""
           }
         ]
       }

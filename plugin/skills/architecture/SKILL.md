@@ -18,6 +18,8 @@ description: "Improve code architecture"
   - SOLID Principles
   - Outdated, unused or deprecated fields, interfaces, functions, ...
   - Unification, best practices and consistency
+- Python thresholds: complexity ≤ 20, ≤ 50 statements per function, module ≤ 1,000 lines,
+  names ≥ 3 characters, internals behind a package's `__init__`. Reviewers report each violation as a finding.
 - Run as many Opus reviewers on as many areas of the codebase you think is suitable.
 - Run Sonnet verifiers and refuters on the findings.
 - Run Sonnet fixers and implementers.
