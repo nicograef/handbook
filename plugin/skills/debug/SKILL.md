@@ -21,7 +21,7 @@ Arguments: `$ARGUMENTS`: the symptom, a failing command or a pasted error.
 3. Rank 3–5 falsifiable hypotheses by likelihood and cost to test. Each names the observation that would refute it.
 4. Test one hypothesis with one change at a time. Revert a change that refuted its hypothesis.
 5. Name the root cause, then fix it there, not where the symptom surfaced.
-6. The repro becomes the regression test, red before the fix and green after.
+6. Keep the repro as a regression test only under the [global test rule](../../../claude/global.md#tests). Otherwise the red-green run is the proof and the repro is deleted.
 
 ## No seam
 

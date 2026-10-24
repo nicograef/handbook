@@ -34,8 +34,8 @@ With two or more plan paths, follow [programme.md](programme.md) instead. Open [
 5. State the run contract once and start: base sha, phase grouping and tiers, worktrees, verify command. Only open forks and missing allowlist commands wait for the user.
 6. Create `../<repo>-wt/plan/<slug>` on branch `plan/<slug>` from the pinned base. Confirm the verify command passes on unchanged code.
 7. Run sequential phases in the run worktree. A concurrent phase gets its own worktree, branch and agent.
-8. Commit per criterion with the trailer `Plan: <slug> phase <N> criterion <M>`. One targeted check per criterion; the full gate once per phase.
-9. Tick a phase's criteria in one commit when it closes, only what a tool result proves.
+8. Commit per criterion with the trailer `Plan: <slug> phase <N> criterion <M>`. One targeted check per criterion, reusing an existing test or gate before writing one; the full gate once per phase.
+9. Tick a phase's criteria in one commit when it closes, only what a tool result proves. An existing test, lint, typecheck or command output counts.
 10. Fold each lane into `plan/<slug>` in phase order: rebase onto the run tip, `merge --ff-only`, re-verify.
 11. Delete `## Run state` in its own commit, then land as [lead.md](lead.md#landing) says. `git rm` the plan only when every criterion is ticked.
 12. Report phases complete and blocked, criteria ticked, commits landed, dropped agents and the plan file's fate.

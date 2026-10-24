@@ -30,6 +30,7 @@ Record the harness message verbatim in the handoff. Match it by kind, not by wor
 - The gate runs once where the change is, and again only after a fold, rebase or unseen edit. Gate agents run at low effort.
 - Review a finished phase or lane once, over its whole diff. Auth, input handling, shell, SQL or dependency manifests add `/security-review`.
 - The phase reviewer gets the plan path. It reports criteria missing, partial or built wrong, and unrequested behaviour, apart from code-quality findings.
+  It lists each new test against the [global test rule](../../../claude/global.md#tests); a missing test is a finding only under that rule.
 - A defect goes back to the owning agent via SendMessage, with one re-review per fix round. Carry its class into that agent's next prompt.
 
 ## Landing

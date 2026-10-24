@@ -35,7 +35,7 @@ Two or more plans run as one programme. The orchestrator plans, dispatches, revi
 - Every command runs in the lane worktree. One without the lane's ports and env reaches the main checkout's store.
 - No paid provider call unless the brief names the spend row. A needed paid run goes to the owner with its list-price projection.
 - Jobs over a few minutes run as `systemd-run --user` units, logged under the wave directory.
-- The plan file stays untouched; the report carries each criterion with its evidence.
+- The plan file stays untouched; the report carries each criterion with its evidence. An existing gate, test or command output is evidence.
 - A change in another lane's file goes in its own `<phase>: needs <file>` commit.
 - No rebase, merge, landing, push, questions to the user, bus or unnamed subagents. The group is the unit.
 

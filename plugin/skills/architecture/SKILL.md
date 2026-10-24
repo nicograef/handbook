@@ -13,7 +13,7 @@ description: "Improve code architecture"
   - Clean Code
   - Modularity, Cohesion and Coupling
   - KISS, YAGNI, Overengineering and Simplifications
-  - Testability, Test isolation, efficiency of tests and simplicity of tests
+  - Testability and test cost: suite time per module, duplicate and fan-out tests, own-module mocks, tests above the cheapest failing level
   - Readability and Understandability
   - SOLID Principles
   - Outdated, unused or deprecated fields, interfaces, functions, ...
@@ -28,7 +28,7 @@ description: "Improve code architecture"
   names ≥ 3 characters, internals behind a package's `__init__`. Reviewers report each violation as a finding.
 - Run as many Opus reviewers on as many areas of the codebase you think is suitable.
 - Run Sonnet verifiers and refuters on the findings.
-- Run Sonnet fixers and implementers.
+- Run Opus fixers and implementers.
 - Keep the workflows lean and efficient.
   - Bundle reviews, tests and gates on the main branch or a common base branch.
   - You may even use just one branch or one worktree for all of this.

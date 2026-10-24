@@ -34,12 +34,28 @@ Lead with the answer or the problem. Sentences ≤ 20 words, one claim each. Par
 - Before implementing, ask how it ships fast and lean. Batch checks instead of verifying each small step. Slice work with disjoint files into parallel lanes.
 - Debugging: name the root cause before the fix, and change one thing at a time. After two failed fixes, question the design instead of trying a third patch.
 - Review feedback: verify each item against the code before implementing it. Push back with the specific reason when a suggestion is wrong. Reply to inline PR comments in their thread.
-- A finished branch: run the tests, then offer merge, PR, keep or discard. Delete a branch only after merge or discard.
+- A finished branch: run the project's gate for the touched modules, then offer merge, PR, keep or discard. Delete a branch only after merge or discard.
 - Isolated work lives in `../<repo>-wt/<branch>`, via the project's worktree target where it has one, else `git worktree add`. A sibling directory keeps linters that walk `.` out of the lanes.
 - Other sessions may share the repo. `~/.claude/agent-bus.sh peers` lists them; with a peer present, follow the parallel-sessions skill.
 - No autonomous outbound actions: no emails, posts or external submissions; drafts stay drafts. Committing and pushing are exempt.
-- Add an integration test only where a unit test cannot cover the boundary, and keep it fast.
 - Scratch fixtures use absolute paths and `git -C <path>`. Join steps that need an earlier `cd` with `&&`, so a failed `cd` cannot write to the working repo.
+
+## Tests
+
+- Write a test only for what no type, lint, schema or existing test already pins. Three reasons qualify:
+  - behaviour a caller depends on, reached through the public interface;
+  - a regression whose mechanism can recur;
+  - a repo rule enforced as a test, which counts as a lint and stays.
+- Test at the cheapest level that can fail for the defect:
+  1. a pure function;
+  2. the real dependency where it is fast and deterministic. Fake only a slow, nondeterministic or external one. Never mock the project's own modules;
+  3. a real database or subprocess, kept fast, for SQL, migrations and process boundaries;
+  4. end to end only for a cross-stack flow no lower level reaches.
+- Extend the nearest test file or table before creating one. Parametrize instead of copying. Expected values are literals.
+- Never write wiring, re-export, constructor or setter tests, nor tests of framework behaviour or type-proven shape.
+- Never write field-mapping tests an integration test covers, one mock-error test per handler, or tests of one-off scripts.
+- An assertion that passes when the code does nothing is no test.
+- Delete duplicates, tests that assert no output, and tests of internals a tested interface covers.
 
 ## Models and subagents
 

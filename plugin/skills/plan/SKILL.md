@@ -15,7 +15,8 @@ Arguments: `$ARGUMENTS`. The output is a file, never code. `/nico:plan <task or 
 - Phases meant to run in parallel touch disjoint files. Choke files (indexes, lockfiles, migrations) stay in one phase.
 - A refactor that fans across the tree runs expand, migrate, contract. Expand adds the new form beside the old.
   Migrate phases are batched per package, parallel on disjoint files. Contract removes the old form and depends on every migrate phase.
-- Each criterion is verifiable by one targeted command. The full gate runs once per phase.
+- Each criterion is verified by one targeted command. An existing gate, test or command output comes first; a new test only where nothing covers the behaviour.
+  The full gate runs once per phase.
 - Reference code as `path — symbol()`, not line numbers; lines drift while phases land.
 
 ## Plan mode
@@ -67,7 +68,7 @@ Arguments: `$ARGUMENTS`. The output is a file, never code. `/nico:plan <task or 
 ## Solution                  (prose, user's perspective)
 ## User Stories              (As an <actor>, I want <feature>, so that <benefit>)
 ## Implementation Decisions  (modules, interfaces, schema, contracts; no paths or code)
-## Testing Decisions         (external behaviour only; prior art in the repo)
+## Testing Decisions         (external behaviour only; prior art in the repo; "none, covered by X" is a valid answer)
 ## Out of Scope
 ## Further Notes
 ```

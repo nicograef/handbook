@@ -8,8 +8,8 @@ argument-hint: "[paths | staged | last-commit | repo | ux]"
 
 Arguments: `$ARGUMENTS`: named paths, staged changes, the last commit, or the whole repo. Without arguments: staged, else unstaged, else the last commit.
 
-- Find bugs and fix them, add a regression test if suitable.
-- Remove outdated, stale, deprecated and unused code, comments, docs, config, tests and dependencies.
+- Find bugs and fix them. Add a regression test only under the [global test rule](../../../claude/global.md#tests).
+- Remove outdated, stale, deprecated and unused code, comments, docs, config, tests and dependencies. Remove the tests the global test rule says to delete.
 - Before removing something as unused, rule out uses the grep misses: dynamic access, framework conventions, external consumers, persisted data.
 - Apply the findings directly. Removals that touch external consumers or persisted data go to the user first.
 - Run the build and the tests after applying.
