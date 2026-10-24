@@ -59,11 +59,12 @@ A React repository skips [Copy the production files](#copy-the-production-files)
 
 ## Copy the base files
 
-1. Copy the editor, git and make files. Expected: `make help` prints the DEVELOPER and PRODUCTION sections.
+1. Copy the editor, Claude Code, git and make files. Expected: `make help` prints the DEVELOPER and PRODUCTION sections.
    ```bash
    HANDBOOK=<handbook>
-   cp "$HANDBOOK"/templates/{.editorconfig,.gitignore,Makefile} . && mkdir -p .vscode scripts
+   cp "$HANDBOOK"/templates/{.editorconfig,.gitignore,Makefile} . && mkdir -p .vscode .claude scripts
    cp "$HANDBOOK/templates/vscode-settings.json" .vscode/settings.json && cp "$HANDBOOK/templates/make-help.awk" scripts/
+   cp "$HANDBOOK/templates/claude-settings.json" .claude/settings.json   # formats each edited Go or frontend file
    ```
 
 ## Scaffold the stack
@@ -97,7 +98,7 @@ A React repository skips [Copy the production files](#copy-the-production-files)
    echo <node-major> > frontend/.node-version && cd frontend && npm pkg set packageManager="pnpm@$(pnpm --version)"
    # run the Package scripts block from stack-conventions.md here
    printf 'pnpm-lock.yaml\n' > .prettierignore     # pnpm owns the lockfile format
-   printf "import { expect, test } from 'vitest'\nimport App from './App'\n\ntest('App is a component', () => {\n  expect(typeof App).toBe('function')\n})\n" > src/App.test.tsx && pnpm run format && cd ..
+   pnpm run format && cd ..
    ```
 2. Set the Python backend's uv floor and pytest table, and add uvicorn and its dev tools. Write the app factory, a smoke test and an integration test. Expected: `backend/.python-version` holds `<project-python-version>`, and `backend/uv.lock` names `psycopg`, `pytest` and `uvicorn`.
    ```bash

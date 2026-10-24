@@ -1,6 +1,6 @@
 # Neovim
 
-Neovim for prose and code: Markdown, YAML and JSON, plus TypeScript and Python with LSP.
+Neovim for prose and code: Markdown, YAML and JSON, plus TypeScript, Python and Go with LSP.
 Eleven plugins on the built-in `vim.pack`; everything else is a Neovim built-in.
 
 - [dotfiles/nvim/init.lua](../dotfiles/nvim/init.lua) is the config; it sets only non-defaults.
@@ -24,16 +24,17 @@ Eleven plugins on the built-in `vim.pack`; everything else is a Neovim built-in.
 
 | Language | Servers |
 | --- | --- |
-| TypeScript, JavaScript | `tsc` (TypeScript 7), Biome, oxlint, oxfmt |
+| TypeScript, JavaScript | `tsc` (TypeScript 7), oxlint |
 | Python | ruff, ty |
+| Go | gopls, installed with `go install golang.org/x/tools/gopls@latest` |
 | Shell, YAML, JSON | bashls, yamlls, jsonls |
 | Markdown | marksman |
 
 - Completion is `vim.lsp.completion` with autotrigger.
 - Diagnostic messages show at the end of their line.
-- `<leader>cf` and every save format the buffer. ruff, Biome and oxfmt format where they attach; ruff and Biome also sort imports.
+- `<leader>cf` and every save format the buffer. ruff and gopls format where they attach; both also sort imports.
 - Elsewhere prettier formats JSON, YAML, Markdown, CSS, HTML, TypeScript and JavaScript, unsaved buffers included.
-- Biome, oxlint and oxfmt come from the project's `node_modules` and attach only where it configures them.
+- oxlint comes from the project's `node_modules` and attaches only where the project configures it.
 
 On a dev machine, [setup-dev-machine.sh](../scripts/setup-dev-machine.sh) does Steps 1–3.
 It installs Neovim, the servers, the tree-sitter CLI, `xclip`, a Nerd Font and the parsers.
@@ -143,7 +144,7 @@ Sources: [`:help 'langmap'`](https://neovim.io/doc/user/options.html#'langmap'),
 
 ## Verify
 
-`<py>` is a Python file in a uv project; `<ts>` is a TypeScript file in an npm project with Biome.
+`<py>` is a Python file in a uv project; `<ts>` is a TypeScript file in an npm project.
 
 ```bash
 readlink -f ~/.config/nvim                                           # → <clone>/dotfiles/nvim
@@ -152,7 +153,7 @@ nvim --headless -c 'lua print(vim.fn.maparg("<Space><Space>", "n") ~= "")' -c q 
 nvim --headless -c 'lua print(vim.o.shiftwidth, vim.o.clipboard)' -c q   # → 2 unnamedplus (desktop) / 2 (server)
 nvim --headless x.py +'lua print(vim.wo.foldmethod, vim.fn.maparg("]e", "n") ~= "")' +q   # → expr true
 nvim --headless <py> +'sleep 3' +'lua print(vim.iter(vim.lsp.get_clients({bufnr=0})):map(function(c) return c.name end):join(","))' +q   # → ruff,ty
-nvim --headless <ts> +'sleep 3' +'lua print(vim.iter(vim.lsp.get_clients({bufnr=0})):map(function(c) return c.name end):join(","))' +q   # → biome,tsc
+nvim --headless <ts> +'sleep 3' +'lua print(vim.iter(vim.lsp.get_clients({bufnr=0})):map(function(c) return c.name end):join(","))' +q   # → tsc
 nvim --headless x.py +'lua print(vim.treesitter.highlighter.active[vim.api.nvim_get_current_buf()] ~= nil)' +q   # → true
 d=$(mktemp -d) && printf 'x=1\n' > "$d/f.py" && nvim --headless "$d/f.py" +'sleep 2' +w +q && cat "$d/f.py"   # → x = 1
 ```

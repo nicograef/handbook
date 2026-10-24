@@ -344,12 +344,12 @@ for lhs, move in pairs({
   end, { desc = move[2] })
 end
 
--- tsc is TypeScript 7's native server. Biome and the oxc tools attach only where the project
--- configures them; lspconfig would start the oxc ones rootless everywhere else.
-for _, name in ipairs({ 'oxlint', 'oxfmt' }) do vim.lsp.config(name, { workspace_required = true }) end
-vim.lsp.enable({ 'tsc', 'ty', 'ruff', 'biome', 'oxlint', 'oxfmt', 'bashls', 'yamlls', 'jsonls', 'marksman' })
+-- tsc is TypeScript 7's native server. oxlint attaches only where the project configures it;
+-- lspconfig would start it rootless everywhere else.
+vim.lsp.config('oxlint', { workspace_required = true })
+vim.lsp.enable({ 'tsc', 'ty', 'ruff', 'oxlint', 'gopls', 'bashls', 'yamlls', 'jsonls', 'marksman' })
 
--- Formatting leaves import order alone; ruff and Biome sort imports through this code action.
+-- Formatting leaves import order alone; ruff sorts imports through this code action.
 local function organize_imports(client, buf)
   local params = {
     textDocument = vim.lsp.util.make_text_document_params(buf),
@@ -366,9 +366,9 @@ local function organize_imports(client, buf)
   end
 end
 
--- The formatting servers win where they attach: ruff everywhere, Biome and oxfmt in projects that
--- configure them. Elsewhere prettier formats these filetypes, unsaved buffers included.
-local formatters = { 'ruff', 'biome', 'oxfmt' }
+-- The formatting servers win where they attach: ruff for Python, gopls for Go.
+-- Elsewhere prettier formats these filetypes, unsaved buffers included.
+local formatters = { 'ruff', 'gopls' }
 local prettier_parser = {
   json = 'json', jsonc = 'jsonc', yaml = 'yaml', markdown = 'markdown', css = 'css', html = 'html',
   typescript = 'typescript', typescriptreact = 'typescript', javascript = 'babel', javascriptreact = 'babel',

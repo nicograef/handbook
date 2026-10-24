@@ -53,6 +53,7 @@ A web app on a fresh server chains Fresh server, Deploy (which schedules the bac
 | [templates/.editorconfig](templates/.editorconfig)               | EditorConfig for consistent formatting (Go tabs, JS/TS 2-space)                                         |
 | [templates/.gitignore](templates/.gitignore)                     | Universal .gitignore (OS, IDE, env, build artifacts, logs, Claude local settings)                       |
 | [templates/vscode-settings.json](templates/vscode-settings.json) | VS Code workspace settings for consistent formatting                                                    |
+| [templates/claude-settings.json](templates/claude-settings.json) | Claude Code project settings: a hook formats each edited Go or frontend file; `.claude/settings.json`   |
 | [templates/docker-compose.yml](templates/docker-compose.yml)     | Compose starter (local dev, no TLS)                                                                     |
 | [templates/Dockerfile.python](templates/Dockerfile.python)       | Python (uv) backend image with a HEALTHCHECK; copied as `backend/Dockerfile`                            |
 | [templates/Dockerfile.go](templates/Dockerfile.go)               | Go backend image: static binary on Alpine with a HEALTHCHECK; copied as `backend/Dockerfile`            |
@@ -108,7 +109,7 @@ A web app on a fresh server chains Fresh server, Deploy (which schedules the bac
 | [plugin/themes/catppuccin.json](plugin/themes/catppuccin.json)                   | Claude Code theme `custom:nico:catppuccin`: `dark-ansi` with a selection that keeps every palette colour readable |
 | [plugin/scripts/git-guard.sh](plugin/scripts/git-guard.sh)                       | PreToolUse hook that blocks force pushes, skipped hooks and commits gitleaks flags                                |
 | [plugin/scripts/plan-run-guard.sh](plugin/scripts/plan-run-guard.sh)             | Stop hook the implement-plan skill registers; keeps a live plan run from yielding the turn                        |
-| [plugin/scripts/py-check.sh](plugin/scripts/py-check.sh)                         | PostToolUse hook that runs the project's ruff and ty on an edited Python file                                     |
+| [plugin/scripts/py-check.sh](plugin/scripts/py-check.sh)                         | PostToolUse hook that formats an edited Python file with the project's ruff, then checks it with ruff and ty       |
 | [plugin/scripts/agent-bus.sh](plugin/scripts/agent-bus.sh)                       | Coordination bus for concurrent Claude Code sessions in one repo                                                  |
 | [plugin/scripts/check-agents.sh](plugin/scripts/check-agents.sh)                 | Last activity of background agents, read off their task transcripts                                               |
 

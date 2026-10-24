@@ -19,6 +19,7 @@ linters:
     - errorlint
     - gocritic
     - nilerr
+    - nolintlint
     - forbidigo
   settings:
     gosec:

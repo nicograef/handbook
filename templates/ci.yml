@@ -1,5 +1,5 @@
 # Each stack's env, jobs and steps sit between a `# >>> stack: NAME` and a `# <<< stack: NAME` line
-# (go, python, frontend, database). Validate locally before pushing: actionlint .github/workflows/ci.yml
+# (go, python, frontend, database).
 #
 # Toolchain versions come from the project's own pins, so CI and a dev machine agree:
 # Go from go.mod, Node from .node-version, pnpm from packageManager in package.json,
@@ -140,14 +140,8 @@ jobs:
         run: go build -v ./...
 
       - name: Test
-        run: go test -v -race -coverprofile=coverage.out ./...
-
-      # Reports only — add a threshold comparison here to make it a gate.
-      - name: Report test coverage
-        run: |
-          go tool cover -func=coverage.out
-          COVERAGE=$(go tool cover -func=coverage.out | grep total | awk '{print $3}' | sed 's/%//')
-          echo "Total coverage: ${COVERAGE}%"
+        # -race slows a run 2–20×: narrow ./... to the packages that start goroutines.
+        run: go test -v -shuffle=on -race ./...
 
   # ── golangci-lint (separate job for caching) ───────────────────────────────
   backend-golangci:
@@ -264,7 +258,7 @@ jobs:
         run: uv run ty check .
 
       - name: Test
-        run: uv run pytest
+        run: uv run pytest --durations=10
 
       # Last: the only step that queries a remote advisory service.
       - name: Audit

@@ -52,15 +52,16 @@ Use pnpm and commit `pnpm-lock.yaml`. CI and the image run `pnpm install --froze
 fails instead of re-resolving.
 
 Test with Vitest: it runs TypeScript without a build step.
+`vitest related --run <files>` runs only the tests that import the changed files, the cheap local check.
 
 ### Package scripts
 
 Every package carries these dev tools and scripts; the Makefile and CI call the scripts by name.
-`test` runs `vitest run`: plain `vitest` watches and never exits. `build` stays `tsc -b && vite build`, as create-vite writes it.
+`test` runs `vitest run --passWithNoTests`: plain `vitest` watches and never exits, and a new package holds no test yet. `build` stays `tsc -b && vite build`, as create-vite writes it.
 
 ```bash
 pnpm add -D typescript@~7.0 oxlint-tsgolint prettier vitest     # writes pnpm-lock.yaml
-npm pkg set scripts.format="prettier --write ." "scripts.format:check=prettier --check ." scripts.lint="oxlint --type-aware --deny-warnings" scripts.typecheck="tsc -b" scripts.test="vitest run"
+npm pkg set scripts.format="prettier --write ." "scripts.format:check=prettier --check ." scripts.lint="oxlint --type-aware --deny-warnings" scripts.typecheck="tsc -b" scripts.test="vitest run --passWithNoTests"
 ```
 
 ## React
@@ -81,8 +82,8 @@ sub-components stay next to their one user.
 
 Prefer explicit return types on non-trivial functions. Validate data with Zod at API boundaries.
 
-Use **shadcn/ui** for complex interactive components, and the `cn()` helper from the `cn`
-package to conditionally combine Tailwind classes.
+Default for new projects; a project's AGENTS.md may override. Use **shadcn/ui** for complex interactive
+components, and the `cn()` helper from the `cn` package to conditionally combine Tailwind classes.
 
 Components call their feature's API functions; no raw `fetch` in components or hooks.
 
@@ -141,13 +142,10 @@ A project test under `tests/` enforces what ruff cannot check:
 A package's `__init__.py` is its public interface: re-exports and `__all__`.
 The implementation lives in `_private.py` modules beside it.
 
-The plugin's PostToolUse hook runs the project's own `.venv/bin/ruff` and `ty` on each edited file.
+The plugin's PostToolUse hook formats each edited file with the project's own `.venv/bin/ruff`, then checks it with ruff and `ty`.
 
-Tests go through the public interface, so a refactor behind it keeps them green.
-Patch only system boundaries: network, provider, clock, filesystem. Never patch the project's own private functions.
-
-Expected values are independent literals; a value recomputed by the code under test checks nothing.
-When a module is deepened, delete the old tests of its shallow internals once the interface has tests.
+Tests follow the [global test rule](../claude/global.md#tests). CI runs pytest with `--durations=10`:
+the slowest tests show in every log, as a report, never a gate.
 
 Type-check with ty, not mypy. Keep `[tool.ty.src] exclude = []`: an excluded module is checked by nothing.
 
@@ -192,6 +190,9 @@ other modules.
 
 Test by layer. Service logic runs against the store interface and a stateful in-memory fake.
 Repository code and SQL run against a real database only; a fake cannot catch a wrong query.
+
+CI runs `go test -shuffle=on`, so a test that depends on another's order fails.
+`-race` slows a run 2–20× ([race detector](https://go.dev/doc/articles/race_detector)); keep it on the packages that start goroutines.
 
 Unit tests carry no build tag; only integration test files start with `//go:build integration`.
 gopls loads untagged files by default, so a tagged unit test loses editor support
