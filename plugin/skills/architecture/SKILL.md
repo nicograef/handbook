@@ -22,7 +22,9 @@ description: "Improve code architecture"
   - Deletion test: delete the module. Complexity that reappears in its callers means it earns its place.
   - One adapter is a hypothetical seam; two make it real.
   - The interface is the test surface.
-- Python thresholds: complexity ≤ 20, ≤ 50 statements per function, module ≤ 1,000 lines,
+- Thresholds come from the project's own gates: its linter config (ruff `max-complexity`,
+  `max-statements`) and its structure tests (module line cap, name length, thin `__init__`).
+  Where a project sets none, use complexity ≤ 15, ≤ 50 statements per function, module ≤ 600 lines,
   names ≥ 3 characters, internals behind a package's `__init__`. Reviewers report each violation as a finding.
 - Run as many Opus reviewers on as many areas of the codebase you think is suitable.
 - Run Sonnet verifiers and refuters on the findings.
