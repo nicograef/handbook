@@ -22,13 +22,14 @@ Scope is the current project and repo. `all` adds every project's memory and eve
 
 1. Verify. Recall and earlier verdicts are claims, not evidence. Check every item at every level against git, PRs, jobs, agents and a fresh check run. A failed claim becomes the verified state.
 2. Check all shells and workflows. What is slowing the session down? How can we make the release cut and everything else faster and leaner? Anything ready to be cleaned and pruned yet?
-3. Rewrite every state file to the verified state: scratchpad, memory and `MEMORY.md`, plan, programme and PRD files, run state, lead notes. Open steps go to the plan file, durable facts to memory.
-4. Prune by content, not age: memory, rules, other sessions' scratchpad leftovers, fully ticked plans, shipped PRDs. Also merged or squash-merged branches with their remotes and clean worktrees. A memory deletion removes its index line too.
-5. Sweep stale worktree entries, dead remote-tracking refs, dead bus sessions (`agent-bus.sh sweep`) and this session's finished jobs.
-6. With `close`: run the close sweep below.
-7. With `compact`: write verified state, plan path, worktree paths and open tasks to the scratchpad. Say `/compact` is safe and give a short resume prompt.
-8. Report corrections, item status with evidence, running jobs, prune results, blocked commands and the close verdict.
-9. Invoke the [decide](../decide/SKILL.md) skill on every question the work needs from the user.
+3. Critically verify the progress and state of all shells, monitors, agents and workflows. Is any idle, stuck or outdated and to be removed?
+4. Rewrite every state file to the verified state: scratchpad, memory and `MEMORY.md`, plan, programme and PRD files, run state, lead notes. Open steps go to the plan file, durable facts to memory.
+5. Prune by content, not age: memory, rules, other sessions' scratchpad leftovers, fully ticked plans, shipped PRDs. Also merged or squash-merged branches with their remotes and clean worktrees. A memory deletion removes its index line too.
+6. Sweep stale worktree entries, dead remote-tracking refs, dead bus sessions (`agent-bus.sh sweep`) and this session's finished jobs.
+7. With `close`: additionally, run the close sweep below.
+8. With `compact`: additionally, write verified state, plan path, worktree paths and open tasks to the scratchpad. Say `/compact` is safe and give a short resume prompt.
+9. Report corrections, item status with evidence, running jobs, prune results, blocked commands and the close verdict.
+10. Invoke the [decide](../decide/SKILL.md) skill on every question the work needs from the user.
 
 ## Close
 
