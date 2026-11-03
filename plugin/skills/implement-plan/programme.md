@@ -6,6 +6,7 @@ Two or more plans run as one programme. The orchestrator plans, dispatches, revi
 
 - The Stop hook reads the `## Status` table of `docs/plans/programme.md` at HEAD. It holds one row per phase, phase first.
 - A Status cell of `waiting` or `running` blocks a stop; `landed` and `dropped` do not.
+- Status rows move only in a landing commit or a commit that changes a plan. A dispatch, a re-slice or a note waits for the next such commit; the scratchpad holds it meanwhile. A Note cell names the blocker alone.
 - A lane agent stops where its plan's phases end unless the brief says the group is the unit. Resume a stopped one by SendMessage with that sentence.
 - Lane agents are off the bus. The orchestrator reserves migration numbers in landing order and names them in each brief.
 - One gate per lane on one host exhausts memory. Wrap every gate in one host-wide `flock` and cap the test workers.
