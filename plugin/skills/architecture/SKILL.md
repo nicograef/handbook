@@ -1,6 +1,6 @@
 ---
 name: architecture
-description: "Improve code architecture"
+description: "Reviews and improves a codebase's architecture through parallel expert reviewers, verifiers and fixers. Use for an architecture review, layering or modularity cleanup, or a refactor across modules."
 ---
 
 # Architecture
