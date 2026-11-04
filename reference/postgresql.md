@@ -41,8 +41,8 @@ FROM pg_statio_user_tables;
 - A down migration that drops a column destroys data; the restore keeps it.
 - Make each change additive, so the running release still works against the new schema.
 - Never edit a migration that a release already shipped.
-- The `upgrade-path` job in [templates/ci.yml](../templates/ci.yml) applies the latest
-  tag's migrations, then the current ones.
+- The `upgrade-path` job in [templates/ci.yml](../templates/ci.yml) applies the previous
+  release's migrations, then the current ones.
 
 ### Create a migration
 

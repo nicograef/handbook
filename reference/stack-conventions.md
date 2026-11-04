@@ -198,7 +198,7 @@ Unit tests carry no build tag; only integration test files start with `//go:buil
 gopls loads untagged files by default, so a tagged unit test loses editor support
 ([gopls settings](https://go.dev/gopls/settings#buildflags)).
 
-Write migrations in `database/migrations/` and sqlc queries in `sqlc/queries/`.
+Write migrations in the repo root's `database/migrations/` and sqlc queries in `backend/sqlc/queries/`.
 
 Lint with golangci-lint v2 from [templates/golangci.yml](../templates/golangci.yml). Its forbidigo rule
 shows how to guard a layer boundary.

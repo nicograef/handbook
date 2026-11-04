@@ -31,11 +31,11 @@ Docker-published ports bypass UFW, so only the reverse proxy publishes ports ([D
 
 ## Resource usage
 
-Monthly thresholds and fixes: [maintenance.md](../guides/maintenance.md#verify).
+The monthly check that reads these thresholds: [maintenance.md](../guides/maintenance.md#monthly-checklist).
 `iostat` and `sar` come with sysstat, installed per [host-history.md](../guides/host-history.md#record-every-minute).
 
 ```bash
-sudo apt install btop ncdu   # add-ons for the live view and ncdu; the rest ships with Ubuntu
+sudo apt install btop ncdu   # the live view and the disk browser; the rest ships with Debian and Ubuntu
 ```
 
 | Resource          | Command                        | Read                        | Act when                          |

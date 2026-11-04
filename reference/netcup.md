@@ -15,7 +15,7 @@ Steps: [provision-server.md](../guides/provision-server.md#provision-over-ssh), 
 | IP filter | SCP, REST API settings: the IPs or CIDRs allowed to call; empty allows all |
 | Rate limits | None documented |
 | `serverId` | An integer from `GET /servers`; the `v22…` server name is not the id |
-| `userId` | Every `/users/{userId}/` path needs the SCP userId, an internal id, not the customer number |
+| `userId` | Every `/users/{userId}/` path needs the SCP userId, an internal id, not the customer number; `GET /tasks?limit=1` names it as `executingUser.id` |
 
 ## Auth
 

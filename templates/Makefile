@@ -43,7 +43,7 @@ fe:            ## Start frontend dev server
 
 # ── Code Quality ──
 
-# Each gate mirrors ci.yml's steps and order, so a green `make check` predicts a green CI.
+# Each gate runs its stack's ci.yml checks, so a green `make check` predicts a green CI.
 # Each stack block adds its gate to `check`.
 
 .PHONY: check
