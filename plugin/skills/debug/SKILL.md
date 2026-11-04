@@ -11,7 +11,6 @@ Arguments: `$ARGUMENTS`: the symptom, a failing command or a pasted error.
 ## Gotchas
 
 - No fix before a repro. A fix that was never red proves nothing.
-- Two failed fixes mean the model of the bug is wrong. Question the design before a third patch.
 - Temporary debug output carries one unique prefix, such as `DBG-<slug>:`. Grep it out before committing.
 
 ## Loop

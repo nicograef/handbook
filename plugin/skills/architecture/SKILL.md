@@ -32,6 +32,6 @@ description: "Improve code architecture"
 - Keep the workflows lean and efficient.
   - Bundle reviews, tests and gates on the main branch or a common base branch.
   - You may even use just one branch or one worktree for all of this.
-  - Chose the codebase split accordingly.
+  - Choose the codebase split accordingly.
 
 If you find any bugs or issues along the way, fix them directly as part of the workflow.

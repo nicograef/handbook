@@ -26,7 +26,7 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 # ── Configuration (env-var defaults) ─────────────────────────────────────────
 FILTER="${FILTER:-$SCRIPT_DIR/strip-visuals.lua}"
 WPM="${WPM:-150}"          # narration speed used for the time estimate
-STRICT="${STRICT:-0}"      # 1 = abort on any finding
+STRICT="${STRICT:-0}"
 
 log() { printf '\033[1;34m▸ %s\033[0m\n' "$1"; }
 warn() { printf '\033[1;33m! %s\033[0m\n' "$1" >&2; }

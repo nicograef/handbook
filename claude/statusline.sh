@@ -76,7 +76,7 @@ if [[ -n "$pct" ]] || [[ -n "$cost" ]]; then
   fi
 fi
 
-# Rate limits: present only for subscribers, and each window may be absent
+# Each rate-limit window may be absent.
 for pair in "5h:$five_h" "7d:$seven_d"; do
   label=${pair%%:*}; used=${pair#*:}
   [[ -z "$used" ]] && continue

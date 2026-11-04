@@ -23,7 +23,7 @@ With two or more plan paths, follow [programme.md](programme.md) instead. Open [
 - The log outranks the checkbox. A tick without a trailer commit is unticked; a trailer commit without a tick is re-verified, then ticked.
 - Pass the plan to every agent as a path. Pasted phase text goes stale on the first tick.
 - Pin the base once as a sha and target it in every dry run, rebase and merge.
-- Only the lead writes the plan file. No two agents write one file.
+- Only the lead writes the plan file.
 
 ## Steps
 

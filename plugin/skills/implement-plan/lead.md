@@ -1,6 +1,6 @@
 # Lead
 
-A session with background agents, a workflow or lanes is a lead. This file serves a single-plan run, a [programme](programme.md) and any other lead. The status file is the plan of a single-plan run, or `docs/plans/programme.md`.
+This file serves a single-plan run, a [programme](programme.md) and any other lead. The status file is the plan of a single-plan run, or `docs/plans/programme.md`.
 
 ## Upkeep
 

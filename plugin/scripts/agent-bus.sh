@@ -13,8 +13,6 @@
 #   2. Predicts merge conflicts, path overlap and resource collisions between those sessions.
 #   3. Tells each new session which peers share the repo, from its SessionStart hook.
 #
-# Messages between sessions go through Claude Code's native SendMessage, not this bus.
-#
 # The bus path derives from `git rev-parse --git-common-dir`, which every worktree resolves alike.
 # Sessions that negotiate a channel can deadlock by each adopting the other's; a derived path cannot.
 
