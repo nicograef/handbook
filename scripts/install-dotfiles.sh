@@ -103,7 +103,6 @@ preflight() {
   [[ "$ok" == true ]] || exit 2
 }
 
-# Moves a real file or directory at the destination to .bak, then links it.
 link() {
   local origin="$DOTFILES_DIR/$1" dest="$HOME/$2" status=MISSING
   if [[ -L "$dest" && "$(readlink "$dest")" == "$origin" ]]; then return; fi
@@ -119,7 +118,6 @@ link() {
   log "Linked $dest → $origin"
 }
 
-# git_set <key> <value> — set a global git key unless it holds the value.
 git_set() {
   local current status=MISSING
   current="$(git config --global "$1" || true)"
@@ -214,7 +212,6 @@ git_set pull.rebase true
 git_set push.autoSetupRemote true
 git_set fetch.prune true
 git_set merge.conflictStyle zdiff3
-# delta as pager if installed, else fall back (safe on machines without delta)
 git_set core.pager 'delta || less'
 git_set interactive.diffFilter 'delta --color-only || cat'
 git_set delta.navigate true

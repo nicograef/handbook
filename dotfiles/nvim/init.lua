@@ -1,6 +1,4 @@
--- init.lua – Neovim for prose and code on vim.pack: catppuccin, snacks picker and explorer,
--- which-key, lualine, gitsigns, mini.icons, hardtime; LSP, format on save, treesitter.
--- Install and use: guides/neovim.md.
+-- init.lua – Neovim for prose and code on vim.pack. Install and use: guides/neovim.md.
 -- Only non-defaults are set: `:help nvim-defaults` lists what is already on.
 
 -- ── Editing ──────────────────────────────────────────────────────────────────

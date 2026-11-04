@@ -42,7 +42,6 @@ cd /opt/<project>
    Expected: `crontab -l` prints the line.
 
 The dumps sit on the disk they protect, so losing the server loses them too.
-The daily verified dump and the quarterly drill cover the common failures: bad migration, dropped table, corruption.
 
 ## Restore
 

@@ -2,25 +2,15 @@
 # test-setup-dev-machine.sh – fixture test for scripts/setup-dev-machine.sh.
 #
 # Usage:
-#   scripts/test-setup-dev-machine.sh    # or: make test-setup-dev-machine
+#   scripts/test-setup-dev-machine.sh
 #
 # What it does:
 #   1. Copies the working tree to a temp clone with an HTTPS origin and an empty home.
 #   2. Puts one logging stub first on PATH for apt, snap, gh, npm, uv, nvim and the rest;
 #      marker files hold the fake machine state, and a tool appears when its fix installs it.
-#   3. Asserts the root guard, --check on the fresh machine, --yes on it, then --check again, also from a
-#      directory whose .npmrc differs; drift only
-#      install.sh fixes shows in install-dotfiles.sh --status and the dotfiles row, and --yes clears it;
-#      Ptyxis waits for its default profile, and a failing --status probe stops --check.
-#   4. Reruns --yes on a gh login that lacks the key scopes and a deleted font, then with both keys present,
-#      with an inactive account holding the scopes or an invalid token, and with a key list that fails whole
-#      or for one type.
-#   5. Asserts a broken snap probe names itself and another distro is refused. A server whose
-#      /etc/handbook-role says prod, or that lacks the file, is refused; dev runs; an unknown role exits 2.
-#   6. Repeats the fresh and fixed runs on a headless Debian: no snap, the Node, Go and Neovim tarballs,
-#      no font or xclip. A rerun changes nothing; a Node upgrade drops the old files; a wrong signature or
-#      digest leaves the old trees; a NodeSource host moves to the tarball; a host with docker-ce keeps it
-#      and never upgrades it; a --yes without a terminal skips the human steps.
+#   3. Asserts the root guard, then --check, --yes and --check again on a fresh Ubuntu machine.
+#   4. Covers install.sh drift, Ptyxis, gh key scopes and key lists, a broken probe, other distros and server roles.
+#   5. Repeats on a headless Debian: the Node, Go and Neovim tarballs, their upgrades and failed verifications.
 #   Every --check leaves the fixture's files as they were, and every claude call reads /dev/null.
 
 set -euo pipefail

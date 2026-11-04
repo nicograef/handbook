@@ -217,7 +217,6 @@ flag() {
   if [[ "$STATUS" == ok ]]; then STATUS="$1"; fi
   note "$2"
 }
-# note <detail> — add a detail and leave the status as it is.
 note() { DETAIL+="${DETAIL:+; }$1"; }
 
 # ask <prompt> — print the reply; fail at the end of input, so no answer is ever made up.
@@ -343,7 +342,6 @@ node_units() {
 
 # node_version — the tarball Node's version, empty when it does not run.
 node_version() { as_user "$NODE_PREFIX/bin/node" --version 2>/dev/null || true; }
-# version_lt <a> <b> — a sorts before b.
 version_lt() { [[ "$1" != "$2" && "$(printf '%s\n%s\n' "$1" "$2" | sort -V | head -1)" == "$1" ]]; }
 
 check_node() {
@@ -696,7 +694,6 @@ fix_nvim() {
 
 # ── Main ─────────────────────────────────────────────────────────────────────
 
-# run_check <id> — reset STATUS and DETAIL, then run the item's check.
 run_check() {
   STATUS=ok DETAIL=""
   "check_$1"

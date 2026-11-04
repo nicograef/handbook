@@ -2,7 +2,7 @@
 # test-agent-bus.sh – fixture test for plugin/scripts/agent-bus.sh
 #
 # Usage:
-#   scripts/test-agent-bus.sh        # or: make test-agent-bus
+#   scripts/test-agent-bus.sh
 #
 # What it does:
 #   1. Builds a throwaway git repo under a temp dir, so no real bus is touched.

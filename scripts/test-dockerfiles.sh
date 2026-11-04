@@ -2,7 +2,7 @@
 # test-dockerfiles.sh – build and health-check the three Dockerfile templates
 #
 # Usage:
-#   scripts/test-dockerfiles.sh        # or: make test-dockerfiles
+#   scripts/test-dockerfiles.sh
 #   PREFIX=<name> scripts/test-dockerfiles.sh   # prefix for every image and container
 #   NODE_MAJOR=<n> scripts/test-dockerfiles.sh   # test a version bump; also UV_VERSION, PYTHON_VERSION, GO_MINOR
 #

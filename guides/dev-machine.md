@@ -1,7 +1,6 @@
 # New Dev Machine
 
 Take a fresh Ubuntu laptop or a Debian dev server to a working toolchain with [scripts/setup-dev-machine.sh](../scripts/setup-dev-machine.sh).
-Its header says where Node, Go and Neovim come from on each distro.
 
 ## Prerequisites
 
@@ -49,8 +48,7 @@ A dev or agent server declares it with one [setup-server.sh](../scripts/setup-se
 
 ## Update
 
-Rerun the script whenever you like. It updates the tools it installs and leaves everything else alone.
-Unattended upgrades update the rest of the system. `--yes` applies every fix without asking, except the prompts above and removing an apt neovim or nodejs:
+Rerun the script to update the tools it installs; unattended upgrades update the rest. `--yes` applies every fix without asking, except the prompts above and removing an apt neovim or nodejs:
 
 ```bash
 sudo ~/r/handbook/scripts/setup-dev-machine.sh --yes

@@ -43,7 +43,7 @@ Neovim is the snap on Ubuntu and Step 1's tarball on Debian. The steps below are
 ## Prerequisites
 
 - The latest Neovim release; `vim.pack` needs 0.12. apt lags a major version behind and is not used.
-- The handbook cloned and [`install.sh`](../install.sh) run. It is idempotent; re-run it when the clone predates the Neovim link.
+- The handbook cloned and [`install.sh`](../install.sh) run.
 - Node with an npm prefix of `~/.local`, uv, and a C compiler (`build-essential`).
 - A desktop clipboard needs `xclip`; the clipboard comment in [dotfiles/nvim/init.lua](../dotfiles/nvim/init.lua) says why.
 - A Nerd Font where the terminal renders, for picker and status line icons. The symbols-only one is enough.

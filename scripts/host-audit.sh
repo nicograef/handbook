@@ -93,7 +93,6 @@ verdict() {
   printf '%-4s  %s: %s\n' "$1" "$2" "$3"
 }
 
-# raw indents a reading beneath its verdict.
 raw() { sed 's/^/        /'; }
 
 is_root() { [[ $EUID -eq 0 ]]; }

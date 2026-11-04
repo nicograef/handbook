@@ -2,7 +2,7 @@
 # test-plan-run-guard.sh – fixture test for plugin/scripts/plan-run-guard.sh.
 #
 # Usage:
-#   scripts/test-plan-run-guard.sh    # or: make test-plan-run-guard
+#   scripts/test-plan-run-guard.sh
 #
 # What it does:
 #   1. Builds a throwaway git repo under mktemp -d with a docs/plans/ tree.

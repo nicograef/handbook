@@ -2,7 +2,7 @@
 # test-report-repo-status.sh – fixture test for scripts/report-repo-status.sh.
 #
 # Usage:
-#   scripts/test-report-repo-status.sh    # or: make test-report-repo-status
+#   scripts/test-report-repo-status.sh
 #
 # What it does:
 #   1. Builds repos pushed to a bare remote under a temp root, isolated from the user's git config.

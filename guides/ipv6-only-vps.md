@@ -6,8 +6,6 @@ Two gaps need closing:
 - Some services are still IPv4-only.
 - Docker's default bridge gives containers IPv4-only NAT. With no IPv4 route on the host, containers have **no egress at all**.
 
-[Provisioning](provision-server.md) runs [Set DNS64 resolvers](#set-dns64-resolvers) before its dotfiles clone, which reaches github.com only through them.
-
 ## Prerequisites
 
 - IPv6-only Debian/Ubuntu VPS with sudo access

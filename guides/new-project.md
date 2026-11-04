@@ -1,6 +1,6 @@
 # Set Up a New Project Repository
 
-Take an empty directory to a repository whose `make check` passes. Index: [README Journeys](../README.md#journeys).
+Take an empty directory to a repository whose `make check` passes.
 
 ## Prerequisites
 

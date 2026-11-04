@@ -1,8 +1,8 @@
 # Provision a New Debian / Ubuntu VPS
 
 Provision and harden a fresh VPS with [`scripts/setup-server.sh`](../scripts/setup-server.sh).
-An IPv6-only server runs [Set DNS64 resolvers](ipv6-only-vps.md#set-dns64-resolvers) before [Link the handbook dotfiles](#link-the-handbook-dotfiles), and the rest of [ipv6-only-vps.md](ipv6-only-vps.md) after [Verify](#verify).
-Apps then ship through [deploy.md](deploy.md).
+github.com has no IPv6 address, so an IPv6-only server runs [Set DNS64 resolvers](ipv6-only-vps.md#set-dns64-resolvers) before [Link the handbook dotfiles](#link-the-handbook-dotfiles).
+It runs the rest of [ipv6-only-vps.md](ipv6-only-vps.md) after [Verify](#verify).
 
 ## Prerequisites
 
@@ -69,15 +69,12 @@ Without bat, eza, fd-find or fzf, their aliases in
    sudo apt install -y tmux bat eza fzf fd-find ripgrep git-delta
    ```
 
-   Expected: apt ends without errors. Long work runs in a named session, `tmux new -A -s <project>`.
+   Expected: apt ends without errors.
 
 ## Link the handbook dotfiles
 
 A read-only https clone supplies the aliases, prompt and tmux config; the [install-dotfiles.sh](../scripts/install-dotfiles.sh) header lists the rest.
-github.com has no IPv6 address, so an IPv6-only server sets the [DNS64 resolvers](ipv6-only-vps.md#set-dns64-resolvers) first.
-
-A server gets these dotfiles, never [setup-dev-machine.sh](../scripts/setup-dev-machine.sh), unless its `HOST_ROLE` is `dev`.
-The handbook clone stays https; project repos clone with the read-only deploy keys of [deploy.md](deploy.md#first-deploy).
+Project repos clone with the read-only deploy keys of [deploy.md](deploy.md#first-deploy).
 
 1. **Clone the handbook and run install.sh:**
 
@@ -90,9 +87,8 @@ The handbook clone stays https; project repos clone with the read-only deploy ke
 
 ## Rerun
 
-The script reruns on a set-up host as maintenance; the rerun invocation is in its header comment.
-It keeps the authorized keys and the password. It upgrades every package, so run it in a maintenance window.
-Every run records its Configuration in `/etc/handbook-host.env`, and a rerun reuses it. A passed value replaces the recorded one.
+The script reruns on a set-up host as maintenance; its header comment holds the invocation and what a rerun keeps.
+It upgrades every package, so run it in a maintenance window.
 
 ## Verify
 
@@ -121,5 +117,4 @@ scripts/netcup.sh firewall-get <server>
 | `ssh root@<host>` | `Permission denied (publickey)` |
 | netcup `firewall-get` | The netcup default policies, then the user policy; `"consistent": true` |
 
-The audit's checks are in [host-audit.sh](../scripts/host-audit.sh).
 On Debian the stock `50unattended-upgrades` origins include the `label=Debian` stable point releases.

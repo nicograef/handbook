@@ -129,7 +129,6 @@ run() {
   fi
 }
 
-# write_file <path> — write stdin to <path>, previewing (not writing) in dry-run.
 write_file() {
   local path="$1"
   if [[ "$DRY_RUN" == "true" ]]; then
@@ -140,7 +139,6 @@ write_file() {
   fi
 }
 
-# append_line <path> <line> — append <line> unless <path> holds it, previewing (not writing) in dry-run.
 append_line() {
   if grep -qxF -- "$2" "$1" 2>/dev/null; then return 0; fi
   if [[ "$DRY_RUN" == "true" ]]; then

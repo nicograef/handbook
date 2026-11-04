@@ -1,7 +1,5 @@
 # Stack Conventions
 
-Heading-grouped rules for the four stacks this handbook builds on — not a runbook.
-
 ## Node/TypeScript
 
 Run the current Active LTS, and move within a month of a new LTS. Node executes `.ts` files directly:
@@ -141,8 +139,6 @@ A project test under `tests/` enforces what ruff cannot check:
 
 A package's `__init__.py` is its public interface: re-exports and `__all__`.
 The implementation lives in `_private.py` modules beside it.
-
-The plugin's PostToolUse hook formats each edited file with the project's own `.venv/bin/ruff`, then checks it with ruff and `ty`.
 
 Tests follow the [global test rule](../claude/global.md#tests). CI runs pytest with `--durations=10`:
 the slowest tests show in every log, as a report, never a gate.

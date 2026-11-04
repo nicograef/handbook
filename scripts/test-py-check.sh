@@ -2,7 +2,7 @@
 # test-py-check.sh – fixture test for plugin/scripts/py-check.sh.
 #
 # Usage:
-#   scripts/test-py-check.sh    # or: make test-py-check
+#   scripts/test-py-check.sh
 #
 # What it does:
 #   1. Builds a scratch project under mktemp -d with stub .venv/bin/ruff and ty.

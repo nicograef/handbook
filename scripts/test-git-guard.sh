@@ -2,7 +2,7 @@
 # test-git-guard.sh – fixture test for plugin/scripts/git-guard.sh.
 #
 # Usage:
-#   scripts/test-git-guard.sh    # or: make test-git-guard
+#   scripts/test-git-guard.sh
 #
 # What it does:
 #   1. Puts a gitleaks stub first on PATH that logs its arguments and reports

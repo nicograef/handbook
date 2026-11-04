@@ -8,13 +8,6 @@ Steps: [provision-server.md](../guides/provision-server.md), [deploy.md](../guid
 | Command | Does | Expected |
 | --- | --- | --- |
 | `sudo systemctl restart docker` | Restarts the Docker daemon, which rereads `/etc/docker/daemon.json` | Stops every container meanwhile: run it in a maintenance window. Containers with `restart: unless-stopped` come back up |
-| `sudo systemctl mask tmp.mount` | Links the unit to `/dev/null`, so nothing can start it | Takes effect at the next reboot |
-
-## journalctl
-
-| Command | Does | Read |
-| --- | --- | --- |
-| `journalctl --since '1 day ago'` | The last day of the journal, as far as you may read it | Outside `adm` and `systemd-journal`, only your own user's lines show |
 
 ## Compose operations
 
@@ -59,4 +52,4 @@ History, once [host-history.md](../guides/host-history.md) records it; `-f /var/
 | Memory pressure | `cat /proc/pressure/memory` | `some` and `full` `avg60`: the share of time one or all tasks stalled on memory | `full` above 0 for minutes on end |
 | Any of them as JSON | `sadf -j -- -u -r -q -F` | one object per sample | |
 
-Sources: [systemctl](https://www.freedesktop.org/software/systemd/man/latest/systemctl.html), [journalctl](https://www.freedesktop.org/software/systemd/man/latest/journalctl.html), [docker compose](https://docs.docker.com/reference/cli/docker/compose/), [sar](https://manpages.debian.org/trixie/sysstat/sar.sysstat.1.en.html), [PSI](https://docs.kernel.org/accounting/psi.html).
+Sources: [systemctl](https://www.freedesktop.org/software/systemd/man/latest/systemctl.html), [docker compose](https://docs.docker.com/reference/cli/docker/compose/), [sar](https://manpages.debian.org/trixie/sysstat/sar.sysstat.1.en.html), [PSI](https://docs.kernel.org/accounting/psi.html).

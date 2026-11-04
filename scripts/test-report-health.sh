@@ -2,7 +2,7 @@
 # test-report-health.sh – fixture test for scripts/report-health.sh.
 #
 # Usage:
-#   scripts/test-report-health.sh    # or: make test-report-health
+#   scripts/test-report-health.sh
 #
 # What it does:
 #   1. Puts journalctl and curl stubs first on PATH: journalctl prints a fixture
