@@ -7,35 +7,22 @@ Applies to an [implement-plan](../plugin/skills/implement-plan/SKILL.md) run, a 
 
 - Claude Code v2.1.234 or later (`claude --version`).
 - `~/.claude/settings.json` is this repo's [claude/settings.json](../claude/settings.json), which enables the `nico` plugin.
-- Docker, for the container posture.
-- The Dev Containers CLI, from [devcontainers/cli](https://github.com/devcontainers/cli): `npm install -g @devcontainers/cli`.
+- Docker and the [Dev Containers CLI](https://github.com/devcontainers/cli) (`npm install -g @devcontainers/cli`), for the container posture.
 - The repo holds `.devcontainer/devcontainer.json` from [templates/devcontainer.json](../templates/devcontainer.json).
 - A claude.ai subscription login, for automatic continue at a usage limit.
+- `<handbook>` is the absolute path of your handbook clone, `<repo>` the repo's path, `<name>` its directory name.
 
 ## Choose the posture
 
-The mode is what the session starts with.
 Source: [Permission modes](https://code.claude.com/docs/en/permission-modes).
 
 | Posture | Mode | Stops on | Use for |
 | --- | --- | --- | --- |
-| Attended | `auto` | A classifier pause after 3 consecutive or 20 total blocks | Normal interactive work |
+| Attended | `auto` | A classifier pause after 3 consecutive or 20 total blocks, both fixed | Normal interactive work |
 | Unattended | `bypassPermissions` in a container | `deny` rules, `ask` rules, critical-path removals | Whole-plan runs, migrations |
 | Pipeline | `dontAsk` | Nothing: it denies what would prompt | CI, scripted runs |
 
-- The `auto` pause thresholds are not configurable.
 - A `-p` run without `--permission-prompt-tool` never pauses; a blocked action does not run, and Claude keeps working.
-
-## Confirm the denial log
-
-The `PermissionDenied` hook in [plugin/hooks/hooks.json](../plugin/hooks/hooks.json) appends each auto-mode denial to a log.
-It fires in `auto` mode only. Source: [Hooks](https://code.claude.com/docs/en/hooks#permissiondenied).
-
-```bash
-tail -20 ~/.claude/denials.log
-```
-
-Expected: one JSON line per denial, naming the Bash command or file path to allowlist.
 
 ## Describe your infrastructure to the classifier
 
@@ -50,8 +37,7 @@ Expected: `claude auto-mode config` lists your entries, as Verify checks.
 
 ## Add Claude Code to the dev container
 
-The template's base image has no Claude Code, no settings and no login.
-Add the Claude Code feature, a config volume, a read-only mount of this repo, and its `~/.claude` links.
+Add the Claude Code feature, a config volume, a read-only mount of the handbook, and its `~/.claude` links.
 Source: [Development containers](https://code.claude.com/docs/en/devcontainer).
 
 ```diff
@@ -71,13 +57,11 @@ Source: [Development containers](https://code.claude.com/docs/en/devcontainer).
 +  "containerEnv": { "CLAUDE_CONFIG_DIR": "/home/vscode/.claude" },
 ```
 
-`<handbook>` is the absolute path of your handbook clone; `vscode` is the base image's non-root user.
 Expected: `devcontainer up --workspace-folder .` builds the container without errors.
 
 - The volume keeps the login and the bypass acceptance across rebuilds; `CLAUDE_CONFIG_DIR` puts `.claude.json` in it too.
 - The handbook mounts at its host path, the marketplace path the settings name. The skills' links into `claude/` resolve there.
-- The four file mounts are the `.claude` rows of `scripts/install-dotfiles.sh --check`, except `settings.json`.
-- `--settings` loads the settings from the read-only handbook on every start.
+- The four file mounts are the `.claude` rows of `scripts/install-dotfiles.sh --check`, except `settings.json`, which `--settings` loads on every start.
 - The plugin's PreToolUse hook blocks every Bash command while its git guard is missing or failing.
 
 ## Snapshot what the host runs
@@ -97,13 +81,11 @@ hostrun() {
 (cd <repo> && hostrun) > ~/.cache/hostrun-<name>.txt
 ```
 
-`<repo>` is the repo's path, `<name>` its directory name.
 The subshell keeps the host shell outside the repo: the handbook prompt runs `git diff` in any directory inside it.
 Expected: one hash line per config and hook of the repo, its submodules and worktrees, and per `.devcontainer` file.
 
-- `find .git` covers `.git/modules` and `.git/worktrees`, which host `git status` reads too.
 - Pass each in-repo `core.hooksPath` or `include.path` target as an argument, such as `hostrun .husky`, on both calls.
-- `grep -riA1 -e hookspath -e '\[include' .git --include='config*'` lists them.
+  `grep -riA1 -e hookspath -e '\[include' .git --include='config*'` lists them.
 
 ## Start the run in the container
 
@@ -115,30 +97,26 @@ devcontainer exec --workspace-folder <repo> env CLAUDE_CODE_RETRY_WATCHDOG=1 \
   claude --settings <handbook>/claude/settings.json --permission-mode bypassPermissions
 ```
 
-On the first start, sign in and accept the responsibility dialog. The volume keeps both.
+On the first start, sign in and accept the responsibility dialog; a `--bg` run is refused until then.
 That session registers the plugin's marketplace in the background, so restart Claude Code once.
-Expected: Claude Code starts as `vscode` in bypass-permissions mode, with this repo's `ask` and `deny` rules.
+Expected: Claude Code starts as `vscode`, the base image's non-root user, in bypass-permissions mode with the handbook's `ask` and `deny` rules.
 
 - `bypassPermissions` refuses to start as root or under `sudo`. Source: [Permission modes](https://code.claude.com/docs/en/permission-modes#skip-all-checks-with-bypasspermissions-mode).
-- Accept the dialog interactively before any `--bg` run; a `--bg` run is refused until then.
 - `CLAUDE_CODE_RETRY_WATCHDOG=1` retries `429` and `529` capacity errors indefinitely, backing off up to 5 minutes.
-- It raises the retry count for server errors, timeouts and dropped connections to 300, roughly three hours.
-- A `429` that reports a spend limit or exhausted usage credits still fails at once.
-  Source: [Environment variables](https://code.claude.com/docs/en/env-vars).
+- It retries server errors, timeouts and dropped connections up to 300 times, roughly three hours.
+- A `429` for a spend limit or exhausted usage credits still fails at once. Source: [Environment variables](https://code.claude.com/docs/en/env-vars).
 - Set it on the command line, not in settings, so attended sessions keep failing fast.
-- Rules match the usual command form only: `Bash(git push *)` misses `git -C . push`.
-- The container and the host-run check are the security boundary, not the rules.
+- Rules match the usual command form only: `Bash(git push *)` misses `git -C . push`. The container and the host-run check are the security boundary.
 
 ## Check what the host will run
 
-After the run, and before any host `git`, `repo-status` or `devcontainer up` in the repo, compare the snapshot:
+After the run, and before any host `git`, `repo-status`, `devcontainer up` or `cd` in the repo, compare the snapshot:
 
 ```bash
 (cd <repo> && hostrun) | diff ~/.cache/hostrun-<name>.txt - && echo unchanged
 ```
 
 Expected: `unchanged`. Read each file a differing line names before the host runs `git` there.
-Keep the host shell outside the repo until then, so its prompt runs no `git` there.
 
 ## Let an open session wait out a usage limit
 
@@ -154,18 +132,11 @@ Leave the terminal open. Expected: the conversation records `Usage limit reached
 ## Verify
 
 ```bash
-claude auto-mode config | jq -e '.environment | any(startswith("Source control"))'
-jq -e '.autoMode.environment | index("$defaults") == 0' ~/.claude/settings.json
-claude plugin list --json | jq -e 'any(.id == "nico@handbook" and .enabled)'
+claude auto-mode config | jq -e '.environment | any(startswith("Source control"))'   # → true
+jq -e '.autoMode.environment | index("$defaults") == 0' ~/.claude/settings.json      # → true
+claude plugin list --json | jq -e 'any(.id == "nico@handbook" and .enabled)'        # → true
+devcontainer exec --workspace-folder <repo> bash -c 'echo "git push -f" | <handbook>/plugin/scripts/git-guard.sh; echo "exit $?"'   # → a Blocked: line, then exit 2
 ```
-
-Expected: `true` from each command.
-
-```bash
-devcontainer exec --workspace-folder <repo> bash -c 'echo "git push -f" | <handbook>/plugin/scripts/git-guard.sh; echo "exit $?"'
-```
-
-Expected: a `Blocked:` line, then `exit 2`.
 
 ## Troubleshooting
 
@@ -175,5 +146,5 @@ Committed work survives every stop; the session does not. The messages are liste
 | --- | --- |
 | `You've hit your session limit` or `weekly limit`, session still open | [Wait out the limit](#let-an-open-session-wait-out-a-usage-limit) |
 | `Repeated 529 Overloaded errors` or `Request rejected (429)` ended the run | Restart it with `CLAUDE_CODE_RETRY_WATCHDOG=1`, then [resume from the last commit](../plugin/skills/implement-plan/SKILL.md#resume) |
-| The run stalled on a denial | Read `~/.claude/denials.log`; add an allow rule or an `autoMode.environment` entry |
+| The run stalled on a denial | Read `~/.claude/denials.log`: the [`PermissionDenied`](https://code.claude.com/docs/en/hooks#permissiondenied) hook in [plugin/hooks/hooks.json](../plugin/hooks/hooks.json) appends one JSON line per `auto`-mode denial. Add an allow rule or an `autoMode.environment` entry for the command or path it names |
 | Any other limit or API error stopped the run | [Respond per error kind](../plugin/skills/implement-plan/lead.md#failures), then [resume from the last commit](../plugin/skills/implement-plan/SKILL.md#resume) |

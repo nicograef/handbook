@@ -14,8 +14,7 @@ Take an empty directory to a repository whose `make check` passes.
 | `<visibility>` | Repo visibility | `public` or `private` |
 | `<handbook>` | Path to your local handbook clone | `~/r/handbook` |
 | `<database-name>` | Postgres database name | `orders` |
-| `<project-go-version>` | Go release: the `go` directive of `go.mod`, the devcontainer Go feature, `setup-dev-tools.sh` | `1.27.1` |
-| `<go-minor>` | Go minor of that release: the `Dockerfile.go` base tag | `1.27` |
+| `<project-go-version>` | Go release: the `go` directive of `go.mod`, the devcontainer Go feature, `setup-dev-tools.sh`; its minor tags the `Dockerfile.go` base | `1.27.1` |
 | `<project-python-version>` | Python minor: `uv init`, the `Dockerfile.python` base tag | `3.12` |
 | `<uv-version>` | uv floor: `pyproject.toml`, the `Dockerfile.python` base tag, `setup-dev-tools.sh` | `0.13.0` |
 | `<pytest-marker>` | Opt-in pytest marker for integration tests | `integration` |
@@ -63,17 +62,15 @@ A React repository skips [Copy the production files](#copy-the-production-files)
    ```bash
    HANDBOOK=<handbook>
    cp "$HANDBOOK"/templates/{.editorconfig,.gitignore,Makefile} . && mkdir -p .vscode .claude scripts
-   cp "$HANDBOOK/templates/vscode-settings.json" .vscode/settings.json && cp "$HANDBOOK/templates/make-help.awk" scripts/
-   cp "$HANDBOOK/templates/claude-settings.json" .claude/settings.json   # formats each edited Go or frontend file
+   cp "$HANDBOOK/templates/vscode-settings.json" .vscode/settings.json && cp "$HANDBOOK/templates/make-help.awk" scripts/ && cp "$HANDBOOK/templates/claude-settings.json" .claude/settings.json   # the hook formats each edited Go or frontend file
    ```
 
 ## Scaffold the stack
 
 1. Copy the local Compose file, devcontainer, CI and Dependabot config; uncomment Postgres and your row's features. Expected: `docker compose config --quiet` exits 0.
    ```bash
-   cp "$HANDBOOK/templates/docker-compose.yml" . && cp "$HANDBOOK/templates/setup-dev-tools.sh" scripts/
-   mkdir -p .devcontainer .github/workflows && cp "$HANDBOOK/templates/devcontainer.json" .devcontainer/devcontainer.json
-   cp "$HANDBOOK/templates/ci.yml" .github/workflows/ci.yml && cp "$HANDBOOK/templates/dependabot.yml" .github/dependabot.yml
+   mkdir -p .devcontainer .github/workflows && cp "$HANDBOOK/templates/docker-compose.yml" . && cp "$HANDBOOK/templates/setup-dev-tools.sh" scripts/
+   cp "$HANDBOOK/templates/devcontainer.json" .devcontainer/ && cp "$HANDBOOK/templates/ci.yml" .github/workflows/ && cp "$HANDBOOK/templates/dependabot.yml" .github/
    ```
 2. Scaffold each tier your row names and copy the backend's Dockerfile template. A backend row writes the first migration, which CI applies. Expected: `backend/Dockerfile` and `database/migrations/000001_init.up.sql` on a backend row, `frontend/package.json` on a React row.
    ```bash
@@ -97,8 +94,7 @@ A React repository skips [Copy the production files](#copy-the-production-files)
    ```bash
    echo <node-major> > frontend/.node-version && cd frontend && npm pkg set packageManager="pnpm@$(pnpm --version)"
    # run the Package scripts block from stack-conventions.md here
-   printf 'pnpm-lock.yaml\n' > .prettierignore     # pnpm owns the lockfile format
-   pnpm run format && cd ..
+   printf 'pnpm-lock.yaml\n' > .prettierignore && pnpm run format && cd ..   # pnpm owns the lockfile format
    ```
 2. Set the Python backend's uv floor and pytest table, and add uvicorn and its dev tools. Write the app factory, a smoke test and an integration test. Expected: `backend/.python-version` holds `<project-python-version>`, and `backend/uv.lock` names `psycopg`, `pytest` and `uvicorn`.
    ```bash
@@ -112,14 +108,12 @@ A React repository skips [Copy the production files](#copy-the-production-files)
 
 ## Copy the production files
 
-1. Copy the Caddy production stack, the env template and the deploy scripts, and set your domain. The edge image bakes in the Caddyfile and the SPA build. Expected: `grep -c example.com reverse-proxy/Caddyfile` prints `0`.
+1. Copy the Caddy production stack, the env template, the deploy scripts and the release workflow, and set your domain. The edge image bakes in the Caddyfile and the SPA build. Expected: `grep -c example.com reverse-proxy/Caddyfile` prints `0`, and `docker compose -f docker-compose.prod.yml config --services` lists `postgres`, `backend` and `reverse-proxy`.
    ```bash
-   cp "$HANDBOOK"/templates/{docker-compose.prod.yml,.env.example} . && cp "$HANDBOOK"/templates/{prod-init.sh,backup-postgres.sh} scripts/
+   cp "$HANDBOOK"/templates/{docker-compose.prod.yml,.env.example} . && cp "$HANDBOOK"/templates/{prod-init.sh,backup-postgres.sh} scripts/ && cp "$HANDBOOK/templates/release.yml" .github/workflows/
    mkdir -p reverse-proxy && cp "$HANDBOOK/templates/Caddyfile" reverse-proxy/Caddyfile && sed -i 's/example\.com/<domain>/g' reverse-proxy/Caddyfile
    cp "$HANDBOOK/templates/Dockerfile.edge" reverse-proxy/Dockerfile && cp "$HANDBOOK/templates/edge.dockerignore" reverse-proxy/Dockerfile.dockerignore
-   cp "$HANDBOOK/templates/release.yml" .github/workflows/release.yml
    ```
-2. Check the production services. Expected: `docker compose -f docker-compose.prod.yml config --services` lists `postgres`, `backend` and `reverse-proxy`.
    The production Compose template pins the app images at `v0.1.0`. Push that as the first release tag, or bump the pins to it first, as [deploy.md#update](deploy.md#update) does.
 
 ## Fill the templates
@@ -130,8 +124,8 @@ A React repository skips [Copy the production files](#copy-the-production-files)
    ```
 2. Fill the names and versions. Expected: the `grep` prints nothing.
    ```bash
-   PROJECT=<project-name> OWNER=<github-owner> DB=<database-name> MARKER=<pytest-marker> GOV=<project-go-version> GOMINOR=<go-minor> UV=<uv-version> PY=<project-python-version> NODE=<node-major>
-   FILES=$(ls Makefile docker-compose*.yml .devcontainer/* scripts/setup-dev-tools.sh .github/*.yml .github/workflows/*.yml */Dockerfile 2>/dev/null)
+   PROJECT=<project-name> OWNER=<github-owner> DB=<database-name> MARKER=<pytest-marker> GOV=<project-go-version> UV=<uv-version> PY=<project-python-version> NODE=<node-major>
+   GOMINOR=${GOV%.*} FILES=$(ls Makefile docker-compose*.yml .devcontainer/* scripts/setup-dev-tools.sh .github/*.yml .github/workflows/*.yml */Dockerfile 2>/dev/null)
    sed -i -e "s|<owner>|$OWNER|g; s|<project>|$PROJECT|g; s|<name>|$PROJECT|g; s|<package>|backend|g; s|<database-name>|$DB|g; s|<marker>|$MARKER|g" \
      -e "s|<project-go-version>|$GOV|g; s|<go-minor>|$GOMINOR|g; s|<uv-version>|$UV|g; s|<project-python-version>|$PY|g; s|<node-major>|$NODE|g; s|my-project-dev|$PROJECT-dev|" $FILES
    sed -i "s|^name: [a-z]*|name: $PROJECT|" docker-compose*.yml

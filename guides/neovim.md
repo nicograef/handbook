@@ -36,9 +36,8 @@ Eleven plugins on the built-in `vim.pack`; everything else is a Neovim built-in.
 - Elsewhere prettier formats JSON, YAML, Markdown, CSS, HTML, TypeScript and JavaScript, unsaved buffers included.
 - oxlint comes from the project's `node_modules` and attaches only where the project configures it.
 
-On a dev machine, [setup-dev-machine.sh](../scripts/setup-dev-machine.sh) does Steps 1–3.
-It installs Neovim, the servers, the tree-sitter CLI, `xclip`, a Nerd Font and the parsers.
-Neovim is the snap on Ubuntu and Step 1's tarball on Debian. The steps below are for servers.
+On a dev machine, [setup-dev-machine.sh](../scripts/setup-dev-machine.sh) does Steps 1–3 and installs `xclip` and a Nerd Font.
+It takes Neovim from the snap on Ubuntu and Step 1's tarball on Debian. The steps below are for servers.
 
 ## Prerequisites
 
@@ -61,19 +60,14 @@ Neovim is the snap on Ubuntu and Step 1's tarball on Debian. The steps below are
    The tarball does not refresh itself; the [release page](https://github.com/neovim/neovim/releases/latest)
    shows when a re-run is due. Source: [INSTALL.md](https://github.com/neovim/neovim/blob/master/INSTALL.md).
 
-2. **Install the language servers and the tree-sitter CLI.** The global TypeScript 7 serves
-   projects that pin an older one, since only 7 has `tsc --lsp`.
+2. **Install the language servers and the tree-sitter CLI.** Only TypeScript 7 has `tsc --lsp`,
+   so the global one serves projects that pin an older one. npm must allow tree-sitter-cli's install script, which fetches its binary.
+   marksman has no package; take its release binary, not the snap, which cannot read `~/.config/marksman`.
 
    ```bash
    uv tool install ruff && uv tool install ty
    npm install -g --allow-scripts=tree-sitter-cli typescript bash-language-server \
      yaml-language-server vscode-langservers-extracted prettier tree-sitter-cli
-   ```
-
-   tree-sitter-cli's install script fetches its binary, so npm must allow it.
-   marksman has no package; take its release binary, not the snap, which cannot read `~/.config/marksman`.
-
-   ```bash
    curl -fsSL https://github.com/artempyanykh/marksman/releases/latest/download/marksman-linux-x64 \
      -o ~/.local/bin/marksman && chmod +x ~/.local/bin/marksman
    ```
@@ -101,16 +95,13 @@ Plugin management: [`:help vim.pack`](https://neovim.io/doc/user/pack.html).
 | Press | Does |
 | --- | --- |
 | `<Space><Space>` / `<Space>/` / `<Space>,` | Find files / grep / buffers |
-| `<Space>fr` / `<Space>e` | Recent files / file explorer |
-| `<Space>sh` / `<Space>sk` | Help pages / keymaps |
+| `<Space>fr` / `<Space>e` / `<Space>sh` / `<Space>sk` | Recent files / file explorer / help pages / keymaps |
 | `<Space>sd` / `<Space>ss` | Diagnostics / LSP symbols |
 | `gd` / `grr` / `gri` | Definition / references / implementations |
 | `K` / `grn` / `gra` | Hover / rename / code action |
-| `]d` / `[d` | Next / previous diagnostic |
-| `]e` / `[e`, `]w` / `[w` | Next / previous error, warning |
-| `<Space>u` + `f` `F` `h` `d` `s` `w` | Toggle autoformat (buffer, global), inlay hints, diagnostics, spell, wrap |
+| `]d` / `[d`, `]e` / `[e`, `]w` / `[w` | Next / previous diagnostic, error, warning |
+| `<Space>u` + `f` `F` `h` `d` `s` `w` `k` `H` `G` | Toggle autoformat (buffer, global), inlay hints, diagnostics, spell, wrap, cheat sheet, hardtime, git signs |
 | `<Space>n` | Notification history |
-| `<Space>u` + `k` `H` `G` | Toggle cheat sheet, hardtime, git signs |
 | `]h` / `[h`, `ih` | Next / previous hunk, hunk text object |
 | `<Space>gh` + `s` `r` `p` | Stage / reset / preview hunk |
 | `<Space>gb` / `<Space>gB` / `<Space>gg` | Blame line / open in browser / lazygit |
@@ -133,13 +124,11 @@ The mechanism is the German-keyboard comment in [dotfiles/nvim/init.lua](../dotf
 | `ö` / `ä`   | `[` / `]`           | `diö` deletes inside brackets; `ö<Space>` adds a blank line above |
 | `Ö` / `Ä`   | `{` / `}`           | `Ä` jumps a paragraph down; `dÄ` deletes to the paragraph end |
 | `ß`         | `/`                 | `ßword` searches for word                                 |
-| `0` or `_`  | instead of `^`      | `^` is a dead key on `de`                                 |
-| `'a`        | instead of `` `a `` | the backtick is a dead key on `de`                        |
+| `0` or `_`, `'a` | instead of `^`, `` `a `` | `^` and the backtick are dead keys on `de`       |
 | `Ctrl-6`    | `Ctrl-^`            | previous file                                             |
 | `K` in help | `Ctrl-]`            | follows the help tag under the cursor                     |
 
-Sources: [`:help 'langmap'`](https://neovim.io/doc/user/options.html#'langmap'),
-[`:help CTRL-^`](https://neovim.io/doc/user/editing.html#CTRL-%5E),
+Sources: [`:help 'langmap'`](https://neovim.io/doc/user/options.html#'langmap'), [`:help CTRL-^`](https://neovim.io/doc/user/editing.html#CTRL-%5E),
 [Vim Tips Wiki: map extra keys on non-US keyboards](https://web.archive.org/web/2023/https://vim.fandom.com/wiki/Map_extra_keys_on_non_US_keyboards).
 
 ## Verify
@@ -148,12 +137,10 @@ Sources: [`:help 'langmap'`](https://neovim.io/doc/user/options.html#'langmap'),
 
 ```bash
 readlink -f ~/.config/nvim                                           # → <clone>/dotfiles/nvim
-nvim --headless -c 'lua print(vim.g.colors_name, #vim.pack.get())' -c q   # → catppuccin-mocha 11
-nvim --headless -c 'lua print(vim.fn.maparg("<Space><Space>", "n") ~= "")' -c q   # → true
-nvim --headless -c 'lua print(vim.o.shiftwidth, vim.o.clipboard)' -c q   # → 2 unnamedplus (desktop) / 2 (server)
-nvim --headless x.py +'lua print(vim.wo.foldmethod, vim.fn.maparg("]e", "n") ~= "")' +q   # → expr true
+nvim --headless -c 'lua print(vim.g.colors_name, #vim.pack.get(), vim.fn.maparg("<Space><Space>", "n") ~= "", vim.o.shiftwidth, vim.o.clipboard)' -c q
+# → catppuccin-mocha 11 true 2 unnamedplus (desktop) / catppuccin-mocha 11 true 2 (server)
+nvim --headless x.py +'lua print(vim.wo.foldmethod, vim.fn.maparg("]e", "n") ~= "", vim.treesitter.highlighter.active[vim.api.nvim_get_current_buf()] ~= nil)' +q   # → expr true true
 nvim --headless <py> +'sleep 3' +'lua print(vim.iter(vim.lsp.get_clients({bufnr=0})):map(function(c) return c.name end):join(","))' +q   # → ruff,ty
 nvim --headless <ts> +'sleep 3' +'lua print(vim.iter(vim.lsp.get_clients({bufnr=0})):map(function(c) return c.name end):join(","))' +q   # → tsc
-nvim --headless x.py +'lua print(vim.treesitter.highlighter.active[vim.api.nvim_get_current_buf()] ~= nil)' +q   # → true
 d=$(mktemp -d) && printf 'x=1\n' > "$d/f.py" && nvim --headless "$d/f.py" +'sleep 2' +w +q && cat "$d/f.py"   # → x = 1
 ```
