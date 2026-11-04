@@ -145,9 +145,9 @@ Keep the host shell outside the repo until then, so its prompt runs no `git` the
 A claude.ai usage limit mid-task makes an open interactive session wait and continue after the reset.
 `autoContinueAtUsageLimit` is on by default. Source: [Wait for a usage limit to reset](https://code.claude.com/docs/en/interactive-mode#wait-for-a-usage-limit-to-reset).
 
-Leave the terminal open. Expected: the bottom line reads `Usage limit reached · continuing automatically at <time>`.
+Leave the terminal open. Expected: the conversation records `Usage limit reached · continuing automatically at <time>`.
 
-- It re-arms at most twice in a row, then stops.
+- It continues at most three times in a row, then stops.
 - It does not start for `--bg` or `-p` runs, teammate sessions, or a reset more than 24 hours away.
 - The continued turn still asks for permissions as usual.
 

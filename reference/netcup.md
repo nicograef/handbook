@@ -9,7 +9,7 @@ Steps: [provision-server.md](../guides/provision-server.md#provision-over-ssh), 
 | Item | Value |
 | --- | --- |
 | Base | `https://www.servercontrolpanel.de/scp-core` |
-| Spec | `GET /scp-core/api/v1/openapi`, public OpenAPI 3; version 2026.1005.110946 on 2026-10-06 |
+| Spec | `GET /scp-core/api/v1/openapi`, public OpenAPI 3; version 2026.1103.163951 on 2026-11-04 |
 | Health | `GET /scp-core/api/ping`, no token |
 | Status | netcup switched the SOAP webservice off on 2026-05-01 |
 | IP filter | SCP, REST API settings: the IPs or CIDRs allowed to call; empty allows all |

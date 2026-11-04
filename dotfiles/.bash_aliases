@@ -134,7 +134,7 @@ case "${PROMPT_COMMAND:-}" in
 esac
 
 # Prompt: path + git branch with dirty state (* modified, + staged); over SSH
-# the host leads, coloured as in .tmux.conf: red on *prod*, yellow on *staging*.
+# the host leads: red on *prod*, yellow on *staging*.
 # Overrides the stock PS1, which every stock .bashrc sets before sourcing this
 # file.
 if ! declare -F __git_ps1 >/dev/null; then
