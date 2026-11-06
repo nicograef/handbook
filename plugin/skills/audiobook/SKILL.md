@@ -20,7 +20,7 @@ Subject: **$ARGUMENTS**. All files live in the output dir, default `audiobook/`.
 - The Lua filter only deletes what slipped through; it does not translate.
 - Book prose follows "Writing for the ear", not the repo's sentence and paragraph caps.
 - `slop-de.txt` never enters a writer brief: naming a phrase primes the model to write it. Reviewers work from the hits.
-- `book.epub` is a gitignored build artifact; the chapter Markdown is the source. Upload nothing.
+- `book.epub` (a build artifact) and `voice.md` (third-party excerpts) are gitignored; the chapter Markdown is the source. Upload nothing.
 
 ## Steps
 
