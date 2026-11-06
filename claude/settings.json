@@ -83,6 +83,7 @@
       "Bash(~/.claude/check-agents.sh:*)",
       "Bash(/home/nico/r/handbook/plugin/skills/audiobook/md-to-epub.sh:*)",
       "Bash(/home/nico/r/handbook/plugin/skills/audiobook/check-terms.sh:*)",
+      "Bash(/home/nico/r/handbook/plugin/skills/audiobook/check-prose.sh:*)",
       "Bash(uv sync:*)",
       "Bash(uv lock:*)",
       "Bash(uv audit:*)",
