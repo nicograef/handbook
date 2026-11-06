@@ -122,6 +122,7 @@ A web app on a fresh server chains Fresh server, Deploy (which schedules the bac
 | [scripts/test-plan-run-guard.sh](scripts/test-plan-run-guard.sh)         | Fixture test for `plan-run-guard.sh`                                                                                               |
 | [scripts/test-git-guard.sh](scripts/test-git-guard.sh)                   | Fixture test for `git-guard.sh`                                                                                                    |
 | [scripts/test-py-check.sh](scripts/test-py-check.sh)                     | Fixture test for `py-check.sh`                                                                                                     |
+| [scripts/test-check-prose.sh](scripts/test-check-prose.sh)               | Fixture test for the audiobook skill's `check-prose.sh`                                                                            |
 | [scripts/test-report-health.sh](scripts/test-report-health.sh)           | Fixture test for `report-health.sh`                                                                                                |
 | [scripts/test-report-repo-status.sh](scripts/test-report-repo-status.sh) | Fixture test for `report-repo-status.sh`                                                                                           |
 | [scripts/test-setup-dev-machine.sh](scripts/test-setup-dev-machine.sh)   | Fixture test for `setup-dev-machine.sh`                                                                                            |

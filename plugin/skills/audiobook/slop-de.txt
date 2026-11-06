@@ -1,0 +1,50 @@
+# slop-de.txt – patterns check-prose.sh flags in audiobook chapters
+#
+# One "<category><TAB><PCRE>" per line, matched case-insensitively per line of Markdown.
+# Reviewers see the hits; writers never see this file, since naming a phrase primes it.
+# frame, meta, closer and mannered are measured LLM tells (Graphite Opus 5.5 tells,
+# de.wikipedia "Anzeichen fuer KI-generierte Inhalte"); tts marks text ElevenReader misreads.
+
+# ── Frames: importance flags and contrast templates ──────────────────────────
+frame	\b(das|dies) ist (besonders |so |genau )?(wichtig|entscheidend)\b
+frame	\bwarum\b.{1,40}\b(wichtig|entscheidend) ist\b
+frame	\bwarum (ist|sind) (das|dies|es)\b.{0,30}\b(wichtig|entscheidend)\b
+frame	\b(es ist|ist es) (besonders |so )?(wichtig|bemerkenswert|entscheidend|wesentlich),? (zu|dass)\b
+frame	\bspiel(t|en|te|ten)( \w+){0,3} (eine (wichtige|zentrale|entscheidende|große|tragende) Rolle|eine Schlüsselrolle)\b
+frame	\bmehr als (nur|bloß)\b
+frame	\bnicht nur\b.{0,80}\bsondern auch\b
+frame	\bnicht (einfach|bloß|nur)\b.{1,60}, sondern\b
+frame	\bes geht nicht (nur |bloß )?(darum|um)\b
+frame	\beine (weitere|zusätzliche|ganz neue) Ebene (der|des|von|an)\b
+frame	\b(genauso|ebenso) wichtig\b
+
+# ── Meta: the text announcing its own structure ──────────────────────────────
+meta	\b(in diesem|im nächsten|im letzten|im vorigen|im folgenden) (Kapitel|Abschnitt)\b
+meta	\bwie wir (gesehen haben|sehen werden|gleich sehen)\b
+meta	\b(schauen|blicken|tauchen) wir\b|\bwerfen wir einen\b
+meta	\blass(t)? uns\b
+meta	\bwas (als nächstes|jetzt|nun) (kommt|folgt)\b
+meta	\bstell (dir|euch) vor\b|\bstellen Sie sich vor\b
+
+# ── Closers and stacked connectors ───────────────────────────────────────────
+closer	(?:^|[.!?:]\s+)\K(Zusammenfassend|Abschließend|Insgesamt|Fazit|Kurz gesagt|Kurzum|Unterm Strich|Halten wir fest|Fassen wir zusammen)\b
+closer	(?:^|[.!?:]\s+)\K(Darüber hinaus|Ferner|Zudem|Des Weiteren)\b
+
+# ── Mannered prose: flourish and evaluation in place of a statement ──────────
+mannered	\b(unterstreich|beleucht|verdeutlich)\w*
+mannered	\bzeigt eindrucksvoll\b
+mannered	\b(dient|dienen|fungiert|fungieren) als (Grundlage|Fundament|Basis|Brücke|Rückgrat|Herzstück)\b
+mannered	, (was|welches) (zeigt|verdeutlicht|unterstreicht)\b
+mannered	\bin der (heutigen|modernen) (Zeit|Welt)\b
+mannered	\b(integraler Bestandteil|vielfältige Möglichkeiten|Herzstück|Rückgrat|aufs nächste Level|auf ein neues Level)\b
+mannered	\b(spannend|faszinierend|nahtlos)\w*
+mannered	\b(natürlich|sicherlich)!|\bich hoffe\b
+
+# ── TTS hazards: write these as spoken words ─────────────────────────────────
+tts	\b\d+([.,]\d+)?\s?(B|KB|MB|GB|TB|KiB|MiB|GiB|ms|µs|ns|s|min|h|%|€|\$)(?!\w)
+tts	\b\d{1,2}:\d{2}\b
+tts	\bv?\d+\.\d+(\.\d+)*\b
+tts	\b(z\.\s?B|d\.\s?h|u\.\s?a|bzw|ca|usw|evtl|ggf|inkl|vgl|bspw|sog|etc)\.
+tts	\([^()]*\)|[()]
+tts	\w/\w
+tts	…|\.\.\.

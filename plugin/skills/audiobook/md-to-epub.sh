@@ -3,9 +3,9 @@
 #
 # Usage:
 #   plugin/skills/audiobook/md-to-epub.sh [--strict] <chapter-dir> [output.epub]
-#   WPM=140 plugin/skills/audiobook/md-to-epub.sh --strict audiobook/ indexes.epub
+#   STRICT=1 plugin/skills/audiobook/md-to-epub.sh audiobook/ indexes.epub
 #
-# --strict (or STRICT=1) aborts on any finding.
+# --strict (or STRICT=1) aborts on any finding or check-prose.sh failure.
 #
 # Chapters are the NN-slug.md files in <chapter-dir>, in filename order. Other
 # Markdown in that directory (PLAN.md, sources.md) is ignored.
@@ -13,9 +13,9 @@
 # What it does:
 #   1. Runs each chapter through strip-visuals.lua beside this script; every element
 #      the filter strips is a finding, prefixed with the chapter name.
-#   2. Renders the chapters with pandoc and the same filter.
-#   3. Splits one EPUB chapter per H1 and builds a depth-1 table of contents.
-#   4. Reports words and estimated listening time, per chapter and total.
+#   2. Runs check-prose.sh beside this script: listening budget and AI-tell patterns.
+#   3. Renders the chapters with pandoc and the same filter, one EPUB chapter per H1
+#      with a depth-1 table of contents.
 #
 # See plugin/skills/audiobook/SKILL.md.
 
@@ -25,7 +25,6 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 # ── Configuration (env-var defaults) ─────────────────────────────────────────
 FILTER="${FILTER:-$SCRIPT_DIR/strip-visuals.lua}"
-WPM="${WPM:-150}"          # narration speed used for the time estimate
 STRICT="${STRICT:-0}"
 
 log() { printf '\033[1;34m▸ %s\033[0m\n' "$1"; }
@@ -61,24 +60,22 @@ done < <(find "$SRC_DIR" -maxdepth 1 -name '[0-9][0-9]-*.md' | sort)
 
 [[ ${#CHAPTERS[@]} -gt 0 ]] || die "no NN-slug.md chapters in $SRC_DIR"
 
-# ── 1. Findings and word count ───────────────────────────────────────────────
-# One pandoc run per chapter: stderr holds the filter's findings, stdout the
-# spoken text. The fix belongs in the chapter; the filter strips them anyway.
+# ── 1. Findings ──────────────────────────────────────────────────────────────
+# One pandoc run per chapter; stderr holds the filter's findings. The fix
+# belongs in the chapter; the filter strips them anyway.
 log "Checking ${#CHAPTERS[@]} chapter(s) for unspeakable elements"
 
 TMP_DIR="$(mktemp -d)"
 trap 'rm -rf "$TMP_DIR"' EXIT
 
 FINDINGS=0
-WORDS=()
 for file in "${CHAPTERS[@]}"; do
   name="$(basename "$file")"
   if ! STRIP_VISUALS_QUIET=0 pandoc "$file" --from gfm --to plain --lua-filter "$FILTER" \
-    >"$TMP_DIR/plain.txt" 2>"$TMP_DIR/stderr.txt"; then
+    >/dev/null 2>"$TMP_DIR/stderr.txt"; then
     cat "$TMP_DIR/stderr.txt" >&2
     die "pandoc failed on $name"
   fi
-  WORDS+=("$(wc -w <"$TMP_DIR/plain.txt")")
   while IFS= read -r finding; do
     warn "$name: $finding"
     FINDINGS=$((FINDINGS + 1))
@@ -94,7 +91,17 @@ else
   log "No findings"
 fi
 
-# ── 2. Render ────────────────────────────────────────────────────────────────
+# ── 2. Prose ─────────────────────────────────────────────────────────────────
+# Exit 1 is a prose finding; anything higher means the check could not run.
+rc=0
+"$SCRIPT_DIR/check-prose.sh" "$SRC_DIR" || rc=$?
+[[ "$rc" -le 1 ]] || die "check-prose.sh could not run (exit $rc)"
+if [[ "$rc" -eq 1 ]]; then
+  [[ "$STRICT" == "1" ]] && die "strict mode and check-prose.sh failed"
+  warn "check-prose.sh failed; rendering anyway"
+fi
+
+# ── 3. Render ────────────────────────────────────────────────────────────────
 PANDOC_ARGS=(
   --from gfm
   --to epub3
@@ -127,16 +134,4 @@ done
 log "Rendering $OUT_FILE"
 STRIP_VISUALS_QUIET=1 pandoc "${CHAPTERS[@]}" "${PANDOC_ARGS[@]}"
 
-# ── 3. Listening time ────────────────────────────────────────────────────────
-# Counted on the filtered plain text from step 1, so it matches what is spoken.
-log "Estimated listening time at ${WPM} words per minute"
-
-TOTAL_WORDS=0
-for i in "${!CHAPTERS[@]}"; do
-  words="${WORDS[$i]}"
-  TOTAL_WORDS=$((TOTAL_WORDS + words))
-  printf '  %-40s %6d words  %4d min\n' "$(basename "${CHAPTERS[$i]}")" "$words" "$((words / WPM))"
-done
-
-printf '  %-40s %6d words  %4d min\n' "TOTAL" "$TOTAL_WORDS" "$((TOTAL_WORDS / WPM))"
 log "Wrote $OUT_FILE ($(du -h "$OUT_FILE" | cut -f1))"
