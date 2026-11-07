@@ -35,7 +35,7 @@ Scope is the current project and repo. `all` adds every project's memory and eve
 
 - Docker: prune dangling images, build cache and unused networks. List stopped containers, unused volumes and unused tagged images in the report. Named volumes often hold databases.
 - Stop every job of this session, subagents included. Recall misses ids from before a compaction. Enumerate `/tmp/claude-<uid>/<project>/<session-id>/tasks/` and `TaskStop` each id.
-  Workflow ids too, completion notice or not. Only "No task found" or a completed status counts as stopped; a paused or refused task is a blocked action, ended by the exit dialog's "stop tasks".
+  Workflow ids too, completion notice or not. Only "No task found" or a completed status counts as stopped. A paused or refused task is a blocked action; the exit dialog's "stop tasks" ends it.
 - Delete durable crons whose work is done, and this run's temp files under `/tmp`.
 - "Safe to close" needs a clean `repo-status`, no running job, and every open step in plan files or memory.
 
